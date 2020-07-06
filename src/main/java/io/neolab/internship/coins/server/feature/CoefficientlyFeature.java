@@ -8,6 +8,10 @@ import java.util.Objects;
 public class CoefficientlyFeature extends Feature implements ICoefficientlyFeature {
     private final int coefficient;
 
+    public CoefficientlyFeature(final FeatureType type) {
+        this(type, 1);
+    }
+
     public CoefficientlyFeature(final FeatureType type, final int coefficient) {
         super(type);
         this.coefficient = coefficient;
