@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.answer.Answer;
+import io.neolab.internship.coins.question.Question;
 
 /**
  * Интерфейс для валидатора
@@ -12,5 +13,5 @@ public interface IValidator {
      * @param answer - ответ, который необходимо проверить на валидность
      * @return true - если ответ валидный, false - иначе
      */
-    boolean isValid( /*TODO Question question, */ Answer answer);
+    boolean isValid(Question question, Answer answer);
 }

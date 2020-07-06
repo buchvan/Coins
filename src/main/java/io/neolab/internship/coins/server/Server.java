@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server;
 import io.neolab.internship.coins.Pair;
 import io.neolab.internship.coins.answer.Answer;
 import io.neolab.internship.coins.client.Client;
+import io.neolab.internship.coins.question.Question;
 import io.neolab.internship.coins.server.board.*;
 import io.neolab.internship.coins.server.feature.Feature;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class Server implements IServer {
      */
     private static class ServerValidator implements IValidator {
         @Override
-        public boolean isValid(Answer answer) {
+        public boolean isValid(Question question, Answer answer) {
             return false;
         }
     }
@@ -46,7 +47,7 @@ public class Server implements IServer {
      */
     private static class ServerAnswerProcessor implements IAnswerProcessor {
         @Override
-        public void processor(Answer answer) {
+        public void processor(Question question, Answer answer) {
 
         }
     }
