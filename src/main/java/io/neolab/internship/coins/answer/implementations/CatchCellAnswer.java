@@ -15,6 +15,10 @@ import java.util.Objects;
 public class CatchCellAnswer extends Answer implements ICatchCellAnswer {
     private final Pair<Position, List<Unit>> resolution; // позиция клетки и список юнитов
 
+    public CatchCellAnswer() {
+        this.resolution = null;
+    }
+
     public CatchCellAnswer(final Pair<Position, List<Unit>> resolution) {
         this.resolution = resolution;
     }

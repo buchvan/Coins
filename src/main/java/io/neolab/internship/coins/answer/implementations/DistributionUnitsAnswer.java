@@ -6,16 +6,17 @@ import io.neolab.internship.coins.answer.Answer;
 import io.neolab.internship.coins.answer.interfaces.IDistributionUnitsAnswer;
 import io.neolab.internship.coins.server.board.Unit;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Ответ на вопрос DISTRIBUTION_UNITS (распределение войск в конце хода)
  */
 public class DistributionUnitsAnswer extends Answer implements IDistributionUnitsAnswer {
-
     private final Map<Position, List<Unit>> resolutions; // позиция клетки в список юнитов
+
+    public DistributionUnitsAnswer() {
+        this.resolutions = new HashMap<>();
+    }
 
     public DistributionUnitsAnswer(final Map<Position, List<Unit>> resolutions) {
         this.resolutions = resolutions;
