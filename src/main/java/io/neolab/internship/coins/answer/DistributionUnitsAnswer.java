@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Ответ на вопрос DISTRIBUTION_UNITS (распределение войск в конце хода)
+ */
 public class DistributionUnitsAnswer extends Answer implements IDistributionUnitsAnswer {
 
     private final Map<Position, List<Unit>> resolutions; // позиция клетки в список юнитов
