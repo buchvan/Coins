@@ -1,15 +1,10 @@
 package io.neolab.internship.coins.server.board;
 
-
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.util.Objects;
 
-/**
- * Класс Доска
- * Отображение координаты на доске в Клетку
- */
 public class Board {
     private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
