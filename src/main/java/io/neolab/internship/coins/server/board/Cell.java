@@ -4,6 +4,7 @@ import io.neolab.internship.coins.server.player.Player;
 import io.neolab.internship.coins.Unit;
 import io.neolab.internship.coins.server.player.Race;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,7 +12,7 @@ public class Cell {
     private CellType type;
     private List<Unit> units;
     private Player own;
-    private Race race;
+    private Race race = Race.NEUTRAL;
 
     public Cell() {
     }
@@ -36,7 +37,7 @@ public class Cell {
     }
 
     public void setUnits(List<Unit> units) {
-        this.units = units;
+        Collections.copy(this.units, units);
     }
 
     public Player getOwn() {
