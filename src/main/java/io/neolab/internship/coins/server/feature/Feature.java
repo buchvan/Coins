@@ -12,6 +12,7 @@ public class Feature implements IFeature {
         this.type = type;
     }
 
+    @Override
     public FeatureType getType() {
         return type;
     }

@@ -17,6 +17,7 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
         this.coefficient = coefficient;
     }
 
+    @Override
     public int getCoefficient() {
         return coefficient;
     }
