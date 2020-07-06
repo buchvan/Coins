@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.Pair;
+import io.neolab.internship.coins.answer.Answer;
 import io.neolab.internship.coins.client.Client;
 import io.neolab.internship.coins.server.board.*;
 import io.neolab.internship.coins.server.feature.Feature;
@@ -29,10 +30,18 @@ public class Server implements IServer {
     private ServerValidator validator; // валидатор
     private ServerAnswerProcessor answerProcessor; // обработчик ответов
 
-    private class ServerValidator {
+    private static class ServerValidator implements IValidator {
+        @Override
+        public boolean isValid(Answer answer) {
+            return false;
+        }
     }
 
-    private class ServerAnswerProcessor {
+    private static class ServerAnswerProcessor implements IAnswerProcessor {
+        @Override
+        public void processor(Answer answer) {
+
+        }
     }
 
     @Override
