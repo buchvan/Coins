@@ -1,5 +1,7 @@
-package io.neolab.internship.coins.answer;
+package io.neolab.internship.coins.answer.implementations;
 
+import io.neolab.internship.coins.answer.Answer;
+import io.neolab.internship.coins.answer.interfaces.IChooseRaceAnswer;
 import io.neolab.internship.coins.server.board.Race;
 
 import java.util.Objects;

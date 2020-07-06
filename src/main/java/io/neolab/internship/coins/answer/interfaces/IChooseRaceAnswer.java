@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.answer;
+package io.neolab.internship.coins.answer.interfaces;
 
 import io.neolab.internship.coins.server.board.Race;
 

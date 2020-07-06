@@ -1,4 +1,8 @@
-package io.neolab.internship.coins.answer;
+package io.neolab.internship.coins.answer.implementations;
+
+import io.neolab.internship.coins.answer.Answer;
+import io.neolab.internship.coins.answer.EndTurnChoice;
+import io.neolab.internship.coins.answer.interfaces.IEndTurnChoiceAnswer;
 
 import java.util.Objects;
 

@@ -1,4 +1,6 @@
-package io.neolab.internship.coins.answer;
+package io.neolab.internship.coins.answer.interfaces;
+
+import io.neolab.internship.coins.answer.EndTurnChoice;
 
 /**
  * Интерфейс для ответа на вопрос END_TURN_CHOICE (выбор в конце хода)
