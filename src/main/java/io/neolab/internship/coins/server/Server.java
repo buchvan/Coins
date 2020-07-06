@@ -31,6 +31,9 @@ public class Server implements IServer {
     private IValidator validator = new ServerValidator(); // валидатор
     private IAnswerProcessor answerProcessor = new ServerAnswerProcessor(); // обработчик ответов
 
+    /**
+     * Валидатор сервера
+     */
     private static class ServerValidator implements IValidator {
         @Override
         public boolean isValid(Answer answer) {
@@ -38,6 +41,9 @@ public class Server implements IServer {
         }
     }
 
+    /**
+     * Обработчик ответов сервера
+     */
     private static class ServerAnswerProcessor implements IAnswerProcessor {
         @Override
         public void processor(Answer answer) {
