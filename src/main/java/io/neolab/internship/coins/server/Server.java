@@ -8,6 +8,7 @@ import io.neolab.internship.coins.server.feature.Feature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +24,12 @@ public class Server implements IServer {
 
     private int currentRound = 0; // текущий раунд
     private Board board; // борда (карта/доска)
-    private LinkedList<Pair<Client, Player>> clientToPlayerList; // клиент <-> игрок
-    private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeToFeatureList; // (раса, тип клетки) -> список особенностей
-    private Map<Player, List<Cell>> feudalToCells; // игрок -> клетки, с которых он получает монеты
+    private List<Pair<Client, Player>> clientToPlayerList = new LinkedList<>(); // клиент <-> игрок
+    private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeToFeatureList = new HashMap<>(); // (раса, тип клетки) -> список особенностей
+    private Map<Player, List<Cell>> feudalToCells = new HashMap<>(); // игрок -> клетки, с которых он получает монеты
 
-    private ServerValidator validator; // валидатор
-    private ServerAnswerProcessor answerProcessor; // обработчик ответов
+    private IValidator validator = new ServerValidator(); // валидатор
+    private IAnswerProcessor answerProcessor = new ServerAnswerProcessor(); // обработчик ответов
 
     private static class ServerValidator implements IValidator {
         @Override
