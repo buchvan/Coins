@@ -1,8 +1,8 @@
 package io.neolab.internship.coins.server.game.board;
 
-import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.Unit;
-import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Collections;
 import java.util.List;

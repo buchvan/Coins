@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.server.game.board;
 
-import io.neolab.internship.coins.Unit;
+import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.question;
+package io.neolab.internship.coins.common.question;
 
 public enum Question {
     /*

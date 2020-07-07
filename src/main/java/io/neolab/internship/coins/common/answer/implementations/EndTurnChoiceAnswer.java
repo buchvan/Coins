@@ -1,16 +1,13 @@
-package io.neolab.internship.coins.answer.implementations;
+package io.neolab.internship.coins.common.answer.implementations;
 
-import io.neolab.internship.coins.answer.Answer;
-import io.neolab.internship.coins.answer.EndTurnChoice;
-import io.neolab.internship.coins.answer.interfaces.IEndTurnChoiceAnswer;
+import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.EndTurnChoice;
+import io.neolab.internship.coins.common.answer.interfaces.IEndTurnChoiceAnswer;
 
 import java.util.Objects;
 
-/**
- * Ответ на вопрос END_TURN_CHOICE (выбор в конце хода)
- */
 public class EndTurnChoiceAnswer extends Answer implements IEndTurnChoiceAnswer {
-    private final EndTurnChoice endTurnChoice; // выбор в конце хода
+    private final EndTurnChoice endTurnChoice;
 
     public EndTurnChoiceAnswer(final EndTurnChoice endTurnChoice) {
         this.endTurnChoice = endTurnChoice;

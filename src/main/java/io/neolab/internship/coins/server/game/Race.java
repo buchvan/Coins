@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.player;
+package io.neolab.internship.coins.server.game;
 
 public enum Race {
     MUSHROOM("MUSHROOM", 6),

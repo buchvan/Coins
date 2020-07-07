@@ -1,18 +1,14 @@
-package io.neolab.internship.coins.answer.implementations;
+package io.neolab.internship.coins.common.answer.implementations;
 
-
-import io.neolab.internship.coins.server.board.Position;
-import io.neolab.internship.coins.answer.Answer;
-import io.neolab.internship.coins.answer.interfaces.IDistributionUnitsAnswer;
-import io.neolab.internship.coins.server.board.Unit;
+import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.interfaces.IDistributionUnitsAnswer;
+import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.board.Position;
 
 import java.util.*;
 
-/**
- * Ответ на вопрос DISTRIBUTION_UNITS (распределение войск в конце хода)
- */
 public class DistributionUnitsAnswer extends Answer implements IDistributionUnitsAnswer {
-    private final Map<Position, List<Unit>> resolutions; // позиция клетки в список юнитов
+    private final Map<Position, List<Unit>> resolutions;
 
     public DistributionUnitsAnswer() {
         this.resolutions = new HashMap<>();

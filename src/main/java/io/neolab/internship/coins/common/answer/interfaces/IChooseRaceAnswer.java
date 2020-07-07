@@ -1,6 +1,6 @@
-package io.neolab.internship.coins.answer.interfaces;
+package io.neolab.internship.coins.common.answer.interfaces;
 
-import io.neolab.internship.coins.server.board.Race;
+import io.neolab.internship.coins.server.game.Race;
 
 /**
  * Интерфейс для ответа на вопрос CHOOSE_RACE (выбрать новую расу)

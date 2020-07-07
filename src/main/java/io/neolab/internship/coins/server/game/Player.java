@@ -1,6 +1,5 @@
-package io.neolab.internship.coins.server.game.player;
+package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 
 import java.util.*;

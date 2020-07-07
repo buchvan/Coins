@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.feature;
+package io.neolab.internship.coins.server.game.feature;
 
 /**
  * Тип особенности пары раса-тип_клетки (Race-CellType)

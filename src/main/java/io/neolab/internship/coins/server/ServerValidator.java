@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server;
 
-import io.neolab.internship.coins.answer.Answer;
-import io.neolab.internship.coins.question.Question;
+import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.question.Question;
 
 /**
  * Валидатор ответов клиента для сервера

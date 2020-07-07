@@ -1,7 +1,7 @@
-package io.neolab.internship.coins.answer.interfaces;
+package io.neolab.internship.coins.common.answer.interfaces;
 
-import io.neolab.internship.coins.server.board.Position;
-import io.neolab.internship.coins.server.board.Unit;
+import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.board.Position;
 
 import java.util.List;
 import java.util.Map;
