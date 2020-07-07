@@ -15,9 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 
+// TODO Все мапы по ключу: айди
 public class SelfPlay {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
@@ -82,10 +81,10 @@ public class SelfPlay {
      * @param playerList - список игроков
      * @return инициализированную feudalToCells
      */
-    private static Map<Player, List<Cell>> initFeudalToCells(final List<Player> playerList) {
-        final Map<Player, List<Cell>> feudalToCells = new HashMap<>(playerList.size());
+    private static Map<Integer, List<Cell>> initFeudalToCells(final List<Player> playerList) {
+        final Map<Integer, List<Cell>> feudalToCells = new HashMap<>();
         for (final Player player : playerList) {
-            feudalToCells.put(player, new ArrayList<>());
+            feudalToCells.put(player.getId(), new ArrayList<>());
         }
         LOGGER.debug("feudalToCells init: " + feudalToCells.toString());
         return feudalToCells;
@@ -300,21 +299,26 @@ public class SelfPlay {
      * - финализатор (результат работы)
      */
     private static void selfPlay() {
-        /* init */
-        final Board board = initBoard();
-        final Player neutralPlayer = createNeutralPlayer();
-        final List<Player> playerList = initTestPlayers();
-        final Map<Player, List<Cell>> feudalToCells = initFeudalToCells(playerList);
-        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = initRaceCellTypeFeatures();
-        final List<Race> racesPool = createRacesPool();
+        try {
+            /* init */
+            final Board board = initBoard();
+            final Player neutralPlayer = createNeutralPlayer();
+            final List<Player> playerList = initTestPlayers();
+            final Map<Integer, List<Cell>> feudalToCells = initFeudalToCells(playerList);
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = initRaceCellTypeFeatures();
+            final List<Race> racesPool = createRacesPool();
 
-        final Game game = new Game(board, 0, feudalToCells, raceCellTypeFeatures, racesPool, playerList,
-                neutralPlayer);
-        LOGGER.debug("Game is created: " + game.toString());
+            final Game game = new Game(board, 0, feudalToCells, raceCellTypeFeatures, racesPool, playerList,
+                    neutralPlayer);
+            LOGGER.debug("Game is created: " + game.toString());
 
-        gameLoop(game);
+            gameLoop(game);
 
-        finalize(playerList);
+            finalize(playerList);
+        } catch (final Exception exception) {
+            LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOGGER.error("ERROR!!! ", exception);
+        }
     }
 
     /**
@@ -326,7 +330,7 @@ public class SelfPlay {
         int currentRound = 0;
         final Random random = new Random();
         int lastUnitId = 0;
-        while (currentRound <= ROUNDS_COUNT) {
+        while (currentRound < ROUNDS_COUNT) {
             currentRound++;
 
             for (final Player player : game.getPlayers()) {
@@ -335,7 +339,7 @@ public class SelfPlay {
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
             }
-            LOGGER.debug("Game after" + currentRound + " round: " + game.toString());
+            LOGGER.debug("Game after " + currentRound + " round: " + game.toString());
         }
         LOGGER.info("Round " + currentRound + " is finished! Players: " + game.getPlayers().toString());
     }
@@ -356,7 +360,7 @@ public class SelfPlay {
         if (currentRound == 1) { // В случае первого раунда
             lastUnitId = chooseRace(player, game.getRacesPool(), random, lastUnitId);
         } else if (isSayYes(player, random)) { // В случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
-            declineRace(player, game.getNeutralPlayer(), game.getFeudalToCells().get(player));
+            declineRace(player, game.getNeutralPlayer(), game.getFeudalToCells().get(player.getId()));
             lastUnitId = chooseRace(player, game.getRacesPool(), random, lastUnitId);
         }
         catchCells(player, game, random);
@@ -633,10 +637,10 @@ public class SelfPlay {
                     LOGGER.debug(deadUnitsCount + " units of player " + defendingPlayer.getId() + " died");
                 }
             }
+            game.getFeudalToCells().get(defendingPlayer.getId()).remove(catchingCell);
         }
-        game.getFeudalToCells().get(defendingPlayer).remove(catchingCell);
         catchingCell.setOwn(player);
-        game.getFeudalToCells().get(player).add(catchingCell);
+        game.getFeudalToCells().get(player.getId()).add(catchingCell);
         LOGGER.info("Cell " + catchingCell + " catched of player " + player.getId());
     }
 
@@ -692,10 +696,10 @@ public class SelfPlay {
      * @return список подконтрольных игроку клеток
      */
     private static List<Cell> getControlledCells(final Player player, final Game game) {
-        final List<Cell> controlledCells = new ArrayList<>(game.getFeudalToCells().get(player).size());
+        final List<Cell> controlledCells = new ArrayList<>(game.getFeudalToCells().get(player.getId()).size());
         // TODO Внимание вопрос: может добавить этот список в поля класса Game ???
 
-        for (final Cell vassalCell : game.getFeudalToCells().get(player)) {
+        for (final Cell vassalCell : game.getFeudalToCells().get(player.getId())) {
             if (vassalCell.getOwn() == player) {
                 controlledCells.add(vassalCell);
             }
@@ -712,7 +716,7 @@ public class SelfPlay {
      * @param game   - игра, хранящая всю метаинформацию
      */
     private static void updateCoinsCount(final Player player, final Game game) {
-        for (final Cell cell : game.getFeudalToCells().get(player)) {
+        for (final Cell cell : game.getFeudalToCells().get(player.getId())) {
             updateCoinsCountByCellWithFeatures(player, game, cell);
             player.setCoins(player.getCoins() + cell.getType().getCoinYield());
         }
@@ -755,10 +759,15 @@ public class SelfPlay {
     private static void finalize(final List<Player> playerList) {
         final int maxCoinsCount = getMaxCoinsCount(playerList);
         if (maxCoinsCount == -1) {
+            LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             LOGGER.error("max count of coins < 0 !!!");
             return;
         }
-        LOGGER.info("Winners: " + getWinners(maxCoinsCount, playerList).toString());
+        LOGGER.info("---------------------------------------");
+        LOGGER.info("Winners: ");
+        for (final Player winner : playerList) {
+            LOGGER.info("Player {}, coins {} ", winner.getId(), winner.getCoins());
+        }
     }
 
     /**
