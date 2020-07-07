@@ -18,7 +18,7 @@ public class EndTurnChoiceAnswer extends Answer implements IEndTurnChoiceAnswer 
 
     @Override
     public EndTurnChoice getEndTurnChoice() {
-        return null;
+        return endTurnChoice;
     }
 
     @Override

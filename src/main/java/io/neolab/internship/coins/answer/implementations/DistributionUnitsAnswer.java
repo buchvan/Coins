@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.answer.implementations;
 
 
-import io.neolab.internship.coins.Position;
+import io.neolab.internship.coins.server.board.Position;
 import io.neolab.internship.coins.answer.Answer;
 import io.neolab.internship.coins.answer.interfaces.IDistributionUnitsAnswer;
 import io.neolab.internship.coins.server.board.Unit;

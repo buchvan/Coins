@@ -1,10 +1,7 @@
-package io.neolab.internship.coins;
+package io.neolab.internship.coins.utils;
 
 import java.util.Objects;
 
-/**
- * Класс пара
- */
 public class Pair<T, U> {
     private T first;
     private U second;
