@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.Random;
 
 public class BoardFactory implements IBoardFactory {
+    //TODO: use logger
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
-
+    private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
      * 1 версия: Каждый тип клетки встречается по три раза
@@ -26,20 +27,34 @@ public class BoardFactory implements IBoardFactory {
      * @return new Board
      */
     @Override
-    public Board getBoard(final int width, final int height) {
-        Random random = new Random();
+    public Board generateBoard(final int width, final int height) {
         int cellAmount = width * height;
         List<CellType> cellTypes = loadCellTypePool(cellAmount);
-        BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int randomCellTypeIndex = random.nextInt(cellTypes.size());
-                //TODO: control cell amount of each cell types in board
-                CellType currentCellType = cellTypes.remove(randomCellTypeIndex);
+                int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes);
+                CellType currentCellType = cellTypes.remove(currentCellTypeIndex);
                 positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
             }
         }
         return new Board(positionToCellMap);
+    }
+
+    private int getAllowedCellTypeIndex(List<CellType> cellTypes){
+        Random random = new Random();
+        int cellTypesAmount = cellTypes.size();
+        int randomCellTypeIndex = -1;
+        boolean isCellTypeAvailable = false;
+        while (!isCellTypeAvailable) {
+            randomCellTypeIndex = random.nextInt(cellTypes.size());
+            CellType currentCellType = cellTypes.get(randomCellTypeIndex);
+            isCellTypeAvailable = positionToCellMap
+                    .values()
+                    .stream()
+                    .filter(type -> type.getType() == currentCellType)
+                    .count() <=  cellTypesAmount;
+        }
+        return randomCellTypeIndex;
     }
 
     private List<CellType> loadCellTypePool(final int cellAmount) {
@@ -52,5 +67,4 @@ public class BoardFactory implements IBoardFactory {
         }
         return cellTypes;
     }
-
 }
