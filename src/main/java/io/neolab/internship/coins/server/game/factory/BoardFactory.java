@@ -21,11 +21,9 @@ public class BoardFactory {
     public Board getBoard(final int width, final int height) {
         Board board = new Board();
         BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-        Position currentPosition;
         for(int i =0; i < width; i ++) {
             for(int j = 0; j < height; j++) {
-                currentPosition = new Position(i,j);
-                positionToCellMap.put(currentPosition, new Cell());
+                positionToCellMap.put(new Position(i,j), new Cell());
             }
         }
         return board;
