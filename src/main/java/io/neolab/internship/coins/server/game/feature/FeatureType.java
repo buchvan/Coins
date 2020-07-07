@@ -5,6 +5,7 @@ package io.neolab.internship.coins.server.game.feature;
  */
 public enum FeatureType {
     CATCH_CELL_CHANGING_UNITS_NUMBER(true), // Изменение числа юнитов для захвата клетки
+    DEFENSE_CELL_CHANGING_UNITS_NUMBER(true), // Изменение числа юнитов для обороны клетки
     DEAD_UNITS_NUMBER_AFTER_CATCH_CELL(true), // Число погибших юнитов игрока после захвата клетки соперником
     CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL(true), // Изменение получаемых с клетки монеток
     CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP(true), // Изменение получаемых с группы клеток монеток

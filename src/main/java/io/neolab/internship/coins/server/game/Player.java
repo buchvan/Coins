@@ -8,15 +8,21 @@ public class Player {
     private int id;
     private String nickname;
     private Race race;
-    private List<Unit> units;
-    private List<Unit> availableUnits;
-    private int coins = 0;
-    private List<Cell> transitCells;
+    private final List<Unit> units;
+    private final List<Unit> availableUnits;
+    private int coins;
+    private final List<Cell> transitCells;
 
     public Player() {
+        this(0, "Test");
     }
 
-    public Player(int id, String nickname, Race race, List<Unit> units, List<Unit> availableUnits, int coins, List<Cell> transitCells) {
+    public Player(final int id, final String nickname) {
+        this(id, nickname, null, new LinkedList<>(), new LinkedList<>(), 0, new ArrayList<>());
+    }
+
+    public Player(final int id, final String nickname, final Race race, final List<Unit> units,
+                  final List<Unit> availableUnits, final int coins, final List<Cell> transitCells) {
         this.id = id;
         this.nickname = nickname;
         this.race = race;
@@ -30,7 +36,7 @@ public class Player {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -38,7 +44,7 @@ public class Player {
         return nickname;
     }
 
-    public void setNickname(String nickname) {
+    public void setNickname(final String nickname) {
         this.nickname = nickname;
     }
 
@@ -46,7 +52,7 @@ public class Player {
         return race;
     }
 
-    public void setRace(Race race) {
+    public void setRace(final Race race) {
         this.race = race;
     }
 
@@ -54,7 +60,7 @@ public class Player {
         return units;
     }
 
-    public void setUnits(List<Unit> units) {
+    public void setUnits(final List<Unit> units) {
         Collections.copy(this.units, units);
     }
 
@@ -62,7 +68,7 @@ public class Player {
         return coins;
     }
 
-    public void setCoins(int coins) {
+    public void setCoins(final int coins) {
         this.coins = coins;
     }
 
@@ -70,7 +76,7 @@ public class Player {
         return transitCells;
     }
 
-    public void setTransitCells(List<Cell> transitCells) {
+    public void setTransitCells(final List<Cell> transitCells) {
         Collections.copy(this.transitCells, transitCells);
     }
 
@@ -78,15 +84,15 @@ public class Player {
         return availableUnits;
     }
 
-    public void setAvailableUnits(List<Unit> availableUnits) {
+    public void setAvailableUnits(final List<Unit> availableUnits) {
         Collections.copy(this.availableUnits, this.availableUnits);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof Player)) return false;
-        Player player = (Player) o;
+        final Player player = (Player) o;
         return getId() == player.getId() &&
                 getCoins() == player.getCoins() &&
                 Objects.equals(getNickname(), player.getNickname()) &&
