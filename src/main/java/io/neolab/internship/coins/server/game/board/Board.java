@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.board;
+package io.neolab.internship.coins.server.game.board;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;

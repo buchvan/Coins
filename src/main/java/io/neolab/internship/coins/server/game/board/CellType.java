@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.board;
+package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.Unit;
 
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum CellType {
-    LAND("LAND", 1, new ArrayList<Unit>(2)),
-    MUSHROOM("MUSHROOM", 1, new ArrayList<Unit>(2)),
-    MOUNTAIN("MOUNTAIN", 1, new ArrayList<Unit>(3)),
-    WATER("WATER", 1, new ArrayList<Unit>(1));
+    LAND("LAND", 1, new ArrayList<>(2)),
+    MUSHROOM("MUSHROOM", 1, new ArrayList<>(2)),
+    MOUNTAIN("MOUNTAIN", 1, new ArrayList<>(3)),
+    WATER("WATER", 1, new ArrayList<>(1));
 
     private String title;
 

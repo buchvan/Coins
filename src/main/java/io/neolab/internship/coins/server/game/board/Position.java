@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.board;
+package io.neolab.internship.coins.server.game.board;
 
 import java.util.Objects;
 
