@@ -104,4 +104,17 @@ public class Game implements IGame {
     public int hashCode() {
         return Objects.hash(board, currentRound, feudalToCells, raceCellTypeFeatures, racesPool, players, neutralPlayer);
     }
+
+    @Override
+    public String toString() {
+        return "Game{" +
+                "board=" + board +
+                ", currentRound=" + currentRound +
+                ", feudalToCells=" + feudalToCells +
+                ", raceCellTypeFeatures=" + raceCellTypeFeatures +
+                ", racesPool=" + racesPool +
+                ", players=" + players +
+                ", neutralPlayer=" + neutralPlayer +
+                '}';
+    }
 }
