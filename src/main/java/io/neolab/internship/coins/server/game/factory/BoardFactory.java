@@ -13,37 +13,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class BoardFactory implements IBoardFactory{
+public class BoardFactory implements IBoardFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
+
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
      * 1 версия: Каждый тип клетки встречается по три раза
      * Координаты начинаются в левом верхнем углу
-     * @param width ширина
+     *
+     * @param width  ширина
      * @param height высота
      * @return new Board
      */
     @Override
     public Board getBoard(final int width, final int height) {
         Random random = new Random();
-        int cellAmount = width*height;
-        List<CellType> cellTypes = loadAvailableBoardCellType(cellAmount);
+        int cellAmount = width * height;
+        List<CellType> cellTypes = loadCellTypePool(cellAmount);
         BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-        for(int i =0; i < height; i ++) {
-            for(int j = 0; j < width; j++) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 int randomCellTypeIndex = random.nextInt(cellTypes.size());
+                //TODO: control cell amount of each cell types in board
                 CellType currentCellType = cellTypes.remove(randomCellTypeIndex);
-                positionToCellMap.put(new Position(i,j), new Cell(currentCellType));
+                positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
             }
         }
         return new Board(positionToCellMap);
     }
 
-    private List<CellType> loadAvailableBoardCellType(final int cellAmount) {
+    private List<CellType> loadCellTypePool(final int cellAmount) {
         List<CellType> cellTypes = new ArrayList<>(cellAmount);
-        for(int i =0; i < cellAmount;i++){
-            //TODO: add different types
+        for (int i = 0; i < cellAmount; i++) {
             cellTypes.add(CellType.LAND);
+            cellTypes.add(CellType.MOUNTAIN);
+            cellTypes.add(CellType.MUSHROOM);
+            cellTypes.add(CellType.WATER);
         }
         return cellTypes;
     }
