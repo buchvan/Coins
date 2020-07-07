@@ -8,19 +8,21 @@ import io.neolab.internship.coins.utils.Pair;
 
 import java.util.*;
 
-public class Game implements IGame{
+public class Game implements IGame {
     private Board board;
-    private int currentRound = 0;
+    private int currentRound;
     private Map<Player, List<Cell>> feudalToCells;
     private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
-    private List<Race> racesPool;
-    private List<Player> players;
+    private final List<Race> racesPool;
+    private final List<Player> players;
 
     public Game() {
+        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>());
     }
 
-    public Game(Board board, int currentRound, Map<Player, List<Cell>> feudalToCells, Map<Pair<Race, CellType>,
-            List<Feature>> raceCellTypeFeatures, List<Race> racesPool, List<Player> players) {
+    public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
+                final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
+                final List<Player> players) {
         this.board = board;
         this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
@@ -33,7 +35,7 @@ public class Game implements IGame{
         return board;
     }
 
-    public void setBoard(Board board) {
+    public void setBoard(final Board board) {
         this.board = board;
     }
 
@@ -41,7 +43,7 @@ public class Game implements IGame{
         return currentRound;
     }
 
-    public void setCurrentRound(int currentRound) {
+    public void setCurrentRound(final int currentRound) {
         this.currentRound = currentRound;
     }
 
@@ -49,7 +51,7 @@ public class Game implements IGame{
         return feudalToCells;
     }
 
-    public void setFeudalToCells(Map<Player, List<Cell>> feudalToCells) {
+    public void setFeudalToCells(final Map<Player, List<Cell>> feudalToCells) {
         this.feudalToCells = feudalToCells;
     }
 
@@ -57,7 +59,7 @@ public class Game implements IGame{
         return raceCellTypeFeatures;
     }
 
-    public void setRaceCellTypeFeatures(Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures) {
+    public void setRaceCellTypeFeatures(final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures) {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
     }
 
@@ -65,7 +67,7 @@ public class Game implements IGame{
         return racesPool;
     }
 
-    public void setRacesPool(List<Race> racesPool) {
+    public void setRacesPool(final List<Race> racesPool) {
         Collections.copy(this.racesPool, racesPool);
     }
 
@@ -73,15 +75,15 @@ public class Game implements IGame{
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
+    public void setPlayers(final List<Player> players) {
         Collections.copy(this.players, players);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof Game)) return false;
-        Game game = (Game) o;
+        final Game game = (Game) o;
         return getCurrentRound() == game.getCurrentRound() &&
                 Objects.equals(getBoard(), game.getBoard()) &&
                 Objects.equals(getFeudalToCells(), game.getFeudalToCells()) &&

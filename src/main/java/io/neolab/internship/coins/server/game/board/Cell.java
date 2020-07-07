@@ -5,6 +5,7 @@ import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,7 +18,11 @@ public class Cell {
     public Cell() {
     }
 
-    public Cell(CellType type, List<Unit> units, Player own, Race race) {
+    public Cell(final CellType type) {
+        this(type, new LinkedList<>(type.getDefaultCatchUnit()), null, Race.NEUTRAL);
+    }
+
+    public Cell(final CellType type, final List<Unit> units, final Player own, final Race race) {
         this.type = type;
         this.units = units;
         this.own = own;
@@ -28,7 +33,7 @@ public class Cell {
         return type;
     }
 
-    public void setType(CellType type) {
+    public void setType(final CellType type) {
         this.type = type;
     }
 
@@ -36,7 +41,7 @@ public class Cell {
         return units;
     }
 
-    public void setUnits(List<Unit> units) {
+    public void setUnits(final List<Unit> units) {
         Collections.copy(this.units, units);
     }
 
@@ -44,7 +49,7 @@ public class Cell {
         return own;
     }
 
-    public void setOwn(Player own) {
+    public void setOwn(final Player own) {
         this.own = own;
     }
 
@@ -52,15 +57,15 @@ public class Cell {
         return race;
     }
 
-    public void setRace(Race race) {
+    public void setRace(final Race race) {
         this.race = race;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof Cell)) return false;
-        Cell cell = (Cell) o;
+        final Cell cell = (Cell) o;
         return getType() == cell.getType() &&
                 Objects.equals(getUnits(), cell.getUnits()) &&
                 Objects.equals(getOwn(), cell.getOwn()) &&

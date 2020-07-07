@@ -8,7 +8,7 @@ import java.util.Objects;
 public class Board {
     private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
-    public Board(BidiMap<Position, Cell> positionToCellMap) {
+    public Board(final BidiMap<Position, Cell> positionToCellMap) {
         this.positionToCellMap = positionToCellMap;
     }
 
@@ -19,15 +19,15 @@ public class Board {
         return positionToCellMap;
     }
 
-    public void setPositionToCellMap(BidiMap<Position, Cell> positionToCellMap) {
+    public void setPositionToCellMap(final BidiMap<Position, Cell> positionToCellMap) {
         this.positionToCellMap = positionToCellMap;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof Board)) return false;
-        Board board = (Board) o;
+        final Board board = (Board) o;
         return Objects.equals(getPositionToCellMap(), board.getPositionToCellMap());
     }
 
