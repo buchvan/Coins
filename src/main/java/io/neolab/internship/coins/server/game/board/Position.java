@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.board;
+package io.neolab.internship.coins.server.game.board;
 
 import java.util.Objects;
 
@@ -10,7 +10,8 @@ public class Position {
     private int y;
 
     public Position() {
-        this(0, 0);
+        this.x = 0;
+        this.y = 0;
     }
 
     public Position(int x, int y) {
