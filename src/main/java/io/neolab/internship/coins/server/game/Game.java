@@ -15,20 +15,23 @@ public class Game implements IGame {
     private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
     private final List<Player> players;
+    private final Player neutralPlayer;
 
     public Game() {
-        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>());
+        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>(),
+                new Player(0, "neutral"));
     }
 
     public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
                 final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
-                final List<Player> players) {
+                final List<Player> players, final Player neutralPlayer) {
         this.board = board;
         this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
         this.raceCellTypeFeatures = raceCellTypeFeatures;
         this.racesPool = racesPool;
         this.players = players;
+        this.neutralPlayer = neutralPlayer;
     }
 
     public Board getBoard() {
@@ -79,31 +82,26 @@ public class Game implements IGame {
         Collections.copy(this.players, players);
     }
 
+    public Player getNeutralPlayer() {
+        return neutralPlayer;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Game)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         final Game game = (Game) o;
-        return getCurrentRound() == game.getCurrentRound() &&
-                Objects.equals(getBoard(), game.getBoard()) &&
-                Objects.equals(getFeudalToCells(), game.getFeudalToCells()) &&
-                Objects.equals(getRaceCellTypeFeatures(), game.getRaceCellTypeFeatures()) &&
-                Objects.equals(getRacesPool(), game.getRacesPool());
+        return currentRound == game.currentRound &&
+                Objects.equals(board, game.board) &&
+                Objects.equals(feudalToCells, game.feudalToCells) &&
+                Objects.equals(raceCellTypeFeatures, game.raceCellTypeFeatures) &&
+                Objects.equals(racesPool, game.racesPool) &&
+                Objects.equals(players, game.players) &&
+                Objects.equals(neutralPlayer, game.neutralPlayer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBoard(), getCurrentRound(), getFeudalToCells(), getRaceCellTypeFeatures(), getRacesPool());
-    }
-
-    @Override
-    public String toString() {
-        return "Game{" +
-                "board=" + board +
-                ", currentRound=" + currentRound +
-                ", feudalToCells=" + feudalToCells +
-                ", raceCellTypeFeatures=" + raceCellTypeFeatures +
-                ", racesPool=" + racesPool +
-                '}';
+        return Objects.hash(board, currentRound, feudalToCells, raceCellTypeFeatures, racesPool, players, neutralPlayer);
     }
 }
