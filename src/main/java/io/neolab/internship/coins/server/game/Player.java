@@ -91,18 +91,20 @@ public class Player {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Player)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         final Player player = (Player) o;
-        return getId() == player.getId() &&
-                getCoins() == player.getCoins() &&
-                Objects.equals(getNickname(), player.getNickname()) &&
-                getRace() == player.getRace() &&
-                Objects.equals(getUnits(), player.getUnits());
+        return id == player.id &&
+                coins == player.coins &&
+                Objects.equals(nickname, player.nickname) &&
+                race == player.race &&
+                Objects.equals(units, player.units) &&
+                Objects.equals(availableUnits, player.availableUnits) &&
+                Objects.equals(transitCells, player.transitCells);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getNickname(), getRace(), getUnits(), getCoins());
+        return Objects.hash(id, nickname, race, units, availableUnits, coins, transitCells);
     }
 
     @Override
@@ -112,7 +114,9 @@ public class Player {
                 ", nickname='" + nickname + '\'' +
                 ", race=" + race +
                 ", units=" + units +
+                ", availableUnits=" + availableUnits +
                 ", coins=" + coins +
+                ", transitCells=" + transitCells +
                 '}';
     }
 }

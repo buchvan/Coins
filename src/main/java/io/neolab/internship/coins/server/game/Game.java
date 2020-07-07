@@ -11,7 +11,7 @@ import java.util.*;
 public class Game implements IGame {
     private Board board;
     private int currentRound;
-    private Map<Player, List<Cell>> feudalToCells;
+    private Map<Integer, List<Cell>> feudalToCells;
     private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
     private final List<Player> players;
@@ -22,7 +22,7 @@ public class Game implements IGame {
                 new Player(0, "neutral"));
     }
 
-    public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
+    public Game(final Board board, final int currentRound, final Map<Integer, List<Cell>> feudalToCells,
                 final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
         this.board = board;
@@ -50,11 +50,11 @@ public class Game implements IGame {
         this.currentRound = currentRound;
     }
 
-    public Map<Player, List<Cell>> getFeudalToCells() {
+    public Map<Integer, List<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
-    public void setFeudalToCells(final Map<Player, List<Cell>> feudalToCells) {
+    public void setFeudalToCells(final Map<Integer, List<Cell>> feudalToCells) {
         this.feudalToCells = feudalToCells;
     }
 
