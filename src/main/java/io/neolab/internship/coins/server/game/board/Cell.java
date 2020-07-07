@@ -4,17 +4,22 @@ import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Cell {
     private CellType type;
-    private List<Unit> units;
-    private Player own;
+    private List<Unit> units = new ArrayList<>();
+    private Player own = null;
     private Race race = Race.NEUTRAL;
 
     public Cell() {
+    }
+
+    public Cell(CellType cellType) {
+        this(cellType, new ArrayList<>(), null, Race.NEUTRAL);
     }
 
     public Cell(CellType type, List<Unit> units, Player own, Race race) {
