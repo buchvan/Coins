@@ -6,21 +6,30 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import java.util.Objects;
 
 public class Board {
-    private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+    private final BidiMap<Position, Cell> positionToCellMap;
 
     public Board(final BidiMap<Position, Cell> positionToCellMap) {
         this.positionToCellMap = positionToCellMap;
     }
 
     public Board() {
+        this(new DualHashBidiMap<>());
     }
 
     public BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
     }
 
-    public void setPositionToCellMap(final BidiMap<Position, Cell> positionToCellMap) {
-        this.positionToCellMap = positionToCellMap;
+    public Cell getCellByPosition(final Position position) {
+        return getPositionToCellMap().get(position);
+    }
+
+    public Cell getCellByPosition(final int x, final int y) {
+        return getCellByPosition(new Position(x, y));
+    }
+
+    public Position getPositionByCell(final Cell cell) {
+        return getPositionToCellMap().getKey(cell);
     }
 
     @Override

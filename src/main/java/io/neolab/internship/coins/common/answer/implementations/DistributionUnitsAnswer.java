@@ -2,8 +2,8 @@ package io.neolab.internship.coins.common.answer.implementations;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.interfaces.IDistributionUnitsAnswer;
-import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.Unit;
 
 import java.util.*;
 
@@ -24,10 +24,10 @@ public class DistributionUnitsAnswer extends Answer implements IDistributionUnit
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DistributionUnitsAnswer that = (DistributionUnitsAnswer) o;
+        final DistributionUnitsAnswer that = (DistributionUnitsAnswer) o;
         return Objects.equals(resolutions, that.resolutions);
     }
 

@@ -5,25 +5,26 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.utils.Pair;
+import org.apache.commons.collections4.map.MultiKeyMap;
 
 import java.util.*;
 
 public class Game implements IGame {
     private Board board;
     private int currentRound;
-    private Map<Integer, List<Cell>> feudalToCells;
-    private Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
+    private final Map<Player, List<Cell>> feudalToCells;
+    private final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
     private final List<Player> players;
     private final Player neutralPlayer;
 
     public Game() {
-        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>(),
+        this(new Board(), 0, new HashMap<>(), new MultiKeyMap<>(), new LinkedList<>(), new LinkedList<>(),
                 new Player(0, "neutral"));
     }
 
-    public Game(final Board board, final int currentRound, final Map<Integer, List<Cell>> feudalToCells,
-                final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
+    public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
+                final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
         this.board = board;
         this.currentRound = currentRound;
@@ -46,40 +47,28 @@ public class Game implements IGame {
         return currentRound;
     }
 
-    public void setCurrentRound(final int currentRound) {
-        this.currentRound = currentRound;
-    }
-
-    public Map<Integer, List<Cell>> getFeudalToCells() {
+    public Map<Player, List<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
-    public void setFeudalToCells(final Map<Integer, List<Cell>> feudalToCells) {
-        this.feudalToCells = feudalToCells;
-    }
-
-    public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
+    public MultiKeyMap<Integer, List<Feature>> getRaceCellTypeFeatures() {
         return raceCellTypeFeatures;
     }
 
-    public void setRaceCellTypeFeatures(final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures) {
-        this.raceCellTypeFeatures = raceCellTypeFeatures;
+    public List<Feature> getFeaturesByRaceAndCellType(final Race race, final CellType cellType) {
+        final List<Feature> features = getRaceCellTypeFeatures().get(race.ordinal(), cellType.ordinal());
+        if (features == null) {
+            return new LinkedList<>();
+        }
+        return features;
     }
 
     public List<Race> getRacesPool() {
         return racesPool;
     }
 
-    public void setRacesPool(final List<Race> racesPool) {
-        Collections.copy(this.racesPool, racesPool);
-    }
-
     public List<Player> getPlayers() {
         return players;
-    }
-
-    public void setPlayers(final List<Player> players) {
-        Collections.copy(this.players, players);
     }
 
     public Player getNeutralPlayer() {

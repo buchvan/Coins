@@ -6,15 +6,14 @@ import java.util.Objects;
  * Класс позиция, пара целых чисел
  */
 public class Position {
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
 
     public Position() {
-        this.x = 0;
-        this.y = 0;
+        this(0, 0);
     }
 
-    public Position(int x, int y) {
+    public Position(final int x, final int y) {
         this.x = x;
         this.y = y;
     }
@@ -23,23 +22,15 @@ public class Position {
         return x;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
     public int getY() {
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Position position = (Position) o;
+        final Position position = (Position) o;
         return x == position.x &&
                 y == position.y;
     }

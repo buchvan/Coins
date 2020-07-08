@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.Unit;
 
 import java.util.*;
 
@@ -9,7 +10,7 @@ public class Player {
     private String nickname;
     private Race race;
     private final List<Unit> units;
-    private final List<Unit> availableUnits;
+    private List<Unit> availableUnits;
     private int coins;
     private final List<Cell> transitCells;
 
@@ -85,7 +86,7 @@ public class Player {
     }
 
     public void setAvailableUnits(final List<Unit> availableUnits) {
-        Collections.copy(this.availableUnits, this.availableUnits);
+        this.availableUnits = new LinkedList<>(availableUnits);
     }
 
     @Override
@@ -93,18 +94,12 @@ public class Player {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Player player = (Player) o;
-        return id == player.id &&
-                coins == player.coins &&
-                Objects.equals(nickname, player.nickname) &&
-                race == player.race &&
-                Objects.equals(units, player.units) &&
-                Objects.equals(availableUnits, player.availableUnits) &&
-                Objects.equals(transitCells, player.transitCells);
+        return id == player.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nickname, race, units, availableUnits, coins, transitCells);
+        return Objects.hash(id);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Collections;
@@ -10,31 +9,34 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cell {
-    private CellType type;
-    private List<Unit> units;
+    private final int id;
+    private final CellType type;
+    private final List<Unit> units;
     private Player own;
-    private Race race = Race.NEUTRAL;
+    private Race race;
 
     public Cell() {
+        this(0, CellType.LAND);
     }
 
-    public Cell(final CellType type) {
-        this(type, new LinkedList<>(type.getDefaultCatchUnit()), null, Race.NEUTRAL);
+    public Cell(final int id, final CellType type) {
+        this(id, type, new LinkedList<>(type.getDefaultCatchUnit()), null, Race.NEUTRAL);
     }
 
-    public Cell(final CellType type, final List<Unit> units, final Player own, final Race race) {
+    public Cell(final int id, final CellType type, final List<Unit> units, final Player own, final Race race) {
+        this.id = id;
         this.type = type;
         this.units = units;
         this.own = own;
         this.race = race;
     }
 
-    public CellType getType() {
-        return type;
+    public int getId() {
+        return id;
     }
 
-    public void setType(final CellType type) {
-        this.type = type;
+    public CellType getType() {
+        return type;
     }
 
     public List<Unit> getUnits() {
@@ -64,23 +66,21 @@ public class Cell {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cell)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         final Cell cell = (Cell) o;
-        return getType() == cell.getType() &&
-                Objects.equals(getUnits(), cell.getUnits()) &&
-                Objects.equals(getOwn(), cell.getOwn()) &&
-                getRace() == cell.getRace();
+        return id == cell.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), getUnits(), getOwn(), getRace());
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
         return "Cell{" +
-                "type=" + type +
+                "id=" + id +
+                ", type=" + type +
                 ", units=" + units +
                 ", own=" + own +
                 ", race=" + race +

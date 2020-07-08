@@ -3,28 +3,25 @@ package io.neolab.internship.coins.server.game.board;
 import java.util.Objects;
 
 public class Unit {
-    private int id;
+    private final int id;
 
-    public Unit(int id) {
+    public Unit(final int id) {
         this.id = id;
     }
 
     public Unit() {
+        this(0);
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof Unit)) return false;
-        Unit unit = (Unit) o;
+        final Unit unit = (Unit) o;
         return getId() == unit.getId();
     }
 

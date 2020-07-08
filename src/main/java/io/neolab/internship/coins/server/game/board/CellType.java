@@ -1,7 +1,5 @@
 package io.neolab.internship.coins.server.game.board;
 
-import io.neolab.internship.coins.server.game.Unit;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,17 +9,17 @@ public enum CellType {
     MOUNTAIN("MOUNTAIN", 1, new ArrayList<>(3)),
     WATER("WATER", 1, new ArrayList<>(1));
 
-    private String title;
+    private final String title;
 
     private int coinYield;
 
     private List<Unit> defaultCatchUnit;
 
-    CellType(String title) {
+    CellType(final String title) {
         this.title = title;
     }
 
-    CellType(String title, int coinYield, List<Unit> defaultCatchUnit) {
+    CellType(final String title, final int coinYield, final List<Unit> defaultCatchUnit) {
         this.title = title;
         this.coinYield = coinYield;
         this.defaultCatchUnit = defaultCatchUnit;
@@ -38,6 +36,7 @@ public enum CellType {
     public List<Unit> getDefaultCatchUnit() {
         return defaultCatchUnit;
     }
+
 
     @Override
     public String toString() {
