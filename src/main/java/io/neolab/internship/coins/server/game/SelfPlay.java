@@ -4,6 +4,7 @@ import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
+import io.neolab.internship.coins.utils.IdGenerator;
 import io.neolab.internship.coins.utils.Pair;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -26,22 +27,21 @@ public class SelfPlay {
      */
     private static Board initBoard() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-        int cellId = 0;
 
-        positionToCellMap.put(new Position(0, 0), new Cell(cellId++, CellType.MUSHROOM));
-        positionToCellMap.put(new Position(0, 1), new Cell(cellId++, CellType.LAND));
-        positionToCellMap.put(new Position(0, 2), new Cell(cellId++, CellType.WATER));
-        positionToCellMap.put(new Position(0, 3), new Cell(cellId++, CellType.MOUNTAIN));
+        positionToCellMap.put(new Position(0, 0), new Cell(IdGenerator.getCurrentId(), CellType.MUSHROOM));
+        positionToCellMap.put(new Position(0, 1), new Cell(IdGenerator.getCurrentId(), CellType.LAND));
+        positionToCellMap.put(new Position(0, 2), new Cell(IdGenerator.getCurrentId(), CellType.WATER));
+        positionToCellMap.put(new Position(0, 3), new Cell(IdGenerator.getCurrentId(), CellType.MOUNTAIN));
 
-        positionToCellMap.put(new Position(1, 0), new Cell(cellId++, CellType.MOUNTAIN));
-        positionToCellMap.put(new Position(1, 1), new Cell(cellId++, CellType.WATER));
-        positionToCellMap.put(new Position(1, 2), new Cell(cellId++, CellType.LAND));
-        positionToCellMap.put(new Position(1, 3), new Cell(cellId++, CellType.MUSHROOM));
+        positionToCellMap.put(new Position(1, 0), new Cell(IdGenerator.getCurrentId(), CellType.MOUNTAIN));
+        positionToCellMap.put(new Position(1, 1), new Cell(IdGenerator.getCurrentId(), CellType.WATER));
+        positionToCellMap.put(new Position(1, 2), new Cell(IdGenerator.getCurrentId(), CellType.LAND));
+        positionToCellMap.put(new Position(1, 3), new Cell(IdGenerator.getCurrentId(), CellType.MUSHROOM));
 
-        positionToCellMap.put(new Position(2, 0), new Cell(cellId++, CellType.LAND));
-        positionToCellMap.put(new Position(2, 1), new Cell(cellId++, CellType.WATER));
-        positionToCellMap.put(new Position(2, 2), new Cell(cellId++, CellType.MUSHROOM));
-        positionToCellMap.put(new Position(2, 3), new Cell(cellId, CellType.MOUNTAIN)); // without increment !!!
+        positionToCellMap.put(new Position(2, 0), new Cell(IdGenerator.getCurrentId(), CellType.LAND));
+        positionToCellMap.put(new Position(2, 1), new Cell(IdGenerator.getCurrentId(), CellType.WATER));
+        positionToCellMap.put(new Position(2, 2), new Cell(IdGenerator.getCurrentId(), CellType.MUSHROOM));
+        positionToCellMap.put(new Position(2, 3), new Cell(IdGenerator.getCurrentId(), CellType.MOUNTAIN));
 
         final Board board = new Board(positionToCellMap);
         printDebug("Board is created: {} ", board);
@@ -54,7 +54,7 @@ public class SelfPlay {
      * @return нейтрального игрока
      */
     private static Player createNeutralPlayer() {
-        final Player neutralPlayer = new Player(0, "neutral");
+        final Player neutralPlayer = new Player(IdGenerator.getCurrentId(), "neutral");
         printDebug("Neutral player is created: {} ", neutralPlayer);
         return neutralPlayer;
     }
@@ -65,8 +65,10 @@ public class SelfPlay {
      * @return список тестовых игроков
      */
     private static List<Player> initTestPlayers() {
-        final List<Player> playerList = new LinkedList<>(Arrays.asList(new Player(1, "kvs"),
-                new Player(2, "bim")));
+        final List<Player> playerList = new LinkedList<>(
+                Arrays.asList(new Player(IdGenerator.getCurrentId(), "kvs"),
+                        new Player(IdGenerator.getCurrentId(), "bim"))
+        );
         printDebug("Player list: {} ", playerList);
         return playerList;
     }
@@ -122,7 +124,7 @@ public class SelfPlay {
             return;
         }
         if (race == Race.AMPHIBIAN) { // Амфибии
-            addRaceCellTypeFeaturesByRaceAmphibian(raceCellTypeFeatures, impossibleCatchCellFeature);
+            addRaceCellTypeFeaturesByRaceAmphibian(raceCellTypeFeatures);
             return;
         }
         if (race == Race.ELF) { // Эльфы
@@ -170,12 +172,12 @@ public class SelfPlay {
     /**
      * Добавление особенностей для амфибий
      *
-     * @param raceCellTypeFeatures       - мапа, которую нужно обновить
-     * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
+     * @param raceCellTypeFeatures - мапа, которую нужно обновить
+     *                             // @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceAmphibian(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures /*,
+            final List<Feature> impossibleCatchCellFeature */) {
 
         final List<Feature> amphibianFeatures = new ArrayList<>();
         amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -327,12 +329,11 @@ public class SelfPlay {
      */
     private static void gameLoop(final Game game) {
         final Random random = new Random();
-        int lastUnitId = 0;
         while (game.getCurrentRound() < ROUNDS_COUNT) {
             game.setCurrentRound(game.getCurrentRound() + 1);
 
             for (final Player player : game.getPlayers()) {
-                lastUnitId = playerRound(game.getCurrentRound(), lastUnitId, player, game, random);
+                playerRound(game.getCurrentRound(), player, game, random);
             }
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
@@ -345,34 +346,32 @@ public class SelfPlay {
      * Раунд в исполнении игрока
      *
      * @param currentRound - номер текущего раунда
-     * @param lastUnitId   - id последнего созданного юнита
      * @param player       - игрок, который исполняет раунд
      * @param game         - игра, хранящая всю метаинформацию
      * @param random       - объект для "бросания монетки" (взятия рандомного числа)
-     * @return id последнего созданного юнита
      */
-    private static int playerRound(final int currentRound, int lastUnitId, final Player player, final Game game,
-                                   final Random random) {
+    private static void playerRound(final int currentRound, final Player player, final Game game,
+                                    final Random random) {
         player.setAvailableUnits(player.getUnits()); // доступными юнитами становятся все имеющиеся у игрока юниты
         if (currentRound == 1) { // В случае первого раунда
-            lastUnitId = chooseRace(player, game.getRacesPool(), random, lastUnitId);
-        } else if (isSayYes(player, random)) { // В случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
+            chooseRace(player, game.getRacesPool(), random);
+        } else if (isSayYes(random)) { // Иначе в случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
             declineRace(player, game.getNeutralPlayer(), game.getFeudalToCells().get(player));
-            lastUnitId = chooseRace(player, game.getRacesPool(), random, lastUnitId);
+            chooseRace(player, game.getRacesPool(), random);
         }
         catchCells(player, game, random);
         distributionUnits(player, game, random); // Распределение войск
-        return lastUnitId;
     }
 
     /**
      * Метод для определения сказанного слова игроком
+     * <p>
+     * // @param player - игрок, делающий выбор
      *
-     * @param player - игрок, делающий выбор
      * @param random - объект для "бросания монетки" (взятия рандомного числа)
      * @return true - если игрок сказал да, false - нет
      */
-    private static boolean isSayYes(final Player player, final Random random) {
+    private static boolean isSayYes(/* final Player player, */ final Random random) {
         return random.nextInt(2) == 1;
     }
 
@@ -389,36 +388,32 @@ public class SelfPlay {
         }
         player.getUnits().clear(); // чистим у игрока юниты
         player.getAvailableUnits().clear();
-        printInfo("Player " + player.getId() + " in decline of race!");
+        printInfo("Player " + player.getNickname() + " in decline of race!");
     }
 
     /**
      * Метод для выбора новой расы игроком
      *
-     * @param player     - игрок, выбирающий новую расу
-     * @param racesPool  - пул всех доступных рас
-     * @param random     - объект для "бросания монетки" (взятия рандомного числа)
-     * @param lastUnitId - id последнего созданного юнита
-     * @return id последнего созданного юнита
+     * @param player    - игрок, выбирающий новую расу
+     * @param racesPool - пул всех доступных рас
+     * @param random    - объект для "бросания монетки" (взятия рандомного числа)
      */
-    private static int chooseRace(final Player player, final List<Race> racesPool, final Random random,
-                                  int lastUnitId) {
+    private static void chooseRace(final Player player, final List<Race> racesPool, final Random random) {
         final Race newRace = racesPool.get(random.nextInt(racesPool.size()));
         if (player.getRace() != null) {
             racesPool.add(player.getRace());
         }
         racesPool.remove(newRace);
         player.setRace(newRace);
-        printInfo("Player " + player.getId() + " choose race " + newRace);
+        printInfo("Player " + player.getNickname() + " choose race " + newRace);
 
         /* Добавляем юниты выбранной расы */
         player.setUnits(new ArrayList<>(newRace.getUnitsAmount()));
         int i = 0;
         while (i < newRace.getUnitsAmount()) {
-            player.getUnits().add(new Unit(++lastUnitId));
+            player.getUnits().add(new Unit(IdGenerator.getCurrentId()));
             i++;
         }
-        return lastUnitId;
     }
 
     /**
@@ -432,7 +427,7 @@ public class SelfPlay {
         final List<Cell> achievableCells = getAchievableCells(player, game);
         final List<Unit> availableUnits = player.getAvailableUnits();
         if (achievableCells.size() > 0) {
-            while (availableUnits.size() > 0 && isSayYes(player, random)) {
+            while (availableUnits.size() > 0 && isSayYes(random)) {
                 // Пока есть какими войсками захватывать и ответ "ДА" от игрока на вопрос: "Захватить клетку?"
                 final int numberOfCell = random.nextInt(achievableCells.size()); // номер клетки из списка,
                 // которую игрок хочет захватить
@@ -524,13 +519,13 @@ public class SelfPlay {
      */
     private static void catchCellAttempt(final Player player, final Game game, final Cell catchingCell,
                                          final Random random) {
-        printDebug("Player {} catch attempt the cell {} ", player.getId(), catchingCell);
+        printDebug("Player {} catch attempt the cell {} ", player.getNickname(), catchingCell);
         final int unitsCount = random.nextInt(player.getAvailableUnits().size()); // число юнитов,
         // которое игрок хочет направить в эту клетку
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(game, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, game, catchingCell);
         if (!cellIsCatching(unitsCount + bonusAttack, unitsCountNeededToCatch)) {
-            printDebug("The cell is not captured. The aggressor {} retreated ", player.getId());
+            printDebug("The cell is not captured. The aggressor {} retreated ", player.getNickname());
             return;
         } // else
         catchCell(player, game, catchingCell, unitsCountNeededToCatch - bonusAttack);
@@ -556,7 +551,7 @@ public class SelfPlay {
                 if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                     unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
                     printDebug("Player stumbled upon a defense of {} in cellType {} of defending player {}",
-                            defendingPlayer.getRace(), catchingCell.getType(), defendingPlayer.getId());
+                            defendingPlayer.getRace(), catchingCell.getType(), defendingPlayer.getNickname());
                 }
             }
         }
@@ -581,7 +576,7 @@ public class SelfPlay {
             if (feature.getType() == FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER) {
                 bonusAttack += ((CoefficientlyFeature) feature).getCoefficient();
                 printDebug("Player {} took advantage of the feature race {} and cellType of catchCell {}",
-                        player.getId(), player.getRace(), catchingCell.getType());
+                        player.getNickname(), player.getRace(), catchingCell.getType());
             }
         }
         printDebug("Bonus attack: {} ", bonusAttack);
@@ -620,14 +615,14 @@ public class SelfPlay {
                     int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
                     deadUnitsCount = Math.min(deadUnitsCount, defendingPlayer.getUnits().size());
                     removeFirstN(deadUnitsCount, defendingPlayer.getUnits());
-                    printDebug("{} units of player {} died ", deadUnitsCount, defendingPlayer.getId());
+                    printDebug("{} units of player {} died ", deadUnitsCount, defendingPlayer.getNickname());
                 }
             }
             game.getFeudalToCells().get(defendingPlayer).remove(catchingCell);
         }
         catchingCell.setOwn(player);
         game.getFeudalToCells().get(player).add(catchingCell);
-        printInfo("Cell {} catched of player {} ", catchingCell, player.getId());
+        printInfo("Cell {} catched of player {} ", catchingCell, player.getNickname());
     }
 
     /**
@@ -654,7 +649,7 @@ public class SelfPlay {
         player.setAvailableUnits(player.getUnits()); // сделать все имеющиеся у игрока юнита доступными
         final List<Unit> availableUnits = player.getAvailableUnits();
         if (controlledCells.size() > 0) {
-            while (availableUnits.size() > 0 && isSayYes(player, random)) {
+            while (availableUnits.size() > 0 && isSayYes(random)) {
                 // Пока есть какие войска распределять и ответ "ДА" от игрока на вопрос: "Продолжить распределять войска?"
 
                 final int numberOfCell = random.nextInt(controlledCells.size()); // номер клетки из списка,
@@ -671,7 +666,7 @@ public class SelfPlay {
 //                availableUnits.removeAll(availableUnits.subList(0, unitsCount)); // сделать их недоступными
             }
         }
-        printInfo("Player {} distributed units ", player.getId());
+        printInfo("Player {} distributed units ", player.getNickname());
     }
 
     /**
@@ -685,7 +680,7 @@ public class SelfPlay {
             transitCell.setOwn(null);
         }
         player.getTransitCells().clear();
-        printDebug("Player {} freed his transit cells ", player.getId());
+        printDebug("Player {} freed his transit cells ", player.getNickname());
     }
 
     /**
@@ -706,7 +701,7 @@ public class SelfPlay {
         }
         controlledCells.addAll(player.getTransitCells());
 
-        printDebug("Controlled cells of player {} is {}", player.getId(), controlledCells.toString());
+        printDebug("Controlled cells of player {} is {}", player.getNickname(), controlledCells.toString());
         return controlledCells;
     }
 
@@ -721,7 +716,7 @@ public class SelfPlay {
             updateCoinsCountByCellWithFeatures(player, game, cell);
             player.setCoins(player.getCoins() + cell.getType().getCoinYield());
         }
-        printDebug("Player {} updated coins count", player.getId());
+        printDebug("Player {} updated coins count", player.getNickname());
     }
 
     /**
@@ -739,17 +734,17 @@ public class SelfPlay {
         for (final Feature feature : game.getFeaturesByRaceAndCellType(player.getRace(), cell.getType())) {
             if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL) {
                 player.setCoins(player.getCoins() + ((CoefficientlyFeature) feature).getCoefficient());
-                printDebug("Player {} update coins by cellType {} ", player.getId(), cell.getType());
+                printDebug("Player {} update coins by cellType {} ", player.getNickname(), cell.getType());
                 continue;
             }
             if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP
                     && !cellTypeMet.get(cell.getType())) {
                 cellTypeMet.put(cell.getType(), true);
                 player.setCoins(player.getCoins() + ((CoefficientlyFeature) feature).getCoefficient());
-                printDebug("Player {} update coins by group cellType {} ", player.getId(), cell.getType());
+                printDebug("Player {} update coins by group cellType {} ", player.getNickname(), cell.getType());
             }
         }
-        printDebug("Player {} updated coins count by cell with features ", player.getId());
+        printDebug("Player {} updated coins count by cell with features ", player.getNickname());
     }
 
     /**
@@ -776,7 +771,7 @@ public class SelfPlay {
             if (winners.contains(player)) {
                 continue;
             }
-            printInfo("Player {} - coins {} ", player.getId(), player.getCoins());
+            printInfo("Player {} - coins {} ", player.getNickname(), player.getCoins());
         }
     }
 
