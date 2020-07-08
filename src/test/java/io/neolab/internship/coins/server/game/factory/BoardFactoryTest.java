@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.server.game.factory;
 
-
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.CellType;
 import org.junit.Test;
@@ -14,12 +14,12 @@ import static org.junit.Assert.*;
 public class BoardFactoryTest {
 
     @Test
-    public void generateBoardCorrectlySize1Test() {
+    public void generateBoardCorrectlySize1Test() throws CoinsException {
         assertEquals(12, generateBoard(3, 4).getPositionToCellMap().size());
     }
 
     @Test
-    public void generateBoardBalanced1Test() {
+    public void generateBoardBalanced1Test() throws CoinsException {
         Board board = generateBoard(3, 4);
         List<CellType> cellTypes = fillCellTypes();
         for (CellType cellType : cellTypes) {
@@ -35,12 +35,12 @@ public class BoardFactoryTest {
     }
 
     @Test
-    public void generateBoardCorrectlySize2Test() {
+    public void generateBoardCorrectlySize2Test() throws CoinsException {
         assertEquals(25, generateBoard(5, 5).getPositionToCellMap().size());
     }
 
     @Test
-    public void generateBoardBalanced2Test() {
+    public void generateBoardBalanced2Test() throws CoinsException {
         final int width = 5;
         final int height = 5;
         final int cellsAmount = width * height;
@@ -60,12 +60,12 @@ public class BoardFactoryTest {
 
     }
 
-    @Test
-    public void generateBoardWrongSizesTest() {
-        assertNull(generateBoard(1, 1));
+    @Test(expected = CoinsException.class)
+    public void generateBoardWrongSizesTest() throws CoinsException {
+        generateBoard(1, 1);
     }
 
-    private Board generateBoard(final int wight, final int height) {
+    private Board generateBoard(final int wight, final int height) throws CoinsException {
         BoardFactory boardFactory = new BoardFactory();
         return boardFactory.generateBoard(wight, height);
     }

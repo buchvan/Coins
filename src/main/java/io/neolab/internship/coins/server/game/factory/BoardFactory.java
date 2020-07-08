@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game.factory;
 
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
@@ -27,12 +29,11 @@ public class BoardFactory implements IBoardFactory {
      * @return new Board
      */
     @Override
-    public Board generateBoard(final int width, final int height) {
+    public Board generateBoard(final int width, final int height) throws CoinsException {
         LOGGER.info("Start generating board with width " + width + " height " + height);
-        //TODO: add exceptions
         if (width < 2 || height < 2) {
-            LOGGER.info("Board generation failed");
-            return null;
+            LOGGER.info("Board generation with width " + width + " and height " + height + " failed");
+            throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
         }
         final int cellAmount = width * height;
         final List<CellType> cellTypes = loadCellTypePool();
