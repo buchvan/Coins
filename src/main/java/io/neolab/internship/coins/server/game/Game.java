@@ -5,7 +5,6 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.utils.Pair;
-import org.apache.commons.collections4.map.MultiKeyMap;
 
 import java.util.*;
 
