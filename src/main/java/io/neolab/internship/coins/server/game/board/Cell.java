@@ -1,27 +1,39 @@
 package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.utils.IdGenerator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Cell {
+    private int id;
     private CellType type;
-    private List<Unit> units;
-    private Player own;
+    private List<Unit> units = new ArrayList<>();
+    private Player own = null;
     private Race race = Race.NEUTRAL;
 
     public Cell() {
     }
 
+    public Cell(CellType cellType) {
+        this(cellType, new ArrayList<>(), null, Race.NEUTRAL);
+    }
+
     public Cell(CellType type, List<Unit> units, Player own, Race race) {
+        this.id = IdGenerator.getCurrentId();
         this.type = type;
         this.units = units;
         this.own = own;
         this.race = race;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public CellType getType() {
@@ -69,16 +81,6 @@ public class Cell {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), getUnits(), getOwn(), getRace());
-    }
-
-    @Override
-    public String toString() {
-        return "Cell{" +
-                "type=" + type +
-                ", units=" + units +
-                ", own=" + own +
-                ", race=" + race +
-                '}';
+        return Objects.hash(getId());
     }
 }
