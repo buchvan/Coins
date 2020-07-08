@@ -15,7 +15,7 @@ import java.util.*;
 public class SelfPlay {
     private static final Logger LOGGER = LoggerFactory.getLogger(SelfPlay.class);
 
-    private static final int ROUNDS_COUNT = 100;
+    private static final int ROUNDS_COUNT = 10;
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
