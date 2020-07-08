@@ -33,8 +33,14 @@ public class BoardFactory implements IBoardFactory {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes);
-                CellType currentCellType = cellTypes.remove(currentCellTypeIndex);
-                positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
+                CellType currentCellType = cellTypes.get(currentCellTypeIndex);
+                Position position = new Position(i, j);
+                System.out.println("ADDED POSITION: "+  position);
+                Cell cell = new Cell(currentCellType);
+                System.out.println("ADDED CELL: "+  cell);
+                //FIXME: add id to cell for intial different cell with same cellType
+                positionToCellMap.put(position, new Cell(currentCellType));
+                System.out.println("CURRENT MAP SIZE: " + positionToCellMap.size());
             }
         }
         return new Board(positionToCellMap);

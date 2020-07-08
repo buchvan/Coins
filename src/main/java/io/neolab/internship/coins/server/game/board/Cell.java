@@ -1,8 +1,8 @@
 package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cell {
+    private int id;
     private CellType type;
     private List<Unit> units = new ArrayList<>();
     private Player own = null;
