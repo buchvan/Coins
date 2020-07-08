@@ -1,18 +1,11 @@
 package io.neolab.internship.coins.exceptions;
 
-import java.util.Objects;
-
 public class CoinsException {
     private ErrorCode errorCode;
     private String param;
 
-    public CoinsException(ErrorCode errorCode, String param) {
-        this.errorCode = errorCode;
-        this.param = param;
-    }
-
     public CoinsException(ErrorCode errorCode) {
-        this(errorCode, null);
+        this.errorCode = errorCode;
     }
 
     public ErrorCode getErrorCode() {
@@ -23,11 +16,4 @@ public class CoinsException {
         this.errorCode = errorCode;
     }
 
-    public String getParam() {
-        return param;
-    }
-
-    public void setParam(String param) {
-        this.param = param;
-    }
 }
