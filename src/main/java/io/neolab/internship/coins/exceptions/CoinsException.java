@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.exceptions;
 
-public class CoinsException {
+public class CoinsException extends Exception {
     private ErrorCode errorCode;
 
     public CoinsException(ErrorCode errorCode) {
