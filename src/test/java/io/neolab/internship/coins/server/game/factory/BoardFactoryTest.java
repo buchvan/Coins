@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+//TODO: add cases with exceptions, wrong params etc.
 public class BoardFactoryTest {
 
     @Test

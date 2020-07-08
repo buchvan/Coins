@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Random;
 
 public class BoardFactory implements IBoardFactory {
-    //TODO: use logger
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
     private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
@@ -32,18 +31,18 @@ public class BoardFactory implements IBoardFactory {
         LOGGER.info("BOARD FACTORY: Start generating board with width " + width + " height " + height);
         final int cellAmount = width * height;
         final List<CellType> cellTypes = loadCellTypePool();
+        StringBuilder logBoardString = new StringBuilder();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 CellType currentCellType = cellTypes.get(currentCellTypeIndex);
-                Position position = new Position(i, j);
-                //System.out.println("ADDED POSITION: " + position);
-                //Cell cell = new Cell(currentCellType);
-                //System.out.println("ADDED CELL WITH CELL TYPE: " + cell.getType());
-                positionToCellMap.put(position, new Cell(currentCellType));
+                logBoardString.append(currentCellType.getTitle());
+                logBoardString.append(" ");
+                positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
             }
+            logBoardString.append("\n");
         }
-        LOGGER.info("BOARD FACTORY: Board was generated");
+        LOGGER.info(logBoardString.toString());
         return new Board(positionToCellMap);
     }
 
