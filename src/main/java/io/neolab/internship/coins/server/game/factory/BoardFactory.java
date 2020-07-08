@@ -28,15 +28,25 @@ public class BoardFactory implements IBoardFactory {
      */
     @Override
     public Board generateBoard(final int width, final int height) {
-        LOGGER.info("BOARD FACTORY: Start generating board with width " + width + " height " + height);
+        LOGGER.info("Start generating board with width " + width + " height " + height);
+        //TODO: add exceptions
+        if(width < 2 || height < 2) {
+            LOGGER.info("Board generation failed");
+            return null;
+        }
         final int cellAmount = width * height;
         final List<CellType> cellTypes = loadCellTypePool();
-        StringBuilder logBoardString = new StringBuilder();
+        StringBuilder logBoardString = new StringBuilder("\n");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 CellType currentCellType = cellTypes.get(currentCellTypeIndex);
-                logBoardString.append(currentCellType.getTitle());
+                if(currentCellType == CellType.MUSHROOM) {
+                    logBoardString.append(currentCellType.getTitle().substring(0,1).toLowerCase());
+                }
+                else {
+                    logBoardString.append(currentCellType.getTitle(), 0, 1);
+                }
                 logBoardString.append(" ");
                 positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
             }

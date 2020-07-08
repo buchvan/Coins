@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 //TODO: add cases with exceptions, wrong params etc.
 public class BoardFactoryTest {
@@ -32,6 +33,11 @@ public class BoardFactoryTest {
                             .count());
         }
 
+    }
+
+    @Test
+    public void generateBoardWrongSizesTest() {
+        assertNull(generateBoard(1, 1));
     }
 
     private Board generateBoard(final int wight,final int height) {
