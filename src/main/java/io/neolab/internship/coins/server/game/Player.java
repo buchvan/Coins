@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.*;
 
@@ -54,6 +55,14 @@ public class Player {
 
     public void setRace(final Race race) {
         this.race = race;
+
+        /* Добавляем юнитов выбранной расы */
+        setUnits(new ArrayList<>(race.getUnitsAmount()));
+        int i = 0;
+        while (i < race.getUnitsAmount()) {
+            getUnits().add(new Unit(IdGenerator.getCurrentId()));
+            i++;
+        }
     }
 
     public List<Unit> getUnits() {

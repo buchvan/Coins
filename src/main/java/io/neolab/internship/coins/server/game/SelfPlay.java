@@ -408,14 +408,6 @@ public class SelfPlay {
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
         LoggerProcessor.printInfo(LOGGER, "Player " + player.getNickname() + " choose race " + newRace);
-
-        /* Добавляем юниты выбранной расы */
-        player.setUnits(new ArrayList<>(newRace.getUnitsAmount()));
-        int i = 0;
-        while (i < newRace.getUnitsAmount()) {
-            player.getUnits().add(new Unit(IdGenerator.getCurrentId()));
-            i++;
-        }
     }
 
     /**
