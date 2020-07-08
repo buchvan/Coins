@@ -2,6 +2,7 @@ package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.Collections;
 import java.util.LinkedList;

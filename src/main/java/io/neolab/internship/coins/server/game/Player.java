@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game;
 
 import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.Unit;
 
 import java.util.*;
 
