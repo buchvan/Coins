@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -14,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class SelfPlay {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SelfPlay.class);
 
-    private static final int ROUNDS_COUNT = 10;
+    private static final int ROUNDS_COUNT = 100;
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
@@ -506,28 +505,12 @@ public class SelfPlay {
      */
     private static List<Cell> getAllNeighboringCells(final IBoard board, final Cell cell) {
         final List<Cell> neighboringCells = new LinkedList<>();
-        int strIndex;
-        int colIndex = -1;
-        /* в целом это обход всех клеток единичного квадрата с центром в cell
-        без обработки самого центра cell */
-        while (colIndex <= 1) { // в общем это проход по строчкам (слева направо) снизу вверх.
-            // То есть, сначала просматриваем нижнюю строчку слева направо, потом среднюю слева направо,
-            // и в конце верхнюю также - слева направо
-            strIndex = -2;
-            while (strIndex <= 1) {
-                strIndex++;
-                if (strIndex == 0 && colIndex == 0) { // если мы сейчас в центре единичного квадрата с центом в cell
-                    continue;
-                }
-                final Cell potentiallyAchievableCell =
-                        board.getCellByPosition(board.getPositionByCell(cell).getX() + strIndex,
-                                board.getPositionByCell(cell).getY() + colIndex);
-                if (potentiallyAchievableCell == null) { // если вышли за пределы борды
-                    continue;
-                }
+        final List<Position> neighboringPositions = Position.getAllNeighboringPositions(board.getPositionByCell(cell));
+        for (final Position neighboringPosition : neighboringPositions) {
+            final Cell potentiallyAchievableCell = board.getCellByPosition(neighboringPosition);
+            if (potentiallyAchievableCell != null) { // если вышли за пределы борды
                 neighboringCells.add(potentiallyAchievableCell);
             }
-            colIndex++;
         }
         return neighboringCells;
     }
@@ -564,7 +547,7 @@ public class SelfPlay {
     private static int getUnitsCountNeededToCatchCell(final Game game, final Cell catchingCell) {
         final Player defendingPlayer = catchingCell.getOwn();
         int unitsCountNeededToCatch = catchingCell.getUnits().size();
-        if (defendingPlayer != null && defendingPlayer != game.getNeutralPlayer()) { // если есть владелец (не нейтрал)
+        if (defendingPlayer != null && isNotNeutral(defendingPlayer, game)) { // если есть владелец (не нейтрал)
             unitsCountNeededToCatch++;
             for (final Feature feature : game.getFeaturesByRaceAndCellType(
                     defendingPlayer.getRace(), catchingCell.getType())
@@ -616,11 +599,19 @@ public class SelfPlay {
         return attackPower >= necessaryAttackPower;
     }
 
+    /**
+     * Захватить клетку
+     *
+     * @param player          - игрок-агрессор
+     * @param game            - игра, хранящая всю метаинформацию
+     * @param catchingCell    - захватываемая клетка
+     * @param tiredUnitsCount - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     */
     private static void catchCell(final Player player, final Game game, final Cell catchingCell,
                                   final int tiredUnitsCount) {
         removeFirstN(tiredUnitsCount, player.getAvailableUnits());
         final Player defendingPlayer = catchingCell.getOwn();
-        if (defendingPlayer != null && defendingPlayer != game.getNeutralPlayer()) { // если есть владелец (не нейтрал)
+        if (defendingPlayer != null && isNotNeutral(defendingPlayer, game)) { // если есть владелец (не нейтрал)
             for (final Feature feature : game.getFeaturesByRaceAndCellType(
                     player.getRace(), catchingCell.getType())
             ) { // Смотрим все особенности агрессора
@@ -637,6 +628,17 @@ public class SelfPlay {
         catchingCell.setOwn(player);
         game.getFeudalToCells().get(player).add(catchingCell);
         printInfo("Cell {} catched of player {} ", catchingCell, player.getId());
+    }
+
+    /**
+     * Является ли игрок нейтральным?
+     *
+     * @param player - игрок, про которого необходимо выяснить, является ли он нейтральным
+     * @param game   - игра, хранящая всю метаинформацию
+     * @return true - если игрок player не нейтрален в игре game, false - иначе
+     */
+    private static boolean isNotNeutral(final Player player, final Game game) {
+        return player != game.getNeutralPlayer();
     }
 
     /**

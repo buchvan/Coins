@@ -5,7 +5,7 @@
         <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder
             by default -->
         <encoder>
-            <pattern>%d{dd.MM.yyyy HH:mm:ss.SSS} [%thread] %-5level  %logger{20} - %msg%n</pattern>
+            <pattern>%d{dd.MM.yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -20,19 +20,17 @@
             <!-- Храним файлы логов 10 дней -->
             <maxHistory>3</maxHistory>
 
-            <triggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-                <maxFileSize>5MB</maxFileSize>
-            </triggeringPolicy>
+            <!-- Максимальный размер файлов лога 5 магабайт -->
+            <totalSizeCap>5MB</totalSizeCap>
 
         </rollingPolicy>
         <encoder>
-            <pattern>%d{dd.MM.yyyy HH:mm:ss.SSS} [%thread] %-5level  %logger{20} - %msg%n</pattern>
+            <pattern>%d{dd.MM.yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <root level="debug">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>
