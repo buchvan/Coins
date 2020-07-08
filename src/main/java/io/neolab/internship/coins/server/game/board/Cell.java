@@ -69,7 +69,11 @@ public class Cell {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Cell cell = (Cell) o;
-        return id == cell.id;
+        return id == cell.id &&
+                type == cell.type &&
+                Objects.equals(units, cell.units) &&
+                Objects.equals(own, cell.own) &&
+                race == cell.race;
     }
 
     @Override

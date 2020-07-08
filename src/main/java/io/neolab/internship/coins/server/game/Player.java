@@ -93,7 +93,13 @@ public class Player {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Player player = (Player) o;
-        return id == player.id;
+        return id == player.id &&
+                coins == player.coins &&
+                Objects.equals(nickname, player.nickname) &&
+                race == player.race &&
+                Objects.equals(units, player.units) &&
+                Objects.equals(availableUnits, player.availableUnits) &&
+                Objects.equals(transitCells, player.transitCells);
     }
 
     @Override

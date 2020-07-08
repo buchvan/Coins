@@ -338,7 +338,7 @@ public class SelfPlay {
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
             }
-            printDebug("Game after {} round: {}", game.getCurrentRound(), game);
+            printDebug("Game after {} rounds: {}", game.getCurrentRound(), game);
         }
     }
 
@@ -763,7 +763,7 @@ public class SelfPlay {
         printInfo("Game OVER !!!");
         printInfo("Winners: ");
         for (final Player winner : winners) {
-            printInfo("Player {} - coins {} ", winner.getId(), winner.getCoins());
+            printInfo("Player {} - coins {} ", winner.getNickname(), winner.getCoins());
         }
         printInfo("***************************************");
         printInfo("Results of other players: ");
