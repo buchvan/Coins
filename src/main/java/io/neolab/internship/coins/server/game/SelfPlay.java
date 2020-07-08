@@ -5,6 +5,7 @@ import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.utils.IdGenerator;
+import io.neolab.internship.coins.utils.LoggerProcessor;
 import io.neolab.internship.coins.utils.Pair;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -44,7 +45,7 @@ public class SelfPlay {
         positionToCellMap.put(new Position(2, 3), new Cell(IdGenerator.getCurrentId(), CellType.MOUNTAIN));
 
         final Board board = new Board(positionToCellMap);
-        printDebug("Board is created: {} ", board);
+        LoggerProcessor.printDebug(LOGGER, "Board is created: {} ", board);
         return board;
     }
 
@@ -55,7 +56,7 @@ public class SelfPlay {
      */
     private static Player createNeutralPlayer() {
         final Player neutralPlayer = new Player(IdGenerator.getCurrentId(), "neutral");
-        printDebug("Neutral player is created: {} ", neutralPlayer);
+        LoggerProcessor.printDebug(LOGGER, "Neutral player is created: {} ", neutralPlayer);
         return neutralPlayer;
     }
 
@@ -69,7 +70,7 @@ public class SelfPlay {
                 Arrays.asList(new Player(IdGenerator.getCurrentId(), "kvs"),
                         new Player(IdGenerator.getCurrentId(), "bim"))
         );
-        printDebug("Player list: {} ", playerList);
+        LoggerProcessor.printDebug(LOGGER, "Player list: {} ", playerList);
         return playerList;
     }
 
@@ -84,7 +85,7 @@ public class SelfPlay {
         for (final Player player : playerList) {
             feudalToCells.put(player, new ArrayList<>());
         }
-        printDebug("feudalToCells init: {} ", feudalToCells);
+        LoggerProcessor.printDebug(LOGGER, "feudalToCells init: {} ", feudalToCells);
         return feudalToCells;
     }
 
@@ -104,7 +105,7 @@ public class SelfPlay {
         addRaceCellTypeFeaturesByRace(Race.ORC, raceCellTypeFeatures, impossibleCatchCellFeature);
         addRaceCellTypeFeaturesByRace(Race.GNOME, raceCellTypeFeatures, impossibleCatchCellFeature);
 
-        printDebug("raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
         return raceCellTypeFeatures;
     }
 
@@ -166,7 +167,7 @@ public class SelfPlay {
         mushroomFeatures.addAll(impossibleCatchCellFeature);
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.WATER), mushroomFeatures);
 
-        printDebug("Features of Mushroom race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Mushroom race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -186,7 +187,7 @@ public class SelfPlay {
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MOUNTAIN), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.WATER), amphibianFeatures);
 
-        printDebug("Features of Amphibian race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Amphibian race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -209,7 +210,7 @@ public class SelfPlay {
         elfFeaturesSecond.addAll(impossibleCatchCellFeature);
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.WATER), elfFeaturesSecond);
 
-        printDebug("Features of Elf race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Elf race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -232,7 +233,7 @@ public class SelfPlay {
         orcFeaturesSecond.addAll(impossibleCatchCellFeature);
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.WATER), orcFeaturesSecond);
 
-        printDebug("Features of Orc race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Orc race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -255,7 +256,7 @@ public class SelfPlay {
         gnomeFeaturesSecond.addAll(impossibleCatchCellFeature);
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.WATER), gnomeFeaturesSecond);
 
-        printDebug("Features of Gnome race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Gnome race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -277,7 +278,7 @@ public class SelfPlay {
         undeadFeaturesSecond.addAll(impossibleCatchCellFeature);
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.WATER), undeadFeaturesSecond);
 
-        printDebug("Features of Undead race added: {} ", raceCellTypeFeatures);
+        LoggerProcessor.printDebug(LOGGER, "Features of Undead race added: {} ", raceCellTypeFeatures);
     }
 
     /**
@@ -288,7 +289,7 @@ public class SelfPlay {
     private static List<Race> createRacesPool() {
         final List<Race> racesPool = new ArrayList<>(Race.values().length - 1);
         racesPool.addAll(Arrays.asList(Race.values()).subList(0, Race.values().length - 1));
-        printDebug("Pool of races created: {} ", racesPool);
+        LoggerProcessor.printDebug(LOGGER, "Pool of races created: {} ", racesPool);
         return racesPool;
     }
 
@@ -303,6 +304,7 @@ public class SelfPlay {
     private static void selfPlay() {
         try {
             /* init */
+            LoggerProcessor.printDebug(LOGGER, "Init...");
             final Board board = initBoard();
             final Player neutralPlayer = createNeutralPlayer();
             final List<Player> playerList = initTestPlayers();
@@ -312,13 +314,13 @@ public class SelfPlay {
 
             final Game game = new Game(board, 0, feudalToCells, raceCellTypeFeatures, racesPool, playerList,
                     neutralPlayer);
-            printDebug("Game is created: {} ", game);
+            LoggerProcessor.printDebug(LOGGER, "Game is created: {} ", game);
 
             gameLoop(game);
 
             finalize(playerList);
         } catch (final Exception exception) {
-            printError("ERROR!!! ", exception);
+            LoggerProcessor.printError(LOGGER, "ERROR!!! ", exception);
         }
     }
 
@@ -329,6 +331,8 @@ public class SelfPlay {
      */
     private static void gameLoop(final Game game) {
         final Random random = new Random();
+        LoggerProcessor.printInfo(LOGGER, "---------------------------------------------------");
+        LoggerProcessor.printInfo(LOGGER, "Game is started");
         while (game.getCurrentRound() < ROUNDS_COUNT) {
             game.setCurrentRound(game.getCurrentRound() + 1);
 
@@ -338,7 +342,7 @@ public class SelfPlay {
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
             }
-            printDebug("Game after {} rounds: {}", game.getCurrentRound(), game);
+            LoggerProcessor.printDebug(LOGGER, "Game after {} rounds: {}", game.getCurrentRound(), game);
         }
     }
 
@@ -353,9 +357,7 @@ public class SelfPlay {
     private static void playerRound(final int currentRound, final Player player, final Game game,
                                     final Random random) {
         player.setAvailableUnits(player.getUnits()); // доступными юнитами становятся все имеющиеся у игрока юниты
-        if (currentRound == 1) { // В случае первого раунда
-            chooseRace(player, game.getRacesPool(), random);
-        } else if (isSayYes(random)) { // Иначе в случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
+        if (isSayYes(random)) { // В случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
             declineRace(player, game.getNeutralPlayer(), game.getFeudalToCells().get(player));
             chooseRace(player, game.getRacesPool(), random);
         }
@@ -388,7 +390,7 @@ public class SelfPlay {
         }
         player.getUnits().clear(); // чистим у игрока юниты
         player.getAvailableUnits().clear();
-        printInfo("Player " + player.getNickname() + " in decline of race!");
+        LoggerProcessor.printInfo(LOGGER, "Player " + player.getNickname() + " in decline of race!");
     }
 
     /**
@@ -400,12 +402,12 @@ public class SelfPlay {
      */
     private static void chooseRace(final Player player, final List<Race> racesPool, final Random random) {
         final Race newRace = racesPool.get(random.nextInt(racesPool.size()));
-        if (player.getRace() != null) {
-            racesPool.add(player.getRace());
+        if (hasARace(player)) {
+            racesPool.add(player.getRace()); // Возвращаем расу игрока в пул рас
         }
-        racesPool.remove(newRace);
+        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
-        printInfo("Player " + player.getNickname() + " choose race " + newRace);
+        LoggerProcessor.printInfo(LOGGER, "Player " + player.getNickname() + " choose race " + newRace);
 
         /* Добавляем юниты выбранной расы */
         player.setUnits(new ArrayList<>(newRace.getUnitsAmount()));
@@ -414,6 +416,16 @@ public class SelfPlay {
             player.getUnits().add(new Unit(IdGenerator.getCurrentId()));
             i++;
         }
+    }
+
+    /**
+     * Игрок имеет расу?
+     *
+     * @param player - игрок, про которого мы хотим узнать: имеет он расу, или нет
+     * @return true - если игрок player имеет расу, false - иначе
+     */
+    private static boolean hasARace(final Player player) {
+        return player.getRace() != null;
     }
 
     /**
@@ -519,17 +531,17 @@ public class SelfPlay {
      */
     private static void catchCellAttempt(final Player player, final Game game, final Cell catchingCell,
                                          final Random random) {
-        printDebug("Player {} catch attempt the cell {} ", player.getNickname(), catchingCell);
+        LoggerProcessor.printDebug(LOGGER, "Player {} catch attempt the cell {} ", player.getNickname(), catchingCell);
         final int unitsCount = random.nextInt(player.getAvailableUnits().size()); // число юнитов,
         // которое игрок хочет направить в эту клетку
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(game, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, game, catchingCell);
         if (!cellIsCatching(unitsCount + bonusAttack, unitsCountNeededToCatch)) {
-            printDebug("The cell is not captured. The aggressor {} retreated ", player.getNickname());
+            LoggerProcessor.printDebug(LOGGER, "The cell is not captured. The aggressor {} retreated ", player.getNickname());
             return;
         } // else
         catchCell(player, game, catchingCell, unitsCountNeededToCatch - bonusAttack);
-        printDebug("Cell after catching: {} ", catchingCell);
+        LoggerProcessor.printDebug(LOGGER, "Cell after catching: {} ", catchingCell);
     }
 
     /**
@@ -550,12 +562,12 @@ public class SelfPlay {
 
                 if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                     unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
-                    printDebug("Player stumbled upon a defense of {} in cellType {} of defending player {}",
+                    LoggerProcessor.printDebug(LOGGER, "Player stumbled upon a defense of {} in cellType {} of defending player {}",
                             defendingPlayer.getRace(), catchingCell.getType(), defendingPlayer.getNickname());
                 }
             }
         }
-        printDebug("Units count needed to catch: {} ", unitsCountNeededToCatch);
+        LoggerProcessor.printDebug(LOGGER, "Units count needed to catch: {} ", unitsCountNeededToCatch);
         return unitsCountNeededToCatch;
     }
 
@@ -575,11 +587,11 @@ public class SelfPlay {
 
             if (feature.getType() == FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER) {
                 bonusAttack += ((CoefficientlyFeature) feature).getCoefficient();
-                printDebug("Player {} took advantage of the feature race {} and cellType of catchCell {}",
+                LoggerProcessor.printDebug(LOGGER, "Player {} took advantage of the feature race {} and cellType of catchCell {}",
                         player.getNickname(), player.getRace(), catchingCell.getType());
             }
         }
-        printDebug("Bonus attack: {} ", bonusAttack);
+        LoggerProcessor.printDebug(LOGGER, "Bonus attack: {} ", bonusAttack);
         return bonusAttack;
     }
 
@@ -615,14 +627,14 @@ public class SelfPlay {
                     int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
                     deadUnitsCount = Math.min(deadUnitsCount, defendingPlayer.getUnits().size());
                     removeFirstN(deadUnitsCount, defendingPlayer.getUnits());
-                    printDebug("{} units of player {} died ", deadUnitsCount, defendingPlayer.getNickname());
+                    LoggerProcessor.printDebug(LOGGER, "{} units of player {} died ", deadUnitsCount, defendingPlayer.getNickname());
                 }
             }
             game.getFeudalToCells().get(defendingPlayer).remove(catchingCell);
         }
         catchingCell.setOwn(player);
         game.getFeudalToCells().get(player).add(catchingCell);
-        printInfo("Cell {} catched of player {} ", catchingCell, player.getNickname());
+        LoggerProcessor.printInfo(LOGGER, "Cell {} catched of player {} ", catchingCell, player.getNickname());
     }
 
     /**
@@ -656,17 +668,17 @@ public class SelfPlay {
                 // в которую игрок хочет распределить войска
                 final Cell protectedCell = controlledCells.get(numberOfCell); // клетка,
                 // в которую игрок хочет распределить войска
-                printDebug("Player {} protects the cell {}", player, protectedCell);
+                LoggerProcessor.printDebug(LOGGER, "Player {} protects the cell {}", player, protectedCell);
                 final int unitsCount = random.nextInt(availableUnits.size()); // число юнитов,
                 // которое игрок хочет распределить в эту клетку
                 protectedCell.getUnits().addAll(availableUnits.subList(0, unitsCount)); // отправить первые unitsCount
                 // доступных юнитов
-                printDebug("Cell after defending: {} ", protectedCell);
+                LoggerProcessor.printDebug(LOGGER, "Cell after defending: {} ", protectedCell);
                 removeFirstN(unitsCount, availableUnits);
 //                availableUnits.removeAll(availableUnits.subList(0, unitsCount)); // сделать их недоступными
             }
         }
-        printInfo("Player {} distributed units ", player.getNickname());
+        LoggerProcessor.printInfo(LOGGER, "Player {} distributed units ", player.getNickname());
     }
 
     /**
@@ -680,7 +692,7 @@ public class SelfPlay {
             transitCell.setOwn(null);
         }
         player.getTransitCells().clear();
-        printDebug("Player {} freed his transit cells ", player.getNickname());
+        LoggerProcessor.printDebug(LOGGER, "Player {} freed his transit cells ", player.getNickname());
     }
 
     /**
@@ -701,7 +713,7 @@ public class SelfPlay {
         }
         controlledCells.addAll(player.getTransitCells());
 
-        printDebug("Controlled cells of player {} is {}", player.getNickname(), controlledCells.toString());
+        LoggerProcessor.printDebug(LOGGER, "Controlled cells of player {} is {}", player.getNickname(), controlledCells.toString());
         return controlledCells;
     }
 
@@ -716,7 +728,7 @@ public class SelfPlay {
             updateCoinsCountByCellWithFeatures(player, game, cell);
             player.setCoins(player.getCoins() + cell.getType().getCoinYield());
         }
-        printDebug("Player {} updated coins count", player.getNickname());
+        LoggerProcessor.printDebug(LOGGER, "Player {} updated coins count", player.getNickname());
     }
 
     /**
@@ -734,17 +746,17 @@ public class SelfPlay {
         for (final Feature feature : game.getFeaturesByRaceAndCellType(player.getRace(), cell.getType())) {
             if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL) {
                 player.setCoins(player.getCoins() + ((CoefficientlyFeature) feature).getCoefficient());
-                printDebug("Player {} update coins by cellType {} ", player.getNickname(), cell.getType());
+                LoggerProcessor.printDebug(LOGGER, "Player {} update coins by cellType {} ", player.getNickname(), cell.getType());
                 continue;
             }
             if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP
                     && !cellTypeMet.get(cell.getType())) {
                 cellTypeMet.put(cell.getType(), true);
                 player.setCoins(player.getCoins() + ((CoefficientlyFeature) feature).getCoefficient());
-                printDebug("Player {} update coins by group cellType {} ", player.getNickname(), cell.getType());
+                LoggerProcessor.printDebug(LOGGER, "Player {} update coins by group cellType {} ", player.getNickname(), cell.getType());
             }
         }
-        printDebug("Player {} updated coins count by cell with features ", player.getNickname());
+        LoggerProcessor.printDebug(LOGGER, "Player {} updated coins count by cell with features ", player.getNickname());
     }
 
     /**
@@ -755,23 +767,23 @@ public class SelfPlay {
     private static void finalize(final List<Player> playerList) {
         final int maxCoinsCount = getMaxCoinsCount(playerList);
         if (maxCoinsCount == -1) {
-            printError("max count of coins < 0 !!!");
+            LoggerProcessor.printError(LOGGER, "max count of coins < 0 !!!");
             return;
         }
         final List<Player> winners = getWinners(maxCoinsCount, playerList);
-        printInfo("---------------------------------------");
-        printInfo("Game OVER !!!");
-        printInfo("Winners: ");
+        LoggerProcessor.printInfo(LOGGER, "---------------------------------------");
+        LoggerProcessor.printInfo(LOGGER, "Game OVER !!!");
+        LoggerProcessor.printInfo(LOGGER, "Winners: ");
         for (final Player winner : winners) {
-            printInfo("Player {} - coins {} ", winner.getNickname(), winner.getCoins());
+            LoggerProcessor.printInfo(LOGGER, "Player {} - coins {} ", winner.getNickname(), winner.getCoins());
         }
-        printInfo("***************************************");
-        printInfo("Results of other players: ");
+        LoggerProcessor.printInfo(LOGGER, "***************************************");
+        LoggerProcessor.printInfo(LOGGER, "Results of other players: ");
         for (final Player player : playerList) {
             if (winners.contains(player)) {
                 continue;
             }
-            printInfo("Player {} - coins {} ", player.getNickname(), player.getCoins());
+            LoggerProcessor.printInfo(LOGGER, "Player {} - coins {} ", player.getNickname(), player.getCoins());
         }
     }
 
@@ -816,46 +828,6 @@ public class SelfPlay {
         }
     }
 
-    /**
-     * Выводит лог уровня INFO
-     *
-     * @param message - сообщение, которое нужно вывести
-     * @param objects - объекты, метаинформация о которых необходима в логе
-     */
-    private static void printInfo(final String message, final Object... objects) {
-        LOGGER.info(message, objects);
-    }
-
-    /**
-     * Выводит лог уровня DEBUG
-     *
-     * @param message - сообщение, которое нужно вывести
-     * @param objects - объекты, метаинформация о которых необходима в логе
-     */
-    private static void printDebug(final String message, final Object... objects) {
-        LOGGER.debug(message, objects);
-    }
-
-    /**
-     * Выводит лог уровня ERROR
-     *
-     * @param message - сообщение, которое нужно вывести
-     */
-    private static void printError(final String message) {
-        LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        LOGGER.error(message);
-    }
-
-    /**
-     * Выводит лог уровня ERROR
-     *
-     * @param message   - сообщение, которое нужно вывести
-     * @param exception - исключение, метаинформация о котором необходима в логе
-     */
-    private static void printError(final String message, final Exception exception) {
-        LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        LOGGER.error(message, exception);
-    }
 
     public static void main(final String[] args) {
         selfPlay();
