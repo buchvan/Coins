@@ -17,6 +17,7 @@ public class BoardFactory implements IBoardFactory {
     //TODO: use logger
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
     private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
      * 1 версия: Каждый тип клетки встречается по три раза
@@ -29,16 +30,15 @@ public class BoardFactory implements IBoardFactory {
     @Override
     public Board generateBoard(final int width, final int height) {
         int cellAmount = width * height;
-        List<CellType> cellTypes = loadCellTypePool(cellAmount);
+        final List<CellType> cellTypes = loadCellTypePool();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes);
+                int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 CellType currentCellType = cellTypes.get(currentCellTypeIndex);
                 Position position = new Position(i, j);
-                System.out.println("ADDED POSITION: "+  position);
+                System.out.println("ADDED POSITION: " + position);
                 Cell cell = new Cell(currentCellType);
-                System.out.println("ADDED CELL: "+  cell);
-                //FIXME: add id to cell for intial different cell with same cellType
+                System.out.println("ADDED CELL WITH CELL TYPE: " + cell.getType());
                 positionToCellMap.put(position, new Cell(currentCellType));
                 System.out.println("CURRENT MAP SIZE: " + positionToCellMap.size());
             }
@@ -46,31 +46,31 @@ public class BoardFactory implements IBoardFactory {
         return new Board(positionToCellMap);
     }
 
-    private int getAllowedCellTypeIndex(List<CellType> cellTypes){
+    private int getAllowedCellTypeIndex(List<CellType> cellTypes, int cellAmount) {
         Random random = new Random();
         int cellTypesAmount = cellTypes.size();
+        int cellTypesAmountRange = cellAmount / cellTypesAmount;
+        System.out.println("RANGE: " + cellTypesAmountRange);
         int randomCellTypeIndex = -1;
         boolean isCellTypeAvailable = false;
         while (!isCellTypeAvailable) {
-            randomCellTypeIndex = random.nextInt(cellTypes.size());
+            randomCellTypeIndex = random.nextInt(cellTypesAmount);
             CellType currentCellType = cellTypes.get(randomCellTypeIndex);
             isCellTypeAvailable = positionToCellMap
                     .values()
                     .stream()
                     .filter(type -> type.getType() == currentCellType)
-                    .count() <=  cellTypesAmount;
+                    .count() < cellTypesAmountRange;
         }
         return randomCellTypeIndex;
     }
 
-    private List<CellType> loadCellTypePool(final int cellAmount) {
-        List<CellType> cellTypes = new ArrayList<>(cellAmount);
-        for (int i = 0; i < cellAmount; i++) {
-            cellTypes.add(CellType.LAND);
-            cellTypes.add(CellType.MOUNTAIN);
-            cellTypes.add(CellType.MUSHROOM);
-            cellTypes.add(CellType.WATER);
-        }
+    private List<CellType> loadCellTypePool() {
+        List<CellType> cellTypes = new ArrayList<>();
+        cellTypes.add(CellType.LAND);
+        cellTypes.add(CellType.MOUNTAIN);
+        cellTypes.add(CellType.MUSHROOM);
+        cellTypes.add(CellType.WATER);
         return cellTypes;
     }
 }

@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.game.board;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +25,15 @@ public class Cell {
     }
 
     public Cell(CellType type, List<Unit> units, Player own, Race race) {
+        this.id = IdGenerator.getCurrentId();
         this.type = type;
         this.units = units;
         this.own = own;
         this.race = race;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public CellType getType() {
@@ -75,16 +81,6 @@ public class Cell {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), getUnits(), getOwn(), getRace());
-    }
-
-    @Override
-    public String toString() {
-        return "Cell{" +
-                "type=" + type +
-                ", units=" + units +
-                ", own=" + own +
-                ", race=" + race +
-                '}';
+        return Objects.hash(getId());
     }
 }
