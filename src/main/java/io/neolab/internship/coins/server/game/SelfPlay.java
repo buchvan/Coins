@@ -5,6 +5,7 @@ import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
+import io.neolab.internship.coins.utils.Pair;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.collections4.map.MultiKeyMap;
@@ -79,7 +80,7 @@ public class SelfPlay {
      * @return инициализированную feudalToCells
      */
     private static Map<Player, List<Cell>> initFeudalToCells(final List<Player> playerList) {
-        final Map<Player, List<Cell>> feudalToCells = new HashMap<>();
+        final Map<Player, List<Cell>> feudalToCells = new HashMap<>(2);
         for (final Player player : playerList) {
             feudalToCells.put(player, new ArrayList<>());
         }
@@ -92,8 +93,8 @@ public class SelfPlay {
      *
      * @return raceCellTypeFeatures
      */
-    private static MultiKeyMap<Integer, List<Feature>> initRaceCellTypeFeatures() {
-        final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures = new MultiKeyMap<>();
+    private static Map<Pair<Race, CellType>, List<Feature>> initRaceCellTypeFeatures() {
+        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = new HashMap<>();
         final List<Feature> impossibleCatchCellFeature = new ArrayList<>();
         impossibleCatchCellFeature.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
 
@@ -115,7 +116,8 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRace(final Race race,
-                                                      final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+                                                      final Map<Pair<Race, CellType>, List<Feature>>
+                                                              raceCellTypeFeatures,
                                                       final List<Feature> impossibleCatchCellFeature) {
         if (race == Race.MUSHROOM) { // Грибы
             addRaceCellTypeFeaturesByRaceMushroom(raceCellTypeFeatures, impossibleCatchCellFeature);
@@ -149,21 +151,20 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceMushroom(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int mushroomOrdinal = Race.MUSHROOM.ordinal();
         List<Feature> mushroomFeatures = new ArrayList<>();
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(mushroomOrdinal, CellType.MUSHROOM.ordinal(), mushroomFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.MUSHROOM), mushroomFeatures);
 
         mushroomFeatures = new ArrayList<>();
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(mushroomOrdinal, CellType.LAND.ordinal(), mushroomFeatures);
-        raceCellTypeFeatures.put(mushroomOrdinal, CellType.MOUNTAIN.ordinal(), mushroomFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.LAND), mushroomFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.MOUNTAIN), mushroomFeatures);
         mushroomFeatures.addAll(impossibleCatchCellFeature);
-        raceCellTypeFeatures.put(mushroomOrdinal, CellType.WATER.ordinal(), mushroomFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.WATER), mushroomFeatures);
 
         printDebug("Features of Mushroom race added: {} ", raceCellTypeFeatures);
     }
@@ -175,16 +176,15 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceAmphibian(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int amphibianOrdinal = Race.AMPHIBIAN.ordinal();
         final List<Feature> amphibianFeatures = new ArrayList<>();
         amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(amphibianOrdinal, CellType.MUSHROOM.ordinal(), amphibianFeatures);
-        raceCellTypeFeatures.put(amphibianOrdinal, CellType.LAND.ordinal(), amphibianFeatures);
-        raceCellTypeFeatures.put(amphibianOrdinal, CellType.MOUNTAIN.ordinal(), amphibianFeatures);
-        raceCellTypeFeatures.put(amphibianOrdinal, CellType.WATER.ordinal(), amphibianFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MUSHROOM), amphibianFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.LAND), amphibianFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MOUNTAIN), amphibianFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.WATER), amphibianFeatures);
 
         printDebug("Features of Amphibian race added: {} ", raceCellTypeFeatures);
     }
@@ -196,19 +196,18 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceElf(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int elfOrdinal = Race.ELF.ordinal();
         final List<Feature> elfFeatures = new ArrayList<>();
         elfFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
         elfFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(elfOrdinal, CellType.MUSHROOM.ordinal(), elfFeatures);
-        raceCellTypeFeatures.put(elfOrdinal, CellType.LAND.ordinal(), elfFeatures);
-        raceCellTypeFeatures.put(elfOrdinal, CellType.MOUNTAIN.ordinal(), elfFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.MUSHROOM), elfFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.LAND), elfFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.MOUNTAIN), elfFeatures);
         final List<Feature> elfFeaturesSecond = new ArrayList<>(elfFeatures);
         elfFeaturesSecond.addAll(impossibleCatchCellFeature);
-        raceCellTypeFeatures.put(elfOrdinal, CellType.WATER.ordinal(), elfFeaturesSecond);
+        raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.WATER), elfFeaturesSecond);
 
         printDebug("Features of Elf race added: {} ", raceCellTypeFeatures);
     }
@@ -220,19 +219,18 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceOrc(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int orcOrdinal = Race.ORC.ordinal();
         final List<Feature> orcFeatures = new ArrayList<>();
         orcFeatures.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, -1));
         orcFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(orcOrdinal, CellType.MUSHROOM.ordinal(), orcFeatures);
-        raceCellTypeFeatures.put(orcOrdinal, CellType.LAND.ordinal(), orcFeatures);
-        raceCellTypeFeatures.put(orcOrdinal, CellType.MOUNTAIN.ordinal(), orcFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.MUSHROOM), orcFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.LAND), orcFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.MOUNTAIN), orcFeatures);
         final List<Feature> orcFeaturesSecond = new ArrayList<>(orcFeatures);
         orcFeaturesSecond.addAll(impossibleCatchCellFeature);
-        raceCellTypeFeatures.put(orcOrdinal, CellType.WATER.ordinal(), orcFeaturesSecond);
+        raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.WATER), orcFeaturesSecond);
 
         printDebug("Features of Orc race added: {} ", raceCellTypeFeatures);
     }
@@ -244,19 +242,18 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceGnome(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int gnomeOrdinal = Race.GNOME.ordinal();
         final List<Feature> gnomeFeatures = new ArrayList<>();
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, 1));
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(gnomeOrdinal, CellType.MUSHROOM.ordinal(), gnomeFeatures);
-        raceCellTypeFeatures.put(gnomeOrdinal, CellType.LAND.ordinal(), gnomeFeatures);
-        raceCellTypeFeatures.put(gnomeOrdinal, CellType.MOUNTAIN.ordinal(), gnomeFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.MUSHROOM), gnomeFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.LAND), gnomeFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.MOUNTAIN), gnomeFeatures);
         final List<Feature> gnomeFeaturesSecond = new ArrayList<>(gnomeFeatures);
         gnomeFeaturesSecond.addAll(impossibleCatchCellFeature);
-        raceCellTypeFeatures.put(gnomeOrdinal, CellType.WATER.ordinal(), gnomeFeaturesSecond);
+        raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.WATER), gnomeFeaturesSecond);
 
         printDebug("Features of Gnome race added: {} ", raceCellTypeFeatures);
     }
@@ -268,18 +265,17 @@ public class SelfPlay {
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
     private static void addRaceCellTypeFeaturesByRaceUndead(
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures,
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
             final List<Feature> impossibleCatchCellFeature) {
 
-        final int undeadOrdinal = Race.UNDEAD.ordinal();
         final List<Feature> undeadFeatures = new ArrayList<>();
         undeadFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
-        raceCellTypeFeatures.put(undeadOrdinal, CellType.MUSHROOM.ordinal(), undeadFeatures);
-        raceCellTypeFeatures.put(undeadOrdinal, CellType.LAND.ordinal(), undeadFeatures);
-        raceCellTypeFeatures.put(undeadOrdinal, CellType.MOUNTAIN.ordinal(), undeadFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.MUSHROOM), undeadFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.LAND), undeadFeatures);
+        raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.MOUNTAIN), undeadFeatures);
         final List<Feature> undeadFeaturesSecond = new ArrayList<>(undeadFeatures);
         undeadFeaturesSecond.addAll(impossibleCatchCellFeature);
-        raceCellTypeFeatures.put(undeadOrdinal, CellType.WATER.ordinal(), undeadFeaturesSecond);
+        raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.WATER), undeadFeaturesSecond);
 
         printDebug("Features of Undead race added: {} ", raceCellTypeFeatures);
     }
@@ -311,7 +307,7 @@ public class SelfPlay {
             final Player neutralPlayer = createNeutralPlayer();
             final List<Player> playerList = initTestPlayers();
             final Map<Player, List<Cell>> feudalToCells = initFeudalToCells(playerList);
-            final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures = initRaceCellTypeFeatures();
+            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = initRaceCellTypeFeatures();
             final List<Race> racesPool = createRacesPool();
 
             final Game game = new Game(board, 0, feudalToCells, raceCellTypeFeatures, racesPool, playerList,

@@ -4,6 +4,7 @@ import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.feature.Feature;
+import io.neolab.internship.coins.utils.Pair;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
 import java.util.*;
@@ -12,18 +13,18 @@ public class Game implements IGame {
     private Board board;
     private int currentRound;
     private final Map<Player, List<Cell>> feudalToCells;
-    private final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures;
+    private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
     private final List<Player> players;
     private final Player neutralPlayer;
 
     public Game() {
-        this(new Board(), 0, new HashMap<>(), new MultiKeyMap<>(), new LinkedList<>(), new LinkedList<>(),
+        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>(),
                 new Player(0, "neutral"));
     }
 
     public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
-                final MultiKeyMap<Integer, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
+                final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
         this.board = board;
         this.currentRound = currentRound;
@@ -54,12 +55,12 @@ public class Game implements IGame {
         return feudalToCells;
     }
 
-    public MultiKeyMap<Integer, List<Feature>> getRaceCellTypeFeatures() {
+    public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
         return raceCellTypeFeatures;
     }
 
     public List<Feature> getFeaturesByRaceAndCellType(final Race race, final CellType cellType) {
-        final List<Feature> features = getRaceCellTypeFeatures().get(race.ordinal(), cellType.ordinal());
+        final List<Feature> features = getRaceCellTypeFeatures().get(new Pair<>(race, cellType));
         if (features == null) {
             return new LinkedList<>();
         }

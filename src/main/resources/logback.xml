@@ -20,8 +20,10 @@
             <!-- Храним файлы логов 10 дней -->
             <maxHistory>10</maxHistory>
 
-            <!-- Максимальный размер файлов лога 5 магабайт -->
-            <totalSizeCap>5MB</totalSizeCap>
+            <triggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <maxFileSize>5MB</maxFileSize>
+            </triggeringPolicy>
 
         </rollingPolicy>
         <encoder>
