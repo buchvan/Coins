@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.*;
@@ -9,28 +8,26 @@ public class Player {
     private int id;
     private String nickname;
     private Race race;
-    private final List<Unit> units;
-    private List<Unit> availableUnits;
+    private final Map<UnitState, List<Unit>> unitStateToUnits;
     private int coins;
-    private final List<Cell> transitCells;
 
     public Player() {
         this(0, "Test");
     }
 
     public Player(final int id, final String nickname) {
-        this(id, nickname, null, new LinkedList<>(), new LinkedList<>(), 0, new ArrayList<>());
+        this(id, nickname, null, 0);
     }
 
-    public Player(final int id, final String nickname, final Race race, final List<Unit> units,
-                  final List<Unit> availableUnits, final int coins, final List<Cell> transitCells) {
+    public Player(final int id, final String nickname, final Race race, final int coins) {
         this.id = id;
         this.nickname = nickname;
         this.race = race;
-        this.units = units;
-        this.availableUnits = availableUnits;
+        this.unitStateToUnits = new HashMap<>(UnitState.values().length);
+        for (final UnitState unitState : UnitState.values()) {
+            this.unitStateToUnits.put(unitState, new LinkedList<>());
+        }
         this.coins = coins;
-        this.transitCells = transitCells;
     }
 
     public int getId() {
@@ -53,24 +50,70 @@ public class Player {
         return race;
     }
 
+    /**
+     * Сеттер, который помимо замены расы обновляет списки юнитов
+     *
+     * @param race - новая раса игрока
+     */
     public void setRace(final Race race) {
         this.race = race;
 
-        /* Добавляем юнитов выбранной расы */
-        setUnits(new ArrayList<>(race.getUnitsAmount()));
-        int i = 0;
-        while (i < race.getUnitsAmount()) {
-            getUnits().add(new Unit(IdGenerator.getCurrentId()));
-            i++;
+        /* Чистим у игрока юниты */
+        for (final UnitState unitState : UnitState.values()) {
+            unitStateToUnits.get(unitState).clear();
+        }
+
+        if (race != null) {
+            /* Добавляем юнитов выбранной расы */
+            int i = 0;
+            while (i < race.getUnitsAmount()) {
+                unitStateToUnits.get(UnitState.AVAILABLE).add(new Unit(IdGenerator.getCurrentId()));
+                i++;
+            }
         }
     }
 
-    public List<Unit> getUnits() {
-        return units;
+    public Map<UnitState, List<Unit>> getUnitStateToUnits() {
+        return unitStateToUnits;
     }
 
-    public void setUnits(final List<Unit> units) {
-        Collections.copy(this.units, units);
+    /**
+     * Сделать всех юнитов доступными. Соответственно недоступных не останется
+     */
+    public void makeAllUnitsAvailable() {
+        unitStateToUnits
+                .get(UnitState.AVAILABLE).addAll(
+                unitStateToUnits.get(UnitState.NOT_AVAILABLE)
+        );
+        unitStateToUnits.get(UnitState.NOT_AVAILABLE).clear();
+    }
+
+    /**
+     * Сделать всех юнитов недоступными. Соответственно доступных не останется
+     */
+    public void makeAllUnitsNotAvailable() {
+        unitStateToUnits
+                .get(UnitState.NOT_AVAILABLE).addAll(
+                unitStateToUnits.get(UnitState.AVAILABLE)
+        );
+        unitStateToUnits.get(UnitState.AVAILABLE).clear();
+    }
+
+    /**
+     * Сделать первые N доступных юнитов недоступными
+     *
+     * @param N - то число доступных юнитов, которых необходимо сделать недоступными
+     */
+    public void makeNAvailableUnitsNotAvailable(final int N) {
+        int i = 0;
+        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
+            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
+            unitStateToUnits.get(UnitState.AVAILABLE).remove(unit);
+            i++;
+            if (i >= N) {
+                break;
+            }
+        }
     }
 
     public int getCoins() {
@@ -81,21 +124,6 @@ public class Player {
         this.coins = coins;
     }
 
-    public List<Cell> getTransitCells() {
-        return transitCells;
-    }
-
-    public void setTransitCells(final List<Cell> transitCells) {
-        Collections.copy(this.transitCells, transitCells);
-    }
-
-    public List<Unit> getAvailableUnits() {
-        return availableUnits;
-    }
-
-    public void setAvailableUnits(final List<Unit> availableUnits) {
-        this.availableUnits = new LinkedList<>(availableUnits);
-    }
 
     @Override
     public boolean equals(final Object o) {
@@ -106,9 +134,7 @@ public class Player {
                 coins == player.coins &&
                 Objects.equals(nickname, player.nickname) &&
                 race == player.race &&
-                Objects.equals(units, player.units) &&
-                Objects.equals(availableUnits, player.availableUnits) &&
-                Objects.equals(transitCells, player.transitCells);
+                Objects.equals(unitStateToUnits, player.unitStateToUnits);
     }
 
     @Override
@@ -122,10 +148,8 @@ public class Player {
                 "id=" + id +
                 ", nickname='" + nickname + '\'' +
                 ", race=" + race +
-                ", units=" + units +
-                ", availableUnits=" + availableUnits +
+                ", unitStateToUnits=" + unitStateToUnits +
                 ", coins=" + coins +
-                ", transitCells=" + transitCells +
                 '}';
     }
 }

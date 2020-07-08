@@ -12,23 +12,31 @@ import java.util.*;
 public class Game implements IGame {
     private IBoard board;
     private int currentRound;
+
     private final Map<Player, List<Cell>> feudalToCells;
+    private final Map<Player, List<Cell>> ownToCells;
+    private final Map<Player, List<Cell>> playerToTransitCells;
+
     private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
+
     private final List<Player> players;
     private final Player neutralPlayer;
 
     public Game() {
-        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new LinkedList<>(), new LinkedList<>(),
-                new Player(0, "neutral"));
+        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(),
+                new LinkedList<>(), new LinkedList<>(), new Player(0, "neutral"));
     }
 
     public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
+                final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
                 final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
         this.board = board;
         this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
+        this.ownToCells = ownToCells;
+        this.playerToTransitCells = playerToTransitCells;
         this.raceCellTypeFeatures = raceCellTypeFeatures;
         this.racesPool = racesPool;
         this.players = players;
@@ -53,6 +61,14 @@ public class Game implements IGame {
 
     public Map<Player, List<Cell>> getFeudalToCells() {
         return feudalToCells;
+    }
+
+    public Map<Player, List<Cell>> getOwnToCells() {
+        return ownToCells;
+    }
+
+    public Map<Player, List<Cell>> getPlayerToTransitCells() {
+        return playerToTransitCells;
     }
 
     public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
@@ -87,6 +103,8 @@ public class Game implements IGame {
         return currentRound == game.currentRound &&
                 Objects.equals(board, game.board) &&
                 Objects.equals(feudalToCells, game.feudalToCells) &&
+                Objects.equals(ownToCells, game.ownToCells) &&
+                Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
                 Objects.equals(raceCellTypeFeatures, game.raceCellTypeFeatures) &&
                 Objects.equals(racesPool, game.racesPool) &&
                 Objects.equals(players, game.players) &&
@@ -95,7 +113,7 @@ public class Game implements IGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(board, currentRound, feudalToCells, raceCellTypeFeatures, racesPool, players, neutralPlayer);
+        return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells, raceCellTypeFeatures, racesPool, players, neutralPlayer);
     }
 
     @Override
@@ -104,6 +122,8 @@ public class Game implements IGame {
                 "board=" + board +
                 ", currentRound=" + currentRound +
                 ", feudalToCells=" + feudalToCells +
+                ", ownToCells=" + ownToCells +
+                ", playerToTransitCells=" + playerToTransitCells +
                 ", raceCellTypeFeatures=" + raceCellTypeFeatures +
                 ", racesPool=" + racesPool +
                 ", players=" + players +
