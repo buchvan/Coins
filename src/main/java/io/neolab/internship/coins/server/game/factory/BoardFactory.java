@@ -29,28 +29,28 @@ public class BoardFactory implements IBoardFactory {
      */
     @Override
     public Board generateBoard(final int width, final int height) {
-        int cellAmount = width * height;
+        LOGGER.info("BOARD FACTORY: Start generating board with width " + width + " height " + height);
+        final int cellAmount = width * height;
         final List<CellType> cellTypes = loadCellTypePool();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 CellType currentCellType = cellTypes.get(currentCellTypeIndex);
                 Position position = new Position(i, j);
-                System.out.println("ADDED POSITION: " + position);
-                Cell cell = new Cell(currentCellType);
-                System.out.println("ADDED CELL WITH CELL TYPE: " + cell.getType());
+                //System.out.println("ADDED POSITION: " + position);
+                //Cell cell = new Cell(currentCellType);
+                //System.out.println("ADDED CELL WITH CELL TYPE: " + cell.getType());
                 positionToCellMap.put(position, new Cell(currentCellType));
-                System.out.println("CURRENT MAP SIZE: " + positionToCellMap.size());
             }
         }
+        LOGGER.info("BOARD FACTORY: Board was generated");
         return new Board(positionToCellMap);
     }
 
-    private int getAllowedCellTypeIndex(List<CellType> cellTypes, int cellAmount) {
+    private int getAllowedCellTypeIndex(final List<CellType> cellTypes,final int cellAmount) {
         Random random = new Random();
-        int cellTypesAmount = cellTypes.size();
-        int cellTypesAmountRange = cellAmount / cellTypesAmount;
-        System.out.println("RANGE: " + cellTypesAmountRange);
+        final int cellTypesAmount = cellTypes.size();
+        final int cellTypesAmountRange = cellAmount / cellTypesAmount;
         int randomCellTypeIndex = -1;
         boolean isCellTypeAvailable = false;
         while (!isCellTypeAvailable) {

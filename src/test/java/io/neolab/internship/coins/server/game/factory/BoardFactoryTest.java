@@ -3,7 +3,6 @@ package io.neolab.internship.coins.server.game.factory;
 
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.CellType;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class BoardFactoryTest {
 
     }
 
-    private Board generateBoard(int wight, int height) {
+    private Board generateBoard(final int wight,final int height) {
         BoardFactory boardFactory = new BoardFactory();
         return  boardFactory.generateBoard(wight, height);
     }
