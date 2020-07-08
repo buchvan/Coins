@@ -332,21 +332,20 @@ public class SelfPlay {
      * @param game - игра, хранящая всю метаинформацию
      */
     private static void gameLoop(final Game game) {
-        int currentRound = 0;
         final Random random = new Random();
         int lastUnitId = 0;
-        while (currentRound < ROUNDS_COUNT) {
-            currentRound++;
+        while (game.getCurrentRound() < ROUNDS_COUNT) {
+            game.setCurrentRound(game.getCurrentRound() + 1);
 
             for (final Player player : game.getPlayers()) {
-                lastUnitId = playerRound(currentRound, lastUnitId, player, game, random);
+                lastUnitId = playerRound(game.getCurrentRound(), lastUnitId, player, game, random);
             }
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
             }
-            printDebug("Game after {} ; round: {}", currentRound, game);
+            printDebug("Game after {} ; round: {}", game.getCurrentRound(), game);
         }
-        printInfo("Round {} is finished! Players: {} ", currentRound, game.getPlayers());
+        printInfo("Round {} is finished! Players: {} ", game.getCurrentRound(), game.getPlayers());
     }
 
     /**
