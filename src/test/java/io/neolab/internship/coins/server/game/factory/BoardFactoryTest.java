@@ -8,22 +8,21 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
-//TODO: add cases with exceptions, wrong params etc.
+//TODO: add cases with exceptions
 public class BoardFactoryTest {
 
     @Test
-    public void generateBoardCorrectlySizeTest() {
-        assertEquals(12, generateBoard(3,4).getPositionToCellMap().size());
+    public void generateBoardCorrectlySize1Test() {
+        assertEquals(12, generateBoard(3, 4).getPositionToCellMap().size());
     }
 
     @Test
-    public void generateBoardBalancedTest() {
-        Board board = generateBoard(3,4);
+    public void generateBoardBalanced1Test() {
+        Board board = generateBoard(3, 4);
         List<CellType> cellTypes = fillCellTypes();
-        for(CellType cellType: cellTypes) {
+        for (CellType cellType : cellTypes) {
             assertEquals(3,
                     board
                             .getPositionToCellMap()
@@ -36,13 +35,39 @@ public class BoardFactoryTest {
     }
 
     @Test
+    public void generateBoardCorrectlySize2Test() {
+        assertEquals(25, generateBoard(5, 5).getPositionToCellMap().size());
+    }
+
+    @Test
+    public void generateBoardBalanced2Test() {
+        final int width = 5;
+        final int height = 5;
+        final int cellsAmount = width * height;
+        Board board = generateBoard(width, height);
+        List<CellType> cellTypes = fillCellTypes();
+        int cellTypesAmount = cellTypes.size();
+        final int bound = cellsAmount / cellTypesAmount + cellsAmount % cellTypesAmount;
+        for (CellType cellType : cellTypes) {
+            assertTrue(
+                    board
+                            .getPositionToCellMap()
+                            .values()
+                            .stream()
+                            .filter(cell -> cell.getType() == cellType)
+                            .count() <= bound);
+        }
+
+    }
+
+    @Test
     public void generateBoardWrongSizesTest() {
         assertNull(generateBoard(1, 1));
     }
 
-    private Board generateBoard(final int wight,final int height) {
+    private Board generateBoard(final int wight, final int height) {
         BoardFactory boardFactory = new BoardFactory();
-        return  boardFactory.generateBoard(wight, height);
+        return boardFactory.generateBoard(wight, height);
     }
 
     private List<CellType> fillCellTypes() {
@@ -51,7 +76,7 @@ public class BoardFactoryTest {
         cellTypes.add(CellType.LAND);
         cellTypes.add(CellType.MOUNTAIN);
         cellTypes.add(CellType.MUSHROOM);
-        return  cellTypes;
+        return cellTypes;
     }
 
 }

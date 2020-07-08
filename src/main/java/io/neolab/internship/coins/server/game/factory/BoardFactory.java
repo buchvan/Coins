@@ -30,7 +30,7 @@ public class BoardFactory implements IBoardFactory {
     public Board generateBoard(final int width, final int height) {
         LOGGER.info("Start generating board with width " + width + " height " + height);
         //TODO: add exceptions
-        if(width < 2 || height < 2) {
+        if (width < 2 || height < 2) {
             LOGGER.info("Board generation failed");
             return null;
         }
@@ -41,13 +41,7 @@ public class BoardFactory implements IBoardFactory {
             for (int j = 0; j < width; j++) {
                 int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 CellType currentCellType = cellTypes.get(currentCellTypeIndex);
-                if(currentCellType == CellType.MUSHROOM) {
-                    logBoardString.append(currentCellType.getTitle().substring(0,1).toLowerCase());
-                }
-                else {
-                    logBoardString.append(currentCellType.getTitle(), 0, 1);
-                }
-                logBoardString.append(" ");
+                addCellTypeTitleToLogStr(currentCellType, logBoardString);
                 positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
             }
             logBoardString.append("\n");
@@ -56,10 +50,11 @@ public class BoardFactory implements IBoardFactory {
         return new Board(positionToCellMap);
     }
 
-    private int getAllowedCellTypeIndex(final List<CellType> cellTypes,final int cellAmount) {
+    private int getAllowedCellTypeIndex(final List<CellType> cellTypes, final int cellAmount) {
         Random random = new Random();
         final int cellTypesAmount = cellTypes.size();
-        final int cellTypesAmountRange = cellAmount / cellTypesAmount;
+        /*Взятие остатка для случая нечетного количества клеток*/
+        final int cellTypesAmountRange = cellAmount / cellTypesAmount + cellAmount % cellTypesAmount;
         int randomCellTypeIndex = -1;
         boolean isCellTypeAvailable = false;
         while (!isCellTypeAvailable) {
@@ -81,5 +76,14 @@ public class BoardFactory implements IBoardFactory {
         cellTypes.add(CellType.MUSHROOM);
         cellTypes.add(CellType.WATER);
         return cellTypes;
+    }
+
+    private void addCellTypeTitleToLogStr(CellType currentCellType, StringBuilder logBoardString) {
+        if (currentCellType == CellType.MUSHROOM) {
+            logBoardString.append(currentCellType.getTitle().substring(0, 1).toLowerCase());
+        } else {
+            logBoardString.append(currentCellType.getTitle(), 0, 1);
+        }
+        logBoardString.append(" ");
     }
 }
