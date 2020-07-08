@@ -338,9 +338,8 @@ public class SelfPlay {
             for (final Player player : game.getPlayers()) {
                 updateCoinsCount(player, game);
             }
-            printDebug("Game after {} ; round: {}", game.getCurrentRound(), game);
+            printDebug("Game after {} round: {}", game.getCurrentRound(), game);
         }
-        printInfo("Round {} is finished! Players: {} ", game.getCurrentRound(), game.getPlayers());
     }
 
     /**
@@ -406,6 +405,10 @@ public class SelfPlay {
     private static int chooseRace(final Player player, final List<Race> racesPool, final Random random,
                                   int lastUnitId) {
         final Race newRace = racesPool.get(random.nextInt(racesPool.size()));
+        if (player.getRace() != null) {
+            racesPool.add(player.getRace());
+        }
+        racesPool.remove(newRace);
         player.setRace(newRace);
         printInfo("Player " + player.getId() + " choose race " + newRace);
 
@@ -449,7 +452,7 @@ public class SelfPlay {
      */
     private static List<Cell> getAchievableCells(final Player player, final Game game) {
         final List<Cell> controlledCells = getControlledCells(player, game);
-        final Board board = game.getBoard();
+        final IBoard board = game.getBoard();
         if (controlledCells.isEmpty()) {
             return boardEdgeGetCells(board);
         } // else
@@ -467,7 +470,7 @@ public class SelfPlay {
      * @param board - борда, крайние клетки которой мы хотим взять
      * @return список всех крайних клеток борды board
      */
-    private static List<Cell> boardEdgeGetCells(final Board board) {
+    private static List<Cell> boardEdgeGetCells(final IBoard board) {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex = 0;
         int colIndex;
@@ -501,7 +504,7 @@ public class SelfPlay {
      * @param cell  - клетка, чьих соседей мы ищем
      * @return список всех соседей клетки cell на борде board
      */
-    private static List<Cell> getAllNeighboringCells(final Board board, final Cell cell) {
+    private static List<Cell> getAllNeighboringCells(final IBoard board, final Cell cell) {
         final List<Cell> neighboringCells = new LinkedList<>();
         int strIndex;
         int colIndex = -1;
@@ -763,7 +766,15 @@ public class SelfPlay {
         printInfo("Game OVER !!!");
         printInfo("Winners: ");
         for (final Player winner : winners) {
-            printInfo("Player {}, coins {} ", winner.getId(), winner.getCoins());
+            printInfo("Player {} - coins {} ", winner.getId(), winner.getCoins());
+        }
+        printInfo("***************************************");
+        printInfo("Results of other players: ");
+        for (final Player player : playerList) {
+            if (winners.contains(player)) {
+                continue;
+            }
+            printInfo("Player {} - coins {} ", player.getId(), player.getCoins());
         }
     }
 
@@ -808,19 +819,42 @@ public class SelfPlay {
         }
     }
 
+    /**
+     * Выводит лог уровня INFO
+     *
+     * @param message - сообщение, которое нужно вывести
+     * @param objects - объекты, метаинформация о которых необходима в логе
+     */
     private static void printInfo(final String message, final Object... objects) {
         LOGGER.info(message, objects);
     }
 
+    /**
+     * Выводит лог уровня DEBUG
+     *
+     * @param message - сообщение, которое нужно вывести
+     * @param objects - объекты, метаинформация о которых необходима в логе
+     */
     private static void printDebug(final String message, final Object... objects) {
         LOGGER.debug(message, objects);
     }
 
+    /**
+     * Выводит лог уровня ERROR
+     *
+     * @param message - сообщение, которое нужно вывести
+     */
     private static void printError(final String message) {
         LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         LOGGER.error(message);
     }
 
+    /**
+     * Выводит лог уровня ERROR
+     *
+     * @param message   - сообщение, которое нужно вывести
+     * @param exception - исключение, метаинформация о котором необходима в логе
+     */
     private static void printError(final String message, final Exception exception) {
         LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         LOGGER.error(message, exception);

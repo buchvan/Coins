@@ -3,13 +3,14 @@ package io.neolab.internship.coins.server.game;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.util.*;
 
 public class Game implements IGame {
-    private Board board;
+    private IBoard board;
     private int currentRound;
     private final Map<Player, List<Cell>> feudalToCells;
     private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
@@ -34,7 +35,7 @@ public class Game implements IGame {
         this.neutralPlayer = neutralPlayer;
     }
 
-    public Board getBoard() {
+    public IBoard getBoard() {
         return board;
     }
 

@@ -5,7 +5,7 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.util.Objects;
 
-public class Board {
+public class Board implements IBoard {
     private final BidiMap<Position, Cell> positionToCellMap;
 
     public Board(final BidiMap<Position, Cell> positionToCellMap) {
@@ -20,14 +20,17 @@ public class Board {
         return positionToCellMap;
     }
 
+    @Override
     public Cell getCellByPosition(final Position position) {
         return getPositionToCellMap().get(position);
     }
 
+    @Override
     public Cell getCellByPosition(final int x, final int y) {
         return getCellByPosition(new Position(x, y));
     }
 
+    @Override
     public Position getPositionByCell(final Cell cell) {
         return getPositionToCellMap().getKey(cell);
     }
