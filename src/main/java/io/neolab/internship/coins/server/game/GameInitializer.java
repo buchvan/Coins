@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
@@ -7,7 +8,6 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
-import io.neolab.internship.coins.utils.LoggerProcessor;
 import io.neolab.internship.coins.utils.Pair;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -19,10 +19,12 @@ import java.util.*;
 public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
-    public static Game gameInit() {
-        LoggerProcessor.printDebug(LOGGER, "Init...");
 
-        final Board board = initBoard();
+
+    public static Game gameInit(final int boardSizeX, final int boardSizeY) {
+        LOGGER.debug( "Init...");
+
+        final Board board = initBoard(boardSizeX, boardSizeY);
 
         final Player neutralPlayer = createNeutralPlayer();
         final List<Player> playerList = initTestPlayers();
@@ -47,7 +49,7 @@ public class GameInitializer {
      *
      * @return инициализированную борду
      */
-    private static Board initBoard() {
+    private static Board initBoard(final int boardSizeX, final int boardSizeY) {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
         /* Доска из самой первой консультации по проекту */
@@ -70,7 +72,11 @@ public class GameInitializer {
         /* --- */
 
         final Board board = new Board(positionToCellMap);
-        LoggerProcessor.printDebug(LOGGER, "Board is created: {} ", board);
+
+//        final IBoardFactory boardFactory = new BoardFactory();
+//        final Board board = boardFactory.generateBoard(boardSizeX, boardSizeY);
+
+        LOGGER.debug( "Board is created: {} ", board);
         return board;
     }
 
@@ -82,7 +88,7 @@ public class GameInitializer {
      */
     private static Player createNeutralPlayer() {
         final Player neutralPlayer = new Player("neutral");
-        LoggerProcessor.printDebug(LOGGER, "Neutral player is created: {} ", neutralPlayer);
+        LOGGER.debug( "Neutral player is created: {} ", neutralPlayer);
         return neutralPlayer;
     }
 
@@ -101,7 +107,7 @@ public class GameInitializer {
 //            playerList.add(new Player(IdGenerator.getCurrentId(), "F" + i));
 //            i++;
 //        }
-        LoggerProcessor.printDebug(LOGGER, "Player list is created: {} ", playerList);
+        LOGGER.debug( "Player list is created: {} ", playerList);
         return playerList;
     }
 
@@ -116,7 +122,7 @@ public class GameInitializer {
         for (final Player player : playerList) {
             feudalToCells.put(player, new HashSet<>());
         }
-        LoggerProcessor.printDebug(LOGGER, "{} init: {} ", "feudalToCells", feudalToCells);
+        LOGGER.debug( "{} init: {} ", "feudalToCells", feudalToCells);
         return feudalToCells;
     }
 
@@ -132,7 +138,7 @@ public class GameInitializer {
         for (final Player player : playerList) {
             mapWithPlayerKey.put(player, new ArrayList<>());
         }
-        LoggerProcessor.printDebug(LOGGER, "{} init: {} ", log, mapWithPlayerKey);
+        LOGGER.debug( "{} init: {} ", log, mapWithPlayerKey);
         return mapWithPlayerKey;
     }
 
@@ -155,7 +161,7 @@ public class GameInitializer {
         addRaceCellTypeFeaturesByRace(Race.GNOME, raceCellTypeFeatures, impossibleCatchCellFeature);
         addRaceCellTypeFeaturesByRace(Race.UNDEAD, raceCellTypeFeatures, impossibleCatchCellFeature);
 
-        LoggerProcessor.printDebug(LOGGER, "raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
+        LOGGER.debug( "raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
         return raceCellTypeFeatures;
     }
 
@@ -221,11 +227,11 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.WATER), mushroomFeaturesThird);
 
         int i = 1;
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Mushroom race added: {} ", i++, mushroomFeatures);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Mushroom race added: {} ", i++, mushroomFeaturesSecond);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Mushroom race added: {} ", i, mushroomFeaturesThird);
     }
 
@@ -244,7 +250,7 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MOUNTAIN), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.WATER), amphibianFeatures);
 
-        LoggerProcessor.printDebug(LOGGER, "Features of Amphibian race added: {} ", amphibianFeatures);
+        LOGGER.debug( "Features of Amphibian race added: {} ", amphibianFeatures);
     }
 
     /**
@@ -269,9 +275,9 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.WATER), elfFeaturesSecond);
 
         int i = 1;
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Elf race added: {} ", i++, elfFeatures);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Elf race added: {} ", i, elfFeaturesSecond);
     }
 
@@ -297,9 +303,9 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.WATER), orcFeaturesSecond);
 
         int i = 1;
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Orc race added: {} ", i++, orcFeatures);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Orc race added: {} ", i, orcFeaturesSecond);
     }
 
@@ -325,9 +331,9 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.WATER), gnomeFeaturesSecond);
 
         int i = 1;
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Gnome race added: {} ", i++, gnomeFeatures);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Gnome race added: {} ", i, gnomeFeaturesSecond);
     }
 
@@ -352,9 +358,9 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.WATER), undeadFeaturesSecond);
 
         int i = 1;
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Undead race added: {} ", i++, undeadFeatures);
-        LoggerProcessor.printDebug(LOGGER,
+        LOGGER.debug(
                 "[{}] Features of Undead race added: {} ", i, undeadFeaturesSecond);
     }
 
@@ -367,7 +373,7 @@ public class GameInitializer {
     private static List<Race> createRacesPool() {
         final List<Race> racesPool = new ArrayList<>(Race.values().length - 1);
         racesPool.addAll(Arrays.asList(Race.values()).subList(0, Race.values().length - 1));
-        LoggerProcessor.printDebug(LOGGER, "Pool of races created: {} ", racesPool);
+        LOGGER.debug( "Pool of races created: {} ", racesPool);
         return racesPool;
     }
 }

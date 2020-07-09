@@ -1,20 +1,24 @@
 package io.neolab.internship.coins.server.game.board;
 
+import io.neolab.internship.coins.server.game.Unit;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public enum CellType {
-    LAND("LAND", 1, 2),
-    MUSHROOM("MUSHROOM", 1, 2),
-    MOUNTAIN("MOUNTAIN", 1, 3),
-    WATER("WATER", 1, 1);
+    LAND("LAND", 1, 2, "L"),
+    MUSHROOM("MUSHROOM", 1, 2, "m"),
+    MOUNTAIN("MOUNTAIN", 1, 3, "M"),
+    WATER("WATER", 1, 1, "W");
 
-    private final String title;
-    private final int coinYield;
+    private String title;
+    private String view;
     private final int catchDifficulty;
+    private final int coinYield;
 
-    CellType(final String title) {
-        this(title, 1, 0);
-    }
 
-    CellType(final String title, final int coinYield, final int catchDifficulty) {
+    CellType(final String title, final int coinYield, final int catchDifficulty, final String view) {
+        this.view = view;
         this.title = title;
         this.coinYield = coinYield;
         this.catchDifficulty = catchDifficulty;
@@ -26,6 +30,10 @@ public enum CellType {
 
     public int getCoinYield() {
         return coinYield;
+    }
+
+    public String getView() {
+        return view;
     }
 
     public int getCatchDifficulty() {
