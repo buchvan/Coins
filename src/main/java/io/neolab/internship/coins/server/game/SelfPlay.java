@@ -44,7 +44,6 @@ public class SelfPlay {
             final Game game = GameInitializer.gameInit();
 
             LoggerProcessor.printDebug(LOGGER, "Game is created: {} ", game);
-            /* --- */
 
             gameLoop(game);
 
@@ -89,7 +88,7 @@ public class SelfPlay {
                         game.getRaceCellTypeFeatures(), game.getBoard());  // обновление числа монет у каждого игрока
             }
 
-            printRoundEndLog(game);
+            printRoundEndLog(game.getCurrentRound(), game.getPlayers(), game.getOwnToCells(), game.getFeudalToCells());
         }
     }
 
@@ -106,12 +105,17 @@ public class SelfPlay {
     /**
      * Вывод информации в конце раунда
      *
-     * @param game - объект, хранящий всю метаинформацию об игровых сущностях
+     * @param currentRound  - номер текущего раунда
+     * @param playerList    - список всех игроков (без нейтрального)
+     * @param ownToCells    - списки клеток, которыми владеет каждый игрок
+     * @param feudalToCells - множества клеток, приносящих каждому игроку монеты
      */
-    private static void printRoundEndLog(final Game game) {
-        LoggerProcessor.printDebug(LOGGER, "* Game after {} rounds: {} *", game.getCurrentRound());
-        LoggerProcessor.printDebug(LOGGER, "* Players after {} rounds:", game.getCurrentRound());
-        printPlayersInformation(game.getPlayers(), game.getOwnToCells(), game.getFeudalToCells());
+    private static void printRoundEndLog(final int currentRound, final List<Player> playerList,
+                                         final Map<Player, List<Cell>> ownToCells,
+                                         final Map<Player, Set<Cell>> feudalToCells) {
+        LoggerProcessor.printDebug(LOGGER, "* Game after {} rounds: {} *", currentRound);
+        LoggerProcessor.printDebug(LOGGER, "* Players after {} rounds:", currentRound);
+        printPlayersInformation(playerList, ownToCells, feudalToCells);
     }
 
     /**
