@@ -25,7 +25,7 @@ public class Game implements IGame {
 
     public Game() {
         this(new Board(), 0, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(),
-                new LinkedList<>(), new LinkedList<>(), new Player(0, "neutral"));
+                new LinkedList<>(), new LinkedList<>(), new Player("neutral"));
     }
 
     public Game(final Board board, final int currentRound, final Map<Player, Set<Cell>> feudalToCells,

@@ -10,25 +10,15 @@ public class Player {
     private String nickname;
     private Race race;
     private final Map<AvailabilityType, List<Unit>> unitStateToUnits;
-    private int coins;
+    private int coins = 0;
 
-    public Player() {
-        this(0, "Test");
-    }
-
-    public Player(final int id, final String nickname) {
-        this(id, nickname, null, 0);
-    }
-
-    public Player(final int id, final String nickname, final Race race, final int coins) {
-        this.id = id;
+    public Player(final String nickname) {
+        this.id = IdGenerator.getCurrentId();
         this.nickname = nickname;
-        this.race = race;
         this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
         for (final AvailabilityType availabilityType : AvailabilityType.values()) {
             this.unitStateToUnits.put(availabilityType, new LinkedList<>());
         }
-        this.coins = coins;
     }
 
     public int getId() {
@@ -58,20 +48,6 @@ public class Player {
      */
     public void setRace(final Race race) {
         this.race = race;
-
-        /* Чистим у игрока юниты */
-        for (final AvailabilityType availabilityType : AvailabilityType.values()) {
-            unitStateToUnits.get(availabilityType).clear();
-        }
-
-        if (race != null) {
-            /* Добавляем юнитов выбранной расы */
-            int i = 0;
-            while (i < race.getUnitsAmount()) {
-                unitStateToUnits.get(AvailabilityType.AVAILABLE).add(new Unit(IdGenerator.getCurrentId()));
-                i++;
-            }
-        }
     }
 
     public Map<AvailabilityType, List<Unit>> getUnitStateToUnits() {

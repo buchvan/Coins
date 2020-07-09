@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.game.board;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,21 +14,23 @@ public class Cell {
     private final int id;
     private final CellType type;
     private final List<Unit> units;
+    private Player feudal;
     private Player own;
     private Race race;
 
     public Cell() {
-        this(0, CellType.LAND);
+        this(CellType.LAND);
     }
 
-    public Cell(final int id, final CellType type) {
-        this(id, type, null, Race.NEUTRAL);
+    public Cell(final CellType type) {
+        this(IdGenerator.getCurrentId(), type, null, null, Race.NEUTRAL);
     }
 
-    public Cell(final int id, final CellType type, final Player own, final Race race) {
+    public Cell(final int id, final CellType type, final Player feudal, final Player own, final Race race) {
         this.id = id;
         this.type = type;
         this.units = new LinkedList<>();
+        this.feudal = feudal;
         this.own = own;
         this.race = race;
     }
@@ -46,6 +49,14 @@ public class Cell {
 
     public void setUnits(final List<Unit> units) {
         Collections.copy(this.units, units);
+    }
+
+    public Player getFeudal() {
+        return feudal;
+    }
+
+    public void setFeudal(final Player feudal) {
+        this.feudal = feudal;
     }
 
     public Player getOwn() {
@@ -72,6 +83,7 @@ public class Cell {
         return id == cell.id &&
                 type == cell.type &&
                 Objects.equals(units, cell.units) &&
+                Objects.equals(feudal, cell.feudal) &&
                 Objects.equals(own, cell.own) &&
                 race == cell.race;
     }
@@ -87,6 +99,7 @@ public class Cell {
                 "id=" + id +
                 ", type=" + type +
                 ", units=" + units +
+                ", feudal=" + feudal +
                 ", own=" + own +
                 ", race=" + race +
                 '}';
