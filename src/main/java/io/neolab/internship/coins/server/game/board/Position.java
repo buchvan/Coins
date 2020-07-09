@@ -12,29 +12,29 @@ public class Position {
     private final int y;
 
     /**
-     * Взять все соседние позиции
+     * Взять все соседние позиции,
+     * т. е. те позиции, в которые можно попасть за один шаг (по горизонтали, по вертикали и по диагонали)
      *
      * @param position - позиция, чьих соседей мы хотим узнать
      * @return список соседних с position позиций
      */
     public static List<Position> getAllNeighboringPositions(final Position position) {
         final List<Position> neighboringPositions = new LinkedList<>();
-        int strIndex;
-        int colIndex = -1;
+        int strIndex = -1;
+        int colIndex;
         /* в целом это обход всех позиций единичного квадрата с центром в position
-        без обработки самого центра position */
-        while (colIndex <= 1) { // в общем это проход по строчкам (слева направо) снизу вверх.
-            // То есть, сначала просматриваем нижнюю строчку слева направо, потом среднюю слева направо,
-            // и в конце верхнюю также - слева направо
-            strIndex = -2;
-            while (strIndex <= 1) {
-                strIndex++;
-                if (strIndex == 0 && colIndex == 0) { // если мы сейчас в центре единичного квадрата с центом в position
-                    continue;
+        без добавления самого центра position */
+        while (strIndex <= 1) { // делаем проход по строчкам (слева направо) сверху вниз.
+            // То есть, сначала просматриваем верхнюю строку слева направо, потом среднюю слева направо,
+            // и в конце нижнюю также - слева направо
+            colIndex = -1;
+            while (colIndex <= 1) {
+                if (strIndex != 0 || colIndex != 0) { // если мы сейчас не попали в position
+                    neighboringPositions.add(new Position(position.getX() + strIndex, position.getY() + colIndex));
                 }
-                neighboringPositions.add(new Position(position.getX() + strIndex, position.getY() + colIndex));
+                colIndex++;
             }
-            colIndex++;
+            strIndex++;
         }
         return neighboringPositions;
     }
