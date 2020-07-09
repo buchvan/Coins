@@ -6,7 +6,7 @@ public class Pair<T, U> {
     private T first;
     private U second;
 
-    public Pair(T first, U second) {
+    public Pair(final T first, final U second) {
         this.first = first;
         this.second = second;
     }
@@ -15,7 +15,7 @@ public class Pair<T, U> {
         return first;
     }
 
-    public void setFirst(T first) {
+    public void setFirst(final T first) {
         this.first = first;
     }
 
@@ -23,15 +23,15 @@ public class Pair<T, U> {
         return second;
     }
 
-    public void setSecond(U second) {
+    public void setSecond(final U second) {
         this.second = second;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Pair<?, ?> pair = (Pair<?, ?>) o;
+        final Pair<?, ?> pair = (Pair<?, ?>) o;
         return Objects.equals(first, pair.first) &&
                 Objects.equals(second, pair.second);
     }

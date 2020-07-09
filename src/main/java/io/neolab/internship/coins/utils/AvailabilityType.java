@@ -1,6 +1,6 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.utils;
 
-public enum UnitState {
+public enum AvailabilityType {
     AVAILABLE, // Доступный
     NOT_AVAILABLE, // Недоступный
     ;

@@ -3,6 +3,7 @@ package io.neolab.internship.coins.utils;
 import java.util.List;
 
 public class ListProcessor {
+
     /**
      * Удаление из списка list первых N элементов. Если N превышает размер списка, то список очищается
      *
@@ -12,7 +13,7 @@ public class ListProcessor {
      */
     public static <T> void removeFirstN(final int N, final List<T> list) {
         if (N < 0) {
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException(); // TODO: Своё исключение?
         }
         int i = 0;
         while (i < N && i < list.size()) {
