@@ -41,7 +41,7 @@ public class SelfPlay {
             MDC.put("logFileName", logFileName);
             LoggerProcessor.printDebug(LOGGER, "* Logging in file {} *", logFileName);
 
-            final Game game = GameInitializer.gameInit();
+            final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
 
             LoggerProcessor.printDebug(LOGGER, "Game is created: {} ", game);
 

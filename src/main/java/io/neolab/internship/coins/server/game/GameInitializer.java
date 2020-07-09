@@ -1,9 +1,12 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.factory.BoardFactory;
+import io.neolab.internship.coins.server.game.factory.IBoardFactory;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
@@ -19,10 +22,12 @@ import java.util.*;
 public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
-    public static Game gameInit() {
+
+
+    public static Game gameInit(final int boardSizeX, final int boardSizeY) throws CoinsException {
         LoggerProcessor.printDebug(LOGGER, "Init...");
 
-        final Board board = initBoard();
+        final Board board = initBoard(boardSizeX, boardSizeY);
 
         final Player neutralPlayer = createNeutralPlayer();
         final List<Player> playerList = initTestPlayers();
@@ -47,7 +52,7 @@ public class GameInitializer {
      *
      * @return инициализированную борду
      */
-    private static Board initBoard() {
+    private static Board initBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
         /* Доска из самой первой консультации по проекту */
@@ -70,6 +75,10 @@ public class GameInitializer {
         /* --- */
 
         final Board board = new Board(positionToCellMap);
+
+//        final IBoardFactory boardFactory = new BoardFactory();
+//        final Board board = boardFactory.generateBoard(boardSizeX, boardSizeY);
+
         LoggerProcessor.printDebug(LOGGER, "Board is created: {} ", board);
         return board;
     }

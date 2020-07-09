@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class BoardFactory implements IBoardFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
-    private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+    private final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
