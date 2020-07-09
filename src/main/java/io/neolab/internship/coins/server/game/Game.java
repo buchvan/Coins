@@ -13,7 +13,7 @@ public class Game implements IGame {
     private IBoard board;
     private int currentRound;
 
-    private final Map<Player, List<Cell>> feudalToCells;
+    private final Map<Player, Set<Cell>> feudalToCells;
     private final Map<Player, List<Cell>> ownToCells;
     private final Map<Player, List<Cell>> playerToTransitCells;
 
@@ -28,7 +28,7 @@ public class Game implements IGame {
                 new LinkedList<>(), new LinkedList<>(), new Player(0, "neutral"));
     }
 
-    public Game(final Board board, final int currentRound, final Map<Player, List<Cell>> feudalToCells,
+    public Game(final Board board, final int currentRound, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
                 final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
@@ -41,6 +41,10 @@ public class Game implements IGame {
         this.racesPool = racesPool;
         this.players = players;
         this.neutralPlayer = neutralPlayer;
+    }
+
+    public void incrementCurrentRound() {
+        currentRound++;
     }
 
     public IBoard getBoard() {
@@ -59,7 +63,7 @@ public class Game implements IGame {
         this.currentRound = currentRound;
     }
 
-    public Map<Player, List<Cell>> getFeudalToCells() {
+    public Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 

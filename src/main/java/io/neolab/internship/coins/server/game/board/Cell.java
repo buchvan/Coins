@@ -21,13 +21,13 @@ public class Cell {
     }
 
     public Cell(final int id, final CellType type) {
-        this(id, type, new LinkedList<>(type.getDefaultCatchUnit()), null, Race.NEUTRAL);
+        this(id, type, null, Race.NEUTRAL);
     }
 
-    public Cell(final int id, final CellType type, final List<Unit> units, final Player own, final Race race) {
+    public Cell(final int id, final CellType type, final Player own, final Race race) {
         this.id = id;
         this.type = type;
-        this.units = units;
+        this.units = new LinkedList<>();
         this.own = own;
         this.race = race;
     }
