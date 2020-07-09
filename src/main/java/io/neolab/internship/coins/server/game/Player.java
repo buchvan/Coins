@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.*;
@@ -8,7 +9,7 @@ public class Player {
     private int id;
     private String nickname;
     private Race race;
-    private final Map<UnitState, List<Unit>> unitStateToUnits;
+    private final Map<AvailabilityType, List<Unit>> unitStateToUnits;
     private int coins;
 
     public Player() {
@@ -23,9 +24,9 @@ public class Player {
         this.id = id;
         this.nickname = nickname;
         this.race = race;
-        this.unitStateToUnits = new HashMap<>(UnitState.values().length);
-        for (final UnitState unitState : UnitState.values()) {
-            this.unitStateToUnits.put(unitState, new LinkedList<>());
+        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
+        for (final AvailabilityType availabilityType : AvailabilityType.values()) {
+            this.unitStateToUnits.put(availabilityType, new LinkedList<>());
         }
         this.coins = coins;
     }
@@ -59,44 +60,40 @@ public class Player {
         this.race = race;
 
         /* Чистим у игрока юниты */
-        for (final UnitState unitState : UnitState.values()) {
-            unitStateToUnits.get(unitState).clear();
+        for (final AvailabilityType availabilityType : AvailabilityType.values()) {
+            unitStateToUnits.get(availabilityType).clear();
         }
 
         if (race != null) {
             /* Добавляем юнитов выбранной расы */
             int i = 0;
             while (i < race.getUnitsAmount()) {
-                unitStateToUnits.get(UnitState.AVAILABLE).add(new Unit(IdGenerator.getCurrentId()));
+                unitStateToUnits.get(AvailabilityType.AVAILABLE).add(new Unit(IdGenerator.getCurrentId()));
                 i++;
             }
         }
     }
 
-    public Map<UnitState, List<Unit>> getUnitStateToUnits() {
+    public Map<AvailabilityType, List<Unit>> getUnitStateToUnits() {
         return unitStateToUnits;
     }
 
-    /**
-     * Сделать всех юнитов доступными. Соответственно недоступных не останется
-     */
-    public void makeAllUnitsAvailable() {
-        unitStateToUnits
-                .get(UnitState.AVAILABLE).addAll(
-                unitStateToUnits.get(UnitState.NOT_AVAILABLE)
-        );
-        unitStateToUnits.get(UnitState.NOT_AVAILABLE).clear();
+    public List<Unit> getUnitsByState(final AvailabilityType availabilityType) {
+        return unitStateToUnits.get(availabilityType);
     }
 
     /**
-     * Сделать всех юнитов недоступными. Соответственно доступных не останется
+     * Перевести всех юнитов игрока в одно состояние
+     *
+     * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
      */
-    public void makeAllUnitsNotAvailable() {
-        unitStateToUnits
-                .get(UnitState.NOT_AVAILABLE).addAll(
-                unitStateToUnits.get(UnitState.AVAILABLE)
-        );
-        unitStateToUnits.get(UnitState.AVAILABLE).clear();
+    public void makeAllUnitsSomeState(final AvailabilityType availabilityType) {
+        for (final AvailabilityType item : AvailabilityType.values()) {
+            if (item != availabilityType) {
+                unitStateToUnits.get(availabilityType).addAll(unitStateToUnits.get(item));
+                unitStateToUnits.get(item).clear();
+            }
+        }
     }
 
     /**
@@ -104,16 +101,24 @@ public class Player {
      *
      * @param N - то число доступных юнитов, которых необходимо сделать недоступными
      */
-    public void makeNAvailableUnitsNotAvailable(final int N) {
+    public void makeNAvailableUnitsToNotAvailable(final int N) {
+        final Iterator<Unit> iterator = getUnitsByState(AvailabilityType.AVAILABLE).iterator();
         int i = 0;
-        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
-            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
-            unitStateToUnits.get(UnitState.AVAILABLE).remove(unit);
+        while (iterator.hasNext() && i < N) {
+            unitStateToUnits.get(AvailabilityType.NOT_AVAILABLE).add(iterator.next());
+            iterator.remove();
             i++;
-            if (i >= N) {
-                break;
-            }
         }
+//        int i = 0;
+//        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
+//            if (i >= N) {
+//                break;
+//            }
+//            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
+//            i++;
+//        }
+//        unitStateToUnits.get(UnitState.AVAILABLE)
+//                .removeIf(unit -> unitStateToUnits.get(UnitState.NOT_AVAILABLE).contains(unit));
     }
 
     public int getCoins() {
@@ -124,6 +129,9 @@ public class Player {
         this.coins = coins;
     }
 
+    public void increaseCoins(final int number) {
+        this.coins += number;
+    }
 
     @Override
     public boolean equals(final Object o) {
