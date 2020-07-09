@@ -363,10 +363,13 @@ public class SelfPlay {
      */
     private static void selfPlay() {
 
+        /* генерируем имя файла-лога (self-play__HH-mm-ss) */
+        final String logFileName = "self-play__" +
+                new Date().toString().split(" ")[3].replaceAll(":", "-");
+
         try {
-            /* генерируем имя файла-лога (self-play__HH-mm-ss) */
-            MDC.put("logFileName", "self-play__" + new Date().toString().split(" ")[3]
-                    .replaceAll(":", "-"));
+            MDC.put("logFileName", logFileName);
+            LoggerProcessor.printDebug(LOGGER, "* Logging in file {} *", logFileName);
 
             /* init */
             LoggerProcessor.printDebug(LOGGER, "Init...");
@@ -399,6 +402,7 @@ public class SelfPlay {
         } catch (final Exception exception) { // TODO: своё исключение
             LoggerProcessor.printError(LOGGER, "ERROR!!! ", exception);
         } finally {
+            LoggerProcessor.printDebug(LOGGER, "* Logs in file {} *", logFileName);
             MDC.remove("logFileName");
         }
     }
@@ -833,7 +837,7 @@ public class SelfPlay {
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
     private static boolean catchCellCheckFeature(final Player player, final Cell catchingCell, final boolean haveARival,
-                                        final Feature feature, final Game game) {
+                                                 final Feature feature, final Game game) {
 
         if (haveARival) {
             if (feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
