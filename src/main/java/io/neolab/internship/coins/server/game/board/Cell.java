@@ -1,8 +1,8 @@
 package io.neolab.internship.coins.server.game.board;
 
 import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.Collections;
@@ -11,27 +11,23 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cell {
-    private final int id;
+    private final int id = IdGenerator.getCurrentId();
     private final CellType type;
-    private final List<Unit> units;
-    private Player feudal;
-    private Player own;
+    private final List<Unit> units = new LinkedList<>();
+    private Player feudal = null;
+    private Player own = null;
     private Race race;
 
     public Cell() {
         this(CellType.LAND);
     }
 
-    public Cell(final CellType type) {
-        this(IdGenerator.getCurrentId(), type, null, null, Race.NEUTRAL);
+    public Cell(final CellType cellType) {
+        this(cellType, Race.NEUTRAL);
     }
 
-    public Cell(final int id, final CellType type, final Player feudal, final Player own, final Race race) {
-        this.id = id;
+    public Cell(final CellType type, final Race race) {
         this.type = type;
-        this.units = new LinkedList<>();
-        this.feudal = feudal;
-        this.own = own;
         this.race = race;
     }
 
@@ -47,7 +43,7 @@ public class Cell {
         return units;
     }
 
-    public void setUnits(final List<Unit> units) {
+    public void setUnits(List<Unit> units) {
         Collections.copy(this.units, units);
     }
 
@@ -63,7 +59,7 @@ public class Cell {
         return own;
     }
 
-    public void setOwn(final Player own) {
+    public void setOwn(Player own) {
         this.own = own;
     }
 
@@ -71,21 +67,19 @@ public class Cell {
         return race;
     }
 
-    public void setRace(final Race race) {
+    public void setRace(Race race) {
         this.race = race;
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final Cell cell = (Cell) o;
-        return id == cell.id &&
-                type == cell.type &&
-                Objects.equals(units, cell.units) &&
-                Objects.equals(feudal, cell.feudal) &&
-                Objects.equals(own, cell.own) &&
-                race == cell.race;
+        if (!(o instanceof Cell)) return false;
+        Cell cell = (Cell) o;
+        return getType() == cell.getType() &&
+                Objects.equals(getUnits(), cell.getUnits()) &&
+                Objects.equals(getOwn(), cell.getOwn()) &&
+                getRace() == cell.getRace();
     }
 
     @Override
@@ -96,8 +90,7 @@ public class Cell {
     @Override
     public String toString() {
         return "Cell{" +
-                "id=" + id +
-                ", type=" + type +
+                "type=" + type +
                 ", units=" + units +
                 ", feudal=" + feudal +
                 ", own=" + own +
