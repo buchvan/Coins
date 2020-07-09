@@ -10,7 +10,6 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-//TODO: add cases with exceptions
 public class BoardFactoryTest {
 
     @Test
@@ -20,9 +19,9 @@ public class BoardFactoryTest {
 
     @Test
     public void generateBoardBalanced1Test() throws CoinsException {
-        Board board = generateBoard(3, 4);
-        List<CellType> cellTypes = fillCellTypes();
-        for (CellType cellType : cellTypes) {
+        final Board board = generateBoard(3, 4);
+        final List<CellType> cellTypes = fillCellTypes();
+        for (final CellType cellType : cellTypes) {
             assertEquals(3,
                     board
                             .getPositionToCellMap()
@@ -44,11 +43,11 @@ public class BoardFactoryTest {
         final int width = 5;
         final int height = 5;
         final int cellsAmount = width * height;
-        Board board = generateBoard(width, height);
-        List<CellType> cellTypes = fillCellTypes();
-        int cellTypesAmount = cellTypes.size();
+        final Board board = generateBoard(width, height);
+        final List<CellType> cellTypes = fillCellTypes();
+        final int cellTypesAmount = cellTypes.size();
         final int bound = cellsAmount / cellTypesAmount + cellsAmount % cellTypesAmount;
-        for (CellType cellType : cellTypes) {
+        for (final CellType cellType : cellTypes) {
             assertTrue(
                     board
                             .getPositionToCellMap()
@@ -66,12 +65,12 @@ public class BoardFactoryTest {
     }
 
     private Board generateBoard(final int wight, final int height) throws CoinsException {
-        BoardFactory boardFactory = new BoardFactory();
+        final BoardFactory boardFactory = new BoardFactory();
         return boardFactory.generateBoard(wight, height);
     }
 
     private List<CellType> fillCellTypes() {
-        List<CellType> cellTypes = new ArrayList<>();
+        final List<CellType> cellTypes = new ArrayList<>();
         cellTypes.add(CellType.WATER);
         cellTypes.add(CellType.LAND);
         cellTypes.add(CellType.MOUNTAIN);

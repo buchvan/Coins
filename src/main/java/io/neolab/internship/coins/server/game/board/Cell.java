@@ -5,29 +5,25 @@ import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.utils.IdGenerator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Cell {
-    private int id;
+    private final int id = IdGenerator.getCurrentId();
     private CellType type;
-    private List<Unit> units = new ArrayList<>();
+    private final List<Unit> units = new LinkedList<>();
     private Player own = null;
     private Race race = Race.NEUTRAL;
 
     public Cell() {
     }
 
-    public Cell(CellType cellType) {
-        this(cellType, new ArrayList<>(), null, Race.NEUTRAL);
+    public Cell(final CellType cellType) {
+        this(cellType, new LinkedList<>(), null, Race.NEUTRAL);
     }
 
-    public Cell(CellType type, List<Unit> units, Player own, Race race) {
-        this.id = IdGenerator.getCurrentId();
+    public Cell(final CellType type, final List<Unit> units, Player own, final Race race) {
         this.type = type;
-        this.units = units;
+        Collections.copy(this.units, units);
         this.own = own;
         this.race = race;
     }
@@ -40,7 +36,7 @@ public class Cell {
         return type;
     }
 
-    public void setType(CellType type) {
+    public void setType(final CellType type) {
         this.type = type;
     }
 
@@ -48,7 +44,7 @@ public class Cell {
         return units;
     }
 
-    public void setUnits(List<Unit> units) {
+    public void setUnits(final List<Unit> units) {
         Collections.copy(this.units, units);
     }
 
@@ -64,7 +60,7 @@ public class Cell {
         return race;
     }
 
-    public void setRace(Race race) {
+    public void setRace(final Race race) {
         this.race = race;
     }
 
@@ -82,5 +78,16 @@ public class Cell {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    @Override
+    public String toString() {
+        return "Cell{" +
+                "id=" + id +
+                ", type=" + type +
+                ", units=" + units +
+                ", own=" + own +
+                ", race=" + race +
+                '}';
     }
 }

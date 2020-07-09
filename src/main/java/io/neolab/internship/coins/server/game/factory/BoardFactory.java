@@ -30,20 +30,20 @@ public class BoardFactory implements IBoardFactory {
      */
     @Override
     public Board generateBoard(final int width, final int height) throws CoinsException {
-        LOGGER.info("Start generating board with width " + width + " height " + height);
+        LOGGER.debug("Start generating board with width {} and height {}", width, height);
         if (width < 2 || height < 2) {
-            LOGGER.info("Board generation with width " + width + " and height " + height + " failed");
+            LOGGER.error("Board generation with width {} and height {} failed", width, height);
             throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
         }
         final int cellAmount = width * height;
         final List<CellType> cellTypes = loadCellTypePool();
-        StringBuilder logBoardString = new StringBuilder("\n");
+        final StringBuilder logBoardString = new StringBuilder("\n");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
-                CellType currentCellType = cellTypes.get(currentCellTypeIndex);
-                addCellTypeTitleToLogStr(currentCellType, logBoardString);
+                final int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
+                final CellType currentCellType = cellTypes.get(currentCellTypeIndex);
                 positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
+                logBoardString.append(currentCellType.getView()).append(" ");
             }
             logBoardString.append("\n");
         }
@@ -51,8 +51,17 @@ public class BoardFactory implements IBoardFactory {
         return new Board(positionToCellMap);
     }
 
+    /**
+     * При взятии очередного типа клетки по индексу проверяем,
+     * не нарушается ли принцип сбалансированности территории:
+     * считаем количество клеток текущего выбранного типа
+     * и сравниваем с максимально возможным количеством клеток данного типа
+     * @param cellAmount количество клеток на доске
+     * @param cellTypes лист с доступными типами клеток
+     * @return допустимый индекс, по которому в листе можно взять тип клетки
+     */
     private int getAllowedCellTypeIndex(final List<CellType> cellTypes, final int cellAmount) {
-        Random random = new Random();
+        final Random random = new Random();
         final int cellTypesAmount = cellTypes.size();
         /*Взятие остатка для случая нечетного количества клеток*/
         final int cellTypesAmountRange = cellAmount / cellTypesAmount + cellAmount % cellTypesAmount;
@@ -60,7 +69,7 @@ public class BoardFactory implements IBoardFactory {
         boolean isCellTypeAvailable = false;
         while (!isCellTypeAvailable) {
             randomCellTypeIndex = random.nextInt(cellTypesAmount);
-            CellType currentCellType = cellTypes.get(randomCellTypeIndex);
+            final CellType currentCellType = cellTypes.get(randomCellTypeIndex);
             isCellTypeAvailable = positionToCellMap
                     .values()
                     .stream()
@@ -71,20 +80,11 @@ public class BoardFactory implements IBoardFactory {
     }
 
     private List<CellType> loadCellTypePool() {
-        List<CellType> cellTypes = new ArrayList<>();
+        final List<CellType> cellTypes = new ArrayList<>(CellType.values().length);
         cellTypes.add(CellType.LAND);
         cellTypes.add(CellType.MOUNTAIN);
         cellTypes.add(CellType.MUSHROOM);
         cellTypes.add(CellType.WATER);
         return cellTypes;
-    }
-
-    private void addCellTypeTitleToLogStr(CellType currentCellType, StringBuilder logBoardString) {
-        if (currentCellType == CellType.MUSHROOM) {
-            logBoardString.append(currentCellType.getTitle().substring(0, 1).toLowerCase());
-        } else {
-            logBoardString.append(currentCellType.getTitle(), 0, 1);
-        }
-        logBoardString.append(" ");
     }
 }
