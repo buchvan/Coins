@@ -4,10 +4,10 @@ public enum ErrorCode {
     WRONG_BOARD_SIZES("Wrong board sizes");
     //other...
 
-    private String message;
+    private final String message;
 
 
-    ErrorCode(String message) {
+    ErrorCode(final String message) {
         this.message = message;
     }
 
