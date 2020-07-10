@@ -15,9 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static io.neolab.internship.coins.server.game.service.GameLogger.*;
-
 public class BoardFactory implements IBoardFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
     private final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
     /**
@@ -25,15 +24,15 @@ public class BoardFactory implements IBoardFactory {
      * 1 версия: Каждый тип клетки встречается по три раза
      * Координаты начинаются в левом верхнем углу
      *
-     * @param boardSizeX  высота
+     * @param boardSizeX высота
      * @param boardSizeY ширина
      * @return new Board
      */
     @Override
     public Board generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
-        printStartBoardGenerationLog(boardSizeX, boardSizeY);
+        LOGGER.debug("Start generating board with width {} and height {}", boardSizeY, boardSizeX);
         if (boardSizeX < 2 || boardSizeY < 2) {
-            printBoardFailedGenerationLog(boardSizeX, boardSizeY);
+            LOGGER.error("Board generation with width {} and height {} failed", boardSizeY, boardSizeX);
             throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
         }
         final int cellAmount = boardSizeX * boardSizeY;
@@ -48,7 +47,11 @@ public class BoardFactory implements IBoardFactory {
             }
             logBoardString.append("\n");
         }
-        printBoardInfoLog(logBoardString.toString());
+        /*
+        * Вывод лога о результате генерации игровой доски
+        * Обозначение: m - грибы, M - горы, L - земля, W - вода
+        */
+        LOGGER.info(logBoardString.toString());
         return new Board(positionToCellMap);
     }
 

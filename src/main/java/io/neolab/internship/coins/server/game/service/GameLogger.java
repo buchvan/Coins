@@ -397,35 +397,4 @@ public class GameLogger {
         LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         LOGGER.error(message, exception);
     }
-
-    /**
-     *
-     * Вывод лога о начале генерации игровой доски
-     * @param sizeX высота
-     * @param sizeY ширина
-     */
-    public static void printStartBoardGenerationLog(final int sizeX, final int sizeY) {
-        LOGGER.debug("Start generating board with width {} and height {}", sizeY, sizeX);
-    }
-
-    /**
-     *
-     * Вывод лога о результате генерации игровой доски
-     * Обозначение: m - грибы, M - горы, L - земля, W - вода
-     *
-     * @param boardScheme наглядная схема карты
-     */
-    public static void printBoardInfoLog(final String boardScheme) {
-        LOGGER.info(boardScheme);
-    }
-
-    /**
-     *
-     * Вывод лога об ошибке генерации игровой доски
-     * @param sizeX высота
-     * @param sizeY ширина
-     */
-    public static void printBoardFailedGenerationLog(final int sizeX, final int sizeY) {
-        LOGGER.error("Board generation with width {} and height {} failed", sizeY, sizeX);
-    }
 }
