@@ -77,9 +77,6 @@ public class GameInitializer {
 
         final Board board = new Board(positionToCellMap);
 
-//        final IBoardFactory boardFactory = new BoardFactory();
-//        final Board board = boardFactory.generateBoard(boardSizeX, boardSizeY);
-
         LOGGER.debug("Board is created: {} ", board);
         return board;
     }
