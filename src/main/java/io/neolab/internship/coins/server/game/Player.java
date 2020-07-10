@@ -9,7 +9,7 @@ public class Player {
     private int id;
     private String nickname;
     private Race race;
-    private final Map<AvailabilityType, List<Unit>> unitStateToUnits;
+    private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
     private int coins = 0;
 
     public Player(final String nickname) {

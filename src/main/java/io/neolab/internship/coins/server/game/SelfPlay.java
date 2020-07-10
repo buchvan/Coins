@@ -224,12 +224,12 @@ public class SelfPlay {
                 какими войсками захватывать и
                  ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
 
-            final Cell catchCell = chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
-            if (catchCellAttempt(player, catchCell, neutralPlayer, board, raceCellTypeFeatures,
+            final Cell catchingCell = chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
+            if (catchCellAttempt(player, catchingCell, neutralPlayer, board, raceCellTypeFeatures,
                     ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
 
-                achievableCells.remove(catchCell);
-                achievableCells.addAll(getAllNeighboringCells(board, catchCell));
+                achievableCells.remove(catchingCell);
+                achievableCells.addAll(getAllNeighboringCells(board, catchingCell));
                 achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
             }
         }
@@ -351,7 +351,7 @@ public class SelfPlay {
      *
      * @param raceCellTypeFeatures - особенности для каждой пары (раса, тип клетки)
      * @param catchingCell         - захватываемая клетка
-     * @return число юнитов, необходимое для захвата клетки catchCell
+     * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     private static int getUnitsCountNeededToCatchCell(final Map<Pair<Race, CellType>, List<Feature>>
                                                               raceCellTypeFeatures,
@@ -360,7 +360,7 @@ public class SelfPlay {
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         for (final Feature feature : raceCellTypeFeatures.getOrDefault(
                 new Pair<>(catchingCell.getRace(),
-                        catchingCell.getType()), new LinkedList<>())) { // Смотрим все особенности владельца
+                        catchingCell.getType()), Collections.emptyList())) { // Смотрим все особенности владельца
 
             if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                 unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
@@ -380,7 +380,7 @@ public class SelfPlay {
      * @param player               - игрок-агрессор
      * @param raceCellTypeFeatures - особенности для каждой пары (раса, тип клетки)
      * @param catchingCell         - захватываемая клетка
-     * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchCell
+     * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     private static int getBonusAttackToCatchCell(final Player player,
                                                  final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
@@ -438,7 +438,7 @@ public class SelfPlay {
 
         for (final Feature feature : raceCellTypeFeatures.getOrDefault(
                 new Pair<>(player.getRace(), catchingCell.getType()),
-                new LinkedList<>())) { // Смотрим все особенности агрессора
+                Collections.emptyList())) { // Смотрим все особенности агрессора
 
             catchingCellIsFeudalizable =
                     catchingCellIsFeudalizable &&
@@ -603,10 +603,6 @@ public class SelfPlay {
      */
     private static void freeTransitCells(final Player player, final List<Cell> transitCells,
                                          final List<Cell> controlledCells) {
-        /* Так можно найти транзитные клетки: */
-//        final List<Cell> transitCells = new LinkedList<>(game.getOwnToCells().get(player));
-//        transitCells.removeIf(game.getFeudalToCells().get(player)::contains);
-
         GameLogger.printTransitCellsLog(player, transitCells);
 
         /* Игрок покидает каждую транзитную клетку */

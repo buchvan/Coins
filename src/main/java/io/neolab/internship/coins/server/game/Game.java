@@ -13,9 +13,14 @@ public class Game implements IGame {
     private IBoard board;
     private int currentRound;
 
-    private final Map<Player, Set<Cell>> feudalToCells;
-    private final Map<Player, List<Cell>> ownToCells;
-    private final Map<Player, List<Cell>> playerToTransitCells;
+    private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
+    private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
+    private final Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток, которые он контролирует,
+    // но которые не приносят ему монет
+
+    /* Так можно найти список транзитных клетки одного игрока: */
+//        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
+//        transitCells.removeIf(feudalToCells.get(player)::contains);
 
     private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
     private final List<Race> racesPool;
@@ -80,11 +85,7 @@ public class Game implements IGame {
     }
 
     public List<Feature> getFeaturesByRaceAndCellType(final Race race, final CellType cellType) {
-        final List<Feature> features = getRaceCellTypeFeatures().get(new Pair<>(race, cellType));
-        if (features == null) {
-            return new LinkedList<>();
-        }
-        return features;
+        return getRaceCellTypeFeatures().getOrDefault(new Pair<>(race, cellType), Collections.emptyList());
     }
 
     public List<Race> getRacesPool() {
