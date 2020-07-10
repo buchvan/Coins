@@ -3,13 +3,15 @@ package io.neolab.internship.coins.server.game.board;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class Board implements IBoard {
     private final BidiMap<Position, Cell> positionToCellMap;
 
     public Board(final BidiMap<Position, Cell> positionToCellMap) {
-        this.positionToCellMap = positionToCellMap;
+        this.positionToCellMap = new DualHashBidiMap<>();
+        positionToCellMap.forEach(this.positionToCellMap::put);
     }
 
     public Board() {

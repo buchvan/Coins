@@ -41,11 +41,6 @@ public class Player {
         return race;
     }
 
-    /**
-     * Сеттер, который помимо замены расы обновляет списки юнитов
-     *
-     * @param race - новая раса игрока
-     */
     public void setRace(final Race race) {
         this.race = race;
     }
@@ -56,45 +51,6 @@ public class Player {
 
     public List<Unit> getUnitsByState(final AvailabilityType availabilityType) {
         return unitStateToUnits.get(availabilityType);
-    }
-
-    /**
-     * Перевести всех юнитов игрока в одно состояние
-     *
-     * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
-     */
-    public void makeAllUnitsSomeState(final AvailabilityType availabilityType) {
-        for (final AvailabilityType item : AvailabilityType.values()) {
-            if (item != availabilityType) {
-                unitStateToUnits.get(availabilityType).addAll(unitStateToUnits.get(item));
-                unitStateToUnits.get(item).clear();
-            }
-        }
-    }
-
-    /**
-     * Сделать первые N доступных юнитов недоступными
-     *
-     * @param N - то число доступных юнитов, которых необходимо сделать недоступными
-     */
-    public void makeNAvailableUnitsToNotAvailable(final int N) {
-        final Iterator<Unit> iterator = getUnitsByState(AvailabilityType.AVAILABLE).iterator();
-        int i = 0;
-        while (iterator.hasNext() && i < N) {
-            unitStateToUnits.get(AvailabilityType.NOT_AVAILABLE).add(iterator.next());
-            iterator.remove();
-            i++;
-        }
-//        int i = 0;
-//        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
-//            if (i >= N) {
-//                break;
-//            }
-//            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
-//            i++;
-//        }
-//        unitStateToUnits.get(UnitState.AVAILABLE)
-//                .removeIf(unit -> unitStateToUnits.get(UnitState.NOT_AVAILABLE).contains(unit));
     }
 
     public int getCoins() {

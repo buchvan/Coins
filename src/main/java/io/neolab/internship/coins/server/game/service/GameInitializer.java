@@ -1,6 +1,8 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.game.service;
 
-import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;

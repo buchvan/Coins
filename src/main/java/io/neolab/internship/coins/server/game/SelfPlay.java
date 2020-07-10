@@ -4,6 +4,10 @@ import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
+import io.neolab.internship.coins.server.game.service.GameFinalizer;
+import io.neolab.internship.coins.server.game.service.GameInitializer;
+import io.neolab.internship.coins.server.game.service.GameLogger;
+import io.neolab.internship.coins.server.game.service.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
 import org.slf4j.MDC;
 
@@ -21,29 +25,19 @@ public class SelfPlay {
     /**
      * Игра сама с собой (self play)
      * - Создание борды
-     * - Добавление метаинформации о борде (игроки, количество юнитов и т.п.)
-     * - игровой цикл
-     * - финализатор (результат работы)
+     * - Добавление метаинформации о игре(борда, игроки, юниты)
+     * - Игровой цикл
+     * - Финализатор (результат работы)
      */
     private static void selfPlay() {
 
-        /* генерируем имя файла-лога (self-play__HH-mm-ss) */
-        final String logFileName = "self-play__" +
-                new Date().toString()
-                        .split(" ")[3]
-                        .replaceAll(":", "-");
-        try {
-            MDC.put("logFileName", logFileName); // в logback.xml по этому ключу берётся имя файла для лога
-            GameLogger.printLogFileLog(logFileName);
+        try(final GameLoggerFile loggerFile = new GameLoggerFile()) {
             final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
-            finalize(game.getPlayers());
+            GameFinalizer.finalize(game.getPlayers());
         } catch (final Exception exception) { // TODO: своё исключение
             GameLogger.printErrorLog(exception);
-        } finally {
-            GameLogger.printLogFileLog(logFileName);
-            MDC.remove("logFileName");
         }
     }
 
@@ -119,7 +113,7 @@ public class SelfPlay {
      * @param controlledCells - принадлежащие игроку клетки
      */
     private static void playerRoundBeginUpdate(final Player player, final List<Cell> controlledCells) {
-        player.makeAllUnitsSomeState(AvailabilityType.AVAILABLE);
+        makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
         controlledCells.forEach(cell -> cell.getUnits().clear());
     }
 
@@ -130,7 +124,7 @@ public class SelfPlay {
      * @param player - игрок, чьи данные нужно обновить согласно методу
      */
     private static void playerRoundEndUpdate(final Player player) {
-        player.makeAllUnitsSomeState(AvailabilityType.NOT_AVAILABLE);
+        makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
     }
 
     /**
@@ -184,7 +178,7 @@ public class SelfPlay {
      * @param racesPool - пул всех доступных рас
      */
     private static void chooseRace(final Player player, final List<Race> racesPool) {
-        final Race newRace = chooseItemFromList(racesPool);
+        final Race newRace = RandomGenerator.chooseItemFromList(racesPool);
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
 
@@ -195,6 +189,47 @@ public class SelfPlay {
             i++;
         }
         GameLogger.printChooseRaceLog(player, newRace);
+    }
+
+    /**
+     * Перевести всех юнитов игрока в одно состояние
+     *
+     * @param player - игрок, чьих юнитов нужно перевести в одно состояние
+     * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
+     */
+    private static void makeAllUnitsSomeState(final Player player, final AvailabilityType availabilityType) {
+        for (final AvailabilityType item : AvailabilityType.values()) {
+            if (item != availabilityType) {
+                player.getUnitStateToUnits().get(availabilityType).addAll(player.getUnitStateToUnits().get(item));
+                player.getUnitStateToUnits().get(item).clear();
+            }
+        }
+    }
+
+    /**
+     * Сделать первые N доступных юнитов игрока недоступными
+     *
+     * @param player - игрок, первые N доступных юнитов которого нужно сделать недоступными
+     * @param N - то число доступных юнитов, которых необходимо сделать недоступными
+     */
+    private static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
+        final Iterator<Unit> iterator = player.getUnitsByState(AvailabilityType.AVAILABLE).iterator();
+        int i = 0;
+        while (iterator.hasNext() && i < N) {
+            player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).add(iterator.next());
+            iterator.remove();
+            i++;
+        }
+//        int i = 0;
+//        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
+//            if (i >= N) {
+//                break;
+//            }
+//            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
+//            i++;
+//        }
+//        unitStateToUnits.get(UnitState.AVAILABLE)
+//                .removeIf(unit -> unitStateToUnits.get(UnitState.NOT_AVAILABLE).contains(unit));
     }
 
     /**
@@ -224,7 +259,8 @@ public class SelfPlay {
                 какими войсками захватывать и
                  ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
 
-            final Cell catchingCell = chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
+            final Cell catchingCell = RandomGenerator
+                    .chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
             if (catchCellAttempt(player, catchingCell, neutralPlayer, board, raceCellTypeFeatures,
                     ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
 
@@ -330,7 +366,7 @@ public class SelfPlay {
                                             final List<Cell> transitCells) {
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
 
-        final int unitsCount = chooseNumber(player.getUnitsByState(
+        final int unitsCount = RandomGenerator.chooseNumber(player.getUnitsByState(
                 AvailabilityType.AVAILABLE).size()); // число юнитов, которое игрок хочет направить в эту клетку
 
         GameLogger.printCatchCellUnitsQuantityLog(player, unitsCount);
@@ -429,7 +465,7 @@ public class SelfPlay {
                                   final Map<Player, Set<Cell>> feudalToCells,
                                   final List<Cell> transitCells) {
 
-        player.makeNAvailableUnitsToNotAvailable(tiredUnitsCount); // все юниты, задействованные в захвате клетки,
+        makeNAvailableUnitsToNotAvailable(player, tiredUnitsCount); // все юниты, задействованные в захвате клетки,
         // становятся недоступными
 
         final Player defendingPlayer = catchingCell.getOwn();
@@ -572,7 +608,7 @@ public class SelfPlay {
                                           final List<Cell> controlledCells, final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
         freeTransitCells(player, transitCells, controlledCells);
-        player.makeAllUnitsSomeState(
+        makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.size() > 0) { // Если есть куда распределять войска
@@ -580,10 +616,10 @@ public class SelfPlay {
                 /* Пока есть какие войска распределять и
                 ответ "ДА" от игрока на вопрос: "Продолжить распределять войска?" */
 
-                final Cell protectedCell = chooseItemFromList(
+                final Cell protectedCell = RandomGenerator.chooseItemFromList(
                         controlledCells); // клетка, в которую игрок хочет распределить войска
 
-                final int unitsCount = chooseNumber(
+                final int unitsCount = RandomGenerator.chooseNumber(
                         availableUnits.size()); // число юнитов, которое игрок хочет распределить в эту клетку
 
                 GameLogger.printCellDefendingLog(player, unitsCount, board.getPositionByCell(protectedCell));
@@ -614,27 +650,6 @@ public class SelfPlay {
     }
 
     /**
-     * Выбрать элемент из списка (подбросить монетку)
-     *
-     * @param list - список доступных на выбор клеток
-     * @return выбранный элемент
-     */
-    private static <T> T chooseItemFromList(final List<T> list) {
-        final int numberOfCell = chooseNumber(list.size()); // номер выбранной клетки из списка
-        return list.get(numberOfCell);
-    }
-
-    /**
-     * Выбрать число (подбросить монетку)
-     *
-     * @param bound - граница подходящего числа
-     * @return выбранное число
-     */
-    private static int chooseNumber(final int bound) {
-        return random.nextInt(bound);
-    }
-
-    /**
      * Защитить клетку: владелец помещает в ней своих юнитов
      *
      * @param player         - владелец (в этой ситуации он же - феодал)
@@ -646,7 +661,7 @@ public class SelfPlay {
                                     final Cell protectedCell, final int unitsCount) {
         protectedCell.getUnits()
                 .addAll(availableUnits.subList(0, unitsCount)); // отправить первые unitsCount доступных юнитов
-        player.makeNAvailableUnitsToNotAvailable(unitsCount);
+        makeNAvailableUnitsToNotAvailable(player, unitsCount);
         GameLogger.printCellAfterDefendingLog(player, protectedCell);
     }
 
@@ -701,46 +716,6 @@ public class SelfPlay {
                         GameLogger.printPlayerCoinsCountByCellTypeGroupUpdatingLog(player, cell.getType());
                     }
                 });
-    }
-
-    /**
-     * Финализатор selfPlay'я. Выводит победителей в лог.
-     *
-     * @param playerList - список игроков.
-     */
-    private static void finalize(final List<Player> playerList) {
-        final int maxCoinsCount = getMaxCoinsCount(playerList);
-        if (maxCoinsCount == -1) {
-            GameLogger.printErrorLog("max count of coins < 0 !!!");
-            return;
-        } // else
-        GameLogger.printResultsInGameEnd(getWinners(maxCoinsCount, playerList), playerList);
-    }
-
-    /**
-     * @param playerList - список игроков
-     * @return максимальное кол-во монет, имеющихся у одного игрока
-     */
-    private static int getMaxCoinsCount(final List<Player> playerList) {
-        return playerList.stream()
-                .map(Player::getCoins)
-                .max(Integer::compareTo)
-                .orElse(-1);
-    }
-
-    /**
-     * @param maxCoinsCount - максимальное кол-во монет, имеющихся у одного игрока
-     * @param playerList    - - список игроков
-     * @return список победителей (игроков, имеющих монет в кол-ве maxCoinsCount)
-     */
-    private static List<Player> getWinners(final int maxCoinsCount, final List<Player> playerList) {
-        final List<Player> winners = new LinkedList<>();
-        playerList.forEach(player -> {
-            if (player.getCoins() == maxCoinsCount) {
-                winners.add(player);
-            }
-        });
-        return winners;
     }
 
 

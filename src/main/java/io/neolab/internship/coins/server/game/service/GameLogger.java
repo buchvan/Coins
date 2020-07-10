@@ -1,8 +1,10 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.game.service;
 
+import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.slf4j.Logger;
@@ -374,16 +376,6 @@ public class GameLogger {
                 LOGGER.info("Player {} - coins {} ", player.getNickname(), player.getCoins());
             }
         });
-    }
-
-    /**
-     * Вывод лога об ошибке
-     *
-     * @param message - сообщение об ошибке
-     */
-    public static void printErrorLog(final String message) {
-        LOGGER.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        LOGGER.error(message);
     }
 
     /**
