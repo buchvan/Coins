@@ -57,7 +57,7 @@ public class SelfPlay {
             game.getPlayers()
                     .forEach(player -> {
                         GameLogger.printNextPlayerLog(player);
-                        playerRound(player, game.getNeutralPlayer(), game.getBoard(), game.getRacesPool(),
+                        playerRound(player, game.getBoard(), game.getRacesPool(),
                                 game.getGameFeatures(), game.getOwnToCells(), game.getFeudalToCells(),
                                 game.getPlayerToTransitCells().get(player)
                         ); // раунд игрока. Все свои решения он принимает здесь
@@ -75,16 +75,15 @@ public class SelfPlay {
     /**
      * Раунд в исполнении игрока
      *
-     * @param player               - игрок, который исполняет раунд
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param racesPool            - пул всех доступных рас
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, который исполняет раунд
+     * @param board         - борда
+     * @param racesPool     - пул всех доступных рас
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
-    private static void playerRound(final Player player, final Player neutralPlayer, final IBoard board,
+    private static void playerRound(final Player player, final IBoard board,
                                     final List<Race> racesPool,
                                     final GameFeatures gameFeatures,
                                     final Map<Player, List<Cell>> ownToCells,
@@ -93,11 +92,10 @@ public class SelfPlay {
 
         playerRoundBeginUpdate(player, ownToCells.get(player));  // активация данных игрока в начале раунда
         if (isSayYes()) { // В случае ответа "ДА" от игрока на вопрос: "Идти в упадок?"
-            declineRace(player, neutralPlayer, racesPool,
+            declineRace(player, racesPool,
                     ownToCells.get(player), feudalToCells.get(player)); // Уход в упадок
         }
-        catchCells(player, neutralPlayer, board, gameFeatures,
-                ownToCells, feudalToCells, transitCells); // Завоёвывание клеток
+        catchCells(player, board, gameFeatures, ownToCells, feudalToCells, transitCells); // Завоёвывание клеток
 
         distributionUnits(player, transitCells, ownToCells.get(player), board); // Распределение войск
         playerRoundEndUpdate(player); // "затухание" (дезактивация) данных игрока в конце раунда
@@ -139,18 +137,18 @@ public class SelfPlay {
      * Процесс упадка: потеря контроля над всеми клетками с сохранением от них дохода, выбор новой расы
      *
      * @param player          - игрок, который решил идти в упадок
-     * @param neutralPlayer   - нейтральный игрок
      * @param racesPool       - пул всех доступных рас
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
-    private static void declineRace(final Player player, final Player neutralPlayer,
-                                    final List<Race> racesPool, final List<Cell> controlledCells,
+    private static void declineRace(final Player player,
+                                    final List<Race> racesPool,
+                                    final List<Cell> controlledCells,
                                     final Set<Cell> feudalCells) {
         GameLogger.printDeclineRaceLog(player);
         feudalCells
                 .forEach(cell ->
-                        cell.setOwn(neutralPlayer)); // Освобождаем все занятые игроком клетки (юниты остаются там же)
+                        cell.setOwn(null)); // Освобождаем все занятые игроком клетки (юниты остаются там же)
         controlledCells.clear();
         changeRace(player, racesPool);
     }
@@ -234,15 +232,14 @@ public class SelfPlay {
     /**
      * Метод для завоёвывания клеток игроком
      *
-     * @param player               - игрок, проводящий завоёвывание
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, проводящий завоёвывание
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
-    private static void catchCells(final Player player, final Player neutralPlayer,
+    private static void catchCells(final Player player,
                                    final IBoard board,
                                    final GameFeatures gameFeatures,
                                    final Map<Player, List<Cell>> ownToCells,
@@ -260,7 +257,7 @@ public class SelfPlay {
 
             final Cell catchingCell = RandomGenerator
                     .chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
-            if (catchCellAttempt(player, catchingCell, neutralPlayer, board, gameFeatures,
+            if (catchCellAttempt(player, catchingCell, board, gameFeatures,
                     ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
 
                 achievableCells.remove(catchingCell);
@@ -349,7 +346,6 @@ public class SelfPlay {
      *
      * @param player        - игрок, захватывающий клетку
      * @param catchingCell  - захватываемая клетка
-     * @param neutralPlayer - нейтральный игрок
      * @param board         - борда
      * @param gameFeatures  - особенности игры
      * @param ownToCells    - список подконтрольных клеток для каждого игрока
@@ -357,7 +353,7 @@ public class SelfPlay {
      * @param transitCells  - транзитные клетки игрока
      * @return true - если попытка увенчалась успехом, false - иначе
      */
-    private static boolean catchCellAttempt(final Player player, final Cell catchingCell, final Player neutralPlayer,
+    private static boolean catchCellAttempt(final Player player, final Cell catchingCell,
                                             final IBoard board,
                                             final GameFeatures gameFeatures,
                                             final Map<Player, List<Cell>> ownToCells,
@@ -375,7 +371,7 @@ public class SelfPlay {
             GameLogger.printCatchCellNotCapturedLog(player);
             return false;
         } // else
-        catchCell(player, catchingCell, unitsCountNeededToCatch - bonusAttack, neutralPlayer,
+        catchCell(player, catchingCell, unitsCountNeededToCatch - bonusAttack,
                 gameFeatures, ownToCells, feudalToCells, transitCells);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
@@ -385,7 +381,7 @@ public class SelfPlay {
      * Метод получения числа юнитов, необходимых для захвата клетки
      *
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     private static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
@@ -411,9 +407,9 @@ public class SelfPlay {
     /**
      * Метод получения бонуса атаки при захвате клетки
      *
-     * @param player               - игрок-агрессор
+     * @param player       - игрок-агрессор
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     private static int getBonusAttackToCatchCell(final Player player,
@@ -446,18 +442,17 @@ public class SelfPlay {
     /**
      * Захватить клетку
      *
-     * @param player               - игрок-агрессор
-     * @param catchingCell         - захватываемая клетка
-     * @param tiredUnitsCount      - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param neutralPlayer        - нейтральный игрок
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
-     *                             (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player          - игрок-агрессор
+     * @param catchingCell    - захватываемая клетка
+     * @param tiredUnitsCount - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param gameFeatures    - особенности игры
+     * @param ownToCells      - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells   - множества клеток для каждого феодала
+     * @param transitCells    - транзитные клетки игрока
+     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     private static void catchCell(final Player player, final Cell catchingCell,
-                                  final int tiredUnitsCount, final Player neutralPlayer,
+                                  final int tiredUnitsCount,
                                   final GameFeatures gameFeatures,
                                   final Map<Player, List<Cell>> ownToCells,
                                   final Map<Player, Set<Cell>> feudalToCells,
@@ -468,7 +463,7 @@ public class SelfPlay {
 
         final Player defendingPlayer = catchingCell.getOwn();
         boolean catchingCellIsFeudalizable = true;
-        final boolean haveARival = isAlivePlayer(defendingPlayer, neutralPlayer);
+        final boolean haveARival = isAlivePlayer(defendingPlayer);
 
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 player.getRace(), catchingCell.getType())) { // Смотрим все особенности агрессора
@@ -477,7 +472,7 @@ public class SelfPlay {
                     catchingCellIsFeudalizable &&
                             catchCellCheckFeature(catchingCell, haveARival, feature);
         }
-        if (defendingPlayer != null) {
+        if (isAlivePlayer(defendingPlayer)) {
             depriveCellFeudalAndOwner(catchingCell, haveARival, ownToCells.get(player), feudalToCells.get(player));
         }
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
@@ -486,26 +481,13 @@ public class SelfPlay {
     }
 
     /**
-     * Является ли игрок "живым", т. е. не ссылкой null и не нейтральным игроком?
+     * Является ли игрок "живым", т. е. не ссылкой null?
      *
      * @param player        - игрок, про которого необходимо выяснить, является ли он нейтральным
-     * @param neutralPlayer - нейтральный игрок
      * @return true - если игрок player не нейтрален в игре game, false - иначе
      */
-    private static boolean isAlivePlayer(final Player player, final Player neutralPlayer) {
-        return player != null && isNotNeutralPlayer(player, neutralPlayer);
-    }
-
-    /**
-     * Является ли игрок нейтральным?
-     *
-     * @param player        - игрок, про которого необходимо выяснить, является ли он нейтральным
-     * @param neutralPlayer - нейтральный игрок
-     * @return true - если игрок player не нейтрален в игре game, false - иначе
-     */
-    private static boolean isNotNeutralPlayer(final Player player, final Player neutralPlayer) {
-        return player != neutralPlayer; // можно сравнивать ссылки,
-        // так как нейтральный игрок в игре имеется в единственном экземпляре
+    private static boolean isAlivePlayer(final Player player) {
+        return player != null;
     }
 
     /**
