@@ -2,16 +2,13 @@ package io.neolab.internship.coins.server.game;
 
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
-import io.neolab.internship.coins.server.game.feature.Feature;
-import io.neolab.internship.coins.utils.Pair;
 
 import java.util.*;
 
 public class Game implements IGame {
     private IBoard board;
-    private int currentRound;
+    private int currentRound = 0;
 
     private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
     private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
@@ -22,27 +19,26 @@ public class Game implements IGame {
 //        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
 //        transitCells.removeIf(feudalToCells.get(player)::contains);
 
-    private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
+    private final GameFeatures gameFeatures;
     private final List<Race> racesPool;
 
     private final List<Player> players;
     private final Player neutralPlayer;
 
     public Game() {
-        this(new Board(), 0, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(),
+        this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
                 new LinkedList<>(), new LinkedList<>(), new Player("neutral"));
     }
 
-    public Game(final Board board, final int currentRound, final Map<Player, Set<Cell>> feudalToCells,
+    public Game(final Board board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures, final List<Race> racesPool,
+                final GameFeatures gameFeatures, final List<Race> racesPool,
                 final List<Player> players, final Player neutralPlayer) {
         this.board = board;
-        this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
         this.playerToTransitCells = playerToTransitCells;
-        this.raceCellTypeFeatures = raceCellTypeFeatures;
+        this.gameFeatures = gameFeatures;
         this.racesPool = racesPool;
         this.players = players;
         this.neutralPlayer = neutralPlayer;
@@ -80,12 +76,8 @@ public class Game implements IGame {
         return playerToTransitCells;
     }
 
-    public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
-        return raceCellTypeFeatures;
-    }
-
-    public List<Feature> getFeaturesByRaceAndCellType(final Race race, final CellType cellType) {
-        return getRaceCellTypeFeatures().getOrDefault(new Pair<>(race, cellType), Collections.emptyList());
+    public GameFeatures getGameFeatures() {
+        return gameFeatures;
     }
 
     public List<Race> getRacesPool() {
@@ -110,7 +102,7 @@ public class Game implements IGame {
                 Objects.equals(feudalToCells, game.feudalToCells) &&
                 Objects.equals(ownToCells, game.ownToCells) &&
                 Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
-                Objects.equals(raceCellTypeFeatures, game.raceCellTypeFeatures) &&
+                Objects.equals(gameFeatures, game.gameFeatures) &&
                 Objects.equals(racesPool, game.racesPool) &&
                 Objects.equals(players, game.players) &&
                 Objects.equals(neutralPlayer, game.neutralPlayer);
@@ -118,7 +110,8 @@ public class Game implements IGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells, raceCellTypeFeatures, racesPool, players, neutralPlayer);
+        return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells,
+                gameFeatures, racesPool, players, neutralPlayer);
     }
 
     @Override
@@ -129,7 +122,7 @@ public class Game implements IGame {
                 ", feudalToCells=" + feudalToCells +
                 ", ownToCells=" + ownToCells +
                 ", playerToTransitCells=" + playerToTransitCells +
-                ", raceCellTypeFeatures=" + raceCellTypeFeatures +
+                ", raceCellTypeFeatures=" + gameFeatures +
                 ", racesPool=" + racesPool +
                 ", players=" + players +
                 ", neutralPlayer=" + neutralPlayer +

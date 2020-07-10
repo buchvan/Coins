@@ -7,7 +7,7 @@ public enum Race {
     ORC("ORC", 5),
     GNOME("GNOME", 5),
     UNDEAD("UNDEAD", 11),
-    NEUTRAL("NEUTRAL", 0);
+    ;
 
     private final String title;
 
