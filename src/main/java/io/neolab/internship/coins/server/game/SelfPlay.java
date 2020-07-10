@@ -364,11 +364,11 @@ public class SelfPlay {
         final int unitsCount = RandomGenerator.chooseNumber(player.getUnitsByState(
                 AvailabilityType.AVAILABLE).size()); // число юнитов, которое игрок хочет направить в эту клетку
 
-        GameLogger.printCatchCellUnitsQuantityLog(player, unitsCount);
+        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), unitsCount);
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!cellIsCatching(unitsCount + bonusAttack, unitsCountNeededToCatch)) {
-            GameLogger.printCatchCellNotCapturedLog(player);
+            GameLogger.printCatchCellNotCapturedLog(player.getNickname());
             return false;
         } // else
         catchCell(player, catchingCell, unitsCountNeededToCatch - bonusAttack,
@@ -394,7 +394,8 @@ public class SelfPlay {
 
             if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                 unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
-                GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer, catchingCell);
+                GameLogger.printCatchCellDefenseFeatureLog(
+                        isAlivePlayer(defendingPlayer) ? defendingPlayer.getNickname() : "NULL", catchingCell);
             }
         }
         if (catchingCell.getUnits().size() > 0) { // если в захватываемой клетке есть юниты
@@ -483,7 +484,7 @@ public class SelfPlay {
     /**
      * Является ли игрок "живым", т. е. не ссылкой null?
      *
-     * @param player        - игрок, про которого необходимо выяснить, является ли он нейтральным
+     * @param player - игрок, про которого необходимо выяснить, является ли он нейтральным
      * @return true - если игрок player не нейтрален в игре game, false - иначе
      */
     private static boolean isAlivePlayer(final Player player) {
