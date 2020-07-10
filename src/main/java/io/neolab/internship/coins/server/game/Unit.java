@@ -1,16 +1,14 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.utils.IdGenerator;
+
 import java.util.Objects;
 
 public class Unit {
     private final int id;
 
-    public Unit(final int id) {
-        this.id = id;
-    }
-
     public Unit() {
-        this(0);
+        this.id = IdGenerator.getCurrentId();
     }
 
     public int getId() {

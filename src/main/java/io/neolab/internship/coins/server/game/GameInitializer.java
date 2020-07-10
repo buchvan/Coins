@@ -20,9 +20,8 @@ public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
 
-
     public static Game gameInit(final int boardSizeX, final int boardSizeY) {
-        LOGGER.debug( "Init...");
+        LOGGER.debug("Init...");
 
         final Board board = initBoard(boardSizeX, boardSizeY);
 
@@ -76,7 +75,7 @@ public class GameInitializer {
 //        final IBoardFactory boardFactory = new BoardFactory();
 //        final Board board = boardFactory.generateBoard(boardSizeX, boardSizeY);
 
-        LOGGER.debug( "Board is created: {} ", board);
+        LOGGER.debug("Board is created: {} ", board);
         return board;
     }
 
@@ -88,7 +87,7 @@ public class GameInitializer {
      */
     private static Player createNeutralPlayer() {
         final Player neutralPlayer = new Player("neutral");
-        LOGGER.debug( "Neutral player is created: {} ", neutralPlayer);
+        LOGGER.debug("Neutral player is created: {} ", neutralPlayer);
         return neutralPlayer;
     }
 
@@ -102,12 +101,7 @@ public class GameInitializer {
                 Arrays.asList(new Player("kvs"),
                         new Player("bim"))
         );
-//        int i = 2;
-//        while (i < PLAYERS_COUNT) {
-//            playerList.add(new Player(IdGenerator.getCurrentId(), "F" + i));
-//            i++;
-//        }
-        LOGGER.debug( "Player list is created: {} ", playerList);
+        LOGGER.debug("Player list is created: {} ", playerList);
         return playerList;
     }
 
@@ -119,10 +113,8 @@ public class GameInitializer {
      */
     private static Map<Player, Set<Cell>> initFeudalToCells(final List<Player> playerList) {
         final Map<Player, Set<Cell>> feudalToCells = new HashMap<>(playerList.size());
-        for (final Player player : playerList) {
-            feudalToCells.put(player, new HashSet<>());
-        }
-        LOGGER.debug( "{} init: {} ", "feudalToCells", feudalToCells);
+        playerList.forEach(player -> feudalToCells.put(player, new HashSet<>()));
+        LOGGER.debug("{} init: {} ", "feudalToCells", feudalToCells);
         return feudalToCells;
     }
 
@@ -135,10 +127,8 @@ public class GameInitializer {
     private static Map<Player, List<Cell>> initMapWithPlayerKeyListValue(final List<Player> playerList,
                                                                          final String log) {
         final Map<Player, List<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
-        for (final Player player : playerList) {
-            mapWithPlayerKey.put(player, new ArrayList<>());
-        }
-        LOGGER.debug( "{} init: {} ", log, mapWithPlayerKey);
+        playerList.forEach(player -> mapWithPlayerKey.put(player, new ArrayList<>()));
+        LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
         return mapWithPlayerKey;
     }
 
@@ -161,7 +151,7 @@ public class GameInitializer {
         addRaceCellTypeFeaturesByRace(Race.GNOME, raceCellTypeFeatures, impossibleCatchCellFeature);
         addRaceCellTypeFeaturesByRace(Race.UNDEAD, raceCellTypeFeatures, impossibleCatchCellFeature);
 
-        LOGGER.debug( "raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
+        LOGGER.debug("raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
         return raceCellTypeFeatures;
     }
 
@@ -208,10 +198,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceMushroom(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
-
+    private static void addRaceCellTypeFeaturesByRaceMushroom(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                      raceCellTypeFeatures,
+                                                              final List<Feature> impossibleCatchCellFeature) {
         final List<Feature> mushroomFeatures = new ArrayList<>(2);
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -227,12 +216,9 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.WATER), mushroomFeaturesThird);
 
         int i = 1;
-        LOGGER.debug(
-                "[{}] Features of Mushroom race added: {} ", i++, mushroomFeatures);
-        LOGGER.debug(
-                "[{}] Features of Mushroom race added: {} ", i++, mushroomFeaturesSecond);
-        LOGGER.debug(
-                "[{}] Features of Mushroom race added: {} ", i, mushroomFeaturesThird);
+        LOGGER.debug("[{}] Features of Mushroom race added: {} ", i++, mushroomFeatures);
+        LOGGER.debug("[{}] Features of Mushroom race added: {} ", i++, mushroomFeaturesSecond);
+        LOGGER.debug("[{}] Features of Mushroom race added: {} ", i, mushroomFeaturesThird);
     }
 
     /**
@@ -240,17 +226,16 @@ public class GameInitializer {
      *
      * @param raceCellTypeFeatures - мапа, которую нужно обновить
      */
-    private static void addRaceCellTypeFeaturesByRaceAmphibian(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures) {
-
-        final List<Feature> amphibianFeatures = new ArrayList<>();
+    private static void addRaceCellTypeFeaturesByRaceAmphibian(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                       raceCellTypeFeatures) {
+        final List<Feature> amphibianFeatures = new ArrayList<>(1);
         amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MUSHROOM), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.LAND), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MOUNTAIN), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.WATER), amphibianFeatures);
 
-        LOGGER.debug( "Features of Amphibian race added: {} ", amphibianFeatures);
+        LOGGER.debug("Features of Amphibian race added: {} ", amphibianFeatures);
     }
 
     /**
@@ -259,11 +244,10 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceElf(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
-
-        final List<Feature> elfFeatures = new ArrayList<>();
+    private static void addRaceCellTypeFeaturesByRaceElf(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                 raceCellTypeFeatures,
+                                                         final List<Feature> impossibleCatchCellFeature) {
+        final List<Feature> elfFeatures = new ArrayList<>(2);
         elfFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
         elfFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.MUSHROOM), elfFeatures);
@@ -275,10 +259,8 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.WATER), elfFeaturesSecond);
 
         int i = 1;
-        LOGGER.debug(
-                "[{}] Features of Elf race added: {} ", i++, elfFeatures);
-        LOGGER.debug(
-                "[{}] Features of Elf race added: {} ", i, elfFeaturesSecond);
+        LOGGER.debug("[{}] Features of Elf race added: {} ", i++, elfFeatures);
+        LOGGER.debug("[{}] Features of Elf race added: {} ", i, elfFeaturesSecond);
     }
 
     /**
@@ -287,11 +269,10 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceOrc(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
-
-        final List<Feature> orcFeatures = new ArrayList<>();
+    private static void addRaceCellTypeFeaturesByRaceOrc(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                 raceCellTypeFeatures,
+                                                         final List<Feature> impossibleCatchCellFeature) {
+        final List<Feature> orcFeatures = new ArrayList<>(2);
         orcFeatures.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, 1));
         orcFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.MUSHROOM), orcFeatures);
@@ -303,10 +284,8 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.WATER), orcFeaturesSecond);
 
         int i = 1;
-        LOGGER.debug(
-                "[{}] Features of Orc race added: {} ", i++, orcFeatures);
-        LOGGER.debug(
-                "[{}] Features of Orc race added: {} ", i, orcFeaturesSecond);
+        LOGGER.debug("[{}] Features of Orc race added: {} ", i++, orcFeatures);
+        LOGGER.debug("[{}] Features of Orc race added: {} ", i, orcFeaturesSecond);
     }
 
     /**
@@ -315,11 +294,10 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceGnome(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
-
-        final List<Feature> gnomeFeatures = new ArrayList<>();
+    private static void addRaceCellTypeFeaturesByRaceGnome(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                   raceCellTypeFeatures,
+                                                           final List<Feature> impossibleCatchCellFeature) {
+        final List<Feature> gnomeFeatures = new ArrayList<>(2);
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, 1));
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.MUSHROOM), gnomeFeatures);
@@ -331,10 +309,8 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.WATER), gnomeFeaturesSecond);
 
         int i = 1;
-        LOGGER.debug(
-                "[{}] Features of Gnome race added: {} ", i++, gnomeFeatures);
-        LOGGER.debug(
-                "[{}] Features of Gnome race added: {} ", i, gnomeFeaturesSecond);
+        LOGGER.debug("[{}] Features of Gnome race added: {} ", i++, gnomeFeatures);
+        LOGGER.debug("[{}] Features of Gnome race added: {} ", i, gnomeFeaturesSecond);
     }
 
     /**
@@ -343,11 +319,11 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceUndead(
-            final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures,
-            final List<Feature> impossibleCatchCellFeature) {
+    private static void addRaceCellTypeFeaturesByRaceUndead(final Map<Pair<Race, CellType>, List<Feature>>
+                                                                    raceCellTypeFeatures,
+                                                            final List<Feature> impossibleCatchCellFeature) {
 
-        final List<Feature> undeadFeatures = new ArrayList<>();
+        final List<Feature> undeadFeatures = new ArrayList<>(1);
         undeadFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.MUSHROOM), undeadFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.LAND), undeadFeatures);
@@ -358,10 +334,8 @@ public class GameInitializer {
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.WATER), undeadFeaturesSecond);
 
         int i = 1;
-        LOGGER.debug(
-                "[{}] Features of Undead race added: {} ", i++, undeadFeatures);
-        LOGGER.debug(
-                "[{}] Features of Undead race added: {} ", i, undeadFeaturesSecond);
+        LOGGER.debug("[{}] Features of Undead race added: {} ", i++, undeadFeatures);
+        LOGGER.debug("[{}] Features of Undead race added: {} ", i, undeadFeaturesSecond);
     }
 
 
@@ -371,9 +345,8 @@ public class GameInitializer {
      * @return пул рас
      */
     private static List<Race> createRacesPool() {
-        final List<Race> racesPool = new ArrayList<>(Race.values().length - 1);
-        racesPool.addAll(Arrays.asList(Race.values()).subList(0, Race.values().length - 1));
-        LOGGER.debug( "Pool of races created: {} ", racesPool);
+        final List<Race> racesPool = new ArrayList<>(Arrays.asList(Race.values()));
+        LOGGER.debug("Pool of races created: {} ", racesPool);
         return racesPool;
     }
 }
