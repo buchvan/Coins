@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.game.service;
 
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.GameFeatures;
 import io.neolab.internship.coins.server.game.Player;
@@ -8,6 +9,7 @@ import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
@@ -23,10 +25,12 @@ public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
 
-    public static Game gameInit(final int boardSizeX, final int boardSizeY) {
+    public static Game gameInit(final int boardSizeX, final int boardSizeY) throws CoinsException {
         LOGGER.debug("Init...");
 
-        final Board board = initBoard(boardSizeX, boardSizeY);
+        //мок доски
+        //final Board board = initBoard(boardSizeX, boardSizeY);
+        final Board board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final Player neutralPlayer = createNeutralPlayer();
         final List<Player> playerList = initTestPlayers();

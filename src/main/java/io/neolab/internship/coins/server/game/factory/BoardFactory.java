@@ -24,22 +24,22 @@ public class BoardFactory implements IBoardFactory {
      * 1 версия: Каждый тип клетки встречается по три раза
      * Координаты начинаются в левом верхнем углу
      *
-     * @param width  ширина
-     * @param height высота
+     * @param boardSizeX высота
+     * @param boardSizeY ширина
      * @return new Board
      */
     @Override
-    public Board generateBoard(final int width, final int height) throws CoinsException {
-        LOGGER.debug("Start generating board with width {} and height {}", width, height);
-        if (width < 2 || height < 2) {
-            LOGGER.error("Board generation with width {} and height {} failed", width, height);
+    public Board generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
+        LOGGER.debug("Start generating board with width {} and height {}", boardSizeY, boardSizeX);
+        if (boardSizeX < 2 || boardSizeY < 2) {
+            LOGGER.error("Board generation with width {} and height {} failed", boardSizeY, boardSizeX);
             throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
         }
-        final int cellAmount = width * height;
+        final int cellAmount = boardSizeX * boardSizeY;
         final List<CellType> cellTypes = loadCellTypePool();
         final StringBuilder logBoardString = new StringBuilder("\n");
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 0; i < boardSizeX; i++) {
+            for (int j = 0; j < boardSizeY; j++) {
                 final int currentCellTypeIndex = getAllowedCellTypeIndex(cellTypes, cellAmount);
                 final CellType currentCellType = cellTypes.get(currentCellTypeIndex);
                 positionToCellMap.put(new Position(i, j), new Cell(currentCellType));
@@ -47,6 +47,10 @@ public class BoardFactory implements IBoardFactory {
             }
             logBoardString.append("\n");
         }
+        /*
+        * Вывод лога о результате генерации игровой доски
+        * Обозначение: m - грибы, M - горы, L - земля, W - вода
+        */
         LOGGER.info(logBoardString.toString());
         return new Board(positionToCellMap);
     }
