@@ -267,7 +267,7 @@ public class GameLogger {
      */
     public static void printCellAfterDefendingLog(final Player player, final Cell protectedCell) {
         LOGGER.debug("Cell after defending: ");
-        LOGGER.debug("--- Own: {} ", protectedCell.getOwn().getNickname());
+        LOGGER.debug("--- Own: {} ", protectedCell.getOwn() != null ? protectedCell.getOwn().getNickname() : "NULL");
         LOGGER.debug("--- Units: {} ", protectedCell.getUnits());
         LOGGER.debug("Player {} after defending: ", player.getNickname());
         LOGGER.debug("--- Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
