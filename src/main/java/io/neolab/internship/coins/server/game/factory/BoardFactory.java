@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class BoardFactory implements IBoardFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
-    private BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+    private final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
@@ -56,8 +56,9 @@ public class BoardFactory implements IBoardFactory {
      * не нарушается ли принцип сбалансированности территории:
      * считаем количество клеток текущего выбранного типа
      * и сравниваем с максимально возможным количеством клеток данного типа
+     *
      * @param cellAmount количество клеток на доске
-     * @param cellTypes лист с доступными типами клеток
+     * @param cellTypes  лист с доступными типами клеток
      * @return допустимый индекс, по которому в листе можно взять тип клетки
      */
     private int getAllowedCellTypeIndex(final List<CellType> cellTypes, final int cellAmount) {

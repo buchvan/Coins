@@ -9,16 +9,16 @@ public enum Race {
     UNDEAD("UNDEAD", 11),
     NEUTRAL("NEUTRAL", 0);
 
-    private String title;
+    private final String title;
 
     private int unitsAmount;
 
-    Race(String title, int unitsAmount) {
+    Race(final String title, final int unitsAmount) {
         this.title = title;
         this.unitsAmount = unitsAmount;
     }
 
-    Race(String title) {
+    Race(final String title) {
         this.title = title;
     }
 

@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.common.answer.implementations;
 
-import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.interfaces.ICatchCellAnswer;
@@ -26,10 +26,10 @@ public class CatchCellAnswer extends Answer implements ICatchCellAnswer {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CatchCellAnswer that = (CatchCellAnswer) o;
+        final CatchCellAnswer that = (CatchCellAnswer) o;
         return Objects.equals(resolution, that.resolution);
     }
 

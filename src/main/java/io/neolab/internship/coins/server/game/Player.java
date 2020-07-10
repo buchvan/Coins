@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.util.*;
 
@@ -8,29 +9,23 @@ public class Player {
     private int id;
     private String nickname;
     private Race race;
-    private List<Unit> units;
-    private List<Unit> availableUnits;
+    private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
     private int coins = 0;
-    private List<Cell> transitCells;
 
-    public Player() {
-    }
-
-    public Player(int id, String nickname, Race race, List<Unit> units, List<Unit> availableUnits, int coins, List<Cell> transitCells) {
-        this.id = id;
+    public Player(final String nickname) {
+        this.id = IdGenerator.getCurrentId();
         this.nickname = nickname;
-        this.race = race;
-        this.units = units;
-        this.availableUnits = availableUnits;
-        this.coins = coins;
-        this.transitCells = transitCells;
+        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
+        for (final AvailabilityType availabilityType : AvailabilityType.values()) {
+            this.unitStateToUnits.put(availabilityType, new LinkedList<>());
+        }
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -38,7 +33,7 @@ public class Player {
         return nickname;
     }
 
-    public void setNickname(String nickname) {
+    public void setNickname(final String nickname) {
         this.nickname = nickname;
     }
 
@@ -46,57 +41,45 @@ public class Player {
         return race;
     }
 
-    public void setRace(Race race) {
+    public void setRace(final Race race) {
         this.race = race;
     }
 
-    public List<Unit> getUnits() {
-        return units;
+    public Map<AvailabilityType, List<Unit>> getUnitStateToUnits() {
+        return unitStateToUnits;
     }
 
-    public void setUnits(List<Unit> units) {
-        Collections.copy(this.units, units);
+    public List<Unit> getUnitsByState(final AvailabilityType availabilityType) {
+        return unitStateToUnits.get(availabilityType);
     }
 
     public int getCoins() {
         return coins;
     }
 
-    public void setCoins(int coins) {
+    public void setCoins(final int coins) {
         this.coins = coins;
     }
 
-    public List<Cell> getTransitCells() {
-        return transitCells;
-    }
-
-    public void setTransitCells(List<Cell> transitCells) {
-        Collections.copy(this.transitCells, transitCells);
-    }
-
-    public List<Unit> getAvailableUnits() {
-        return availableUnits;
-    }
-
-    public void setAvailableUnits(List<Unit> availableUnits) {
-        Collections.copy(this.availableUnits, this.availableUnits);
+    public void increaseCoins(final int number) {
+        this.coins += number;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Player)) return false;
-        Player player = (Player) o;
-        return getId() == player.getId() &&
-                getCoins() == player.getCoins() &&
-                Objects.equals(getNickname(), player.getNickname()) &&
-                getRace() == player.getRace() &&
-                Objects.equals(getUnits(), player.getUnits());
+        if (o == null || getClass() != o.getClass()) return false;
+        final Player player = (Player) o;
+        return id == player.id &&
+                coins == player.coins &&
+                Objects.equals(nickname, player.nickname) &&
+                race == player.race &&
+                Objects.equals(unitStateToUnits, player.unitStateToUnits);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getNickname(), getRace(), getUnits(), getCoins());
+        return Objects.hash(id);
     }
 
     @Override
@@ -105,7 +88,7 @@ public class Player {
                 "id=" + id +
                 ", nickname='" + nickname + '\'' +
                 ", race=" + race +
-                ", units=" + units +
+                ", unitStateToUnits=" + unitStateToUnits +
                 ", coins=" + coins +
                 '}';
     }

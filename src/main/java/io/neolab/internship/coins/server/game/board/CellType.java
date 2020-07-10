@@ -1,33 +1,21 @@
 package io.neolab.internship.coins.server.game.board;
 
-import io.neolab.internship.coins.server.game.Unit;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public enum CellType {
-    LAND("LAND", 1, new ArrayList<>(2), "L"),
-    MUSHROOM("MUSHROOM", 1, new ArrayList<>(2), "m"),
-    MOUNTAIN("MOUNTAIN", 1, new ArrayList<>(3), "M"),
-    WATER("WATER", 1, new ArrayList<>(1), "W");
+    LAND("LAND", 1, 2, "L"),
+    MUSHROOM("MUSHROOM", 1, 2, "m"),
+    MOUNTAIN("MOUNTAIN", 1, 3, "M"),
+    WATER("WATER", 1, 1, "W");
 
-    private String title;
-    private String view;
+    private final String title;
+    private final String view;
+    private final int catchDifficulty; // Сложность захвата клетки
+    private final int coinYield; // Число монет, которое приносит клетка
 
-    private int coinYield;
-
-    private List<Unit> defaultCatchUnit;
-
-    CellType(final String title, final String view) {
-        this.view = view;
-        this.title = title;
-    }
-
-    CellType(final String title, final int coinYield, final List<Unit> defaultCatchUnit, final String view) {
+    CellType(final String title, final int coinYield, final int catchDifficulty, final String view) {
         this.view = view;
         this.title = title;
         this.coinYield = coinYield;
-        this.defaultCatchUnit = defaultCatchUnit;
+        this.catchDifficulty = catchDifficulty;
     }
 
     public String getTitle() {
@@ -42,8 +30,8 @@ public enum CellType {
         return view;
     }
 
-    public List<Unit> getDefaultCatchUnit() {
-        return defaultCatchUnit;
+    public int getCatchDifficulty() {
+        return catchDifficulty;
     }
 
     @Override
@@ -51,7 +39,7 @@ public enum CellType {
         return "CellType{" +
                 "title='" + title + '\'' +
                 ", coinYield=" + coinYield +
-                ", defaultCatchUnit=" + defaultCatchUnit +
+                ", catchDifficulty=" + catchDifficulty +
                 '}';
     }
 }
