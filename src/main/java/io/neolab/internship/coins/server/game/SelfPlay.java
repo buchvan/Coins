@@ -9,7 +9,6 @@ import io.neolab.internship.coins.server.game.service.GameInitializer;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.server.game.service.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
-import org.slf4j.MDC;
 
 import java.util.*;
 
