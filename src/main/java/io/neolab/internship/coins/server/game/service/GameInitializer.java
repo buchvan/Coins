@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.GameFeatures;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.board.Board;
@@ -36,13 +37,11 @@ public class GameInitializer {
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
 
-        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = initRaceCellTypeFeatures();
+        final GameFeatures gameFeatures  = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, 0,
-                feudalToCells, ownToCells, playerToTransitCells,
-                raceCellTypeFeatures, racesPool,
-                playerList, neutralPlayer);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells,
+                gameFeatures, racesPool, playerList, neutralPlayer);
     }
 
     /**
@@ -140,7 +139,7 @@ public class GameInitializer {
      *
      * @return raceCellTypeFeatures
      */
-    private static Map<Pair<Race, CellType>, List<Feature>> initRaceCellTypeFeatures() {
+    private static GameFeatures initGameFeatures() {
         final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = new HashMap<>();
         final List<Feature> impossibleCatchCellFeature = new ArrayList<>();
         impossibleCatchCellFeature.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
@@ -154,7 +153,7 @@ public class GameInitializer {
         addRaceCellTypeFeaturesByRace(Race.UNDEAD, raceCellTypeFeatures, impossibleCatchCellFeature);
 
         LOGGER.debug("raceCellTypeFeatures init: {} ", raceCellTypeFeatures);
-        return raceCellTypeFeatures;
+        return new GameFeatures(raceCellTypeFeatures);
     }
 
     /**
