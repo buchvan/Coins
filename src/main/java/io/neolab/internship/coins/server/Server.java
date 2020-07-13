@@ -2,7 +2,6 @@ package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.utils.IdGenerator;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.client.Client;
 import org.slf4j.Logger;
