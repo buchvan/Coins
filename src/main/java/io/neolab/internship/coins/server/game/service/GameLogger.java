@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -31,7 +32,7 @@ public class GameLogger {
      *
      * @param game - созданная игра
      */
-    public static void printGameCreatedLog(final Game game) {
+    public static void printGameCreatedLog(final IGame game) {
         LOGGER.debug("Game is created: {} ", game);
     }
 

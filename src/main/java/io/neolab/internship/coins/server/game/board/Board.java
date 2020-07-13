@@ -18,6 +18,7 @@ public class Board implements IBoard {
         this(new DualHashBidiMap<>());
     }
 
+    @Override
     public BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
     }

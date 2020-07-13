@@ -29,7 +29,7 @@ public class Game implements IGame {
                 new LinkedList<>(), new LinkedList<>());
     }
 
-    public Game(final Board board, final Map<Player, Set<Cell>> feudalToCells,
+    public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool,
                 final List<Player> players) {
@@ -42,38 +42,42 @@ public class Game implements IGame {
         this.players = players;
     }
 
+    @Override
     public void incrementCurrentRound() {
         currentRound++;
     }
 
+    @Override
     public IBoard getBoard() {
         return board;
     }
 
+    @Override
     public void setBoard(final Board board) {
         this.board = board;
     }
 
+    @Override
     public int getCurrentRound() {
         return currentRound;
     }
 
-    public void setCurrentRound(final int currentRound) {
-        this.currentRound = currentRound;
-    }
-
+    @Override
     public Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getOwnToCells() {
         return ownToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getPlayerToTransitCells() {
         return playerToTransitCells;
     }
 
+    @Override
     public GameFeatures getGameFeatures() {
         return gameFeatures;
     }
@@ -83,6 +87,7 @@ public class Game implements IGame {
         return racesPool;
     }
 
+    @Override
     public List<Player> getPlayers() {
         return players;
     }

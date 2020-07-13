@@ -1,14 +1,8 @@
 package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.Game;
-import io.neolab.internship.coins.server.game.GameFeatures;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.board.Board;
-import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.*;
+import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -25,12 +19,12 @@ public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
 
-    public static Game gameInit(final int boardSizeX, final int boardSizeY) throws CoinsException {
+    public static IGame gameInit(final int boardSizeX, final int boardSizeY) throws CoinsException {
         LOGGER.debug("Init...");
 
         //мок доски
         //final Board board = initBoard(boardSizeX, boardSizeY);
-        final Board board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final List<Player> playerList = initTestPlayers();
 
@@ -51,7 +45,7 @@ public class GameInitializer {
      *
      * @return инициализированную борду
      */
-    private static Board initBoard(final int boardSizeX, final int boardSizeY) {
+    private static IBoard initBoard(final int boardSizeX, final int boardSizeY) {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
         /* Доска из самой первой консультации по проекту */
@@ -73,7 +67,7 @@ public class GameInitializer {
 
         /* --- */
 
-        final Board board = new Board(positionToCellMap);
+        final IBoard board = new Board(positionToCellMap);
 
 //        final IBoardFactory boardFactory = new BoardFactory();
 //        final Board board = boardFactory.generateBoard(boardSizeX, boardSizeY);

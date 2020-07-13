@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.game.factory;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class BoardFactoryTest {
 
     @Test
     public void generateBoardBalanced1Test() throws CoinsException {
-        final Board board = generateBoard(3, 4);
+        final IBoard board = generateBoard(3, 4);
         final List<CellType> cellTypes = fillCellTypes();
         for (final CellType cellType : cellTypes) {
             assertEquals(3,
@@ -43,7 +44,7 @@ public class BoardFactoryTest {
         final int width = 5;
         final int height = 5;
         final int cellsAmount = width * height;
-        final Board board = generateBoard(width, height);
+        final IBoard board = generateBoard(width, height);
         final List<CellType> cellTypes = fillCellTypes();
         final int cellTypesAmount = cellTypes.size();
         final int bound = cellsAmount / cellTypesAmount + cellsAmount % cellTypesAmount;
@@ -64,7 +65,7 @@ public class BoardFactoryTest {
         generateBoard(1, 1);
     }
 
-    private Board generateBoard(final int wight, final int height) throws CoinsException {
+    private IBoard generateBoard(final int wight, final int height) throws CoinsException {
         final BoardFactory boardFactory = new BoardFactory();
         return boardFactory.generateBoard(wight, height);
     }
