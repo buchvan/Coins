@@ -2,24 +2,24 @@ package io.neolab.internship.coins.common.answer.implementations;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.interfaces.IDistributionUnitsAnswer;
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.*;
 
 public class DistributionUnitsAnswer extends Answer implements IDistributionUnitsAnswer {
-    private final Map<Position, List<Unit>> resolutions;
+    private final Map<Cell, List<Unit>> resolutions;
 
     public DistributionUnitsAnswer() {
         this.resolutions = new HashMap<>();
     }
 
-    public DistributionUnitsAnswer(final Map<Position, List<Unit>> resolutions) {
+    public DistributionUnitsAnswer(final Map<Cell, List<Unit>> resolutions) {
         this.resolutions = resolutions;
     }
 
     @Override
-    public Map<Position, List<Unit>> getResolutions() {
+    public Map<Cell, List<Unit>> getResolutions() {
         return resolutions;
     }
 

@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.common.answer.interfaces;
 
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.List;
@@ -15,5 +15,5 @@ public interface IDistributionUnitsAnswer {
      * Геттер для решений (по факту ответ на вопрос)
      * @return отображение позиции клетки в список юнитов
      */
-    Map<Position, List<Unit>> getResolutions();
+    Map<Cell, List<Unit>> getResolutions();
 }
