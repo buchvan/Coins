@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.client.SimpleBot;
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -9,7 +11,10 @@ import io.neolab.internship.coins.server.game.service.GameInitializer;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.server.game.service.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
+import java.io.IOException;
 import java.util.*;
 
 public class SelfPlay {
@@ -19,6 +24,9 @@ public class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
 
     private static final Random random = new Random(); // объект для "бросания монетки" (взятия рандомного числа)
+
+    private static final BidiMap<SimpleBot, Player> simpleBotToPlayer = new DualHashBidiMap<>(); // каждому симплботу
+    // соответствует только один игрок, и наоборот
 
 
     /**
@@ -33,9 +41,10 @@ public class SelfPlay {
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
             final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
+            game.getPlayers().forEach(player -> simpleBotToPlayer.put(new SimpleBot(), player));
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final Exception exception) { // TODO: своё исключение
+        } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
     }
@@ -48,7 +57,7 @@ public class SelfPlay {
     private static void gameLoop(final Game game) {
         GameLogger.printStartGameChoiceLog();
         for (final Player player : game.getPlayers()) {
-            chooseRace(player, game.getRacesPool());
+            chooseRace(player, game);
         }
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
@@ -75,14 +84,14 @@ public class SelfPlay {
     /**
      * Раунд в исполнении игрока
      *
-     * @param player               - игрок, который исполняет раунд
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param racesPool            - пул всех доступных рас
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, который исполняет раунд
+     * @param neutralPlayer - нейтральный игрок
+     * @param board         - борда
+     * @param racesPool     - пул всех доступных рас
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
     private static void playerRound(final Player player, final Player neutralPlayer, final IBoard board,
                                     final List<Race> racesPool,
@@ -159,26 +168,26 @@ public class SelfPlay {
      * Процесс смены расы у игрока
      *
      * @param player    - игрок, который решил идти в упадок
-     * @param racesPool - пул всех доступных рас
+     * @param game - объект, хранящий всю метаинформацию об игре
      */
-    private static void changeRace(final Player player, final List<Race> racesPool) {
+    private static void changeRace(final Player player, final IGame game) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
-        chooseRace(player, racesPool);
-        racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
+        chooseRace(player, game);
+        game.getRacesPool().add(oldRace); // Возвращаем бывшую расу игрока в пул рас
     }
 
     /**
      * Метод для выбора новой расы игроком
      *
      * @param player    - игрок, выбирающий новую расу
-     * @param racesPool - пул всех доступных рас
+     * @param game - объект, хранящий всю метаинформацию об игре
      */
-    private static void chooseRace(final Player player, final List<Race> racesPool) {
-        final Race newRace = RandomGenerator.chooseItemFromList(racesPool);
-        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
+    private static void chooseRace(final Player player, final IGame game) {
+        final Race newRace = simpleBotToPlayer.getKey(player).chooseRace(game);
+        game.getRacesPool().remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
 
         /* Добавляем юнитов выбранной расы */
@@ -234,13 +243,13 @@ public class SelfPlay {
     /**
      * Метод для завоёвывания клеток игроком
      *
-     * @param player               - игрок, проводящий завоёвывание
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, проводящий завоёвывание
+     * @param neutralPlayer - нейтральный игрок
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
     private static void catchCells(final Player player, final Player neutralPlayer,
                                    final IBoard board,
@@ -385,7 +394,7 @@ public class SelfPlay {
      * Метод получения числа юнитов, необходимых для захвата клетки
      *
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     private static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
@@ -411,9 +420,9 @@ public class SelfPlay {
     /**
      * Метод получения бонуса атаки при захвате клетки
      *
-     * @param player               - игрок-агрессор
+     * @param player       - игрок-агрессор
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     private static int getBonusAttackToCatchCell(final Player player,
@@ -446,15 +455,15 @@ public class SelfPlay {
     /**
      * Захватить клетку
      *
-     * @param player               - игрок-агрессор
-     * @param catchingCell         - захватываемая клетка
-     * @param tiredUnitsCount      - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param neutralPlayer        - нейтральный игрок
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
-     *                             (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player          - игрок-агрессор
+     * @param catchingCell    - захватываемая клетка
+     * @param tiredUnitsCount - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param neutralPlayer   - нейтральный игрок
+     * @param gameFeatures    - особенности игры
+     * @param ownToCells      - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells   - множества клеток для каждого феодала
+     * @param transitCells    - транзитные клетки игрока
+     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     private static void catchCell(final Player player, final Cell catchingCell,
                                   final int tiredUnitsCount, final Player neutralPlayer,
