@@ -90,7 +90,8 @@ public class Cell {
     @Override
     public String toString() {
         return "Cell{" +
-                "type=" + type +
+                "id=" + id +
+                ", type=" + type +
                 ", units=" + units +
                 ", feudal=" + feudal +
                 ", own=" + own +

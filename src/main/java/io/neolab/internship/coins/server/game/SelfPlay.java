@@ -67,7 +67,7 @@ public class SelfPlay {
                 // Все свои решения он принимает здесь
             });
             playerList.forEach(player ->
-                    updateCoinsCount(player, game.getFeudalToCells(),
+                    updateCoinsCount(player, game.getFeudalToCells().get(player),
                             game.getGameFeatures(),
                             game.getBoard()));  // обновление числа монет у каждого игрока
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(),
@@ -218,7 +218,9 @@ public class SelfPlay {
             final List<Unit> units = catchingCellToUnitsList.getSecond(); // юниты для захвата этой клетки
             if (catchCellAttempt(player, catchingCell, units, board, game.getGameFeatures(), game.getOwnToCells(),
                     game.getFeudalToCells(), transitCells)) { // если попытка захвата увеначалась успехом
-
+                if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
+                    achievableCells.clear();
+                }
                 achievableCells.remove(catchingCell);
                 achievableCells.addAll(getAllNeighboringCells(board, catchingCell));
                 achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
@@ -591,17 +593,17 @@ public class SelfPlay {
      * Обновить число монет у игрока
      *
      * @param player        - игрок, чьё число монет необходимо обновить
-     * @param feudalToCells - множества клеток для каждого феодала
+     * @param feudalCells - множество клеток, приносящих монеты
      * @param gameFeatures  - особенности игры
      * @param board         - как ни странно, борда :)
      */
     private static void updateCoinsCount(final Player player,
-                                         final Map<Player, Set<Cell>> feudalToCells,
+                                         final Set<Cell> feudalCells,
                                          final GameFeatures gameFeatures,
                                          final IBoard board) {
-        feudalToCells.get(player).forEach(cell -> {
+        feudalCells.forEach(cell -> {
             updateCoinsCountByCellWithFeatures(player, gameFeatures, cell);
-            player.setCoins(player.getCoins() + cell.getType().getCoinYield());
+            player.increaseCoins(cell.getType().getCoinYield());
             GameLogger.printPlayerCoinsCountByCellUpdatingLog(player, board.getPositionByCell(cell));
         });
         GameLogger.printPlayerCoinsCountUpdatingLog(player);

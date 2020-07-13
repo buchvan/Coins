@@ -31,8 +31,7 @@ public class SimpleBot implements ISimpleBot {
 
     @Override
     public Pair<Cell, List<Unit>> catchCell(final Player player, final IGame game, final List<Cell> achievableCells) {
-        return new Pair<>(RandomGenerator
-                .chooseItemFromList(achievableCells),
+        return new Pair<>(RandomGenerator.chooseItemFromList(achievableCells),
                 player.getUnitStateToUnits()
                         .get(AvailabilityType.AVAILABLE)
                         .subList(
@@ -50,10 +49,11 @@ public class SimpleBot implements ISimpleBot {
         while (availableUnits.size() > 0 && random.nextInt(2) == 1) {
             final Cell protectedCell = RandomGenerator.chooseItemFromList(
                     game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
-            units = availableUnits.subList(units.size(), RandomGenerator.chooseNumber(
+            units.addAll(availableUnits.subList(units.size(), RandomGenerator.chooseNumber(
                     availableUnits.size() - units.size()) + units.size()
-            ); // список юнитов, которое игрок хочет распределить в эту клетку
+            )); // список юнитов, которое игрок хочет распределить в эту клетку
             distributionUnits.put(protectedCell, units);
+            units = new LinkedList<>();
         }
         return distributionUnits;
     }
