@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.implementations.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
 import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.Question;
@@ -18,14 +19,18 @@ import java.util.*;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*;
 
+/**
+ * Класс отвечает за обработку ответов от игроков
+ */
 public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
     public void process(final Player player, final Question question, final Answer answer) throws CoinsException {
         final Game currentGame = question.getGame();
         if (question.getQuestionType() == QuestionType.CHOOSE_RACE) {
             final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
-            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentGame.getRacesPool(), player.getRace());
-            chooseRace(player, currentGame.getRacesPool(), chooseRaceAnswer.getNewRace());
+            final List<Race> currentRacesPool = currentGame.getRacesPool();
+            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
+            chooseRace(player, currentRacesPool, chooseRaceAnswer.getNewRace());
             return;
         }
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
@@ -37,24 +42,38 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             return;
         }
         if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
-            changeRace(player, currentGame.getRacesPool());
+            final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
+            final List<Race> currentRacesPool = currentGame.getRacesPool();
+            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
+            changeRace(player, chooseRaceAnswer.getNewRace(), currentRacesPool);
             return;
         }
         if (question.getQuestionType() == QuestionType.CATCH_CELL) {
+            final IBoard currentBoard = currentGame.getBoard();
+            final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
+            final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
+            final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
+            //TODO: check getAchievableCells
+            final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
+            final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+            IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
+                    achievableCells, availableUnits, currentGame.getGameFeatures(), player);
+            final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
+            catchCells(player, captureCell, currentBoard, currentGame.getGameFeatures(), ownToCells,
+                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
             return;
         }
-        //TODO: продолжить захват клеток
         if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
             distributionUnits(player,
                     currentGame.getPlayerToTransitCells().get(player),
                     currentGame.getOwnToCells().get(player),
                     currentGame.getBoard());
         }
-        //TODO: продолжить распределение войск
+
     }
 
     /**
-     * Метод для выбора новой расы игроком
+     * Выбрать игроку новую расу
      *
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
@@ -72,7 +91,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
     }
 
     /**
-     * Процесс упадка: потеря контроля над всеми клетками с сохранением от них дохода
+     * Уйти в упадок: потеря контроля над всеми клетками с сохранением от них дохода
      *
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
@@ -89,55 +108,48 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
     }
 
     /**
-     * Процесс смены расы у игрока
+     * Сменить расу игроку
      *
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    public static void changeRace(final Player player, final List<Race> racesPool) {
+    public static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
-        //chooseRace(player, racesPool);
+        chooseRace(player, racesPool, newRace);
         racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
     }
 
     /**
-     * Метод для завоёвывания клеток игроком
+     * Завоевание клеток игроком
      *
      * @param player        - игрок, проводящий завоёвывание
+     * @param captureCell   - клетка, которую игрок хочет захватить
      * @param board         - борда
      * @param gameFeatures  - особенности игры
      * @param ownToCells    - список подконтрольных клеток для каждого игрока
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
-    private static void catchCells(final Player player,
+    public static void catchCells(final Player player,
+                                   final Cell captureCell,
                                    final IBoard board,
                                    final GameFeatures gameFeatures,
                                    final Map<Player, List<Cell>> ownToCells,
                                    final Map<Player, Set<Cell>> feudalToCells,
                                    final List<Cell> transitCells) {
-
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
         final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
-        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        while (achievableCells.size() > 0 && availableUnits.size() > 0) {
-            /* Пока есть что захватывать и
-                какими войсками захватывать и
-                 ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
-
-            final Cell catchingCell = RandomGenerator
-                    .chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
-          /*  if (catchCellAttempt(player, catchingCell, board, gameFeatures,
-                    ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
-*/
-            achievableCells.remove(catchingCell);
-            achievableCells.addAll(getAllNeighboringCells(board, catchingCell));
-            achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        }
+        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
+        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
+        catchCell(player, captureCell, unitsCountNeededToCatch - bonusAttack,
+                gameFeatures, ownToCells, feudalToCells, transitCells);
+        achievableCells.remove(captureCell);
+        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
 
