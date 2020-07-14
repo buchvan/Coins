@@ -1,7 +1,8 @@
 package io.neolab.internship.coins.exceptions;
 
 public enum ErrorCode {
-    WRONG_BOARD_SIZES("Wrong board sizes");
+    WRONG_BOARD_SIZES("Wrong board sizes"),
+    EMPTY_ANSWER("Answer is empty");
     //other...
 
     private final String message;
