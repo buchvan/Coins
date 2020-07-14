@@ -4,6 +4,7 @@ import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.implementations.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
 import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.answer.implementations.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.GameFeatures;
@@ -12,6 +13,7 @@ import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
@@ -79,22 +81,23 @@ public interface IGameValidator {
                                         final Player player) throws CoinsException {
         checkIfAnswerEmpty(answer);
         //есть ли клетка, соответствующая позиции
+        checkIfCellExists(answer.getResolution().getFirst(), currentBoard);
         final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
-        if(cellForAttempt == null) {
+        if (!checkIfCellExists(answer.getResolution().getFirst(), currentBoard)) {
             throw new CoinsException(ErrorCode.WRONG_POSITION);
         }
         //есть что захватывать
-        if(achievableCells.size() < 1) {
+        if (achievableCells.size() < 1) {
             throw new CoinsException(ErrorCode.NO_ACHIEVABLE_CELLS);
         }
         //есть ли войска для захвата
-        if(availableUnits.size() < 1) {
+        if (availableUnits.size() < 1) {
             throw new CoinsException(ErrorCode.NO_AVAILABLE_UNITS);
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
-        if(!isCellCapturePossible(answer.getResolution().getSecond().size() + bonusAttack,
+        if (!isCellCapturePossible(answer.getResolution().getSecond().size() + bonusAttack,
                 unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player.getNickname());
             throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
@@ -102,7 +105,21 @@ public interface IGameValidator {
 
     }
 
+    static void validateDistributionUnitsAnswer(final DistributionUnitsAnswer answer,
+                                                final IBoard currentBoard) throws CoinsException {
+        checkIfAnswerEmpty(answer);
+        if (answer.getResolutions().keySet().stream().anyMatch(position -> !checkIfCellExists(position, currentBoard))) {
+            throw new CoinsException(ErrorCode.WRONG_POSITION);
+        }
+
+    }
+
     static boolean isCellCapturePossible(final int attackPower, final int necessaryAttackPower) {
         return attackPower >= necessaryAttackPower;
+    }
+
+    static boolean checkIfCellExists(final Position position, final IBoard currentBoard) {
+        //есть ли клетка, соответствующая позиции
+        return currentBoard.getCellByPosition(position) == null;
     }
 }

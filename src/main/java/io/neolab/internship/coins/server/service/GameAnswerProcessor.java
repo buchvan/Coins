@@ -4,6 +4,7 @@ import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.implementations.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
 import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.answer.implementations.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -64,10 +65,14 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             return;
         }
         if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+            //TODO: complete...
+            final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
+            final IBoard currentBoard = currentGame.getBoard();
+            IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer, currentBoard);
             distributionUnits(player,
                     currentGame.getPlayerToTransitCells().get(player),
                     currentGame.getOwnToCells().get(player),
-                    currentGame.getBoard());
+                    currentBoard);
         }
 
     }
@@ -133,6 +138,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
+    //TODO: rename
     public static void catchCells(final Player player,
                                    final Cell captureCell,
                                    final IBoard board,
@@ -145,6 +151,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
         final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
+        //TODO: rename
         catchCell(player, captureCell, unitsCountNeededToCatch - bonusAttack,
                 gameFeatures, ownToCells, feudalToCells, transitCells);
         achievableCells.remove(captureCell);
@@ -170,7 +177,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.size() > 0) { // Если есть куда распределять войска
-            if (availableUnits.size() > 0) {
+            while (availableUnits.size() > 0) {
                 /* Пока есть какие войска распределять и
                 ответ "ДА" от игрока на вопрос: "Продолжить распределять войска?" */
 
