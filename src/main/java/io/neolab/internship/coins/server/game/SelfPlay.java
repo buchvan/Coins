@@ -31,11 +31,12 @@ public class SelfPlay {
     private static void selfPlay() {
 
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
+            LogCleaner.clean();
             final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final Exception exception) { // TODO: своё исключение
+        } catch (final Exception exception) {
             GameLogger.printErrorLog(exception);
         }
     }
@@ -75,14 +76,14 @@ public class SelfPlay {
     /**
      * Раунд в исполнении игрока
      *
-     * @param player               - игрок, который исполняет раунд
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param racesPool            - пул всех доступных рас
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, который исполняет раунд
+     * @param neutralPlayer - нейтральный игрок
+     * @param board         - борда
+     * @param racesPool     - пул всех доступных рас
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
     private static void playerRound(final Player player, final Player neutralPlayer, final IBoard board,
                                     final List<Race> racesPool,
@@ -234,13 +235,13 @@ public class SelfPlay {
     /**
      * Метод для завоёвывания клеток игроком
      *
-     * @param player               - игрок, проводящий завоёвывание
-     * @param neutralPlayer        - нейтральный игрок
-     * @param board                - борда
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
+     * @param player        - игрок, проводящий завоёвывание
+     * @param neutralPlayer - нейтральный игрок
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      */
     private static void catchCells(final Player player, final Player neutralPlayer,
                                    final IBoard board,
@@ -385,7 +386,7 @@ public class SelfPlay {
      * Метод получения числа юнитов, необходимых для захвата клетки
      *
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     private static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
@@ -411,9 +412,9 @@ public class SelfPlay {
     /**
      * Метод получения бонуса атаки при захвате клетки
      *
-     * @param player               - игрок-агрессор
+     * @param player       - игрок-агрессор
      * @param gameFeatures - особенности игры
-     * @param catchingCell         - захватываемая клетка
+     * @param catchingCell - захватываемая клетка
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     private static int getBonusAttackToCatchCell(final Player player,
@@ -446,15 +447,15 @@ public class SelfPlay {
     /**
      * Захватить клетку
      *
-     * @param player               - игрок-агрессор
-     * @param catchingCell         - захватываемая клетка
-     * @param tiredUnitsCount      - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param neutralPlayer        - нейтральный игрок
-     * @param gameFeatures - особенности игры
-     * @param ownToCells           - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells        - множества клеток для каждого феодала
-     * @param transitCells         - транзитные клетки игрока
-     *                             (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player          - игрок-агрессор
+     * @param catchingCell    - захватываемая клетка
+     * @param tiredUnitsCount - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param neutralPlayer   - нейтральный игрок
+     * @param gameFeatures    - особенности игры
+     * @param ownToCells      - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells   - множества клеток для каждого феодала
+     * @param transitCells    - транзитные клетки игрока
+     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     private static void catchCell(final Player player, final Cell catchingCell,
                                   final int tiredUnitsCount, final Player neutralPlayer,
