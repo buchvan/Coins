@@ -10,16 +10,11 @@ public enum Race {
     ;
 
     private final String title;
-
-    private int unitsAmount;
+    private final int unitsAmount;
 
     Race(final String title, final int unitsAmount) {
         this.title = title;
         this.unitsAmount = unitsAmount;
-    }
-
-    Race(final String title) {
-        this.title = title;
     }
 
     public int getUnitsAmount() {
