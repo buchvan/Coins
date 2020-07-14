@@ -112,32 +112,31 @@ public class GameLogger {
     /**
      * Вывод лога о выборе игроком числа юнитов для захвата клетки
      *
-     * @param player     - игрок, выбравший число юнитов для захвата
+     * @param aggressorNickname     - никнэйм игрок, выбравший число юнитов для захвата
      * @param unitsCount - выбранное число юнитов
      */
-    public static void printCatchCellUnitsQuantityLog(final Player player, final int unitsCount) {
-        LOGGER.debug("Player {} capture units in quantity {} ", player.getNickname(), unitsCount);
+    public static void printCatchCellUnitsQuantityLog(final String aggressorNickname, final int unitsCount) {
+        LOGGER.debug("Player {} capture units in quantity {} ", aggressorNickname, unitsCount);
     }
 
     /**
      * Вывод лога о неудачном захвате клетки
      *
-     * @param player - игрок, который не смог захватить клетку
+     * @param aggressorNickname - никнэйм игрока, который не смог захватить клетку
      */
-    public static void printCatchCellNotCapturedLog(final Player player) {
-        LOGGER.debug("The cell is not captured. The aggressor {} retreated ", player.getNickname());
+    public static void printCatchCellNotCapturedLog(final String aggressorNickname) {
+        LOGGER.debug("The cell is not captured. The aggressor {} retreated ", aggressorNickname);
     }
 
     /**
      * Вывод лога о применении особенности при обороне клетки
      *
-     * @param defendingPlayer - игрок, защищающий клетку
+     * @param defendingPlayerNickname - никнэйм игрок, защищающего клетку
      * @param catchingCell    - захватываемая клетка
      */
-    public static void printCatchCellDefenseFeatureLog(final Player defendingPlayer, final Cell catchingCell) {
+    public static void printCatchCellDefenseFeatureLog(final String defendingPlayerNickname, final Cell catchingCell) {
         LOGGER.debug("Player stumbled upon a defense of {} in cellType {} of defending player {}",
-                catchingCell.getRace(), catchingCell.getType(),
-                defendingPlayer != null ? defendingPlayer.getNickname() : "NULL");
+                catchingCell.getRace(), catchingCell.getType(), defendingPlayerNickname);
     }
 
     /**
@@ -222,7 +221,7 @@ public class GameLogger {
             LOGGER.debug("--- CellType: {} ", transitCell.getType().getTitle());
             LOGGER.debug("--- Race: {} ", transitCell.getRace().getTitle());
             LOGGER.debug("--- Feudal: {} ",
-                    transitCell.getFeudal() != null ? transitCell.getFeudal().getNickname() : "--- NULL");
+                    transitCell.getFeudal() != null ? transitCell.getFeudal().getNickname() : "NULL");
             LOGGER.debug("--- Own: {} ", transitCell.getOwn().getNickname());
             LOGGER.debug("--- Units: {} ", transitCell.getUnits());
         });
@@ -267,7 +266,7 @@ public class GameLogger {
      */
     public static void printCellAfterDefendingLog(final Player player, final Cell protectedCell) {
         LOGGER.debug("Cell after defending: ");
-        LOGGER.debug("--- Own: {} ", protectedCell.getOwn().getNickname());
+        LOGGER.debug("--- Own: {} ", protectedCell.getOwn() != null ? protectedCell.getOwn().getNickname() : "NULL");
         LOGGER.debug("--- Units: {} ", protectedCell.getUnits());
         LOGGER.debug("Player {} after defending: ", player.getNickname());
         LOGGER.debug("--- Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));

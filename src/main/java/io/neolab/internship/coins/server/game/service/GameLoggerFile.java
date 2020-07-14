@@ -2,7 +2,6 @@ package io.neolab.internship.coins.server.game.service;
 
 import org.slf4j.MDC;
 
-import java.io.IOException;
 import java.util.Date;
 
 public class GameLoggerFile implements AutoCloseable {
@@ -20,7 +19,7 @@ public class GameLoggerFile implements AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         GameLogger.printLogFileLog(logFileName);
         MDC.remove("logFileName");
     }
