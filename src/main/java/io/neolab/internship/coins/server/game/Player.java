@@ -1,15 +1,26 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.communication.deserialize.AvailabilityTypeDeserializer;
+import io.neolab.internship.coins.common.communication.serialize.AvailabilityTypeSerializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.IdGenerator;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Player {
+public class Player implements Serializable {
     private int id;
     private String nickname;
     private Race race;
+
+    @JsonSerialize(keyUsing = AvailabilityTypeSerializer.class)
+    @JsonDeserialize(keyUsing = AvailabilityTypeDeserializer.class)
     private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
+
     private int coins = 0;
 
     public Player(final String nickname) {
@@ -19,6 +30,24 @@ public class Player {
         for (final AvailabilityType availabilityType : AvailabilityType.values()) {
             this.unitStateToUnits.put(availabilityType, new LinkedList<>());
         }
+    }
+
+    @JsonCreator
+    public Player(@JsonProperty("id") final int id,
+                  @JsonProperty("nickname") final String nickname,
+                  @JsonProperty("race") final Race race,
+                  @JsonProperty("unitStateToUnits") final Map<AvailabilityType, List<Unit>> unitStateToUnits,
+                  @JsonProperty("coins") final int coins) {
+        this.id = id;
+        this.nickname = nickname;
+        this.race = race;
+        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
+        for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
+            final List<Unit> units = new LinkedList<>();
+            Collections.copy(units, entry.getValue());
+            this.unitStateToUnits.put(entry.getKey(), units);
+        }
+        this.coins = coins;
     }
 
     public int getId() {

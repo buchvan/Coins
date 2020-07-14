@@ -1,14 +1,22 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.utils.IdGenerator;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Unit {
+public class Unit implements Serializable {
     private final int id;
 
     public Unit() {
         this.id = IdGenerator.getCurrentId();
+    }
+
+    @JsonCreator
+    public Unit(@JsonProperty("id") final Unit unit) {
+        this.id = unit.id;
     }
 
     public int getId() {

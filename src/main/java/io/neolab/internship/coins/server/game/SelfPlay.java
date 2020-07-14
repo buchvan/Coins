@@ -1,5 +1,8 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -31,7 +34,7 @@ public class SelfPlay {
     private static void selfPlay() {
 
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
-            final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
@@ -45,7 +48,7 @@ public class SelfPlay {
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
      */
-    private static void gameLoop(final Game game) {
+    private static void gameLoop(final IGame game) {
         GameLogger.printStartGameChoiceLog();
         for (final Player player : game.getPlayers()) {
             chooseRace(player, game.getRacesPool());

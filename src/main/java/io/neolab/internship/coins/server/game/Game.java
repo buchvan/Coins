@@ -1,17 +1,32 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.communication.deserialize.PlayerDeserializer;
+import io.neolab.internship.coins.common.communication.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Game implements IGame {
+public class Game implements IGame, Serializable {
     private IBoard board;
-    private int currentRound = 0;
+    private int currentRound;
 
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
     private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
     private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
     private final Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток, которые он контролирует,
     // но которые не приносят ему монет
 
@@ -31,9 +46,22 @@ public class Game implements IGame {
 
     public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final GameFeatures gameFeatures, final List<Race> racesPool,
-                final List<Player> players) {
+                final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
+
+        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, players);
+    }
+
+    @JsonCreator
+    public Game(@JsonProperty("board") final IBoard board,
+                @JsonProperty("currentRound") final int currentRound,
+                @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
+                @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
+                @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
+                @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
+                @JsonProperty("racesPool") final List<Race> racesPool,
+                @JsonProperty("players") final List<Player> players) {
         this.board = board;
+        this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
         this.playerToTransitCells = playerToTransitCells;
@@ -42,46 +70,57 @@ public class Game implements IGame {
         this.players = players;
     }
 
+    @Override
     public void incrementCurrentRound() {
         currentRound++;
     }
 
+    @Override
     public IBoard getBoard() {
         return board;
     }
 
+    @Override
     public void setBoard(final Board board) {
         this.board = board;
     }
 
+    @Override
     public int getCurrentRound() {
         return currentRound;
     }
 
+    @Override
     public void setCurrentRound(final int currentRound) {
         this.currentRound = currentRound;
     }
 
+    @Override
     public Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getOwnToCells() {
         return ownToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getPlayerToTransitCells() {
         return playerToTransitCells;
     }
 
+    @Override
     public GameFeatures getGameFeatures() {
         return gameFeatures;
     }
 
+    @Override
     public List<Race> getRacesPool() {
         return racesPool;
     }
 
+    @Override
     public List<Player> getPlayers() {
         return players;
     }
