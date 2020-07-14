@@ -15,9 +15,6 @@ public class GameFinalizer {
      * @param playerList - список игроков.
      */
     public static void finalize(final List<Player> playerList) throws CoinsException {
-//        if (playerList == null) {
-//            throw new CoinsException(ErrorCode.NULL_POINTER);
-//        }
         final int maxCoinsCount = getMaxCoinsCount(playerList);
         GameLogger.printResultsInGameEnd(getWinners(maxCoinsCount, playerList), playerList);
     }
@@ -26,7 +23,7 @@ public class GameFinalizer {
      * @param playerList - список игроков
      * @return максимальное кол-во монет, имеющихся у одного игрока
      */
-    public static int getMaxCoinsCount(final List<Player> playerList) throws CoinsException { // был приватный
+    public static int getMaxCoinsCount(final List<Player> playerList) throws CoinsException {
         if (playerList == null) {
             throw new CoinsException(ErrorCode.NULL_POINTER);
         }
@@ -42,7 +39,7 @@ public class GameFinalizer {
      * @return список победителей (игроков, имеющих монет в кол-ве maxCoinsCount)
      */
     public static List<Player> getWinners(final int maxCoinsCount,
-                                           final List<Player> playerList) throws CoinsException { // был приватный
+                                           final List<Player> playerList) throws CoinsException {
         if (playerList == null) {
             throw new CoinsException(ErrorCode.NULL_POINTER);
         }

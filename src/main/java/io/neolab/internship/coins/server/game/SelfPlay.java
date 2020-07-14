@@ -37,7 +37,7 @@ public class SelfPlay {
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final CoinsException | IOException exception) {
+        } catch (final CoinsException exception) {
             GameLogger.printErrorLog(exception);
         }
     }
