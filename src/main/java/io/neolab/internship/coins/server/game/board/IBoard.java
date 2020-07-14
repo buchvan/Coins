@@ -4,8 +4,6 @@ import org.apache.commons.collections4.BidiMap;
 
 public interface IBoard {
 
-    BidiMap<Position, Cell> getPositionToCellMap();
-
     /**
      * Взять клетку по позиции, на которой она расположена на борде
      *

@@ -42,7 +42,7 @@ public class SelfPlay {
             game.getPlayers().forEach(player -> simpleBotToPlayer.put(new SimpleBot(), player));
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final CoinsException | IOException exception) {
+        } catch (final CoinsException exception) {
             GameLogger.printErrorLog(exception);
         }
     }
