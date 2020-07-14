@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.factory;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.IBoard;
 
 public interface IBoardFactory {
