@@ -29,7 +29,7 @@ public class Game implements IGame {
                 new LinkedList<>(), new LinkedList<>());
     }
 
-    public Game(final Board board, final Map<Player, Set<Cell>> feudalToCells,
+    public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool,
                 final List<Player> players) {

@@ -5,10 +5,7 @@ import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.GameFeatures;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.board.Board;
-import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -30,7 +27,7 @@ public class GameInitializer {
 
         //мок доски
         //final Board board = initBoard(boardSizeX, boardSizeY);
-        final Board board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final List<Player> playerList = initTestPlayers();
 
