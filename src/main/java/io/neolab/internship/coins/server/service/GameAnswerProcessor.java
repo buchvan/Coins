@@ -1,12 +1,11 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.service.GameLogger;
@@ -14,36 +13,39 @@ import io.neolab.internship.coins.server.validation.IGameValidator;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.RandomGenerator;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*;
 
 public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
     public void process(final Player player, final Question question, final Answer answer) throws CoinsException {
-        //TODO: добавить другие проверки
-        IGameValidator.validate(answer);
+        final Game currentGame = question.getGame();
         if (question.getQuestionType() == QuestionType.CHOOSE_RACE) {
-            chooseRace(player, question.getGame().getRacesPool());
+            final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
+            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentGame.getRacesPool(), player.getRace());
+            chooseRace(player, currentGame.getRacesPool(), chooseRaceAnswer.getNewRace());
+            return;
         }
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
             declineRace(player,
-                    question.getGame().getOwnToCells().get(player),
-                    question.getGame().getFeudalToCells().get(player));
+                    currentGame.getOwnToCells().get(player),
+                    currentGame.getFeudalToCells().get(player));
+            return;
         }
         if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
-            changeRace(player, question.getGame().getRacesPool());
+            changeRace(player, currentGame.getRacesPool());
+            return;
         }
         if (question.getQuestionType() == QuestionType.CATCH_CELL) {
-            //TODO
+            return;
         }
         //TODO: продолжить захват клеток
         if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
             distributionUnits(player,
-                    question.getGame().getPlayerToTransitCells().get(player),
-                    question.getGame().getOwnToCells().get(player),
-                    question.getGame().getBoard());
+                    currentGame.getPlayerToTransitCells().get(player),
+                    currentGame.getOwnToCells().get(player),
+                    currentGame.getBoard());
         }
         //TODO: продолжить распределение войск
     }
@@ -54,8 +56,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
      */
-    public static void chooseRace(final Player player, final List<Race> racesPool) {
-        final Race newRace = RandomGenerator.chooseItemFromList(racesPool);
+    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
         /* Добавляем юнитов выбранной расы */
@@ -95,9 +96,47 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
-        chooseRace(player, racesPool);
+        //chooseRace(player, racesPool);
         racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
     }
+
+    /**
+     * Метод для завоёвывания клеток игроком
+     *
+     * @param player        - игрок, проводящий завоёвывание
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
+     */
+    private static void catchCells(final Player player,
+                                   final IBoard board,
+                                   final GameFeatures gameFeatures,
+                                   final Map<Player, List<Cell>> ownToCells,
+                                   final Map<Player, Set<Cell>> feudalToCells,
+                                   final List<Cell> transitCells) {
+
+        GameLogger.printBeginCatchCellsLog(player);
+        final List<Cell> controlledCells = ownToCells.get(player);
+        final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
+        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+        while (achievableCells.size() > 0 && availableUnits.size() > 0) {
+            /* Пока есть что захватывать и
+                какими войсками захватывать и
+                 ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
+
+            final Cell catchingCell = RandomGenerator
+                    .chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
+          /*  if (catchCellAttempt(player, catchingCell, board, gameFeatures,
+                    ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
+*/
+            achievableCells.remove(catchingCell);
+            achievableCells.addAll(getAllNeighboringCells(board, catchingCell));
+            achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
+        }
+    }
+
 
     /**
      * Метод для распределения юнитов игроком

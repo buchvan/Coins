@@ -27,51 +27,12 @@ public class GameLoopProcessor {
     }
 
     /**
-     * Метод для завоёвывания клеток игроком
-     *
-     * @param player        - игрок, проводящий завоёвывание
-     * @param neutralPlayer - нейтральный игрок
-     * @param board         - борда
-     * @param gameFeatures  - особенности игры
-     * @param ownToCells    - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells - множества клеток для каждого феодала
-     * @param transitCells  - транзитные клетки игрока
-     */
-    public static void catchCells(final Player player, final Player neutralPlayer,
-                                   final IBoard board,
-                                   final GameFeatures gameFeatures,
-                                   final Map<Player, List<Cell>> ownToCells,
-                                   final Map<Player, Set<Cell>> feudalToCells,
-                                   final List<Cell> transitCells) {
-
-        GameLogger.printBeginCatchCellsLog(player);
-        final List<Cell> controlledCells = ownToCells.get(player);
-        final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
-        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        if (achievableCells.size() > 0 && availableUnits.size() > 0) {
-            /* Пока есть что захватывать и
-                какими войсками захватывать и
-                 ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
-
-            final Cell catchingCell = RandomGenerator
-                    .chooseItemFromList(achievableCells); // клетка, которую игрок хочет захватить
-            if (catchCellAttempt(player, catchingCell, neutralPlayer, board, gameFeatures,
-                    ownToCells, feudalToCells, transitCells)) { // если попытка захвата увеначалась успехом
-
-                achievableCells.remove(catchingCell);
-                achievableCells.addAll(getAllNeighboringCells(board, catchingCell));
-                achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-            }
-        }
-    }
-
-    /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
      * @param controlledCells - принадлежащие игроку клетки
      * @return список достижимых в один ход игроком клеток, не подконтрольных ему
      */
-    private static List<Cell> getAchievableCells(final IBoard board,
+    public static List<Cell> getAchievableCells(final IBoard board,
                                                  final List<Cell> controlledCells) {
         if (controlledCells.isEmpty()) {
             return boardEdgeGetCells(board);
@@ -92,7 +53,7 @@ public class GameLoopProcessor {
      * @param cell  - клетка, чьих соседей мы ищем
      * @return список всех соседей клетки cell на борде board
      */
-    private static List<Cell> getAllNeighboringCells(final IBoard board, final Cell cell) {
+    public static List<Cell> getAllNeighboringCells(final IBoard board, final Cell cell) {
         final List<Cell> neighboringCells = new LinkedList<>();
         final List<Position> neighboringPositions = Position.getAllNeighboringPositions(board.getPositionByCell(cell));
         neighboringPositions.forEach(neighboringPosition -> {
@@ -117,7 +78,7 @@ public class GameLoopProcessor {
      * @param transitCells  - транзитные клетки игрока
      * @return true - если попытка увенчалась успехом, false - иначе
      */
-    private static boolean catchCellAttempt(final Player player, final Cell catchingCell, final Player neutralPlayer,
+    public static boolean catchCellAttempt(final Player player, final Cell catchingCell, final Player neutralPlayer,
                                             final IBoard board,
                                             final GameFeatures gameFeatures,
                                             final Map<Player, List<Cell>> ownToCells,
@@ -128,15 +89,15 @@ public class GameLoopProcessor {
         final int unitsCount = RandomGenerator.chooseNumber(player.getUnitsByState(
                 AvailabilityType.AVAILABLE).size()); // число юнитов, которое игрок хочет направить в эту клетку
 
-        GameLogger.printCatchCellUnitsQuantityLog(player, unitsCount);
+        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), unitsCount);
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!cellIsCatching(unitsCount + bonusAttack, unitsCountNeededToCatch)) {
-            GameLogger.printCatchCellNotCapturedLog(player);
+            GameLogger.printCatchCellNotCapturedLog(player.getNickname());
             return false;
         } // else
-        catchCell(player, catchingCell, unitsCountNeededToCatch - bonusAttack, neutralPlayer,
-                gameFeatures, ownToCells, feudalToCells, transitCells);
+       /* catchCell(player, catchingCell, unitsCountNeededToCatch - bonusAttack,
+                gameFeatures, ownToCells, feudalToCells, transitCells);*/
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -147,7 +108,7 @@ public class GameLoopProcessor {
      * @param board - борда, крайние клетки которой мы хотим взять
      * @return список всех крайних клеток борды board
      */
-    private static List<Cell> boardEdgeGetCells(final IBoard board) {
+    public static List<Cell> boardEdgeGetCells(final IBoard board) {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -183,7 +144,7 @@ public class GameLoopProcessor {
      * @param catchingCell - захватываемая клетка
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
-    private static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
+    public static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
                                                       final Cell catchingCell) {
         final Player defendingPlayer = catchingCell.getOwn();
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
@@ -193,7 +154,7 @@ public class GameLoopProcessor {
 
             if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                 unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
-                GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer, catchingCell);
+                GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer.getNickname(), catchingCell);
             }
         }
         if (catchingCell.getUnits().size() > 0) { // если в захватываемой клетке есть юниты
@@ -211,7 +172,7 @@ public class GameLoopProcessor {
      * @param catchingCell - захватываемая клетка
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
-    private static int getBonusAttackToCatchCell(final Player player,
+    public static int getBonusAttackToCatchCell(final Player player,
                                                  final GameFeatures gameFeatures,
                                                  final Cell catchingCell) {
         int bonusAttack = 0;
@@ -234,7 +195,7 @@ public class GameLoopProcessor {
      * @param necessaryAttackPower - необходимая сила атаки на эту клетку для её захвата
      * @return true - если клетку можно захватить, имея attackPower, false - иначе
      */
-    private static boolean cellIsCatching(final int attackPower, final int necessaryAttackPower) {
+    public static boolean cellIsCatching(final int attackPower, final int necessaryAttackPower) {
         return attackPower >= necessaryAttackPower;
     }
 
@@ -251,7 +212,7 @@ public class GameLoopProcessor {
      * @param transitCells    - транзитные клетки игрока
      *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
-    private static void catchCell(final Player player, final Cell catchingCell,
+    public static void catchCell(final Player player, final Cell catchingCell,
                                   final int tiredUnitsCount, final Player neutralPlayer,
                                   final GameFeatures gameFeatures,
                                   final Map<Player, List<Cell>> ownToCells,
@@ -286,7 +247,7 @@ public class GameLoopProcessor {
      * @param player - игрок, первые N доступных юнитов которого нужно сделать недоступными
      * @param N      - то число доступных юнитов, которых необходимо сделать недоступными
      */
-    private static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
+    public static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
         final Iterator<Unit> iterator = player.getUnitsByState(AvailabilityType.AVAILABLE).iterator();
         int i = 0;
         while (iterator.hasNext() && i < N) {
@@ -313,7 +274,7 @@ public class GameLoopProcessor {
      * @param neutralPlayer - нейтральный игрок
      * @return true - если игрок player не нейтрален в игре game, false - иначе
      */
-    private static boolean isAlivePlayer(final Player player, final Player neutralPlayer) {
+    public static boolean isAlivePlayer(final Player player, final Player neutralPlayer) {
         return player != null && isNotNeutralPlayer(player, neutralPlayer);
     }
 
@@ -326,7 +287,7 @@ public class GameLoopProcessor {
      * @param feature      - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
-    private static boolean catchCellCheckFeature(final Cell catchingCell, final boolean haveARival,
+    public static boolean catchCellCheckFeature(final Cell catchingCell, final boolean haveARival,
                                                  final Feature feature) {
 
         if (haveARival && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
@@ -349,7 +310,7 @@ public class GameLoopProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
-    private static void depriveCellFeudalAndOwner(final Cell cell,
+    public static void depriveCellFeudalAndOwner(final Cell cell,
                                                   final boolean ownIsAlive,
                                                   final List<Cell> controlledCells,
                                                   final Set<Cell> feudalCells) {
@@ -372,7 +333,7 @@ public class GameLoopProcessor {
             * @param controlledCells    - принадлежащие игроку клетки
      * @param feudalCells        - клетки, приносящие монеты игроку
      */
-    private static void giveCellFeudalAndOwner(final Player player,
+    public static void giveCellFeudalAndOwner(final Player player,
                                                final Cell cell,
                                                final boolean cellIsFeudalizable,
                                                final List<Cell> transitCells,
@@ -396,7 +357,7 @@ public class GameLoopProcessor {
      * @param neutralPlayer - нейтральный игрок
      * @return true - если игрок player не нейтрален в игре game, false - иначе
      */
-    private static boolean isNotNeutralPlayer(final Player player, final Player neutralPlayer) {
+    public static boolean isNotNeutralPlayer(final Player player, final Player neutralPlayer) {
         return player != neutralPlayer; // можно сравнивать ссылки,
         // так как нейтральный игрок в игре имеется в единственном экземпляре
     }
@@ -407,7 +368,7 @@ public class GameLoopProcessor {
      * @param deadUnitsCount - кол-во, которое необходимо убить
      * @param player         - игрок, чьих юнитов необходимо убить
      */
-    private static void killUnits(final int deadUnitsCount, final Player player) {
+    public static void killUnits(final int deadUnitsCount, final Player player) {
         ListProcessor.removeFirstN(deadUnitsCount, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         GameLogger.printCatchCellUnitsDiedLog(player, deadUnitsCount);
     }

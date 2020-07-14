@@ -239,7 +239,7 @@ public class SelfPlay {
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
-    private static void catchCells(final Player player, final Player neutralPlayer,
+    private static void catchCells(final Player player,
                                    final IBoard board,
                                    final GameFeatures gameFeatures,
                                    final Map<Player, List<Cell>> ownToCells,
