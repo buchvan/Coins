@@ -3,7 +3,7 @@ package io.neolab.internship.coins.server.game.feature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.communication.deserialize.FeatureDeserializer;
+import io.neolab.internship.coins.common.deserialize.FeatureDeserializer;
 
 import java.util.Objects;
 

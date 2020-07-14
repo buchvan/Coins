@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.communication.deserialize.PositionDeserializer;
-import io.neolab.internship.coins.common.communication.deserialize.PositionToCellBidiMapDeserializer;
-import io.neolab.internship.coins.common.communication.serialize.PositionSerializer;
+import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
+import io.neolab.internship.coins.common.deserialize.PositionToCellBidiMapDeserializer;
+import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 

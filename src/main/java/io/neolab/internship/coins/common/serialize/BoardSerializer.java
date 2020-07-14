@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.communication.serialize;
+package io.neolab.internship.coins.common.serialize;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

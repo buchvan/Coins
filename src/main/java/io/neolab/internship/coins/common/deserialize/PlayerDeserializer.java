@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.communication.deserialize;
+package io.neolab.internship.coins.common.deserialize;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
