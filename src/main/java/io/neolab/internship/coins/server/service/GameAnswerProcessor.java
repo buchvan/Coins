@@ -2,6 +2,7 @@ package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -28,6 +29,8 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             return;
         }
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
+            final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
+            IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
             declineRace(player,
                     currentGame.getOwnToCells().get(player),
                     currentGame.getFeudalToCells().get(player));
