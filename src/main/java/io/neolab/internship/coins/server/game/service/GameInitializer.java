@@ -32,7 +32,6 @@ public class GameInitializer {
         //final Board board = initBoard(boardSizeX, boardSizeY);
         final Board board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
-        final Player neutralPlayer = createNeutralPlayer();
         final List<Player> playerList = initTestPlayers();
 
         final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
@@ -44,8 +43,7 @@ public class GameInitializer {
         final GameFeatures gameFeatures  = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells,
-                gameFeatures, racesPool, playerList, neutralPlayer);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
     }
 
     /**
@@ -82,18 +80,6 @@ public class GameInitializer {
 
         LOGGER.debug("Board is created: {} ", board);
         return board;
-    }
-
-
-    /**
-     * Инициализация нейтрального игрока
-     *
-     * @return нейтрального игрока
-     */
-    private static Player createNeutralPlayer() {
-        final Player neutralPlayer = new Player("neutral");
-        LOGGER.debug("Neutral player is created: {} ", neutralPlayer);
-        return neutralPlayer;
     }
 
     /**
