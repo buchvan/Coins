@@ -1,13 +1,11 @@
-package io.neolab.internship.coins.common.answer.implementations;
+package io.neolab.internship.coins.common.answer;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.interfaces.IDistributionUnitsAnswer;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.*;
 
-public class DistributionUnitsAnswer extends Answer implements IDistributionUnitsAnswer {
+public class DistributionUnitsAnswer extends Answer {
     private final Map<Position, List<Unit>> resolutions;
 
     public DistributionUnitsAnswer() {
@@ -18,7 +16,6 @@ public class DistributionUnitsAnswer extends Answer implements IDistributionUnit
         this.resolutions = resolutions;
     }
 
-    @Override
     public Map<Position, List<Unit>> getResolutions() {
         return resolutions;
     }

@@ -1,15 +1,13 @@
-package io.neolab.internship.coins.common.answer.implementations;
+package io.neolab.internship.coins.common.answer;
 
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.utils.Pair;
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.interfaces.ICatchCellAnswer;
 
 import java.util.List;
 import java.util.Objects;
 
-public class CatchCellAnswer extends Answer implements ICatchCellAnswer {
+public class CatchCellAnswer extends Answer {
     private final Pair<Position, List<Unit>> resolution;
 
     public CatchCellAnswer() {
@@ -20,7 +18,6 @@ public class CatchCellAnswer extends Answer implements ICatchCellAnswer {
         this.resolution = resolution;
     }
 
-    @Override
     public Pair<Position, List<Unit>> getResolution() {
         return resolution;
     }
