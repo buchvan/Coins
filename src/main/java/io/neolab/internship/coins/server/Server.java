@@ -14,6 +14,7 @@ import java.util.List;
 public class Server implements IServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
+    public static final int PORT = 8081;
     private final int CLIENTS_COUNT = 2;
 
     /**
