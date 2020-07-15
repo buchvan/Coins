@@ -3,6 +3,8 @@ package io.neolab.internship.coins.common.communication;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -58,7 +60,7 @@ public class CommunicationTest {
     }
 
     @Test
-    public void testEquivalentCustomPlayer() throws CoinsException, JsonProcessingException {
+    public void testEquivalentCustomPlayer() throws JsonProcessingException {
         final Player expected = new Player("kvs");
         expected.setRace(Race.ELF);
         expected.setCoins(12);
@@ -71,5 +73,42 @@ public class CommunicationTest {
         assertEquals(expected, actual);
     }
 
-    // TODO тест с (де)сериализацией вопроса
+    @Test
+    public void testEquivalentQuestionType() throws JsonProcessingException {
+        final QuestionType expected = QuestionType.CATCH_CELL;
+        final ObjectMapper mapper = new ObjectMapper();
+        final String json = mapper.writeValueAsString(expected);
+        final QuestionType actual = mapper.readValue(json, QuestionType.class);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testEquivalentQuestion() throws CoinsException, JsonProcessingException {
+        final IGame game = GameInitializer.gameInit(3, 4);
+
+        game.getPlayerToTransitCells().forEach((player, cells) -> cells.add(new Cell(CellType.MUSHROOM)));
+        game.getPlayerToTransitCells().forEach((player, cells) -> cells.add(new Cell(CellType.LAND)));
+        game.getOwnToCells().forEach((player, cells) -> cells.add(new Cell(CellType.WATER)));
+        game.getOwnToCells().forEach((player, cells) -> cells.add(new Cell(CellType.MOUNTAIN)));
+        game.getPlayerToTransitCells().forEach((player, cells) -> cells.add(new Cell(CellType.WATER)));
+        game.getPlayerToTransitCells().forEach((player, cells) -> cells.add(new Cell(CellType.MOUNTAIN)));
+        game.getFeudalToCells().forEach((player, cells) -> cells.add(new Cell(CellType.WATER)));
+        game.getFeudalToCells().forEach((player, cells) -> cells.add(new Cell(CellType.LAND)));
+        game.getPlayers().forEach(player -> player.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit()));
+
+        final Player player = new Player("kvs");
+        player.setRace(Race.ELF);
+        player.setCoins(12);
+        player.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
+        player.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
+
+        final QuestionType questionType = QuestionType.CATCH_CELL;
+
+        final Question expected = new Question(questionType, game, player);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final String json = mapper.writeValueAsString(expected);
+        final Question actual = mapper.readValue(json, Question.class);
+        assertEquals(expected, actual);
+    }
 }
