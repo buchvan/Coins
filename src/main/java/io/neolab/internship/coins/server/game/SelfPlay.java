@@ -33,6 +33,7 @@ public class SelfPlay {
     private static void selfPlay() {
 
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
+            LogCleaner.clean();
             final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
