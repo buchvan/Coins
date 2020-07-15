@@ -2,7 +2,7 @@ package io.neolab.internship.coins.server.validation;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -44,7 +44,7 @@ public interface IGameValidator {
      * @throws CoinsException при совпадении новых и текущей расы - SAME_RACES, расы нет в пуле - UNAVAILABLE_NEW_RACE,
      *                        пустой ответ - EMPTY_ANSWER
      */
-    static void validateChooseRaceAnswer(final ChooseRaceAnswer answer,
+    static void validateChooseRaceAnswer(final ChangeRaceAnswer answer,
                                          final List<Race> racesPool,
                                          final Race currentPlayerRace) throws CoinsException {
         checkIfAnswerEmpty(answer);

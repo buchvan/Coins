@@ -4,10 +4,10 @@ import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Objects;
 
-public class ChooseRaceAnswer extends Answer {
+public class ChangeRaceAnswer extends Answer {
     private final Race newRace;
 
-    public ChooseRaceAnswer(final Race newRace) {
+    public ChangeRaceAnswer(final Race newRace) {
         this.newRace = newRace;
     }
 
@@ -19,7 +19,7 @@ public class ChooseRaceAnswer extends Answer {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final ChooseRaceAnswer that = (ChooseRaceAnswer) o;
+        final ChangeRaceAnswer that = (ChangeRaceAnswer) o;
         return newRace == that.newRace;
     }
 

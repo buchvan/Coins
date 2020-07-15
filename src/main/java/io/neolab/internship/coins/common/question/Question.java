@@ -10,7 +10,7 @@ public class Question {
     private final IGame game;
     private final Player player;
 
-    public Question(QuestionType questionType, IGame game, Player player) {
+    public Question(final QuestionType questionType, final IGame game, final Player player) {
         this.questionType = questionType;
         this.game = game;
         this.player = player;
