@@ -20,7 +20,7 @@ public class GameInitializerTest {
 
     @Test
     public void gameInit() throws CoinsException {
-        final Game game = GameInitializer.gameInit(2, 2);
+        final Game game = GameInitializer.gameInit(2, 2, 2);
         assertNotNull(game);
         assertNotNull(game.getBoard()); // Тестируется в BoardFactoryTest.class
         game.getPlayers().forEach(player -> {
@@ -58,11 +58,11 @@ public class GameInitializerTest {
 
     @Test(expected = CoinsException.class)
     public void gameInitFail1() throws CoinsException {
-        GameInitializer.gameInit(0, 0);
+        GameInitializer.gameInit(0, 0, 2);
     }
 
     @Test(expected = CoinsException.class)
     public void gameInitFail2() throws CoinsException {
-        GameInitializer.gameInit(2, 1);
+        GameInitializer.gameInit(2, 1, 2);
     }
 }
