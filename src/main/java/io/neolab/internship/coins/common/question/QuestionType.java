@@ -2,6 +2,8 @@ package io.neolab.internship.coins.common.question;
 
 public enum QuestionType {
 
+    NICKNAME,
+
     /**
      * Захватить клетку
      */
@@ -20,5 +22,8 @@ public enum QuestionType {
     /**
      * Сменить расу
      */
-    CHANGE_RACE
+    CHANGE_RACE,
+
+    RESULTS,
+    ;
 }
