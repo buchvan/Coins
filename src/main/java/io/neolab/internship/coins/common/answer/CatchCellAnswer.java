@@ -1,27 +1,24 @@
-package io.neolab.internship.coins.common.answer.implementations;
+package io.neolab.internship.coins.common.answer;
 
-import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.Unit;
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.interfaces.ICatchCellAnswer;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.util.List;
 import java.util.Objects;
 
-public class CatchCellAnswer extends Answer implements ICatchCellAnswer {
-    private final Pair<Cell, List<Unit>> resolution;
+public class CatchCellAnswer extends Answer {
+    private final Pair<Position, List<Unit>> resolution;
 
     public CatchCellAnswer() {
         this.resolution = null;
     }
 
-    public CatchCellAnswer(final Pair<Cell, List<Unit>> resolution) {
+    public CatchCellAnswer(final Pair<Position, List<Unit>> resolution) {
         this.resolution = resolution;
     }
 
-    @Override
-    public Pair<Cell, List<Unit>> getResolution() {
+    public Pair<Position, List<Unit>> getResolution() {
         return resolution;
     }
 

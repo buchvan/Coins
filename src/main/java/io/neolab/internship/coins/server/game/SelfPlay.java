@@ -37,12 +37,13 @@ public class SelfPlay {
      */
     private static void selfPlay() {
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
+            LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
             GameLogger.printGameCreatedLog(game);
             game.getPlayers().forEach(player -> simpleBotToPlayer.put(new SimpleBot(), player));
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final CoinsException exception) {
+        } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
     }

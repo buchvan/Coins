@@ -1,28 +1,25 @@
-package io.neolab.internship.coins.common.answer.implementations;
+package io.neolab.internship.coins.common.answer;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.interfaces.IChooseRaceAnswer;
 import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Objects;
 
-public class ChooseRaceAnswer extends Answer implements IChooseRaceAnswer {
-    private final Race newRace; // Новая раса
+public class ChooseRaceAnswer extends Answer {
+    private final Race newRace;
 
     public ChooseRaceAnswer(final Race newRace) {
         this.newRace = newRace;
     }
 
-    @Override
     public Race getNewRace() {
         return newRace;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ChooseRaceAnswer that = (ChooseRaceAnswer) o;
+        final ChooseRaceAnswer that = (ChooseRaceAnswer) o;
         return newRace == that.newRace;
     }
 
