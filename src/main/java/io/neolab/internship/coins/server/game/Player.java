@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.neolab.internship.coins.common.deserialize.AvailabilityTypeDeserializer;
+import io.neolab.internship.coins.common.deserialize.PlayerDeserializer;
 import io.neolab.internship.coins.common.serialize.AvailabilityTypeSerializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.IdGenerator;
@@ -12,8 +13,9 @@ import io.neolab.internship.coins.utils.IdGenerator;
 import java.io.Serializable;
 import java.util.*;
 
+@JsonDeserialize(using = PlayerDeserializer.class)
 public class Player implements Serializable {
-    private int id;
+    private final int id;
     private String nickname;
     private Race race;
 
@@ -44,7 +46,9 @@ public class Player implements Serializable {
         this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
         for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
             final List<Unit> units = new LinkedList<>();
-            Collections.copy(units, entry.getValue());
+            for (final Unit unit : entry.getValue()) {
+                units.add(new Unit(unit));
+            }
             this.unitStateToUnits.put(entry.getKey(), units);
         }
         this.coins = coins;
@@ -52,10 +56,6 @@ public class Player implements Serializable {
 
     public int getId() {
         return id;
-    }
-
-    public void setId(final int id) {
-        this.id = id;
     }
 
     public String getNickname() {

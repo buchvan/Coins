@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.PlayerDeserializer;
+import io.neolab.internship.coins.common.deserialize.PlayerKeyDeserializer;
 import io.neolab.internship.coins.common.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -18,15 +18,15 @@ public class Game implements IGame, Serializable {
     private int currentRound;
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
-    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
-    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
-    @JsonDeserialize(keyUsing = PlayerDeserializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток, которые он контролирует,
     // но которые не приносят ему монет
 
