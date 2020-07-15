@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.game;
 
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -10,6 +11,7 @@ import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.server.game.service.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class SelfPlay {
@@ -35,7 +37,7 @@ public class SelfPlay {
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final Exception exception) { // TODO: своё исключение
+        } catch (final CoinsException exception) {
             GameLogger.printErrorLog(exception);
         }
     }
@@ -217,16 +219,6 @@ public class SelfPlay {
             iterator.remove();
             i++;
         }
-//        int i = 0;
-//        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
-//            if (i >= N) {
-//                break;
-//            }
-//            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
-//            i++;
-//        }
-//        unitStateToUnits.get(UnitState.AVAILABLE)
-//                .removeIf(unit -> unitStateToUnits.get(UnitState.NOT_AVAILABLE).contains(unit));
     }
 
     /**

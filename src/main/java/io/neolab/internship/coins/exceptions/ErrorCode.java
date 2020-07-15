@@ -10,8 +10,9 @@ public enum ErrorCode {
     NO_AVAILABLE_UNITS("No available units for cell attempt"),
     CELL_CAPTURE_IMPOSSIBLE("Cell capture impossible"),
     NO_PLACE_FOR_DISTRIBUTION("No place for distribution"),
-    NOT_ENOUGH_UNITS("No enough units for distribution");
-    //other...
+    NOT_ENOUGH_UNITS("No enough units for distribution"),
+    PLAYERS_LIST_IS_NULL("List of players is null")
+    ;
 
     private final String message;
 

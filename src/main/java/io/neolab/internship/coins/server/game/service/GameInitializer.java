@@ -5,10 +5,7 @@ import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.GameFeatures;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.board.Board;
-import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
@@ -30,7 +27,7 @@ public class GameInitializer {
 
         //мок доски
         //final Board board = initBoard(boardSizeX, boardSizeY);
-        final Board board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final List<Player> playerList = initTestPlayers();
 
@@ -193,12 +190,12 @@ public class GameInitializer {
                                                                       raceCellTypeFeatures,
                                                               final List<Feature> impossibleCatchCellFeature) {
         final List<Feature> mushroomFeatures = new ArrayList<>(2);
-        mushroomFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
-        mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        mushroomFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL));
+        mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.MUSHROOM), mushroomFeatures);
 
         final List<Feature> mushroomFeaturesSecond = new ArrayList<>(1);
-        mushroomFeaturesSecond.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        mushroomFeaturesSecond.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.LAND), mushroomFeaturesSecond);
         raceCellTypeFeatures.put(new Pair<>(Race.MUSHROOM, CellType.MOUNTAIN), mushroomFeaturesSecond);
 
@@ -220,7 +217,7 @@ public class GameInitializer {
     private static void addRaceCellTypeFeaturesByRaceAmphibian(final Map<Pair<Race, CellType>, List<Feature>>
                                                                        raceCellTypeFeatures) {
         final List<Feature> amphibianFeatures = new ArrayList<>(1);
-        amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MUSHROOM), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.LAND), amphibianFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.AMPHIBIAN, CellType.MOUNTAIN), amphibianFeatures);
@@ -239,8 +236,8 @@ public class GameInitializer {
                                                                  raceCellTypeFeatures,
                                                          final List<Feature> impossibleCatchCellFeature) {
         final List<Feature> elfFeatures = new ArrayList<>(2);
-        elfFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
-        elfFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        elfFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP));
+        elfFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.MUSHROOM), elfFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.LAND), elfFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.MOUNTAIN), elfFeatures);
@@ -264,8 +261,8 @@ public class GameInitializer {
                                                                  raceCellTypeFeatures,
                                                          final List<Feature> impossibleCatchCellFeature) {
         final List<Feature> orcFeatures = new ArrayList<>(2);
-        orcFeatures.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, 1));
-        orcFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        orcFeatures.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER));
+        orcFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.MUSHROOM), orcFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.LAND), orcFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.MOUNTAIN), orcFeatures);
@@ -289,8 +286,8 @@ public class GameInitializer {
                                                                    raceCellTypeFeatures,
                                                            final List<Feature> impossibleCatchCellFeature) {
         final List<Feature> gnomeFeatures = new ArrayList<>(2);
-        gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, 1));
-        gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER));
+        gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.MUSHROOM), gnomeFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.LAND), gnomeFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.GNOME, CellType.MOUNTAIN), gnomeFeatures);
@@ -315,7 +312,7 @@ public class GameInitializer {
                                                             final List<Feature> impossibleCatchCellFeature) {
 
         final List<Feature> undeadFeatures = new ArrayList<>(1);
-        undeadFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        undeadFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL));
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.MUSHROOM), undeadFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.LAND), undeadFeatures);
         raceCellTypeFeatures.put(new Pair<>(Race.UNDEAD, CellType.MOUNTAIN), undeadFeatures);
