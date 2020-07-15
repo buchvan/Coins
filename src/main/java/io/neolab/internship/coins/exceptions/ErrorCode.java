@@ -8,7 +8,9 @@ public enum ErrorCode {
     WRONG_POSITION("Position is wrong"),
     NO_ACHIEVABLE_CELLS("No achievable cells to cell attempt"),
     NO_AVAILABLE_UNITS("No available units for cell attempt"),
-    CELL_CAPTURE_IMPOSSIBLE("Cell capture impossible");
+    CELL_CAPTURE_IMPOSSIBLE("Cell capture impossible"),
+    NO_PLACE_FOR_DISTRIBUTION("No place for distribution"),
+    NOT_ENOUGH_UNITS("No enough units for distribution");
     //other...
 
     private final String message;

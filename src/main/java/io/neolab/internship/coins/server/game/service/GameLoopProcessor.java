@@ -331,4 +331,53 @@ public class GameLoopProcessor {
         ListProcessor.removeFirstN(deadUnitsCount, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         GameLogger.printCatchCellUnitsDiedLog(player, deadUnitsCount);
     }
+
+    /* Освобождение игроком всех его транзитных клеток
+     *
+     * @param player          - игрок, который должен освободить все свои транзитные клетки
+     * @param transitCells    - транзитные клетки игрока
+     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param controlledCells - принадлежащие игроку клетки
+     */
+    public static void freeTransitCells(final Player player, final List<Cell> transitCells,
+                                        final List<Cell> controlledCells) {
+        GameLogger.printTransitCellsLog(player, transitCells);
+        /* Игрок покидает каждую транзитную клетку */
+        controlledCells.removeIf(transitCells::contains);
+        transitCells.forEach(transitCell -> transitCell.setOwn(null));
+        transitCells.clear();
+
+        GameLogger.printFreedTransitCellsLog(player);
+    }
+
+    /**
+     * Перевести всех юнитов игрока в одно состояние
+     *
+     * @param player           - игрок, чьих юнитов нужно перевести в одно состояние
+     * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
+     */
+    public static void makeAllUnitsSomeState(final Player player, final AvailabilityType availabilityType) {
+        for (final AvailabilityType item : AvailabilityType.values()) {
+            if (item != availabilityType) {
+                player.getUnitStateToUnits().get(availabilityType).addAll(player.getUnitStateToUnits().get(item));
+                player.getUnitStateToUnits().get(item).clear();
+            }
+        }
+    }
+
+    /**
+     * Защитить клетку: владелец помещает в ней своих юнитов
+     *
+     * @param player         - владелец (в этой ситуации он же - феодал)
+     * @param availableUnits - список доступных юнитов
+     * @param protectedCell  - защищаемая клетка
+     * @param unitsCount     - число юнитов, которое игрок хочет направить в клетку
+     */
+    public static void protectCell(final Player player, final List<Unit> availableUnits,
+                                   final Cell protectedCell, final int unitsCount) {
+        protectedCell.getUnits()
+                .addAll(availableUnits.subList(0, unitsCount)); // отправить первые unitsCount доступных юнитов
+        makeNAvailableUnitsToNotAvailable(player, unitsCount);
+        GameLogger.printCellAfterDefendingLog(player, protectedCell);
+    }
 }

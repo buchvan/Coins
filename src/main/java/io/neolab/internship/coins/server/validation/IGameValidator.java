@@ -17,6 +17,7 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
+import java.util.Map;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
@@ -106,12 +107,27 @@ public interface IGameValidator {
     }
 
     static void validateDistributionUnitsAnswer(final DistributionUnitsAnswer answer,
-                                                final IBoard currentBoard) throws CoinsException {
+                                                final IBoard currentBoard,
+                                                final List<Cell> controlledCells,
+                                                final int playerUnitsAmount) throws CoinsException {
         checkIfAnswerEmpty(answer);
-        if (answer.getResolutions().keySet().stream().anyMatch(position -> !checkIfCellExists(position, currentBoard))) {
-            throw new CoinsException(ErrorCode.WRONG_POSITION);
+        //Некуда распределять войска
+        if(controlledCells.size() < 1) {
+            throw new CoinsException(ErrorCode.NO_PLACE_FOR_DISTRIBUTION);
         }
-
+        int answerUnitsAmount = 0;
+        for (final Map.Entry<Position, List<Unit>> entry : answer.getResolutions().entrySet()) {
+            final Position position = entry.getKey();
+            final List<Unit> units = entry.getValue();
+            answerUnitsAmount += units.size();
+            if (!checkIfCellExists(position, currentBoard)) {
+                throw new CoinsException(ErrorCode.WRONG_POSITION);
+            }
+        }
+        //игрок хочет распределить больше монет чем у него есть
+        if(answerUnitsAmount > playerUnitsAmount) {
+            throw new CoinsException(ErrorCode.NOT_ENOUGH_UNITS);
+        }
     }
 
     static boolean isCellCapturePossible(final int attackPower, final int necessaryAttackPower) {
