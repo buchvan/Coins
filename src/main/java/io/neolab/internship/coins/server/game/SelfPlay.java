@@ -19,6 +19,7 @@ public class SelfPlay {
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
+    private static final int PLAYERS_COUNT = 2;
 
     private static final Random random = new Random(); // объект для "бросания монетки" (взятия рандомного числа)
 
@@ -31,10 +32,9 @@ public class SelfPlay {
      * - Финализатор (результат работы)
      */
     private static void selfPlay() {
-
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
             LogCleaner.clean();
-            final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
+            final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());

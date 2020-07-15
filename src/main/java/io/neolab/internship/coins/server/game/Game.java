@@ -9,6 +9,7 @@ import java.util.*;
 public class Game implements IGame {
     private IBoard board;
     private int currentRound = 0;
+    public static final int ROUNDS_COUNT = 10;
 
     private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
     private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует

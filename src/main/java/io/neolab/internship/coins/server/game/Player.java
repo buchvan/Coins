@@ -12,6 +12,10 @@ public class Player {
     private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
     private int coins = 0;
 
+    public Player() {
+        this(null);
+    }
+
     public Player(final String nickname) {
         this.id = IdGenerator.getCurrentId();
         this.nickname = nickname;
