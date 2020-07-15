@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.common.answer;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.Race;
 
 import java.util.Objects;
@@ -7,7 +9,8 @@ import java.util.Objects;
 public class ChooseRaceAnswer extends Answer {
     private final Race newRace;
 
-    public ChooseRaceAnswer(final Race newRace) {
+    @JsonCreator
+    public ChooseRaceAnswer(@JsonProperty("newRace") final Race newRace) {
         this.newRace = newRace;
     }
 

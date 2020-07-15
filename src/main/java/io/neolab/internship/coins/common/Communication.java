@@ -2,7 +2,7 @@ package io.neolab.internship.coins.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.Question;
 
 public class Communication {
@@ -20,7 +20,20 @@ public class Communication {
         return mapper.writeValueAsString(answer);
     }
 
-    public static Answer deserializeAnswer(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, Answer.class);
+    public static CatchCellAnswer deserializeCatchCellAnswer(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, CatchCellAnswer.class);
+    }
+
+    public static ChooseRaceAnswer deserializeChooseRaceAnswer(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, ChooseRaceAnswer.class);
+    }
+
+    public static DeclineRaceAnswer deserializeDeclineRaceAnswer(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, DeclineRaceAnswer.class);
+    }
+
+    public static DistributionUnitsAnswer deserializeDistributionUnitsAnswer(final String json)
+            throws JsonProcessingException {
+        return mapper.readValue(json, DistributionUnitsAnswer.class);
     }
 }

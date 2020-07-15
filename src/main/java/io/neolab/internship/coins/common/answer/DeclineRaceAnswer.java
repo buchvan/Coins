@@ -1,11 +1,15 @@
 package io.neolab.internship.coins.common.answer;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class DeclineRaceAnswer extends Answer {
     private final boolean declineRace;
 
-    public DeclineRaceAnswer(final boolean declineRace) {
+    @JsonCreator
+    public DeclineRaceAnswer(@JsonProperty("declineRace") final boolean declineRace) {
         this.declineRace = declineRace;
     }
 
