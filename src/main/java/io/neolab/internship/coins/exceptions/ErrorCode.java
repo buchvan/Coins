@@ -11,7 +11,8 @@ public enum ErrorCode {
     CELL_CAPTURE_IMPOSSIBLE("Cell capture impossible"),
     NO_PLACE_FOR_DISTRIBUTION("No place for distribution"),
     NOT_ENOUGH_UNITS("No enough units for distribution"),
-    PLAYERS_LIST_IS_NULL("List of players is null")
+    PLAYERS_LIST_IS_NULL("List of players is null"),
+    QUESTION_TYPE_NOT_FOUND("Type of question not found"),
     ;
 
     private final String message;

@@ -2,7 +2,7 @@ package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.Question;
@@ -27,7 +27,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
     public void process(final Question question, final Answer answer) throws CoinsException {
         final IGame currentGame = question.getGame();
-        Player player = question.getPlayer();
+        final Player player = question.getPlayer();
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
             final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
             IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
@@ -37,10 +37,10 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             return;
         }
         if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
-            final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
+            final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
             final List<Race> currentRacesPool = currentGame.getRacesPool();
-            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
-            changeRace(player, chooseRaceAnswer.getNewRace(), currentRacesPool);
+            IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+            changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
             return;
         }
         if (question.getQuestionType() == QuestionType.CATCH_CELL) {
@@ -79,7 +79,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
-    public static void declineRace(final Player player,
+    private static void declineRace(final Player player,
                                    final List<Cell> controlledCells,
                                    final Set<Cell> feudalCells) {
         GameLogger.printDeclineRaceLog(player);
@@ -95,7 +95,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    public static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
+    private static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -116,7 +116,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param transitCells  - транзитные клетки игрока
      */
     //TODO: rename
-    public static void catchCells(final Player player,
+    private static void catchCells(final Player player,
                                   final Cell captureCell,
                                   final IBoard board,
                                   final GameFeatures gameFeatures,

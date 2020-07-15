@@ -156,7 +156,7 @@ public class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void chooseRace(final Player player, final ISimpleBot simpleBot, final IGame game) {
-        final Race newRace = simpleBot.chooseRace(game);
+        final Race newRace = simpleBot.chooseRace(player, game);
         game.getRacesPool().remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
 
@@ -209,13 +209,14 @@ public class SelfPlay {
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        while (achievableCells.size() > 0 && availableUnits.size() > 0 && simpleBot.catchCellsContinued(player, game)) {
-            /* Пока есть что захватывать и
-                какими войсками захватывать и
-                 ответ "ДА" от игрока на вопрос: "Продолжить захват клеток?" */
-
-            final Pair<Cell, List<Unit>> catchingCellToUnitsList = simpleBot.catchCell(player, game, achievableCells);
-            final Cell catchingCell = catchingCellToUnitsList.getFirst(); // клетка, которую игрок хочет захватить
+        while (achievableCells.size() > 0 && availableUnits.size() > 0) {
+            /* Пока есть что захватывать и какими войсками захватывать */
+            final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.catchCell(player, game);
+            if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
+                break;
+            } // else
+            final Cell catchingCell = board
+                    .getCellByPosition(catchingCellToUnitsList.getFirst()); // клетка, которую игрок хочет захватить
             final List<Unit> units = catchingCellToUnitsList.getSecond(); // юниты для захвата этой клетки
             if (catchCellAttempt(player, catchingCell, units, board, game.getGameFeatures(), game.getOwnToCells(),
                     game.getFeudalToCells(), transitCells)) { // если попытка захвата увеначалась успехом
@@ -547,11 +548,10 @@ public class SelfPlay {
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
-            final Map<Cell, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
-            distributionUnits.forEach((protectedCell, units) -> {
-                GameLogger.printCellDefendingLog(player, units.size(),
-                        game.getBoard().getPositionByCell(protectedCell));
-                protectCell(player, protectedCell, units);
+            final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+            distributionUnits.forEach((position, units) -> {
+                GameLogger.printCellDefendingLog(player, units.size(), position);
+                protectCell(player, game.getBoard().getCellByPosition(position), units);
             });
         }
         GameLogger.printAfterDistributedUnitsLog(player);
