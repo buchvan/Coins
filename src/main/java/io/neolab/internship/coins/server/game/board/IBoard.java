@@ -4,6 +4,10 @@ import org.apache.commons.collections4.BidiMap;
 
 public interface IBoard {
 
+    int getSizeX();
+
+    int getSizeY();
+
     BidiMap<Position, Cell> getPositionToCellMap();
 
     /**

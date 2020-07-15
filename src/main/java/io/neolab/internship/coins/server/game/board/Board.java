@@ -6,15 +6,30 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import java.util.Objects;
 
 public class Board implements IBoard {
+    private final int sizeX;
+    private final int sizeY;
+
     private final BidiMap<Position, Cell> positionToCellMap;
 
-    public Board(final BidiMap<Position, Cell> positionToCellMap) {
+    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
     }
 
     public Board() {
-        this(new DualHashBidiMap<>());
+        this(3, 4, new DualHashBidiMap<>());
+    }
+
+    @Override
+    public int getSizeX() {
+        return sizeX;
+    }
+
+    @Override
+    public int getSizeY() {
+        return sizeY;
     }
 
     @Override
