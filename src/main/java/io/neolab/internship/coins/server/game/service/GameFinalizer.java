@@ -25,7 +25,7 @@ public class GameFinalizer {
      */
     public static int getMaxCoinsCount(final List<Player> playerList) throws CoinsException {
         if (playerList == null) {
-            throw new CoinsException(ErrorCode.NULL_POINTER);
+            throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
         }
         return playerList.stream()
                 .map(Player::getCoins)
@@ -41,7 +41,7 @@ public class GameFinalizer {
     public static List<Player> getWinners(final int maxCoinsCount,
                                            final List<Player> playerList) throws CoinsException {
         if (playerList == null) {
-            throw new CoinsException(ErrorCode.NULL_POINTER);
+            throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
         }
         final List<Player> winners = new LinkedList<>();
         playerList.forEach(player -> {
