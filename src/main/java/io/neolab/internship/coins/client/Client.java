@@ -40,6 +40,7 @@ public class Client implements IClient {
 
     @Override
     public Answer getAnswer(final Question question) {
+
         return null;
     }
 
@@ -58,11 +59,17 @@ public class Client implements IClient {
             return;
         }
         LOGGER.info("Client started, ip: {}, port: {}", ip, port);
+        play();
+    }
+
+    private void play() {
         try {
             while (true) {
-                final Question question = OBJECT_MAPPER.readValue(in.readLine(), Question.class); // ждем сообщения с сервера
+                final Question question =
+                        OBJECT_MAPPER.readValue(in.readLine(), Question.class); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", question);
                 final Answer answer = getAnswer(question);
+                LOGGER.info("Output answer: {} ", answer);
                 sendAnswer(answer);
             }
         } catch (final IOException e) {
