@@ -1,7 +1,10 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.neolab.internship.coins.common.deserialize.IBoardDeserializer;
 import org.apache.commons.collections4.BidiMap;
 
+@JsonDeserialize(using = IBoardDeserializer.class)
 public interface IBoard {
 
     int getSizeX();

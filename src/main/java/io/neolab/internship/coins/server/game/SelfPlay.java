@@ -34,7 +34,7 @@ public class SelfPlay {
     private static void selfPlay() {
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
             LogCleaner.clean();
-            final Game game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
@@ -48,7 +48,7 @@ public class SelfPlay {
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
      */
-    private static void gameLoop(final Game game) {
+    private static void gameLoop(final IGame game) {
         GameLogger.printStartGameChoiceLog();
         for (final Player player : game.getPlayers()) {
             chooseRace(player, game.getRacesPool());

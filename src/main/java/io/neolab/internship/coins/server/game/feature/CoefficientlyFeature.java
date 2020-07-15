@@ -1,15 +1,21 @@
 package io.neolab.internship.coins.server.game.feature;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
  * Особенность с целочисленным коэффициентом пары раса-тип_клетки (Race-CellType)
  */
 public class CoefficientlyFeature extends Feature implements ICoefficientlyFeature {
-    private static final int coefficient = 1;
+    private final int coefficient;
 
-    public CoefficientlyFeature(final FeatureType type) {
+    @JsonCreator
+    public CoefficientlyFeature(@JsonProperty("type") final FeatureType type,
+                                @JsonProperty("coefficient") final int coefficient) {
         super(type);
+        this.coefficient = coefficient;
     }
 
     @Override

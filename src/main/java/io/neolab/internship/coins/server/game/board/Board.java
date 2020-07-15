@@ -1,17 +1,31 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
+import io.neolab.internship.coins.common.deserialize.PositionToCellBidiMapDeserializer;
+import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Board implements IBoard {
+@JsonDeserialize
+public class Board implements IBoard, Serializable {
     private final int sizeX;
     private final int sizeY;
 
+    @JsonSerialize(keyUsing = PositionSerializer.class)
+    @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
     private final BidiMap<Position, Cell> positionToCellMap;
 
-    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
+    @JsonCreator
+    public Board(@JsonProperty("sizeX") final int sizeX,
+                 @JsonProperty("sizeY") final int sizeY,
+                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();

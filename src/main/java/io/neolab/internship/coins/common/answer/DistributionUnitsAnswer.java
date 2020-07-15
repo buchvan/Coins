@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.common.answer;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.Unit;
 
@@ -12,7 +14,8 @@ public class DistributionUnitsAnswer extends Answer {
         this.resolutions = new HashMap<>();
     }
 
-    public DistributionUnitsAnswer(final Map<Position, List<Unit>> resolutions) {
+    @JsonCreator
+    public DistributionUnitsAnswer(@JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
         this.resolutions = resolutions;
     }
 
