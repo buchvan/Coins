@@ -5,7 +5,7 @@ import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.GameQuestion;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
@@ -25,51 +25,49 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
  */
 public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
-    public void process(final Question question, final Answer answer) throws CoinsException {
-        final IGame currentGame = question.getGame();
-        Player player = question.getPlayer();
-        if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
-            final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
-            IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-            declineRace(player,
-                    currentGame.getOwnToCells().get(player),
-                    currentGame.getFeudalToCells().get(player));
-            return;
+    public void process(final GameQuestion gameQuestion, final Answer answer) throws CoinsException {
+        final IGame currentGame = gameQuestion.getGame();
+        final Player player = gameQuestion.getPlayer();
+        switch (gameQuestion.getQuestionType()) {
+            case DECLINE_RACE -> {
+                final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
+                IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
+                declineRace(player,
+                        currentGame.getOwnToCells().get(player),
+                        currentGame.getFeudalToCells().get(player));
+            }
+            case CHANGE_RACE -> {
+                final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
+                final List<Race> currentRacesPool = currentGame.getRacesPool();
+                IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
+                changeRace(player, chooseRaceAnswer.getNewRace(), currentRacesPool);
+            }
+            case CATCH_CELL -> {
+                final IBoard currentBoard = currentGame.getBoard();
+                final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
+                final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
+                final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
+                final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
+                final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+                IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
+                        achievableCells, availableUnits, currentGame.getGameFeatures(), player);
+                final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
+                catchCells(player, captureCell, currentBoard, currentGame.getGameFeatures(), ownToCells,
+                        currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
+            }
+            case DISTRIBUTION_UNITS -> {
+                final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
+                final IBoard currentBoard = currentGame.getBoard();
+                final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
+                        + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
+                IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
+                        currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
+                distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
+                        currentGame.getPlayerToTransitCells().get(player),
+                        currentGame.getOwnToCells().get(player),
+                        currentBoard);
+            }
         }
-        if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
-            final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
-            final List<Race> currentRacesPool = currentGame.getRacesPool();
-            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
-            changeRace(player, chooseRaceAnswer.getNewRace(), currentRacesPool);
-            return;
-        }
-        if (question.getQuestionType() == QuestionType.CATCH_CELL) {
-            final IBoard currentBoard = currentGame.getBoard();
-            final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
-            final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
-            final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
-            final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-            IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
-                    achievableCells, availableUnits, currentGame.getGameFeatures(), player);
-            final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-            catchCells(player, captureCell, currentBoard, currentGame.getGameFeatures(), ownToCells,
-                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
-            return;
-        }
-        if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
-            final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
-            final IBoard currentBoard = currentGame.getBoard();
-            final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
-                    + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
-            IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
-                    currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
-            distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
-                    currentGame.getPlayerToTransitCells().get(player),
-                    currentGame.getOwnToCells().get(player),
-                    currentBoard);
-        }
-
     }
 
     /**
@@ -102,6 +100,24 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
         chooseRace(player, racesPool, newRace);
         racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
+    }
+
+    /**
+     * Выбрать игроку новую расу
+     *
+     * @param player    - игрок, выбирающий новую расу
+     * @param racesPool - пул всех доступных рас
+     */
+    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
+        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
+        player.setRace(newRace);
+        /* Добавляем юнитов выбранной расы */
+        int i = 0;
+        while (i < newRace.getUnitsAmount()) {
+            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
+            i++;
+        }
+        GameLogger.printChooseRaceLog(player, newRace);
     }
 
     /**
