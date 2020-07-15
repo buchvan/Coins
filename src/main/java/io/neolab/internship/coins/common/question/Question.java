@@ -2,11 +2,12 @@ package io.neolab.internship.coins.common.question;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
+
 import java.util.Objects;
 
 public class Question {
     private final QuestionType questionType;
-    private IGame game;
+    private final IGame game;
     private final Player player;
 
     public Question(QuestionType questionType, IGame game, Player player) {
@@ -21,10 +22,6 @@ public class Question {
 
     public IGame getGame() {
         return game;
-    }
-
-    public void setGame(final IGame game) {
-        this.game = game;
     }
 
     public Player getPlayer() {
