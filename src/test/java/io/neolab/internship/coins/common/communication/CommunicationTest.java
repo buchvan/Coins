@@ -56,4 +56,20 @@ public class CommunicationTest {
         assertEquals(expected.getRacesPool(), actual.getRacesPool());
         assertEquals(expected.getPlayers(), actual.getPlayers());
     }
+
+    @Test
+    public void testEquivalentCustomPlayer() throws CoinsException, JsonProcessingException {
+        final Player expected = new Player("kvs");
+        expected.setRace(Race.ELF);
+        expected.setCoins(12);
+        expected.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
+        expected.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final String json = mapper.writeValueAsString(expected);
+        final Player actual = mapper.readValue(json, Player.class);
+        assertEquals(expected, actual);
+    }
+
+    // TODO тест с (де)сериализацией вопроса
 }
