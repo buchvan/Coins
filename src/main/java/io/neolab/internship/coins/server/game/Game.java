@@ -42,46 +42,57 @@ public class Game implements IGame {
         this.players = players;
     }
 
+    @Override
     public void incrementCurrentRound() {
         currentRound++;
     }
 
+    @Override
     public IBoard getBoard() {
         return board;
     }
 
+    @Override
     public void setBoard(final Board board) {
         this.board = board;
     }
 
+    @Override
     public int getCurrentRound() {
         return currentRound;
     }
 
+    @Override
     public void setCurrentRound(final int currentRound) {
         this.currentRound = currentRound;
     }
 
+    @Override
     public Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getOwnToCells() {
         return ownToCells;
     }
 
+    @Override
     public Map<Player, List<Cell>> getPlayerToTransitCells() {
         return playerToTransitCells;
     }
 
+    @Override
     public GameFeatures getGameFeatures() {
         return gameFeatures;
     }
 
+    @Override
     public List<Race> getRacesPool() {
         return racesPool;
     }
 
+    @Override
     public List<Player> getPlayers() {
         return players;
     }
