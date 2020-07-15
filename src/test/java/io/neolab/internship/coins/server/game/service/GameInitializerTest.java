@@ -23,7 +23,6 @@ public class GameInitializerTest {
         final Game game = GameInitializer.gameInit(2, 2);
         assertNotNull(game);
         assertNotNull(game.getBoard()); // Тестируется в BoardFactoryTest.class
-        assertEquals("neutral", game.getNeutralPlayer().getNickname());
         game.getPlayers().forEach(player -> {
             assertNotNull(player.getNickname());
             assertNotNull(player.getUnitStateToUnits());
@@ -54,7 +53,7 @@ public class GameInitializerTest {
             assertFalse(features.isEmpty());
         });
         game.getRacesPool().forEach(Assert::assertNotNull);
-        assertEquals(Arrays.asList(Race.values()), game.getRacesPool());
+        assertTrue(Arrays.asList(Race.values()).containsAll(game.getRacesPool()));
     }
 
     @Test(expected = CoinsException.class)
