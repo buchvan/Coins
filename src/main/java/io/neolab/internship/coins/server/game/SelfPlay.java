@@ -11,6 +11,7 @@ import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.server.game.service.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class SelfPlay {
@@ -37,7 +38,7 @@ public class SelfPlay {
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
-        } catch (final CoinsException exception) {
+        } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
     }
