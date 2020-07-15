@@ -15,27 +15,6 @@ import java.util.*;
 
 public class GameLoopProcessor {
 
-    private static final int BOARD_SIZE_X = 3;
-    private static final int BOARD_SIZE_Y = 4;
-
-    /**
-     * Выбрать игроку новую расу
-     *
-     * @param player    - игрок, выбирающий новую расу
-     * @param racesPool - пул всех доступных рас
-     */
-    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
-        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
-        player.setRace(newRace);
-        /* Добавляем юнитов выбранной расы */
-        int i = 0;
-        while (i < newRace.getUnitsAmount()) {
-            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
-            i++;
-        }
-        GameLogger.printChooseRaceLog(player, newRace);
-    }
-
     /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
@@ -85,13 +64,13 @@ public class GameLoopProcessor {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
-        while (colIndex < BOARD_SIZE_Y) { // обход по верхней границе борды
+        while (colIndex < board.getSizeY()) { // обход по верхней границе борды
             boardEdgeCells.add(board.getCellByPosition(0, colIndex));
             colIndex++;
         }
         strIndex = 1;
         colIndex--; // colIndex = BOARD_SIZE_Y;
-        while (strIndex < BOARD_SIZE_X) { // обход по правой границе борды
+        while (strIndex < board.getSizeX()) { // обход по правой границе борды
             boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
             strIndex++;
         }
