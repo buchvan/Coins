@@ -57,7 +57,7 @@ public class Client implements IClient {
             case CHANGE_RACE -> {
                 return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
             }
-//            case GAME_OVER -> throw new IOException();
+            case GAME_OVER -> throw new IOException();
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
