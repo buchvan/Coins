@@ -23,17 +23,16 @@ public class Game implements IGame {
     private final List<Race> racesPool;
 
     private final List<Player> players;
-    private final Player neutralPlayer;
 
     public Game() {
         this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
-                new LinkedList<>(), new LinkedList<>(), new Player("neutral"));
+                new LinkedList<>(), new LinkedList<>());
     }
 
-    public Game(final Board board, final Map<Player, Set<Cell>> feudalToCells,
+    public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool,
-                final List<Player> players, final Player neutralPlayer) {
+                final List<Player> players) {
         this.board = board;
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
@@ -41,7 +40,6 @@ public class Game implements IGame {
         this.gameFeatures = gameFeatures;
         this.racesPool = racesPool;
         this.players = players;
-        this.neutralPlayer = neutralPlayer;
     }
 
     public void incrementCurrentRound() {
@@ -88,10 +86,6 @@ public class Game implements IGame {
         return players;
     }
 
-    public Player getNeutralPlayer() {
-        return neutralPlayer;
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -104,14 +98,13 @@ public class Game implements IGame {
                 Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
                 Objects.equals(gameFeatures, game.gameFeatures) &&
                 Objects.equals(racesPool, game.racesPool) &&
-                Objects.equals(players, game.players) &&
-                Objects.equals(neutralPlayer, game.neutralPlayer);
+                Objects.equals(players, game.players);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                gameFeatures, racesPool, players, neutralPlayer);
+                gameFeatures, racesPool, players);
     }
 
     @Override
@@ -125,7 +118,6 @@ public class Game implements IGame {
                 ", raceCellTypeFeatures=" + gameFeatures +
                 ", racesPool=" + racesPool +
                 ", players=" + players +
-                ", neutralPlayer=" + neutralPlayer +
                 '}';
     }
 }

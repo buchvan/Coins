@@ -2,10 +2,7 @@ package io.neolab.internship.coins.server.game.factory;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
-import io.neolab.internship.coins.server.game.board.Board;
-import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.board.*;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.slf4j.Logger;
@@ -29,7 +26,7 @@ public class BoardFactory implements IBoardFactory {
      * @return new Board
      */
     @Override
-    public Board generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
+    public IBoard generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
         LOGGER.debug("Start generating board with width {} and height {}", boardSizeY, boardSizeX);
         if (boardSizeX < 2 || boardSizeY < 2) {
             LOGGER.error("Board generation with width {} and height {} failed", boardSizeY, boardSizeX);
