@@ -1,10 +1,7 @@
 package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.Game;
-import io.neolab.internship.coins.server.game.GameFeatures;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +17,7 @@ public class GameInitializerTest {
 
     @Test
     public void gameInit() throws CoinsException {
-        final Game game = GameInitializer.gameInit(2, 2);
+        final IGame game = GameInitializer.gameInit(2, 2);
         assertNotNull(game);
         assertNotNull(game.getBoard()); // Тестируется в BoardFactoryTest.class
         game.getPlayers().forEach(player -> {
