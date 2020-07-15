@@ -10,7 +10,7 @@ import io.neolab.internship.coins.utils.Pair;
 import java.util.List;
 import java.util.Map;
 
-public interface ISimpleBot {
+public interface IBot {
     /**
      * Выбрать, идти ли в упадок
      *
