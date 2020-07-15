@@ -15,15 +15,25 @@ import java.util.*;
 
 public class GameLoopProcessor {
 
-    private static final int ROUNDS_COUNT = 10;
-
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
-    private final Game game;
-
-    public GameLoopProcessor(final Game game) {
-        this.game = game;
+    /**
+     * Выбрать игроку новую расу
+     *
+     * @param player    - игрок, выбирающий новую расу
+     * @param racesPool - пул всех доступных рас
+     */
+    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
+        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
+        player.setRace(newRace);
+        /* Добавляем юнитов выбранной расы */
+        int i = 0;
+        while (i < newRace.getUnitsAmount()) {
+            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
+            i++;
+        }
+        GameLogger.printChooseRaceLog(player, newRace);
     }
 
     /**
@@ -71,7 +81,7 @@ public class GameLoopProcessor {
      * @param board - борда, крайние клетки которой мы хотим взять
      * @return список всех крайних клеток борды board
      */
-    public static List<Cell> boardEdgeGetCells(final IBoard board) {
+    private static List<Cell> boardEdgeGetCells(final IBoard board) {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -207,7 +217,7 @@ public class GameLoopProcessor {
      * @param player - игрок, первые N доступных юнитов которого нужно сделать недоступными
      * @param N      - то число доступных юнитов, которых необходимо сделать недоступными
      */
-    public static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
+    private static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
         final Iterator<Unit> iterator = player.getUnitsByState(AvailabilityType.AVAILABLE).iterator();
         int i = 0;
         while (iterator.hasNext() && i < N) {
@@ -246,8 +256,8 @@ public class GameLoopProcessor {
      * @param feature      - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
-    public static boolean catchCellCheckFeature(final Cell catchingCell, final boolean haveARival,
-                                                final Feature feature) {
+    private static boolean catchCellCheckFeature(final Cell catchingCell, final boolean haveARival,
+                                                 final Feature feature) {
 
         if (haveARival && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
             final Player defendingPlayer = catchingCell.getOwn();
@@ -269,10 +279,10 @@ public class GameLoopProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
-    public static void depriveCellFeudalAndOwner(final Cell cell,
-                                                 final boolean ownIsAlive,
-                                                 final List<Cell> controlledCells,
-                                                 final Set<Cell> feudalCells) {
+    private static void depriveCellFeudalAndOwner(final Cell cell,
+                                                  final boolean ownIsAlive,
+                                                  final List<Cell> controlledCells,
+                                                  final Set<Cell> feudalCells) {
         cell.getUnits().clear(); // Юниты бывшего владельца с этой клетки убираются
         feudalCells.remove(cell);
         cell.setFeudal(null);
@@ -292,12 +302,12 @@ public class GameLoopProcessor {
      * @param controlledCells    - принадлежащие игроку клетки
      * @param feudalCells        - клетки, приносящие монеты игроку
      */
-    public static void giveCellFeudalAndOwner(final Player player,
-                                              final Cell cell,
-                                              final boolean cellIsFeudalizable,
-                                              final List<Cell> transitCells,
-                                              final List<Cell> controlledCells,
-                                              final Set<Cell> feudalCells) {
+    private static void giveCellFeudalAndOwner(final Player player,
+                                               final Cell cell,
+                                               final boolean cellIsFeudalizable,
+                                               final List<Cell> transitCells,
+                                               final List<Cell> controlledCells,
+                                               final Set<Cell> feudalCells) {
         cell.setOwn(player);
         cell.setRace(player.getRace());
         controlledCells.add(cell);
@@ -310,24 +320,12 @@ public class GameLoopProcessor {
     }
 
     /**
-     * Является ли игрок нейтральным?
-     *
-     * @param player        - игрок, про которого необходимо выяснить, является ли он нейтральным
-     * @param neutralPlayer - нейтральный игрок
-     * @return true - если игрок player не нейтрален в игре game, false - иначе
-     */
-    public static boolean isNotNeutralPlayer(final Player player, final Player neutralPlayer) {
-        return player != neutralPlayer; // можно сравнивать ссылки,
-        // так как нейтральный игрок в игре имеется в единственном экземпляре
-    }
-
-    /**
      * Убить какое-то количество юнитов игрока
      *
      * @param deadUnitsCount - кол-во, которое необходимо убить
      * @param player         - игрок, чьих юнитов необходимо убить
      */
-    public static void killUnits(final int deadUnitsCount, final Player player) {
+    private static void killUnits(final int deadUnitsCount, final Player player) {
         ListProcessor.removeFirstN(deadUnitsCount, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         GameLogger.printCatchCellUnitsDiedLog(player, deadUnitsCount);
     }

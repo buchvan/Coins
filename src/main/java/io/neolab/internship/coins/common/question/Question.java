@@ -1,28 +1,34 @@
 package io.neolab.internship.coins.common.question;
 
-import io.neolab.internship.coins.server.game.Game;
-
+import io.neolab.internship.coins.server.game.IGame;
+import io.neolab.internship.coins.server.game.Player;
 import java.util.Objects;
 
 public class Question {
     private final QuestionType questionType;
-    private Game game;
+    private IGame game;
+    private final Player player;
 
-    public Question(final QuestionType questionType, final Game game) {
+    public Question(QuestionType questionType, IGame game, Player player) {
         this.questionType = questionType;
         this.game = game;
+        this.player = player;
     }
 
     public QuestionType getQuestionType() {
         return questionType;
     }
 
-    public Game getGame() {
+    public IGame getGame() {
         return game;
     }
 
-    public void setGame(final Game game) {
+    public void setGame(final IGame game) {
         this.game = game;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     @Override

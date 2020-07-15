@@ -6,5 +6,5 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.Player;
 
 public interface IGameAnswerProcessor {
-    void process(Player player, final Question question, final Answer answer) throws CoinsException;
+    void process(final Question question, final Answer answer) throws CoinsException;
 }

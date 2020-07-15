@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.implementations.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
-import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
-import io.neolab.internship.coins.common.answer.implementations.DistributionUnitsAnswer;
+import io.neolab.internship.coins.common.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -25,15 +25,9 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
  */
 public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
-    public void process(final Player player, final Question question, final Answer answer) throws CoinsException {
-        final Game currentGame = question.getGame();
-        if (question.getQuestionType() == QuestionType.CHOOSE_RACE) {
-            final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;
-            final List<Race> currentRacesPool = currentGame.getRacesPool();
-            IGameValidator.validateChooseRaceAnswer(chooseRaceAnswer, currentRacesPool, player.getRace());
-            chooseRace(player, currentRacesPool, chooseRaceAnswer.getNewRace());
-            return;
-        }
+    public void process(final Question question, final Answer answer) throws CoinsException {
+        final IGame currentGame = question.getGame();
+        Player player = question.getPlayer();
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
             final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
             IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
@@ -54,7 +48,6 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
             final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            //TODO: check getAchievableCells
             final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
             IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
@@ -65,7 +58,6 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             return;
         }
         if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
-            //TODO: complete...
             final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
             final IBoard currentBoard = currentGame.getBoard();
             final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
@@ -78,24 +70,6 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                     currentBoard);
         }
 
-    }
-
-    /**
-     * Выбрать игроку новую расу
-     *
-     * @param player    - игрок, выбирающий новую расу
-     * @param racesPool - пул всех доступных рас
-     */
-    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
-        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
-        player.setRace(newRace);
-        /* Добавляем юнитов выбранной расы */
-        int i = 0;
-        while (i < newRace.getUnitsAmount()) {
-            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
-            i++;
-        }
-        GameLogger.printChooseRaceLog(player, newRace);
     }
 
     /**

@@ -1,6 +1,4 @@
-package io.neolab.internship.coins.common.answer.implementations;
-
-import io.neolab.internship.coins.common.answer.Answer;
+package io.neolab.internship.coins.common.answer;
 
 import java.util.Objects;
 

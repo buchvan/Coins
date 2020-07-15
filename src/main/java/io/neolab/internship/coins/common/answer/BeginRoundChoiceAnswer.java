@@ -1,19 +1,14 @@
-package io.neolab.internship.coins.common.answer.implementations;
-
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.BeginRoundChoice;
-import io.neolab.internship.coins.common.answer.interfaces.IEndTurnChoiceAnswer;
+package io.neolab.internship.coins.common.answer;
 
 import java.util.Objects;
 
-public class BeginRoundChoiceAnswer extends Answer implements IEndTurnChoiceAnswer {
+public class BeginRoundChoiceAnswer extends Answer {
     private final BeginRoundChoice beginRoundChoice;
 
     public BeginRoundChoiceAnswer(final BeginRoundChoice beginRoundChoice) {
         this.beginRoundChoice = beginRoundChoice;
     }
 
-    @Override
     public BeginRoundChoice getBeginRoundChoice() {
         return beginRoundChoice;
     }

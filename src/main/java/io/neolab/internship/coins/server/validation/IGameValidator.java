@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.validation;
 
 import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.implementations.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.implementations.ChooseRaceAnswer;
-import io.neolab.internship.coins.common.answer.implementations.DeclineRaceAnswer;
-import io.neolab.internship.coins.common.answer.implementations.DistributionUnitsAnswer;
+import io.neolab.internship.coins.common.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.GameFeatures;
@@ -47,8 +47,8 @@ public interface IGameValidator {
     static void validateChooseRaceAnswer(final ChooseRaceAnswer answer,
                                          final List<Race> racesPool,
                                          final Race currentPlayerRace) throws CoinsException {
-        final Race newRace = answer.getNewRace();
         checkIfAnswerEmpty(answer);
+        final Race newRace = answer.getNewRace();
         if (!racesPool.contains(newRace)) {
             throw new CoinsException(ErrorCode.UNAVAILABLE_NEW_RACE);
         }
@@ -81,18 +81,17 @@ public interface IGameValidator {
                                         final GameFeatures gameFeatures,
                                         final Player player) throws CoinsException {
         checkIfAnswerEmpty(answer);
-        //есть ли клетка, соответствующая позиции
-        checkIfCellExists(answer.getResolution().getFirst(), currentBoard);
         final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
-        if (!checkIfCellExists(answer.getResolution().getFirst(), currentBoard)) {
+        //есть ли клетка, соответствующая позиции
+        if (checkIfCellDoesntExists(answer.getResolution().getFirst(), currentBoard)) {
             throw new CoinsException(ErrorCode.WRONG_POSITION);
         }
         //есть что захватывать
-        if (achievableCells.size() < 1) {
-            throw new CoinsException(ErrorCode.NO_ACHIEVABLE_CELLS);
+        if (!achievableCells.contains(cellForAttempt)) {
+            throw new CoinsException(ErrorCode.NO_ACHIEVABLE_CELL);
         }
         //есть ли войска для захвата
-        if (availableUnits.size() < 1) {
+        if (availableUnits.isEmpty()) {
             throw new CoinsException(ErrorCode.NO_AVAILABLE_UNITS);
         }
         //достаточно ли юнитов для захвата клетки
@@ -112,7 +111,7 @@ public interface IGameValidator {
                                                 final int playerUnitsAmount) throws CoinsException {
         checkIfAnswerEmpty(answer);
         //Некуда распределять войска
-        if(controlledCells.size() < 1) {
+        if (controlledCells.size() < 1) {
             throw new CoinsException(ErrorCode.NO_PLACE_FOR_DISTRIBUTION);
         }
         int answerUnitsAmount = 0;
@@ -120,12 +119,12 @@ public interface IGameValidator {
             final Position position = entry.getKey();
             final List<Unit> units = entry.getValue();
             answerUnitsAmount += units.size();
-            if (!checkIfCellExists(position, currentBoard)) {
+            if (checkIfCellDoesntExists(position, currentBoard)) {
                 throw new CoinsException(ErrorCode.WRONG_POSITION);
             }
         }
-        //игрок хочет распределить больше монет чем у него есть
-        if(answerUnitsAmount > playerUnitsAmount) {
+        //игрок хочет распределить больше юнитов чем у него есть
+        if (answerUnitsAmount > playerUnitsAmount) {
             throw new CoinsException(ErrorCode.NOT_ENOUGH_UNITS);
         }
     }
@@ -134,8 +133,8 @@ public interface IGameValidator {
         return attackPower >= necessaryAttackPower;
     }
 
-    static boolean checkIfCellExists(final Position position, final IBoard currentBoard) {
+    static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
         //есть ли клетка, соответствующая позиции
-        return currentBoard.getCellByPosition(position) == null;
+        return currentBoard.getCellByPosition(position) != null;
     }
 }
