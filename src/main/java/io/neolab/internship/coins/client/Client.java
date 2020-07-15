@@ -63,10 +63,16 @@ public class Client implements IClient {
                 final Question question = OBJECT_MAPPER.readValue(in.readLine(), Question.class); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", question);
                 final Answer answer = getAnswer(question);
+                sendAnswer(answer);
             }
         } catch (final IOException e) {
             downService();
         }
+    }
+
+    private void sendAnswer(final Answer answer) throws IOException {
+        out.write(OBJECT_MAPPER.writeValueAsString(answer) + "\n");
+        out.flush();
     }
 
     /**
