@@ -23,18 +23,19 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
 /**
  * Класс отвечает за обработку ответов от игроков
  */
-public class GameAnswerProcessor implements IGameAnswerProcessor {
-    @Override
-    public void process(final GameQuestion gameQuestion, final Answer answer) throws CoinsException {
+public class GameAnswerProcessor {
+    public static void process(final GameQuestion gameQuestion, final Answer answer) throws CoinsException {
         final IGame currentGame = gameQuestion.getGame();
         final Player player = gameQuestion.getPlayer();
         switch (gameQuestion.getQuestionType()) {
             case DECLINE_RACE -> {
                 final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
                 IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-                declineRace(player,
-                        currentGame.getOwnToCells().get(player),
-                        currentGame.getFeudalToCells().get(player));
+                if (declineRaceAnswer.isDeclineRace()) {
+                    declineRace(player,
+                            currentGame.getOwnToCells().get(player),
+                            currentGame.getFeudalToCells().get(player));
+                }
             }
             case CHANGE_RACE -> {
                 final ChooseRaceAnswer chooseRaceAnswer = (ChooseRaceAnswer) answer;

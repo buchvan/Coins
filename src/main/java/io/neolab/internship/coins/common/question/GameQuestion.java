@@ -1,10 +1,13 @@
 package io.neolab.internship.coins.common.question;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.neolab.internship.coins.common.deserialize.GameQuestionDeserializer;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 
 import java.util.Objects;
 
+@JsonDeserialize(using = GameQuestionDeserializer.class)
 public class GameQuestion extends Question {
     private final IGame game;
     private final Player player;
