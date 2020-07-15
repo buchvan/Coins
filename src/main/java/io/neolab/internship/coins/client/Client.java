@@ -1,14 +1,17 @@
 package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.answer.Answer;
+import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
@@ -39,9 +42,24 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final Question question) {
-
-        return null;
+    public Answer getAnswer(final Question question) throws CoinsException, IOException {
+        switch (question.getQuestionType()) {
+            case CATCH_CELL -> {
+                return new CatchCellAnswer(simpleBot.catchCell(question.getPlayer(), question.getGame()));
+            }
+            case DISTRIBUTION_UNITS -> {
+                return new DistributionUnitsAnswer(
+                        simpleBot.distributionUnits(question.getPlayer(), question.getGame()));
+            }
+            case DECLINE_RACE -> {
+                return new DeclineRaceAnswer(simpleBot.declineRaceChoose(question.getPlayer(), question.getGame()));
+            }
+            case CHANGE_RACE -> {
+                return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
+            }
+//            case GAME_OVER -> throw new IOException();
+        }
+        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     private void startClient() {
@@ -72,7 +90,7 @@ public class Client implements IClient {
                 LOGGER.info("Output answer: {} ", answer);
                 sendAnswer(answer);
             }
-        } catch (final IOException e) {
+        } catch (final IOException | CoinsException e) {
             downService();
         }
     }
