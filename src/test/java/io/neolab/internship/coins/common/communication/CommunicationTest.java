@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.common.communication;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
@@ -190,7 +189,6 @@ public class CommunicationTest {
     @Test
     public void testEquivalentChooseRaceAnswerCommunication2() throws JsonProcessingException {
         final ChooseRaceAnswer expected = new ChooseRaceAnswer(Race.ELF);
-        final ObjectMapper mapper = new ObjectMapper();
         final String json = Communication.serializeAnswer(expected);
         final ChooseRaceAnswer actual = Communication.deserializeChooseRaceAnswer(json);
         assertEquals(expected, actual);
