@@ -22,7 +22,7 @@ public class FeatureDeserializer extends JsonDeserializer<Feature> {
         if (coefficientNode != null) {
             final int coefficient = coefficientNode.asInt();
             return new CoefficientlyFeature(type, coefficient);
-        } // else
+        }
         return new Feature(type);
     }
 }

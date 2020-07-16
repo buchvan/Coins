@@ -2,12 +2,19 @@ package io.neolab.internship.coins.common.answer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
+import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.Unit;
 
 import java.util.*;
 
 public class DistributionUnitsAnswer extends Answer {
+    
+    @JsonSerialize(keyUsing = PositionSerializer.class)
+    @JsonDeserialize(keyUsing = PositionDeserializer.class)
     private final Map<Position, List<Unit>> resolutions;
 
     public DistributionUnitsAnswer() {
