@@ -79,8 +79,8 @@ public class GameAnswerProcessor {
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
     private static void declineRace(final Player player,
-                                   final List<Cell> controlledCells,
-                                   final Set<Cell> feudalCells) {
+                                    final List<Cell> controlledCells,
+                                    final Set<Cell> feudalCells) {
         GameLogger.printDeclineRaceLog(player);
         feudalCells
                 .forEach(cell ->
@@ -134,12 +134,12 @@ public class GameAnswerProcessor {
      */
     //TODO: rename
     private static void catchCells(final Player player,
-                                  final Cell captureCell,
-                                  final IBoard board,
-                                  final GameFeatures gameFeatures,
-                                  final Map<Player, List<Cell>> ownToCells,
-                                  final Map<Player, Set<Cell>> feudalToCells,
-                                  final List<Cell> transitCells) {
+                                   final Cell captureCell,
+                                   final IBoard board,
+                                   final GameFeatures gameFeatures,
+                                   final Map<Player, List<Cell>> ownToCells,
+                                   final Map<Player, Set<Cell>> feudalToCells,
+                                   final List<Cell> transitCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
         final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
