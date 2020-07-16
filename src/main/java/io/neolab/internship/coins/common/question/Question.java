@@ -31,15 +31,16 @@ public class Question {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Question)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         final Question question = (Question) o;
-        return getQuestionType() == question.getQuestionType() &&
-                Objects.equals(getGame(), question.getGame());
+        return questionType == question.questionType &&
+                Objects.equals(game, question.game) &&
+                Objects.equals(player, question.player);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getQuestionType(), getGame());
+        return Objects.hash(questionType, game, player);
     }
 
     @Override
@@ -47,6 +48,7 @@ public class Question {
         return "Question{" +
                 "questionType=" + questionType +
                 ", game=" + game +
+                ", player=" + player +
                 '}';
     }
 }
