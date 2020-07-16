@@ -27,7 +27,7 @@ public class Client implements IClient {
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
 
-    private final ISimpleBot simpleBot;
+    private final IBot simpleBot;
 
     /**
      * для создания необходимо принять адрес и номер порта
@@ -80,6 +80,7 @@ public class Client implements IClient {
         play();
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     private void play() {
         try {
             while (true) {
