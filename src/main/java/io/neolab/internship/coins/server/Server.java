@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neolab.internship.coins.common.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
@@ -69,6 +70,27 @@ public class Server implements IServer {
         }
 
         /**
+         * Отправить сообщение клиенту
+         *
+         * @param message - сообщение
+         * @throws IOException в случае ошибки отправки сообщения
+         */
+        private void send(final String message) throws IOException {
+            out.write(message + "\n");
+            out.flush();
+        }
+
+        /**
+         * Прочитать сообщение от клиента
+         *
+         * @return сообщение от клиента
+         * @throws IOException в случае ошибки получения сообщения
+         */
+        private String read() throws IOException {
+            return in.readLine();
+        }
+
+        /**
          * закрытие сервера, удаление себя из списка нитей
          */
         private void downService() {
@@ -108,15 +130,14 @@ public class Server implements IServer {
                         serverList.clear();
                     }
                 });
-                game.getPlayers()
-                        .forEach(player -> {
 
-                        });
+                /* обновление числа монет у каждого игрока */
                 game.getPlayers()
                         .forEach(player ->
                                 GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells(),
                                         game.getGameFeatures(),
-                                        game.getBoard()));  // обновление числа монет у каждого игрока
+                                        game.getBoard()));
+
                 GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(), game.getOwnToCells(),
                         game.getFeudalToCells());
             }
@@ -166,10 +187,8 @@ public class Server implements IServer {
 
         final GameQuestion gameQuestion
                 = new GameQuestion(QuestionType.CHANGE_RACE, game, serverSomething.player);
-        serverSomething.out.write(Communication.serializeQuestion(gameQuestion) + "\n");
-        serverSomething.out.flush();
-        GameAnswerProcessor.process(gameQuestion,
-                Communication.deserializeChooseRaceAnswer(serverSomething.in.readLine()));
+        serverSomething.send(Communication.serializeQuestion(gameQuestion));
+        GameAnswerProcessor.process(gameQuestion, Communication.deserializeChooseRaceAnswer(serverSomething.read()));
     }
 
     /**
@@ -178,50 +197,80 @@ public class Server implements IServer {
      * @param serverSomething - клиент игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
      */
-    private static void playerRound(final ServerSomething serverSomething, final IGame game)
+    private void playerRound(final ServerSomething serverSomething, final IGame game)
             throws IOException, CoinsException {
 
         /* Активация данных игрока в начале раунда */
         GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player,
                 game.getOwnToCells().get(serverSomething.player));
 
+        beginRoundChoice(serverSomething, game);
+        cellCapture(serverSomething, game);
+        distribution(serverSomething, game);
+
+        /* "Затухание" (дезактивация) данных игрока в конце раунда */
+        GameLoopProcessor.playerRoundEndUpdate(serverSomething.player);
+    }
+
+    /**
+     * Выбор в начале раунда
+     *
+     * @param serverSomething - клиент текущего игрока
+     * @param game            - объект, хранящий всю метаинформацию об игре
+     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws CoinsException в случае игровой ошибки
+     */
+    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException, CoinsException {
         final GameQuestion declineRaceQuestion = new GameQuestion(QuestionType.DECLINE_RACE,
                 game, serverSomething.player);
-        serverSomething.out.write(Communication.serializeQuestion(declineRaceQuestion) + "\n");
-        serverSomething.out.flush();
-        final DeclineRaceAnswer answer = Communication.deserializeDeclineRaceAnswer(serverSomething.in.readLine());
+        serverSomething.send(Communication.serializeQuestion(declineRaceQuestion));
+        final DeclineRaceAnswer answer = Communication.deserializeDeclineRaceAnswer(serverSomething.read());
         GameAnswerProcessor.process(declineRaceQuestion, answer);
         if (answer.isDeclineRace()) {
             final GameQuestion changeRaceQuestion = new GameQuestion(QuestionType.CHANGE_RACE,
                     game, serverSomething.player);
-            serverSomething.out.write(Communication.serializeQuestion(changeRaceQuestion) + "\n");
-            serverSomething.out.flush();
+            serverSomething.send(Communication.serializeQuestion(changeRaceQuestion));
             GameAnswerProcessor.process(changeRaceQuestion,
-                    Communication.deserializeChooseRaceAnswer(serverSomething.in.readLine()));
+                    Communication.deserializeChooseRaceAnswer(serverSomething.read()));
         }
+    }
 
+    /**
+     * Захват клеток
+     *
+     * @param serverSomething - клиент текущего игрока
+     * @param game            - объект, хранящий всю метаинформацию об игре
+     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws CoinsException в случае игровой ошибки
+     */
+    private void cellCapture(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
         GameQuestion catchCellQuestion = new GameQuestion(QuestionType.CATCH_CELL, game, serverSomething.player);
-        serverSomething.out.write(Communication.serializeQuestion(catchCellQuestion) + "\n");
-        serverSomething.out.flush();
-        CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.in.readLine());
+        serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
+        CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
         while (catchCellAnswer.getResolution() != null) {
             GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
             catchCellQuestion = new GameQuestion(QuestionType.CATCH_CELL, game, serverSomething.player);
-            serverSomething.out.write(Communication.serializeQuestion(catchCellQuestion) + "\n");
-            serverSomething.out.flush();
-            catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.in.readLine());
+            serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
+            catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
         }
+    }
 
-        /* Распределение войск */
+    /**
+     * Распределение войск
+     *
+     * @param serverSomething - клиент текущего игрока
+     * @param game            - объект, хранящий всю метаинформацию об игре
+     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws CoinsException в случае игровой ошибки
+     */
+    private void distribution(final ServerSomething serverSomething, final IGame game)
+            throws IOException, CoinsException {
+
         final GameQuestion distributionQuestion = new GameQuestion(QuestionType.DISTRIBUTION_UNITS,
                 game, serverSomething.player);
-        serverSomething.out.write(Communication.serializeQuestion(distributionQuestion) + "\n");
-        serverSomething.out.flush();
+        serverSomething.send(Communication.serializeQuestion(distributionQuestion));
         GameAnswerProcessor.process(distributionQuestion,
-                Communication.deserializeDistributionUnitsAnswer(serverSomething.in.readLine()));
-
-        /* "Затухание" (дезактивация) данных игрока в конце раунда */
-        GameLoopProcessor.playerRoundEndUpdate(serverSomething.player);
+                Communication.deserializeDistributionUnitsAnswer(serverSomething.read()));
     }
 
     public static void main(final String[] args) {
