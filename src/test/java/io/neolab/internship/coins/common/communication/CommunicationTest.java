@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.ChooseRaceAnswer;
+import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.GameQuestion;
-import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
@@ -179,19 +178,19 @@ public class CommunicationTest {
     }
 
     @Test
-    public void testEquivalentChooseRaceAnswerCommunication1() throws JsonProcessingException {
-        final ChooseRaceAnswer expected = new ChooseRaceAnswer(Race.ELF);
+    public void testEquivalentChangeRaceAnswerCommunication1() throws JsonProcessingException {
+        final ChangeRaceAnswer expected = new ChangeRaceAnswer(Race.ELF);
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final ChooseRaceAnswer actual = mapper.readValue(json, ChooseRaceAnswer.class);
+        final ChangeRaceAnswer actual = mapper.readValue(json, ChangeRaceAnswer.class);
         assertEquals(expected, actual);
     }
 
     @Test
-    public void testEquivalentChooseRaceAnswerCommunication2() throws JsonProcessingException {
-        final ChooseRaceAnswer expected = new ChooseRaceAnswer(Race.ELF);
+    public void testEquivalentChangeRaceAnswerCommunication2() throws JsonProcessingException {
+        final ChangeRaceAnswer expected = new ChangeRaceAnswer(Race.ELF);
         final String json = Communication.serializeAnswer(expected);
-        final ChooseRaceAnswer actual = Communication.deserializeChooseRaceAnswer(json);
+        final ChangeRaceAnswer actual = Communication.deserializeChangeRaceAnswer(json);
         assertEquals(expected, actual);
     }
 

@@ -21,6 +21,8 @@ import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Server implements IServer {
@@ -109,7 +111,9 @@ public class Server implements IServer {
             connectClients();
             LOGGER.info("Server started, port: {}", PORT);
 
-            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, CLIENTS_COUNT);
+            final List<Player> playerList = new LinkedList<>();
+            serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
             GameLogger.printGameCreatedLog(game);
 
             GameLogger.printStartGameChoiceLog();
@@ -186,7 +190,7 @@ public class Server implements IServer {
         final GameQuestion gameQuestion
                 = new GameQuestion(QuestionType.CHANGE_RACE, game, serverSomething.player);
         serverSomething.send(Communication.serializeQuestion(gameQuestion));
-        GameAnswerProcessor.process(gameQuestion, Communication.deserializeChooseRaceAnswer(serverSomething.read()));
+        GameAnswerProcessor.process(gameQuestion, Communication.deserializeChangeRaceAnswer(serverSomething.read()));
     }
 
     /**
@@ -229,7 +233,7 @@ public class Server implements IServer {
                     game, serverSomething.player);
             serverSomething.send(Communication.serializeQuestion(changeRaceQuestion));
             GameAnswerProcessor.process(changeRaceQuestion,
-                    Communication.deserializeChooseRaceAnswer(serverSomething.read()));
+                    Communication.deserializeChangeRaceAnswer(serverSomething.read()));
         }
     }
 

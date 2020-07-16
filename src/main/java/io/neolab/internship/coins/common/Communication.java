@@ -29,8 +29,8 @@ public class Communication {
         return mapper.readValue(json, CatchCellAnswer.class);
     }
 
-    public static ChooseRaceAnswer deserializeChooseRaceAnswer(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, ChooseRaceAnswer.class);
+    public static ChangeRaceAnswer deserializeChangeRaceAnswer(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, ChangeRaceAnswer.class);
     }
 
     public static DeclineRaceAnswer deserializeDeclineRaceAnswer(final String json) throws JsonProcessingException {

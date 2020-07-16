@@ -8,6 +8,8 @@ import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
 import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.utils.Pair;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +26,28 @@ public class GameInitializer {
         //мок доски
         //final Board board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+
+        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, List<Cell>> ownToCells =
+                initMapWithPlayerKeyListValue(playerList, "ownToCells");
+        final Map<Player, List<Cell>> playerToTransitCells =
+                initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+
+        final GameFeatures gameFeatures  = initGameFeatures();
+        final List<Race> racesPool = createRacesPool();
+
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+    }
+
+    public static IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
+            throws CoinsException {
+        LOGGER.debug("Init...");
+
+        //мок доски
+        //final Board board = initBoard(boardSizeX, boardSizeY);
+        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+
+        final List<Player> playerList = initTestPlayers(playersCount);
 
         final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
         final Map<Player, List<Cell>> ownToCells =
@@ -64,7 +88,8 @@ public class GameInitializer {
 
         /* --- */
 
-        final IBoard board = new Board(positionToCellMap);
+        return new Board(boardSizeX, boardSizeY, positionToCellMap);
+    }
 
 //    /**
 //     * Инициализация и создание борды

@@ -40,7 +40,7 @@ public class GameAnswerProcessor {
             case CHANGE_RACE -> {
                 final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
                 final List<Race> currentRacesPool = currentGame.getRacesPool();
-                IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+                IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
                 changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
             }
             case CATCH_CELL -> {
