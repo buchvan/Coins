@@ -41,10 +41,6 @@ public class SimpleBot implements IBot {
             neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeGetCells(board);
-            if (boardEdgeCells.contains(catchingCell)) {
-                // TODO: когда клетка с краю, в неё могу зайти юниты, ещё не попавшие на борду
-            }
             final Iterator<Unit> iterator = units.iterator();
             while (iterator.hasNext()) {
                 boolean unitIsPossibleAggressor = false;
@@ -53,6 +49,15 @@ public class SimpleBot implements IBot {
                     if (neighboringCell.getUnits().contains(unit)) {
                         unitIsPossibleAggressor = true;
                         break;
+                    }
+                }
+                if (!unitIsPossibleAggressor) {
+                    unitIsPossibleAggressor = true;
+                    for (final Cell controlledCell : controlledCells) {
+                        if (!neighboringCells.contains(controlledCell) && controlledCell.getUnits().contains(unit)) {
+                            unitIsPossibleAggressor = false;
+                            break;
+                        }
                     }
                 }
                 if (!unitIsPossibleAggressor) {
