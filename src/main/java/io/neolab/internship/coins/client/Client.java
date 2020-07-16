@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 
 public class Client implements IClient {
@@ -21,6 +23,7 @@ public class Client implements IClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final String ip; // ip адрес клиента
+    private final InetAddress ipAddress;
     private final int port; // порт соединения
 
     private Socket socket = null;
@@ -35,10 +38,15 @@ public class Client implements IClient {
      * @param ip   ip адрес клиента
      * @param port порт соединения
      */
-    private Client(final String ip, final int port) {
-        this.ip = ip;
-        this.port = port;
-        this.simpleBot = new SimpleBot();
+    private Client(final String ip, final int port) throws CoinsException {
+        try{
+            this.ip = ip;
+            this.ipAddress = InetAddress.getByName(ip);
+            this.port = port;
+            this.simpleBot = new SimpleBot();
+        } catch (final UnknownHostException exception) {
+            throw new CoinsException(ErrorCode.CLIENT_CREATION_FAILED);
+        }
     }
 
     @Override
@@ -57,7 +65,8 @@ public class Client implements IClient {
             case CHANGE_RACE -> {
                 return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
             }
-            case GAME_OVER -> throw new IOException();
+            case GAME_OVER -> // TODO: вывод результатов
+                    throw new IOException();
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -121,7 +130,11 @@ public class Client implements IClient {
     }
 
     public static void main(final String[] args) {
-        final Client client = new Client(IP, PORT);
-        client.startClient();
+        try {
+            final Client client = new Client(IP, PORT);
+            client.startClient();
+        } catch (final CoinsException exception) {
+            LOGGER.error("Error!", exception);
+        }
     }
 }
