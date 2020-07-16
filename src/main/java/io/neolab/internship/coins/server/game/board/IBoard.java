@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
 import org.apache.commons.collections4.BidiMap;
 
-@JsonDeserialize(using = BoardDeserializer.class)
 public interface IBoard {
 
     /**
