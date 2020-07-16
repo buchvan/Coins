@@ -352,7 +352,7 @@ public class GameLogger {
         playerList.forEach(player ->
                 LOGGER.debug("Player {}: [ coins {}, feudal for: {} cells, controled: {} cells ] ",
                         player.getNickname(), player.getCoins(),
-                        ownToCells.get(player).size(), feudalToCells.get(player).size()));
+                        feudalToCells.get(player).size(), ownToCells.get(player).size()));
     }
 
     /**

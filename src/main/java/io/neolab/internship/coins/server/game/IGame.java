@@ -17,8 +17,6 @@ public interface IGame {
 
     int getCurrentRound();
 
-    void setCurrentRound(final int currentRound);
-
     Map<Player, Set<Cell>> getFeudalToCells();
 
     Map<Player, List<Cell>> getOwnToCells();

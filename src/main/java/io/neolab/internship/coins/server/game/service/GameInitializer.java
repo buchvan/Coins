@@ -45,7 +45,7 @@ public class GameInitializer {
      *
      * @return инициализированную борду
      */
-    private static Board initBoard(final int boardSizeX, final int boardSizeY) {
+    private static IBoard initBoard(final int boardSizeX, final int boardSizeY) {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
         /* Доска из самой первой консультации по проекту */
@@ -67,7 +67,7 @@ public class GameInitializer {
 
         /* --- */
 
-        final Board board = new Board(positionToCellMap);
+        final IBoard board = new Board(positionToCellMap);
 
         LOGGER.debug("Board is created: {} ", board);
         return board;
