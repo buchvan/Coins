@@ -33,6 +33,16 @@ public class GameChangeRaceAnswerProcessorTests {
     }
 
     @Test
+    public void changeRaceUnavailableNewRaceDeletedFromPoolTest() throws CoinsException {
+        IGame game = gameInit(2,2);
+        game.getRacesPool().remove(Race.ELF);
+        Question question = new Question(QuestionType.CHANGE_RACE, game, game.getPlayers().get(0));
+        Answer answer = new ChangeRaceAnswer(Race.MUSHROOM);
+        gameAnswerProcessor.process(question, answer);
+        assertFalse(game.getRacesPool().contains(Race.MUSHROOM));
+    }
+
+    @Test
     public void changeRaceOldRaceReturnsTest() throws CoinsException {
         IGame game = gameInit(2,2);
         List<Race> races = game.getRacesPool();
