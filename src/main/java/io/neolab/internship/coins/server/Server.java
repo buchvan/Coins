@@ -39,7 +39,6 @@ public class Server implements IServer {
         private final Socket socket;
         private final BufferedReader in; // поток чтения из сокета
         private final BufferedWriter out; // поток записи в сокет
-        private final Server server;
         private final Player player;
 
         /**
@@ -49,7 +48,6 @@ public class Server implements IServer {
          * @param socket - сокет
          */
         private ServerSomething(final Server server, final Socket socket) throws IOException {
-            this.server = server;
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию искдючения, оно проброситься дальше
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
