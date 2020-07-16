@@ -1,6 +1,11 @@
 package io.neolab.internship.coins.server.game.board;
 
-public enum CellType {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
+
+public enum CellType implements Serializable {
     LAND("LAND", 1, 2, "L"),
     MUSHROOM("MUSHROOM", 1, 2, "m"),
     MOUNTAIN("MOUNTAIN", 1, 3, "M"),
@@ -11,11 +16,24 @@ public enum CellType {
     private final int catchDifficulty; // Сложность захвата клетки
     private final int coinYield; // Число монет, которое приносит клетка
 
-    CellType(final String title, final int coinYield, final int catchDifficulty, final String view) {
+    @JsonCreator
+    CellType(@JsonProperty("title") final String title,
+             @JsonProperty("coinYield") final int coinYield,
+             @JsonProperty("catchDifficulty") final int catchDifficulty,
+             @JsonProperty("view") final String view) {
         this.view = view;
         this.title = title;
         this.coinYield = coinYield;
         this.catchDifficulty = catchDifficulty;
+    }
+
+    public static CellType getCellTypeByTitle(final String title) {
+        for (final CellType cellType : CellType.values()) {
+            if (cellType.title.equals(title)) {
+                return cellType;
+            }
+        }
+        return null;
     }
 
     public String getTitle() {
@@ -38,8 +56,9 @@ public enum CellType {
     public String toString() {
         return "CellType{" +
                 "title='" + title + '\'' +
-                ", coinYield=" + coinYield +
+                ", view='" + view + '\'' +
                 ", catchDifficulty=" + catchDifficulty +
+                ", coinYield=" + coinYield +
                 '}';
     }
 }

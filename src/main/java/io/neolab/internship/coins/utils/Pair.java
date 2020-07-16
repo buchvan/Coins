@@ -1,12 +1,18 @@
 package io.neolab.internship.coins.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Pair<T, U> {
+public class Pair<T, U> implements Serializable {
     private T first;
     private U second;
 
-    public Pair(final T first, final U second) {
+    @JsonCreator
+    public Pair(@JsonProperty("first") final T first,
+                @JsonProperty("second") final U second) {
         this.first = first;
         this.second = second;
     }

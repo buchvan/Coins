@@ -1,7 +1,9 @@
 package io.neolab.internship.coins.utils;
 
-public enum AvailabilityType {
-    AVAILABLE, // Доступный
-    NOT_AVAILABLE, // Недоступный
+import java.io.Serializable;
+
+public enum AvailabilityType implements Serializable {
+    AVAILABLE,
+    NOT_AVAILABLE,
     ;
 }

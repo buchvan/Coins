@@ -1,17 +1,21 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.utils.IdGenerator;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-public class Cell {
-    private final int id = IdGenerator.getCurrentId();
+public class Cell implements Serializable {
+    private final int id;
     private final CellType type;
     private final List<Unit> units = new LinkedList<>();
     private Player feudal = null;
@@ -23,7 +27,23 @@ public class Cell {
     }
 
     public Cell(final CellType type, final Race race) {
+        this.id = IdGenerator.getCurrentId();
         this.type = type;
+        this.race = race;
+    }
+
+    @JsonCreator
+    public Cell(@JsonProperty("id") final int id,
+                @JsonProperty("type") final CellType type,
+                @JsonProperty("units") final List<Unit> units,
+                @JsonProperty("feudal") final Player feudal,
+                @JsonProperty("own") final Player own,
+                @JsonProperty("race") final Race race) {
+        this.id = id;
+        this.type = type;
+        Collections.copy(this.units, units);
+        this.feudal = feudal;
+        this.own = own;
         this.race = race;
     }
 

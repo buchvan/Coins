@@ -1,20 +1,37 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+//import io.neolab.internship.coins.common.deserialize.UnitDeserializer;
+//import io.neolab.internship.coins.common.serialize.UnitSerializer;
 import io.neolab.internship.coins.utils.IdGenerator;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Unit {
+//@JsonSerialize(using = UnitSerializer.class)
+//@JsonDeserialize(using = UnitDeserializer.class)
+public class Unit implements Serializable {
     private final int id;
 
     public Unit() {
         this.id = IdGenerator.getCurrentId();
     }
 
+    public Unit(final Unit unit) {
+        this.id = unit.id;
+    }
+
+    @JsonCreator
+    public Unit(@JsonProperty("id") final int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
-
 
     @Override
     public boolean equals(final Object o) {

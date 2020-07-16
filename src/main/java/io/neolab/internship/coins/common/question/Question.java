@@ -1,16 +1,24 @@
 package io.neolab.internship.coins.common.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.neolab.internship.coins.common.deserialize.QuestionDeserializer;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 
 import java.util.Objects;
 
+@JsonDeserialize(using = QuestionDeserializer.class)
 public class Question {
     private final QuestionType questionType;
     private final IGame game;
     private final Player player;
 
-    public Question(final QuestionType questionType, final IGame game, final Player player) {
+    @JsonCreator
+    public Question(@JsonProperty("questionType") final QuestionType questionType,
+                    @JsonProperty("game") final IGame game,
+                    @JsonProperty("player") final Player player) {
         this.questionType = questionType;
         this.game = game;
         this.player = player;
