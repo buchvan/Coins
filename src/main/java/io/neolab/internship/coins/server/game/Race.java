@@ -1,6 +1,10 @@
 package io.neolab.internship.coins.server.game;
 
-public enum Race {
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.io.Serializable;
+
+public enum Race implements Serializable {
     MUSHROOM("MUSHROOM", 6),
     AMPHIBIAN("AMPHIBIAN", 6),
     ELF("ELF", 6),
@@ -15,6 +19,15 @@ public enum Race {
     Race(final String title, final int unitsAmount) {
         this.title = title;
         this.unitsAmount = unitsAmount;
+    }
+
+    public static Race getRaceByTitle(final String title) {
+        for (final Race race : Race.values()) {
+            if (race.title.equals(title)) {
+                return race;
+            }
+        }
+        return null;
     }
 
     public int getUnitsAmount() {

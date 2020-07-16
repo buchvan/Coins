@@ -1,14 +1,21 @@
 package io.neolab.internship.coins.server.game.feature;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.neolab.internship.coins.common.deserialize.FeatureDeserializer;
+
 import java.util.Objects;
 
 /**
  * Особенность пары раса-тип_клетки (Race-CellType)
  */
+@JsonDeserialize(using = FeatureDeserializer.class)
 public class Feature implements IFeature {
     private final FeatureType type;
 
-    public Feature(final FeatureType type) {
+    @JsonCreator
+    public Feature(@JsonProperty("type") final FeatureType type) {
         this.type = type;
     }
 

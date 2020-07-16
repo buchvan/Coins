@@ -1,17 +1,36 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
+import io.neolab.internship.coins.common.deserialize.PlayerKeyDeserializer;
+import io.neolab.internship.coins.common.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Game implements IGame {
-    private IBoard board;
-    private int currentRound = 0;
+public class Game implements IGame, Serializable {
 
+    @JsonDeserialize(using = BoardDeserializer.class)
+    private IBoard board;
+    
+    private int currentRound;
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток, которые он контролирует,
     // но которые не приносят ему монет
 
@@ -31,9 +50,22 @@ public class Game implements IGame {
 
     public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final GameFeatures gameFeatures, final List<Race> racesPool,
-                final List<Player> players) {
+                final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
+
+        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, players);
+    }
+
+    @JsonCreator
+    public Game(@JsonProperty("board") final IBoard board,
+                @JsonProperty("currentRound") final int currentRound,
+                @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
+                @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
+                @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
+                @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
+                @JsonProperty("racesPool") final List<Race> racesPool,
+                @JsonProperty("players") final List<Player> players) {
         this.board = board;
+        this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
         this.playerToTransitCells = playerToTransitCells;

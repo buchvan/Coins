@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.server.game.service;
 
-import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;

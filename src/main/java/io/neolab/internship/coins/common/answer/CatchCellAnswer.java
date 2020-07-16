@@ -1,7 +1,9 @@
 package io.neolab.internship.coins.common.answer;
 
-import io.neolab.internship.coins.server.game.Unit;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.util.List;
@@ -14,7 +16,8 @@ public class CatchCellAnswer extends Answer {
         this.resolution = null;
     }
 
-    public CatchCellAnswer(final Pair<Position, List<Unit>> resolution) {
+    @JsonCreator
+    public CatchCellAnswer(@JsonProperty("resolution") final Pair<Position, List<Unit>> resolution) {
         this.resolution = resolution;
     }
 

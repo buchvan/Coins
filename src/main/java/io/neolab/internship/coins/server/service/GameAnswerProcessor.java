@@ -69,6 +69,10 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                     currentBoard);
         }
 
+        } catch (CoinsException exception) {
+            GameLogger.printErrorLog(exception);
+            throw exception;
+        }
     }
 
     /**
