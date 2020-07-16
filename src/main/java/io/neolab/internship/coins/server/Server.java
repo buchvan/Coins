@@ -38,14 +38,17 @@ public class Server implements IServer {
         private final Socket socket;
         private final BufferedReader in; // поток чтения из сокета
         private final BufferedWriter out; // поток записи в сокет
+        private final Server server;
         private final Player player;
 
         /**
          * Для общения с клиентом необходим сокет (адресные данные)
          *
-         * @param socket сокет
+         * @param server - сервер
+         * @param socket - сокет
          */
-        private ServerSomething(final Socket socket) throws IOException {
+        private ServerSomething(final Server server, final Socket socket) throws IOException {
+            this.server = server;
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию искдючения, оно проброситься дальше
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -54,7 +57,15 @@ public class Server implements IServer {
             final Question question = new Question(QuestionType.NICKNAME);
             out.write(Communication.serializeQuestion(question) + "\n");
             out.flush();
-            player = new Player(in.readLine());
+            String nickname;
+            boolean isDuplicate = false;
+            do {
+                nickname = in.readLine();
+                for (final ServerSomething serverSomething : server.serverList) {
+                    isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
+                }
+            } while (isDuplicate);
+            player = new Player(nickname);
         }
 
         /**
@@ -75,21 +86,7 @@ public class Server implements IServer {
     @Override
     public void startServer() {
         try {
-            try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
-                int currentClientsCount = 0;
-                while (currentClientsCount < CLIENTS_COUNT) {
-                    final Socket socket = serverSocket.accept();
-                    try {
-                        serverList.add(new ServerSomething(socket));
-                        currentClientsCount++;
-                    } catch (final IOException exception) {
-                        LOGGER.error("Error!", exception);
-                        socket.close();
-                    }
-                }
-            } catch (final BindException exception) {
-                LOGGER.error("Error!", exception);
-            }
+            connectClients();
             LOGGER.info("Server started, port: {}", PORT);
 
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, CLIENTS_COUNT);
@@ -130,6 +127,29 @@ public class Server implements IServer {
             LOGGER.error("Error!!!", exception);
             serverList.forEach(ServerSomething::downService);
             serverList.clear();
+        }
+    }
+
+    /**
+     * Подключает клиентов к серверу
+     *
+     * @throws IOException при ошибке подключения
+     */
+    private void connectClients() throws IOException {
+        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+            int currentClientsCount = 0;
+            while (currentClientsCount < CLIENTS_COUNT) {
+                final Socket socket = serverSocket.accept();
+                try {
+                    serverList.add(new ServerSomething(this, socket));
+                    currentClientsCount++;
+                } catch (final IOException exception) {
+                    LOGGER.error("Error!", exception);
+                    socket.close();
+                }
+            }
+        } catch (final BindException exception) {
+            LOGGER.error("Error!", exception);
         }
     }
 
