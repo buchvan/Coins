@@ -32,28 +32,28 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueRightControlledCells() throws CoinsException {
+    public void declineRaceTrueRightControlledCellsTest() throws CoinsException {
         List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2, 2);
         List<Player> players = game.getPlayers();
         Player declineRacePlayer = players.get(0);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
         Question question = new Question(QuestionType.DECLINE_RACE, game, declineRacePlayer);
-                Answer answer = new DeclineRaceAnswer(true);
+        Answer answer = new DeclineRaceAnswer(true);
         gameAnswerProcessor.process(question, answer);
-       assertEquals(0, game.getOwnToCells().get(declineRacePlayer).size());
+        assertEquals(0, game.getOwnToCells().get(declineRacePlayer).size());
     }
 
     @Test
-    public void declineRaceTrueRightFeudalCells() throws CoinsException {
+    public void declineRaceTrueRightFeudalCellsOwnersTest() throws CoinsException {
         List<Cell> feudalCells = new LinkedList<>();
         Cell feudalCell = new Cell(CellType.MOUNTAIN);
         Cell feudalCell1 = new Cell(CellType.MUSHROOM);
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2, 2);
         List<Player> players = game.getPlayers();
         Player declineRacePlayer = players.get(0);
         feudalCell.setFeudal(declineRacePlayer);
@@ -66,11 +66,32 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightControlledCells() throws CoinsException {
+    public void declineRaceTrueFeudalCellsTest() throws CoinsException {
+        List<Cell> feudalCells = new LinkedList<>();
+        Cell feudalCell = new Cell(CellType.MOUNTAIN);
+        Cell feudalCell1 = new Cell(CellType.MUSHROOM);
+        feudalCells.add(feudalCell);
+        feudalCells.add(feudalCell1);
+        IGame game = gameInit(2, 2);
+        List<Player> players = game.getPlayers();
+        Player declineRacePlayer = players.get(0);
+        feudalCell.setFeudal(declineRacePlayer);
+        feudalCell1.setFeudal(declineRacePlayer);
+        game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
+        Question question = new Question(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        Answer answer = new DeclineRaceAnswer(true);
+        gameAnswerProcessor.process(question, answer);
+        assertTrue(feudalCells.contains(feudalCell));
+        assertTrue(feudalCells.contains(feudalCell1));
+        assertEquals(2, feudalCells.size());
+    }
+
+    @Test
+    public void declineRaceFalseRightControlledCellsTest() throws CoinsException {
         List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2, 2);
         List<Player> players = game.getPlayers();
         Player declineRacePlayer = players.get(0);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
@@ -81,13 +102,13 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightFeudalCells() throws CoinsException {
+    public void declineRaceFalseRightFeudalCellsOwnersTest() throws CoinsException {
         List<Cell> feudalCells = new LinkedList<>();
         Cell feudalCell = new Cell(CellType.MOUNTAIN);
         Cell feudalCell1 = new Cell(CellType.MUSHROOM);
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2, 2);
         List<Player> players = game.getPlayers();
         Player declineRacePlayer = players.get(0);
         feudalCell.setFeudal(declineRacePlayer);
@@ -97,5 +118,26 @@ public class GameDeclineRaceAnswerProcessorTests {
         Answer answer = new DeclineRaceAnswer(false);
         gameAnswerProcessor.process(question, answer);
         feudalCells.forEach(cell -> assertNull(cell.getOwn()));
+    }
+
+    @Test
+    public void declineRaceFalseFeudalCellsTest() throws CoinsException {
+        List<Cell> feudalCells = new LinkedList<>();
+        Cell feudalCell = new Cell(CellType.MOUNTAIN);
+        Cell feudalCell1 = new Cell(CellType.MUSHROOM);
+        feudalCells.add(feudalCell);
+        feudalCells.add(feudalCell1);
+        IGame game = gameInit(2, 2);
+        List<Player> players = game.getPlayers();
+        Player declineRacePlayer = players.get(0);
+        feudalCell.setFeudal(declineRacePlayer);
+        feudalCell1.setFeudal(declineRacePlayer);
+        game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
+        Question question = new Question(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        Answer answer = new DeclineRaceAnswer(false);
+        gameAnswerProcessor.process(question, answer);
+        assertTrue(feudalCells.contains(feudalCell));
+        assertTrue(feudalCells.contains(feudalCell1));
+        assertEquals(2, feudalCells.size());
     }
 }
