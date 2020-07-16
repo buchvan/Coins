@@ -42,18 +42,18 @@ public class GameLoopProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @return список достижимых в один ход игроком клеток, не подконтрольных ему
      */
-    public static List<Cell> getAchievableCells(final IBoard board,
+    public static Set<Cell> getAchievableCells(final IBoard board,
                                                 final List<Cell> controlledCells) {
         if (controlledCells.isEmpty()) {
-            return getBoardEdgeGetCells(board);
+            return new HashSet<>(getBoardEdgeGetCells(board));
         } // else
         final Set<Cell> achievableCells = new HashSet<>();
         for (final Cell cell : controlledCells) {
+            achievableCells.add(cell);
             achievableCells.addAll(
                     getAllNeighboringCells(board, cell)); // добавляем всех соседей каждой клетки, занятой игроком
         }
-        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        return new LinkedList<>(achievableCells);
+        return achievableCells;
     }
 
     /**

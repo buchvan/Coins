@@ -18,6 +18,7 @@ import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
@@ -76,7 +77,7 @@ public interface IGameValidator {
      */
     static void validateCatchCellAnswer(final CatchCellAnswer answer,
                                         final IBoard currentBoard,
-                                        final List<Cell> achievableCells,
+                                        final Set<Cell> achievableCells,
                                         final List<Unit> availableUnits,
                                         final GameFeatures gameFeatures,
                                         final Player player) throws CoinsException {

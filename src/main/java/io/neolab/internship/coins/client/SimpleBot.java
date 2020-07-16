@@ -32,8 +32,8 @@ public class SimpleBot implements IBot {
         if (random.nextInt(2) == 1) {
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
-            final List<Cell> achievableCells = GameLoopProcessor.getAchievableCells(board, controlledCells);
-            final Cell catchingCell = RandomGenerator.chooseItemFromList(achievableCells);
+            final Set<Cell> achievableCells = GameLoopProcessor.getAchievableCells(board, controlledCells);
+            final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
             final List<Cell> neighboringCells = new LinkedList<>();
             neighboringCells.add(catchingCell);
@@ -41,6 +41,7 @@ public class SimpleBot implements IBot {
             neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeGetCells(board);
             final Iterator<Unit> iterator = units.iterator();
             while (iterator.hasNext()) {
                 boolean unitIsPossibleAggressor = false;
@@ -51,7 +52,7 @@ public class SimpleBot implements IBot {
                         break;
                     }
                 }
-                if (!unitIsPossibleAggressor) {
+                if (boardEdgeCells.contains(catchingCell) && !unitIsPossibleAggressor) {
                     unitIsPossibleAggressor = true;
                     for (final Cell controlledCell : controlledCells) {
                         if (!neighboringCells.contains(controlledCell) && controlledCell.getUnits().contains(unit)) {
@@ -65,7 +66,10 @@ public class SimpleBot implements IBot {
                 }
             }
             return new Pair<>(board.getPositionByCell(catchingCell),
-                    units.subList(0, RandomGenerator.chooseNumber(units.size())));
+                    units.size() > 0
+                            ? units.subList(0, RandomGenerator.chooseNumber(units.size()))
+                            : new LinkedList<>()
+            );
         } // else
         return null;
     }

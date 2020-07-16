@@ -48,7 +48,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
             final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
+            final Set<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
             IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
@@ -122,7 +122,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                                   final List<Cell> transitCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
-        final List<Cell> achievableCells = getAchievableCells(board, controlledCells);
+        final Set<Cell> achievableCells = getAchievableCells(board, controlledCells);
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
         //TODO: rename
