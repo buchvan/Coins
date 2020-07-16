@@ -32,10 +32,12 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
                 final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
                 IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-                declineRace(player,
-                        currentGame.getOwnToCells().get(player),
-                        currentGame.getFeudalToCells().get(player));
-                return;
+                if (declineRaceAnswer.isDeclineRace()) {
+                    declineRace(player,
+                            currentGame.getOwnToCells().get(player),
+                            currentGame.getFeudalToCells().get(player));
+                    return;
+                }
             }
             if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
                 final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
