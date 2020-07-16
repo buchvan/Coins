@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -353,7 +352,7 @@ public class GameLogger {
         playerList.forEach(player ->
                 LOGGER.debug("Player {}: [ coins {}, feudal for: {} cells, controled: {} cells ] ",
                         player.getNickname(), player.getCoins(),
-                        ownToCells.get(player).size(), feudalToCells.get(player).size()));
+                        feudalToCells.get(player).size(), ownToCells.get(player).size()));
     }
 
     /**

@@ -92,11 +92,6 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
-    public void setCurrentRound(final int currentRound) {
-        this.currentRound = currentRound;
-    }
-
-    @Override
     public Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }

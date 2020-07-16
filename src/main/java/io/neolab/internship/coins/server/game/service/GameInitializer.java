@@ -19,7 +19,6 @@ public class GameInitializer {
 
     public static IGame gameInit(final int boardSizeX, final int boardSizeY, final List<Player> playerList)
             throws CoinsException {
-
         LOGGER.debug("Init...");
 
         //мок доски
@@ -38,27 +37,34 @@ public class GameInitializer {
         return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
     }
 
-    public static Game gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
-            throws CoinsException {
-        LOGGER.debug("Init...");
+    /**
+     * Инициализация и создание борды
+     *
+     * @return инициализированную борду
+     */
+    private static IBoard initBoard(final int boardSizeX, final int boardSizeY) {
+        final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
-        //мок доски
-        //final Board board = initBoard(boardSizeX, boardSizeY);
-        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+        /* Доска из самой первой консультации по проекту */
 
-        final List<Player> playerList = initTestPlayers(playersCount);
+        positionToCellMap.put(new Position(0, 0), new Cell(CellType.MUSHROOM));
+        positionToCellMap.put(new Position(0, 1), new Cell(CellType.LAND));
+        positionToCellMap.put(new Position(0, 2), new Cell(CellType.WATER));
+        positionToCellMap.put(new Position(0, 3), new Cell(CellType.MOUNTAIN));
 
-        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
-        final Map<Player, List<Cell>> ownToCells =
-                initMapWithPlayerKeyListValue(playerList, "ownToCells");
-        final Map<Player, List<Cell>> playerToTransitCells =
-                initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+        positionToCellMap.put(new Position(1, 0), new Cell(CellType.MOUNTAIN));
+        positionToCellMap.put(new Position(1, 1), new Cell(CellType.WATER));
+        positionToCellMap.put(new Position(1, 2), new Cell(CellType.LAND));
+        positionToCellMap.put(new Position(1, 3), new Cell(CellType.MUSHROOM));
 
-        final GameFeatures gameFeatures  = initGameFeatures();
-        final List<Race> racesPool = createRacesPool();
+        positionToCellMap.put(new Position(2, 0), new Cell(CellType.LAND));
+        positionToCellMap.put(new Position(2, 1), new Cell(CellType.WATER));
+        positionToCellMap.put(new Position(2, 2), new Cell(CellType.MUSHROOM));
+        positionToCellMap.put(new Position(2, 3), new Cell(CellType.MOUNTAIN));
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
-    }
+        /* --- */
+
+        final IBoard board = new Board(positionToCellMap);
 
 //    /**
 //     * Инициализация и создание борды
