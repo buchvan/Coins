@@ -201,7 +201,6 @@ public class GameLogger {
         LOGGER.debug("Race: {} ", catchingCell.getRace().getTitle());
         LOGGER.debug("Feudal: {} ",
                 catchingCell.getFeudal() != null ? catchingCell.getFeudal().getNickname() : "NULL");
-        LOGGER.debug("Own: {} ", catchingCell.getOwn().getNickname());
         LOGGER.debug("Units: {} ", catchingCell.getUnits());
         LOGGER.debug("Player after catching: ");
         LOGGER.debug("Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
@@ -223,7 +222,6 @@ public class GameLogger {
             LOGGER.debug("--- Race: {} ", transitCell.getRace().getTitle());
             LOGGER.debug("--- Feudal: {} ",
                     transitCell.getFeudal() != null ? transitCell.getFeudal().getNickname() : "NULL");
-            LOGGER.debug("--- Own: {} ", transitCell.getOwn().getNickname());
             LOGGER.debug("--- Units: {} ", transitCell.getUnits());
         });
     }
@@ -267,7 +265,9 @@ public class GameLogger {
      */
     public static void printCellAfterDefendingLog(final Player player, final Cell protectedCell) {
         LOGGER.debug("Cell after defending: ");
-        LOGGER.debug("--- Own: {} ", protectedCell.getOwn() != null ? protectedCell.getOwn().getNickname() : "NULL");
+        LOGGER.debug("--- Feudal: {} ", protectedCell.getFeudal() != null ?
+                protectedCell.getFeudal().getNickname() :
+                "NULL");
         LOGGER.debug("--- Units: {} ", protectedCell.getUnits());
         LOGGER.debug("Player {} after defending: ", player.getNickname());
         LOGGER.debug("--- Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));

@@ -45,7 +45,7 @@ public class GameLoopProcessor {
     public static List<Cell> getAchievableCells(final IBoard board,
                                                 final List<Cell> controlledCells) {
         if (controlledCells.isEmpty()) {
-            return boardEdgeGetCells(board);
+            return getBoardEdgeGetCells(board);
         } // else
         final Set<Cell> achievableCells = new HashSet<>();
         for (final Cell cell : controlledCells) {
@@ -81,7 +81,7 @@ public class GameLoopProcessor {
      * @param board - борда, крайние клетки которой мы хотим взять
      * @return список всех крайних клеток борды board
      */
-    private static List<Cell> boardEdgeGetCells(final IBoard board) {
+    public static List<Cell> getBoardEdgeGetCells(final IBoard board) {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -119,7 +119,7 @@ public class GameLoopProcessor {
      */
     public static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
                                                      final Cell catchingCell) {
-        final Player defendingPlayer = catchingCell.getOwn();
+        final Player defendingPlayer = catchingCell.getFeudal();
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 catchingCell.getRace(),
@@ -181,7 +181,7 @@ public class GameLoopProcessor {
                                  final List<Cell> transitCells) {
         makeNAvailableUnitsToNotAvailable(player, tiredUnitsCount); // все юниты, задействованные в захвате клетки,
         // становятся недоступными
-        final Player defendingPlayer = catchingCell.getOwn();
+        final Player defendingPlayer = catchingCell.getFeudal();
         boolean catchingCellIsFeudalizable = true;
         final boolean haveARival = isAlivePlayer(defendingPlayer);
 
@@ -239,7 +239,7 @@ public class GameLoopProcessor {
                                                  final Feature feature) {
 
         if (haveARival && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
-            final Player defendingPlayer = catchingCell.getOwn();
+            final Player defendingPlayer = catchingCell.getFeudal();
             int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
             deadUnitsCount = Math.min(
                     deadUnitsCount,
@@ -268,7 +268,6 @@ public class GameLoopProcessor {
         if (ownIsAlive) {
             controlledCells.remove(cell);
         }
-        cell.setOwn(null);
     }
 
     /* Дать клетке владельца и, возможно, феодала
@@ -287,7 +286,6 @@ public class GameLoopProcessor {
                                                final List<Cell> transitCells,
                                                final List<Cell> controlledCells,
                                                final Set<Cell> feudalCells) {
-        cell.setOwn(player);
         cell.setRace(player.getRace());
         controlledCells.add(cell);
         if (cellIsFeudalizable) {
@@ -319,9 +317,10 @@ public class GameLoopProcessor {
     public static void freeTransitCells(final Player player, final List<Cell> transitCells,
                                         final List<Cell> controlledCells) {
         GameLogger.printTransitCellsLog(player, transitCells);
+
         /* Игрок покидает каждую транзитную клетку */
         controlledCells.removeIf(transitCells::contains);
-        transitCells.forEach(transitCell -> transitCell.setOwn(null));
+        transitCells.forEach(transitCell -> transitCell.getUnits().clear());
         transitCells.clear();
 
         GameLogger.printFreedTransitCellsLog(player);

@@ -83,9 +83,6 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                                    final List<Cell> controlledCells,
                                    final Set<Cell> feudalCells) {
         GameLogger.printDeclineRaceLog(player);
-        feudalCells
-                .forEach(cell ->
-                        cell.setOwn(null)); // Освобождаем все занятые игроком клетки (юниты остаются там же)
         controlledCells.clear();
     }
 
