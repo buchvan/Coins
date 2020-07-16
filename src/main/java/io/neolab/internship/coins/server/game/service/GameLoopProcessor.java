@@ -162,17 +162,6 @@ public class GameLoopProcessor {
     }
 
     /**
-     * Проверка на возможность захвата клетки
-     *
-     * @param attackPower          - сила атаки на клетку
-     * @param necessaryAttackPower - необходимая сила атаки на эту клетку для её захвата
-     * @return true - если клетку можно захватить, имея attackPower, false - иначе
-     */
-    public static boolean cellIsCatching(final int attackPower, final int necessaryAttackPower) {
-        return attackPower >= necessaryAttackPower;
-    }
-
-    /**
      * Захватить клетку
      *
      * @param player          - игрок-агрессор
@@ -225,16 +214,6 @@ public class GameLoopProcessor {
             iterator.remove();
             i++;
         }
-//        int i = 0;
-//        for (final Unit unit : unitStateToUnits.get(UnitState.AVAILABLE)) {
-//            if (i >= N) {
-//                break;
-//            }
-//            unitStateToUnits.get(UnitState.NOT_AVAILABLE).add(unit);
-//            i++;
-//        }
-//        unitStateToUnits.get(UnitState.AVAILABLE)
-//                .removeIf(unit -> unitStateToUnits.get(UnitState.NOT_AVAILABLE).contains(unit));
     }
 
     /**

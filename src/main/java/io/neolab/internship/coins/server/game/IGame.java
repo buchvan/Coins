@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 public interface IGame {
-
     void incrementCurrentRound();
 
     IBoard getBoard();
@@ -17,8 +16,6 @@ public interface IGame {
     void setBoard(final Board board);
 
     int getCurrentRound();
-
-    void setCurrentRound(final int currentRound);
 
     Map<Player, Set<Cell>> getFeudalToCells();
 
