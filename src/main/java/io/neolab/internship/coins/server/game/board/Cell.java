@@ -36,13 +36,11 @@ public class Cell implements Serializable {
                 @JsonProperty("type") final CellType type,
                 @JsonProperty("units") final List<Unit> units,
                 @JsonProperty("feudal") final Player feudal,
-                @JsonProperty("own") final Player own,
                 @JsonProperty("race") final Race race) {
         this.id = id;
         this.type = type;
         Collections.copy(this.units, units);
         this.feudal = feudal;
-        this.own = own;
         this.race = race;
     }
 

@@ -26,50 +26,52 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
 public class GameAnswerProcessor implements IGameAnswerProcessor {
     @Override
     public void process(final Question question, final Answer answer) throws CoinsException {
-        final IGame currentGame = question.getGame();
-        final Player player = question.getPlayer();
-        if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
-            final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
-            IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-            declineRace(player, currentGame.getOwnToCells().get(player));
-            return;
-        }
-        if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
-            final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
-            final List<Race> currentRacesPool = currentGame.getRacesPool();
-            IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
-            changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
-            return;
-        }
-        if (question.getQuestionType() == QuestionType.CATCH_CELL) {
-            final IBoard currentBoard = currentGame.getBoard();
-            final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
-            final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
-            final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final Set<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
-            final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-            IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
-                    achievableCells, availableUnits, currentGame.getGameFeatures(), player);
-            final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-            final List<Unit> units = catchCellAnswer.getResolution().getSecond();
-            cellCapture(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
-                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
-            return;
-        }
-        if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
-            final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
-            final IBoard currentBoard = currentGame.getBoard();
-            final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
-                    + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
-            IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
-                    currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
-            distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
-                    currentGame.getPlayerToTransitCells().get(player),
-                    currentGame.getOwnToCells().get(player),
-                    currentBoard);
-        }
-
-        } catch (CoinsException exception) {
+        try {
+            final IGame currentGame = question.getGame();
+            final Player player = question.getPlayer();
+            if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
+                final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
+                IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
+                if (declineRaceAnswer.isDeclineRace()) {
+                    declineRace(player, currentGame.getOwnToCells().get(player));
+                }
+                return;
+            }
+            if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
+                final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
+                final List<Race> currentRacesPool = currentGame.getRacesPool();
+                IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+                changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
+                return;
+            }
+            if (question.getQuestionType() == QuestionType.CATCH_CELL) {
+                final IBoard currentBoard = currentGame.getBoard();
+                final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
+                final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
+                final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
+                final Set<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
+                final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+                IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
+                        achievableCells, availableUnits, currentGame.getGameFeatures(), player);
+                final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
+                final List<Unit> units = catchCellAnswer.getResolution().getSecond();
+                cellCapture(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
+                        currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
+                return;
+            }
+            if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+                final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
+                final IBoard currentBoard = currentGame.getBoard();
+                final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
+                        + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
+                IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
+                        currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
+                distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
+                        currentGame.getPlayerToTransitCells().get(player),
+                        currentGame.getOwnToCells().get(player),
+                        currentBoard);
+            }
+        } catch (final CoinsException exception) {
             GameLogger.printErrorLog(exception);
             throw exception;
         }
