@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
 import io.neolab.internship.coins.common.deserialize.PlayerKeyDeserializer;
 import io.neolab.internship.coins.common.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
@@ -14,7 +15,10 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Game implements IGame, Serializable {
+
+    @JsonDeserialize(using = BoardDeserializer.class)
     private IBoard board;
+
     private int currentRound;
     public static final int ROUNDS_COUNT = 10;
 

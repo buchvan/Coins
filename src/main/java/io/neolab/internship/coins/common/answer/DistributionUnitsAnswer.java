@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.PlayerKeyDeserializer;
 import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
 import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import io.neolab.internship.coins.server.game.board.Position;
