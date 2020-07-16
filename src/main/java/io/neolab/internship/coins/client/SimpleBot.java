@@ -13,7 +13,7 @@ import io.neolab.internship.coins.utils.RandomGenerator;
 
 import java.util.*;
 
-public class SimpleBot implements ISimpleBot {
+public class SimpleBot implements IBot {
     Random random = new Random();
 
     @Override

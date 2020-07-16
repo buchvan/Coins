@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.client.ISimpleBot;
+import io.neolab.internship.coins.client.IBot;
 import io.neolab.internship.coins.client.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.*;
@@ -64,13 +64,16 @@ public class SelfPlay {
             GameLogger.printRoundBeginLog(game.getCurrentRound());
             playerList.forEach(player -> {
                 GameLogger.printNextPlayerLog(player);
-                playerRound(player, simpleBotToPlayer.getKey(player), game); // раунд игрока.
-                // Все свои решения он принимает здесь
+
+                // Раунд игрока. Все свои решения он принимает здесь
+                playerRound(player, simpleBotToPlayer.getKey(player), game);
             });
+
+            // обновление числа монет у каждого игрока
             playerList.forEach(player ->
                     updateCoinsCount(player, game.getFeudalToCells().get(player),
                             game.getGameFeatures(),
-                            game.getBoard()));  // обновление числа монет у каждого игрока
+                            game.getBoard()));
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(),
                     game.getOwnToCells(), game.getFeudalToCells());
         }
@@ -83,7 +86,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void playerRound(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void playerRound(final Player player, final IBot simpleBot, final IGame game) {
         playerRoundBeginUpdate(player, game.getOwnToCells().get(player));  // активация данных игрока в начале раунда
         if (simpleBot.declineRaceChoose(player, game)) { // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRace(player, simpleBot, game); // Уход в упадок
@@ -123,7 +126,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void declineRace(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void declineRace(final Player player, final IBot simpleBot, final IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getFeudalToCells().get(player)
                 .forEach(cell ->
@@ -139,7 +142,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void changeRace(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void changeRace(final Player player, final IBot simpleBot, final IGame game) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -155,7 +158,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void chooseRace(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void chooseRace(final Player player, final IBot simpleBot, final IGame game) {
         final Race newRace = simpleBot.chooseRace(player, game);
         game.getRacesPool().remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
@@ -202,7 +205,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void catchCells(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void catchCells(final Player player, final IBot simpleBot, final IGame game) {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -309,6 +312,7 @@ public class SelfPlay {
      *
      * @param player        - игрок, захватывающий клетку
      * @param catchingCell  - захватываемая клетка
+     * @param units - список юнитов, направленных на захвать клетки
      * @param board         - борда
      * @param gameFeatures  - особенности игры
      * @param ownToCells    - список подконтрольных клеток для каждого игрока
@@ -418,9 +422,7 @@ public class SelfPlay {
                                   final Map<Player, List<Cell>> ownToCells,
                                   final Map<Player, Set<Cell>> feudalToCells,
                                   final List<Cell> transitCells) {
-        makeAvailableUnitsToNotAvailable(player, units); // все юниты, задействованные в захвате клетки,
-        // становятся недоступными
-
+        makeAvailableUnitsToNotAvailable(player, units);
         final Player defendingPlayer = catchingCell.getOwn();
         boolean catchingCellIsFeudalizable = true;
         final boolean haveARival = isAlivePlayer(defendingPlayer);
@@ -539,7 +541,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void distributionUnits(final Player player, final ISimpleBot simpleBot, final IGame game) {
+    private static void distributionUnits(final Player player, final IBot simpleBot, final IGame game) {
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
