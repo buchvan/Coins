@@ -31,9 +31,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
         if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
             final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
             IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-            declineRace(player,
-                    currentGame.getOwnToCells().get(player),
-                    currentGame.getFeudalToCells().get(player));
+            declineRace(player, currentGame.getOwnToCells().get(player));
             return;
         }
         if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
@@ -50,10 +48,11 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
             final Set<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-            IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
+            IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
             final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-            catchCells(player, captureCell, currentBoard, currentGame.getGameFeatures(), ownToCells,
+            final List<Unit> units = catchCellAnswer.getResolution().getSecond();
+            cellCapture(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
                     currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
             return;
         }
@@ -77,11 +76,9 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      *
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
-     * @param feudalCells     - клетки, приносящие монеты игроку
      */
     private static void declineRace(final Player player,
-                                   final List<Cell> controlledCells,
-                                   final Set<Cell> feudalCells) {
+                                    final List<Cell> controlledCells) {
         GameLogger.printDeclineRaceLog(player);
         controlledCells.clear();
     }
@@ -106,31 +103,34 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      *
      * @param player        - игрок, проводящий завоёвывание
      * @param captureCell   - клетка, которую игрок хочет захватить
+     * @param units         - список юнитов, которых игрок направил на захват клетки
      * @param board         - борда
      * @param gameFeatures  - особенности игры
      * @param ownToCells    - список подконтрольных клеток для каждого игрока
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
-    //TODO: rename
-    private static void catchCells(final Player player,
-                                  final Cell captureCell,
-                                  final IBoard board,
-                                  final GameFeatures gameFeatures,
-                                  final Map<Player, List<Cell>> ownToCells,
-                                  final Map<Player, Set<Cell>> feudalToCells,
-                                  final List<Cell> transitCells) {
+    private static void cellCapture(final Player player,
+                                    final Cell captureCell,
+                                    final List<Unit> units,
+                                    final IBoard board,
+                                    final GameFeatures gameFeatures,
+                                    final Map<Player, List<Cell>> ownToCells,
+                                    final Map<Player, Set<Cell>> feudalToCells,
+                                    final List<Cell> transitCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
-        final Set<Cell> achievableCells = getAchievableCells(board, controlledCells);
+        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+        final boolean isControlled = controlledCells.contains(captureCell);
+        if (isControlled) {
+            login(player, captureCell, neighboringCells, units, board);
+        }
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
-        //TODO: rename
-        catchCell(player, captureCell, unitsCountNeededToCatch - bonusAttack,
+        final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
+        catchCell(player, captureCell, neighboringCells, units.subList(0, tiredUnitsCount),
+                units.subList(tiredUnitsCount, units.size()),
                 gameFeatures, ownToCells, feudalToCells, transitCells);
-        achievableCells.remove(captureCell);
-        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
-        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
 
