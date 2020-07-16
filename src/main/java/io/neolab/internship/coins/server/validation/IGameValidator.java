@@ -52,10 +52,6 @@ public interface IGameValidator {
         if (!racesPool.contains(newRace)) {
             throw new CoinsException(ErrorCode.UNAVAILABLE_NEW_RACE);
         }
-        if (currentPlayerRace == newRace) {
-            throw new CoinsException(ErrorCode.SAME_RACES);
-        }
-
     }
 
     /**
