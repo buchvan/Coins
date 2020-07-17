@@ -24,38 +24,36 @@ public class Board implements IBoard, Serializable {
     @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
     private final BidiMap<Position, Cell> positionToCellMap;
 
-    private final List<Cell> boardEdgeCells;
+    private final List<Cell> edgeCells;
 
-    public Board(@JsonProperty("boardSizeX") final int boardSizeX,
-                 @JsonProperty("boardSizeY") final int boardSizeY,
-                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap) {
+    public Board(final int boardSizeX, final int boardSizeY, final BidiMap<Position, Cell> positionToCellMap) {
         this.boardSizeX = boardSizeX;
         this.boardSizeY = boardSizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
-        boardEdgeCells = new LinkedList<>();
+        edgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
         while (colIndex < boardSizeY) { // обход по верхней границе борды
-            boardEdgeCells.add(positionToCellMap.get(new Position(0, colIndex)));
+            edgeCells.add(positionToCellMap.get(new Position(0, colIndex)));
             colIndex++;
         }
         strIndex = 1;
         colIndex--; // colIndex = BOARD_SIZE_Y;
         while (strIndex < boardSizeX) { // обход по правой границе борды
-            boardEdgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             strIndex++;
         }
         strIndex--; // strIndex = BOARD_SIZE_X;
         colIndex--; // colIndex = BOARD_SIZE_Y - 1;
         while (colIndex >= 0) { // обход по нижней границе борды
-            boardEdgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             colIndex--;
         }
         strIndex--; // strIndex = BOARD_SIZE_X - 1;
         colIndex++; // strIndex = 0;
         while (strIndex > 0) { // обход по левой границе борды
-            boardEdgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             strIndex--;
         }
     }
@@ -64,12 +62,12 @@ public class Board implements IBoard, Serializable {
     public Board(@JsonProperty("boardSizeX") final int boardSizeX,
                  @JsonProperty("boardSizeY") final int boardSizeY,
                  @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
-                 @JsonProperty("boardEdgeCells") final List<Cell> boardEdgeCells) {
+                 @JsonProperty("edgeCells") final List<Cell> edgeCells) {
         this.boardSizeX = boardSizeX;
         this.boardSizeY = boardSizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
-        this.boardEdgeCells = boardEdgeCells;
+        this.edgeCells = edgeCells;
     }
 
     public Board() {
@@ -83,7 +81,7 @@ public class Board implements IBoard, Serializable {
 
     @Override
     public List<Cell> getEdgeCells() {
-        return boardEdgeCells;
+        return edgeCells;
     }
 
     @Override

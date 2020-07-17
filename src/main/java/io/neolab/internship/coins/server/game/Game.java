@@ -19,7 +19,7 @@ public class Game implements IGame, Serializable {
 
     @JsonDeserialize(using = BoardDeserializer.class)
     private IBoard board;
-    
+
     private int currentRound;
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
@@ -39,6 +39,9 @@ public class Game implements IGame, Serializable {
 //        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
 //        transitCells.removeIf(feudalToCells.get(player)::contains);
 
+
+    @JsonSerialize(keyUsing = PlayerSerializer.class)
+    @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells;
 
     private final GameFeatures gameFeatures;
@@ -67,7 +70,7 @@ public class Game implements IGame, Serializable {
                 @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
                 @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
                 @JsonProperty("playerAchievableCells") final Map<Player, Pair<Boolean, List<Cell>>>
-                            playerAchievableCells,
+                        playerAchievableCells,
                 @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
                 @JsonProperty("racesPool") final List<Race> racesPool,
                 @JsonProperty("players") final List<Player> players) {
