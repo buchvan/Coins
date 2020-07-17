@@ -105,6 +105,21 @@ public class Server implements IServer {
         }
     }
 
+    public enum Command {
+        EXIT("exit"),
+        ;
+
+        private final String commandName;
+
+        Command(final String commandName) {
+            this.commandName = commandName;
+        }
+
+        public boolean equalCommand(final String message) {
+            return commandName.equals(message);
+        }
+    }
+
     @Override
     public void startServer() {
         try {

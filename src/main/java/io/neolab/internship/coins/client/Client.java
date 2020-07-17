@@ -2,7 +2,6 @@ package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameQuestion;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
@@ -11,8 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.util.List;
+import java.net.UnknownHostException;
 
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
@@ -22,11 +22,14 @@ public class Client implements IClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final String ip; // ip адрес клиента
+    private final InetAddress ipAddress;
     private final int port; // порт соединения
 
     private Socket socket = null;
+    private BufferedReader inputUser = null; // поток чтения с консоли
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
+
 
     private final IBot simpleBot;
 
@@ -36,37 +39,42 @@ public class Client implements IClient {
      * @param ip   ip адрес клиента
      * @param port порт соединения
      */
-    private Client(final String ip, final int port) {
-        this.ip = ip;
-        this.port = port;
-        this.simpleBot = new SimpleBot();
+    private Client(final String ip, final int port) throws CoinsException {
+        try {
+            this.ip = ip;
+            this.ipAddress = InetAddress.getByName(ip);
+            this.port = port;
+            this.simpleBot = new SimpleBot();
+        } catch (final UnknownHostException exception) {
+            throw new CoinsException(ErrorCode.CLIENT_CREATION_FAILED);
+        }
     }
 
     @Override
     public Answer getAnswer(final Question question) throws CoinsException, IOException {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
-                final GameQuestion gameQuestion = ((GameQuestion) question);
-                return new CatchCellAnswer(simpleBot.catchCell(gameQuestion.getPlayer(),
-                        gameQuestion.getGame()));
+                return new CatchCellAnswer(simpleBot.catchCell(question.getPlayer(), question.getGame()));
             }
             case DISTRIBUTION_UNITS -> {
-                final GameQuestion gameQuestion = ((GameQuestion) question);
                 return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(gameQuestion.getPlayer(),
-                                gameQuestion.getGame()));
+                        simpleBot.distributionUnits(question.getPlayer(), question.getGame()));
             }
             case DECLINE_RACE -> {
-                final GameQuestion gameQuestion = ((GameQuestion) question);
-                return new DeclineRaceAnswer(simpleBot.declineRaceChoose(gameQuestion.getPlayer(),
-                        gameQuestion.getGame()));
+                return new DeclineRaceAnswer(simpleBot.declineRaceChoose(question.getPlayer(), question.getGame()));
             }
             case CHANGE_RACE -> {
-                final GameQuestion gameQuestion = ((GameQuestion) question);
-                return new ChangeRaceAnswer(simpleBot.chooseRace(gameQuestion.getPlayer(),
-                        gameQuestion.getGame()));
+                return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
             }
-            case RESULTS -> throw new IOException();
+            case GAME_OVER -> { // TODO: вывод результатов
+                String input;
+                do {
+                    input = inputUser.readLine();
+                }
+                while (!Server.Command.EXIT.equalCommand(input));
+                downService();
+                System.exit(0);
+            }
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -79,6 +87,7 @@ public class Client implements IClient {
             return;
         }
         try {
+            inputUser = new BufferedReader(new InputStreamReader(System.in));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (final IOException e) {
@@ -130,7 +139,11 @@ public class Client implements IClient {
     }
 
     public static void main(final String[] args) {
-        final Client client = new Client(IP, PORT);
-        client.startClient();
+        try {
+            final Client client = new Client(IP, PORT);
+            client.startClient();
+        } catch (final CoinsException exception) {
+            LOGGER.error("Error!", exception);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.exceptions;
 
 public enum ErrorCode {
+    CLIENT_CREATION_FAILED("Client creation failed"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
     EMPTY_ANSWER("Answer is empty"),
     UNAVAILABLE_NEW_RACE("New race in available in races pool"),
