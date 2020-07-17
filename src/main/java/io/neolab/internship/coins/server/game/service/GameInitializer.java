@@ -70,7 +70,7 @@ public class GameInitializer {
 
         /* --- */
 
-        final IBoard board = new Board(positionToCellMap);
+        final IBoard board = new Board(boardSizeX, boardSizeY, positionToCellMap);
 
         LOGGER.debug("Board is created: {} ", board);
         return board;
