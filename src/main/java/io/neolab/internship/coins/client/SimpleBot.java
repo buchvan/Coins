@@ -28,40 +28,42 @@ public class SimpleBot implements IBot {
     }
 
     @Override
-    public Pair<Position, List<Unit>> catchCell(final Player player, final IGame game) {
+    public Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game) {
         if (random.nextInt(2) == 1) {
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
             final Set<Cell> achievableCells = GameLoopProcessor.getAchievableCells(board, controlledCells);
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
-            final List<Cell> neighboringCells = new LinkedList<>();
-            neighboringCells.add(catchingCell);
-            neighboringCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
-            neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+            /* Оставляем только те клетки, через которые можно добраться до catchingCell */
+            final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
+            catchingCellNeighboringCells.add(catchingCell);
+            catchingCellNeighboringCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+            catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeGetCells(board);
+            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeCells(board);
             final Iterator<Unit> iterator = units.iterator();
             while (iterator.hasNext()) {
-                boolean unitIsPossibleAggressor = false;
+                boolean unitAvailableForCapture = false;
                 final Unit unit = iterator.next();
-                for (final Cell neighboringCell : neighboringCells) {
+                for (final Cell neighboringCell : catchingCellNeighboringCells) {
                     if (neighboringCell.getUnits().contains(unit)) {
-                        unitIsPossibleAggressor = true;
+                        unitAvailableForCapture = true;
                         break;
                     }
                 }
-                if (boardEdgeCells.contains(catchingCell) && !unitIsPossibleAggressor) {
-                    unitIsPossibleAggressor = true;
+                if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                    unitAvailableForCapture = true;
                     for (final Cell controlledCell : controlledCells) {
-                        if (!neighboringCells.contains(controlledCell) && controlledCell.getUnits().contains(unit)) {
-                            unitIsPossibleAggressor = false;
+                        if (!catchingCellNeighboringCells.contains(controlledCell)
+                                && controlledCell.getUnits().contains(unit)) {
+                            unitAvailableForCapture = false;
                             break;
                         }
                     }
                 }
-                if (!unitIsPossibleAggressor) {
+                if (!unitAvailableForCapture) {
                     iterator.remove();
                 }
             }

@@ -33,7 +33,7 @@ public interface IBot {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @return пару: выбранная для захвата клетка, список юнитов для её захвата
      */
-    Pair<Position, List<Unit>> catchCell(final Player player, final IGame game);
+    Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game);
 
     /**
      * Выбрать клетки для защиты

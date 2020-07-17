@@ -40,7 +40,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
             if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
                 final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
                 final List<Race> currentRacesPool = currentGame.getRacesPool();
-                IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+                IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool);
                 changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
                 return;
             }
@@ -55,7 +55,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                         achievableCells, availableUnits, currentGame.getGameFeatures(), player);
                 final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
                 final List<Unit> units = catchCellAnswer.getResolution().getSecond();
-                cellCapture(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
+                cellPretend(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
                         currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
                 return;
             }
@@ -116,7 +116,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
-    private static void cellCapture(final Player player,
+    private static void cellPretend(final Player player,
                                     final Cell captureCell,
                                     final List<Unit> units,
                                     final IBoard board,
@@ -129,7 +129,7 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
         final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
-            login(player, captureCell, neighboringCells, units, board);
+            enterToCell(player, captureCell, neighboringCells, units, board);
         }
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);

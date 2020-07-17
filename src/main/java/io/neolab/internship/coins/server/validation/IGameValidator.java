@@ -40,21 +40,16 @@ public interface IGameValidator {
      * Проверка ответа, отвечающего за выбор расы в начале игры
      *
      * @param answer            ответ, который нужно проверить
-     * @param currentPlayerRace текущая раса игрока
      * @param racesPool         пул доступных рас
      * @throws CoinsException при совпадении новых и текущей расы - SAME_RACES, расы нет в пуле - UNAVAILABLE_NEW_RACE,
      *                        пустой ответ - EMPTY_ANSWER
      */
     static void validateChooseRaceAnswer(final ChangeRaceAnswer answer,
-                                         final List<Race> racesPool,
-                                         final Race currentPlayerRace) throws CoinsException {
+                                         final List<Race> racesPool) throws CoinsException {
         checkIfAnswerEmpty(answer);
         final Race newRace = answer.getNewRace();
         if (!racesPool.contains(newRace)) {
             throw new CoinsException(ErrorCode.UNAVAILABLE_NEW_RACE);
-        }
-        if (currentPlayerRace == newRace) {
-            throw new CoinsException(ErrorCode.SAME_RACES);
         }
     }
 
@@ -84,7 +79,7 @@ public interface IGameValidator {
         checkIfAnswerEmpty(answer);
         final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
         //есть ли клетка, соответствующая позиции
-        if (checkIfCellExists(answer.getResolution().getFirst(), currentBoard)) {
+        if (checkIfCellDoesntExists(answer.getResolution().getFirst(), currentBoard)) {
             throw new CoinsException(ErrorCode.WRONG_POSITION);
         }
         //есть что захватывать
@@ -125,7 +120,7 @@ public interface IGameValidator {
             final Position position = entry.getKey();
             final List<Unit> units = entry.getValue();
             answerUnitsAmount += units.size();
-            if (checkIfCellExists(position, currentBoard)) {
+            if (checkIfCellDoesntExists(position, currentBoard)) {
                 throw new CoinsException(ErrorCode.WRONG_POSITION);
             }
         }
@@ -139,8 +134,8 @@ public interface IGameValidator {
         return attackPower >= necessaryAttackPower;
     }
 
-    static boolean checkIfCellExists(final Position position, final IBoard currentBoard) {
+    static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
         //есть ли клетка, соответствующая позиции
-        return currentBoard.getCellByPosition(position) != null;
+        return currentBoard.getCellByPosition(position) == null;
     }
 }

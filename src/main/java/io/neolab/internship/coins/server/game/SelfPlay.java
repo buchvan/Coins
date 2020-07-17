@@ -210,14 +210,14 @@ public class SelfPlay {
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
             /* Пока есть что захватывать и какими войсками захватывать */
-            final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.catchCell(player, game);
+            final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.chooseCatchingCell(player, game);
             if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
                 break;
             }
             final Cell catchingCell = board
                     .getCellByPosition(catchingCellToUnitsList.getFirst()); // клетка, которую игрок хочет захватить
             final List<Unit> units = catchingCellToUnitsList.getSecond(); // юниты для захвата этой клетки
-            if (catchCellAttempt(player, catchingCell, units, board, game.getGameFeatures(), game.getOwnToCells(),
+            if (isCatchCellAttemptSucceed(player, catchingCell, units, board, game.getGameFeatures(), game.getOwnToCells(),
                     game.getFeudalToCells(), transitCells)) { // если попытка захвата увеначалась успехом
                 if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
                     achievableCells.clear();
@@ -232,7 +232,7 @@ public class SelfPlay {
      * Метод для получения достижимых в один ход игроком клеток
      *
      * @param controlledCells - принадлежащие игроку клетки
-     * @return множество достижимых в один ход игроком клеток, не подконтрольных ему
+     * @return множество достижимых в один ход игроком клеток
      */
     private static Set<Cell> getAchievableCells(final IBoard board,
                                                 final List<Cell> controlledCells) {
@@ -316,19 +316,19 @@ public class SelfPlay {
      * @param transitCells  - транзитные клетки игрока
      * @return true - если попытка увенчалась успехом, false - иначе
      */
-    private static boolean catchCellAttempt(final Player player,
-                                            final Cell catchingCell,
-                                            final List<Unit> units,
-                                            final IBoard board,
-                                            final GameFeatures gameFeatures,
-                                            final Map<Player, List<Cell>> ownToCells,
-                                            final Map<Player, Set<Cell>> feudalToCells,
-                                            final List<Cell> transitCells) {
+    private static boolean isCatchCellAttemptSucceed(final Player player,
+                                                     final Cell catchingCell,
+                                                     final List<Unit> units,
+                                                     final IBoard board,
+                                                     final GameFeatures gameFeatures,
+                                                     final Map<Player, List<Cell>> ownToCells,
+                                                     final Map<Player, Set<Cell>> feudalToCells,
+                                                     final List<Cell> transitCells) {
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final boolean isControlled = ownToCells.get(player).contains(catchingCell);
         if (isControlled) {
-            return loginAttempt(player, catchingCell, units, board);
+            return tryEnterToCell(player, catchingCell, units, board);
         }
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
@@ -353,10 +353,10 @@ public class SelfPlay {
      * @param board      - борда
      * @return true - если попытка удачная, false - иначе
      */
-    private static boolean loginAttempt(final Player player, final Cell targetCell, final List<Unit> units,
-                                        final IBoard board) {
+    private static boolean tryEnterToCell(final Player player, final Cell targetCell, final List<Unit> units,
+                                          final IBoard board) {
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
-        if (canLogin(units.size(), tiredUnitsCount)) {
+        if (IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
             final List<Cell> neighboringCells = getAllNeighboringCells(board, targetCell);
             neighboringCells.add(targetCell);
             final List<Unit> tiredUnits = units.subList(0, tiredUnitsCount);
@@ -376,7 +376,7 @@ public class SelfPlay {
      * @param tiredUnitsCount - число уставших юнитов
      * @return true - если, игрок может войти в клетку, false - иначе
      */
-    private static boolean canLogin(final int unitsSize, final int tiredUnitsCount) {
+    private static boolean IsPossibleEnterToCell(final int unitsSize, final int tiredUnitsCount) {
         return unitsSize >= tiredUnitsCount;
     }
 
@@ -469,8 +469,8 @@ public class SelfPlay {
 
         withdrawUnits(neighboringCells, tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
-        final boolean haveARival = isAlivePlayer(defendingPlayer);
-        depriveCellFeudalAndOwner(catchingCell, haveARival, ownToCells.get(defendingPlayer),
+        final boolean isHasOpponent = isAlivePlayer(defendingPlayer);
+        depriveCellFeudalAndOwner(catchingCell, isHasOpponent, ownToCells.get(defendingPlayer),
                 feudalToCells.get(defendingPlayer));
         catchingCell.getUnits().addAll(units); // Вводим в захватываемую клетку оставшиеся доступные юниты
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
@@ -480,7 +480,7 @@ public class SelfPlay {
 
             catchingCellIsFeudalizable =
                     catchingCellIsFeudalizable &&
-                            catchCellCheckFeature(haveARival, defendingPlayer, feature);
+                            catchCellCheckFeature(isHasOpponent, defendingPlayer, feature);
         }
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
@@ -495,8 +495,8 @@ public class SelfPlay {
      */
     @SafeVarargs
     private static void withdrawUnits(final List<Cell> cells, final List<Unit>... units) {
-        cells.forEach(neighboringCell ->
-                neighboringCell.getUnits().removeIf(unit ->
+        cells.forEach(cell ->
+                cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
     }
 
@@ -514,20 +514,20 @@ public class SelfPlay {
      * Проверка особенности на CATCH_CELL_IMPOSSIBLE при захвате клетки и
      * попутная обработка всех остальных типов особенностей
      *
-     * @param haveARival      - true - если владелец захватываемой клетки "живой", т. е. не ссылка null
-     * @param defendingPlayer - владелец захватываемой клетки
-     * @param feature         - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
+     * @param isHasOpponent - true - если владелец захватываемой клетки "живой", т. е. не ссылка null
+     * @param cellOwner     - владелец захватываемой клетки
+     * @param feature       - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
-    private static boolean catchCellCheckFeature(final boolean haveARival,
-                                                 final Player defendingPlayer,
+    private static boolean catchCellCheckFeature(final boolean isHasOpponent,
+                                                 final Player cellOwner,
                                                  final Feature feature) {
-        if (haveARival && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
+        if (isHasOpponent && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
             int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
             deadUnitsCount = Math.min(
                     deadUnitsCount,
-                    defendingPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
-            killUnits(deadUnitsCount, defendingPlayer);
+                    cellOwner.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
+            killUnits(deadUnitsCount, cellOwner);
             return true;
         } //else если клетка не будет давать монет
         return feature.getType() != FeatureType.CATCH_CELL_IMPOSSIBLE;
@@ -548,16 +548,16 @@ public class SelfPlay {
      * Лишить клетку владельца и феодала
      *
      * @param cell            - клетка, которую нужно лишить владельца и феодала
-     * @param feudalIsAlive   - является ли владелец "живым" игроком? Т.е. не ссылкой null
+     * @param isFeudalAlive   - является ли владелец "живым" игроком? Т.е. не ссылкой null
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
     private static void depriveCellFeudalAndOwner(final Cell cell,
-                                                  final boolean feudalIsAlive,
+                                                  final boolean isFeudalAlive,
                                                   final List<Cell> controlledCells,
                                                   final Set<Cell> feudalCells) {
         cell.getUnits().clear(); // Юниты бывшего владельца с этой клетки убираются
-        if (feudalIsAlive) {
+        if (isFeudalAlive) {
             controlledCells.remove(cell);
             cell.setFeudal(null);
             feudalCells.remove(cell);
