@@ -31,7 +31,8 @@ public class SimpleBot implements IBot {
         return random.nextInt(2) == 1 ?
                 new Pair<>(game.getBoard().getPositionByCell(RandomGenerator
                         .chooseItemFromList(GameLoopProcessor
-                                .getAchievableCells(game.getBoard(), game.getOwnToCells().get(player))
+                                .getAchievableCells(game.getBoard(), game.getOwnToCells().get(player),
+                                        game.getPlayerAchievableCells().get(player))
                         )),
                         player.getUnitStateToUnits()
                                 .get(AvailabilityType.AVAILABLE)

@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.feature.Feature;
 import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.ListProcessor;
+import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
 
 import java.util.*;
@@ -39,13 +40,23 @@ public class GameLoopProcessor {
     /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
-     * @param controlledCells - принадлежащие игроку клетки
+     * @param board                      - борда
+     * @param controlledCells            - принадлежащие игроку клетки
+     * @param isActualAndAchievableCells - пара (isActual, список достижимых клеток)
      * @return список достижимых в один ход игроком клеток, не подконтрольных ему
      */
     public static List<Cell> getAchievableCells(final IBoard board,
-                                                final List<Cell> controlledCells) {
+                                                final List<Cell> controlledCells,
+                                                final Pair<Boolean, List<Cell>> isActualAndAchievableCells) {
+        final boolean isActual = isActualAndAchievableCells.getFirst();
+        if (isActual) {
+            return isActualAndAchievableCells.getSecond();
+        }
+        isActualAndAchievableCells.setFirst(true);
         if (controlledCells.isEmpty()) {
-            return boardEdgeGetCells(board);
+            final List<Cell> achievableCells = board.getEdgeCells();
+            isActualAndAchievableCells.setSecond(achievableCells);
+            return achievableCells;
         } // else
         final Set<Cell> achievableCells = new HashSet<>();
         for (final Cell cell : controlledCells) {
@@ -53,7 +64,9 @@ public class GameLoopProcessor {
                     getAllNeighboringCells(board, cell)); // добавляем всех соседей каждой клетки, занятой игроком
         }
         achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        return new LinkedList<>(achievableCells);
+        final List<Cell> achievableCellsList = new LinkedList<>(achievableCells);
+        isActualAndAchievableCells.setSecond(achievableCellsList);
+        return achievableCellsList;
     }
 
     /**
@@ -164,27 +177,28 @@ public class GameLoopProcessor {
     /**
      * Захватить клетку
      *
-     * @param player          - игрок-агрессор
-     * @param catchingCell    - захватываемая клетка
-     * @param tiredUnitsCount - количество "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param gameFeatures    - особенности игры
-     * @param ownToCells      - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells   - множества клеток для каждого феодала
-     * @param transitCells    - транзитные клетки игрока
-     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player                - игрок-агрессор
+     * @param catchingCell          - захватываемая клетка
+     * @param units                 - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param gameFeatures          - особенности игры
+     * @param ownToCells            - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells         - множества клеток для каждого феодала
+     * @param transitCells          - транзитные клетки игрока
+     *                              (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param playerAchievableCells - пары (isActual, список достижимых клеток) для всех игроков
      */
-    public static void catchCell(final Player player, final Cell catchingCell,
-                                 final int tiredUnitsCount,
+    public static void catchCell(final Player player,
+                                 final Cell catchingCell,
+                                 final List<Unit> units,
                                  final GameFeatures gameFeatures,
                                  final Map<Player, List<Cell>> ownToCells,
                                  final Map<Player, Set<Cell>> feudalToCells,
-                                 final List<Cell> transitCells) {
-        makeNAvailableUnitsToNotAvailable(player, tiredUnitsCount); // все юниты, задействованные в захвате клетки,
-        // становятся недоступными
+                                 final List<Cell> transitCells,
+                                 final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells) {
+        makeAvailableUnitsToNotAvailable(player, units);
         final Player defendingPlayer = catchingCell.getOwn();
         boolean catchingCellIsFeudalizable = true;
         final boolean haveARival = isAlivePlayer(defendingPlayer);
-
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 player.getRace(), catchingCell.getType())) { // Смотрим все особенности агрессора
 
@@ -192,28 +206,26 @@ public class GameLoopProcessor {
                     catchingCellIsFeudalizable &&
                             catchCellCheckFeature(catchingCell, haveARival, feature);
         }
-        if (isAlivePlayer(defendingPlayer)) {
-            depriveCellFeudalAndOwner(catchingCell, haveARival, ownToCells.get(player), feudalToCells.get(player));
+        if (haveARival) {
+            /* Список достижимых клеток защищающегося  игрока считаем более не актуальным */
+            playerAchievableCells.get(defendingPlayer).setFirst(false);
         }
+        depriveCellFeudalAndOwner(catchingCell, haveARival, ownToCells.get(defendingPlayer),
+                feudalToCells.get(defendingPlayer));
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
         GameLogger.printCatchCellBonusAttackLog(player);
     }
 
     /**
-     * Сделать первые N доступных юнитов игрока недоступными
+     * Сделать подсписок доступных юнитов игрока недоступными
      *
-     * @param player - игрок, первые N доступных юнитов которого нужно сделать недоступными
-     * @param N      - то число доступных юнитов, которых необходимо сделать недоступными
+     * @param player - игрок, подсписок доступных юнитов которого нужно сделать недоступными
+     * @param units  - список доступных юнитов, которых необходимо сделать недоступными
      */
-    private static void makeNAvailableUnitsToNotAvailable(final Player player, final int N) {
-        final Iterator<Unit> iterator = player.getUnitsByState(AvailabilityType.AVAILABLE).iterator();
-        int i = 0;
-        while (iterator.hasNext() && i < N) {
-            player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).add(iterator.next());
-            iterator.remove();
-            i++;
-        }
+    private static void makeAvailableUnitsToNotAvailable(final Player player, final List<Unit> units) {
+        player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).addAll(units);
+        units.clear();
     }
 
     /**
@@ -263,10 +275,10 @@ public class GameLoopProcessor {
                                                   final List<Cell> controlledCells,
                                                   final Set<Cell> feudalCells) {
         cell.getUnits().clear(); // Юниты бывшего владельца с этой клетки убираются
-        feudalCells.remove(cell);
         cell.setFeudal(null);
         if (ownIsAlive) {
             controlledCells.remove(cell);
+            feudalCells.remove(cell);
         }
         cell.setOwn(null);
     }
@@ -345,16 +357,13 @@ public class GameLoopProcessor {
     /**
      * Защитить клетку: владелец помещает в ней своих юнитов
      *
-     * @param player         - владелец (в этой ситуации он же - феодал)
-     * @param availableUnits - список доступных юнитов
-     * @param protectedCell  - защищаемая клетка
-     * @param unitsCount     - число юнитов, которое игрок хочет направить в клетку
+     * @param player        - владелец (в этой ситуации он же - феодал)
+     * @param protectedCell - защищаемая клетка
+     * @param units         - список юнитов, которых игрок хочет направить в клетку
      */
-    public static void protectCell(final Player player, final List<Unit> availableUnits,
-                                   final Cell protectedCell, final int unitsCount) {
-        protectedCell.getUnits()
-                .addAll(availableUnits.subList(0, unitsCount)); // отправить первые unitsCount доступных юнитов
-        makeNAvailableUnitsToNotAvailable(player, unitsCount);
+    public static void protectCell(final Player player, final Cell protectedCell, final List<Unit> units) {
+        protectedCell.getUnits().addAll(units); // отправить первые unitsCount доступных юнитов
+        makeAvailableUnitsToNotAvailable(player, units);
         GameLogger.printCellAfterDefendingLog(player, protectedCell);
     }
 }
