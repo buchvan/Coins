@@ -42,7 +42,8 @@ public class Game implements IGame, Serializable {
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells;
+    private final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells; // игрок ->
+    // (актуальность списка достижимых клеток, список достижимых клеток)
 
     private final GameFeatures gameFeatures;
     private final List<Race> racesPool;
