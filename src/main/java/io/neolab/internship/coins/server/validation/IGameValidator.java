@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.service;
+package io.neolab.internship.coins.server.validation;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
@@ -22,7 +22,7 @@ import java.util.Map;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
-interface IGameValidator {
+public interface IGameValidator {
     /**
      * Проверка на пустой ответ
      *

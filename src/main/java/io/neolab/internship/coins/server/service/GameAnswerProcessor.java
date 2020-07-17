@@ -12,6 +12,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
+import io.neolab.internship.coins.server.validation.IGameValidator;
 import io.neolab.internship.coins.utils.AvailabilityType;
 
 import java.util.*;
