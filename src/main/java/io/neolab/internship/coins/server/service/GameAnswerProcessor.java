@@ -32,15 +32,13 @@ public class GameAnswerProcessor {
                     final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
                     IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
                     if (declineRaceAnswer.isDeclineRace()) {
-                        declineRace(player,
-                                currentGame.getOwnToCells().get(player),
-                                currentGame.getFeudalToCells().get(player));
+                        declineRace(player, currentGame.getOwnToCells().get(player));
                     }
                 }
                 case CHANGE_RACE -> {
                     final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
                     final List<Race> currentRacesPool = currentGame.getRacesPool();
-                    IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+                    IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
                     changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
                 }
                 case CATCH_CELL -> {

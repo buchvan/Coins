@@ -57,7 +57,7 @@ public class Client implements IClient {
             case CATCH_CELL -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new CatchCellAnswer(
-                        simpleBot.catchCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
