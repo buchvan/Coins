@@ -33,11 +33,14 @@ public class GameInitializer {
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
+                initMapPlayerAchievableCells(playerList, "playerAchievableCells");
 
-        final GameFeatures gameFeatures  = initGameFeatures();
+        final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+                gameFeatures, racesPool, playerList);
     }
 
     /**
@@ -112,6 +115,20 @@ public class GameInitializer {
         playerList.forEach(player -> mapWithPlayerKey.put(player, new ArrayList<>()));
         LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
         return mapWithPlayerKey;
+    }
+
+    /**
+     * Инициализация мапы (игрок -> пара(логическое значение, список клеток)) по всем игрокам списка
+     *
+     * @param playerList - список игроков
+     * @return инициализированную мапу
+     */
+    private static Map<Player, Pair<Boolean, List<Cell>>> initMapPlayerAchievableCells(final List<Player> playerList,
+                                                                                       final String log) {
+        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells = new HashMap<>(playerList.size());
+        playerList.forEach(player -> playerAchievableCells.put(player, new Pair<>(false, new ArrayList<>())));
+        LOGGER.debug("{} init: {} ", log, playerAchievableCells);
+        return playerAchievableCells;
     }
 
 

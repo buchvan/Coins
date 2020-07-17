@@ -10,6 +10,7 @@ import io.neolab.internship.coins.common.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.utils.Pair;
 
 import java.io.Serializable;
 import java.util.*;
@@ -38,21 +39,25 @@ public class Game implements IGame, Serializable {
 //        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
 //        transitCells.removeIf(feudalToCells.get(player)::contains);
 
+    private final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells;
+
     private final GameFeatures gameFeatures;
     private final List<Race> racesPool;
 
     private final List<Player> players;
 
     public Game() {
-        this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
+        this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
                 new LinkedList<>(), new LinkedList<>());
     }
 
     public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
+                final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
 
-        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, players);
+        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+                gameFeatures, racesPool, players);
     }
 
     @JsonCreator
@@ -61,6 +66,8 @@ public class Game implements IGame, Serializable {
                 @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
                 @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
                 @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
+                @JsonProperty("playerAchievableCells") final Map<Player, Pair<Boolean, List<Cell>>>
+                            playerAchievableCells,
                 @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
                 @JsonProperty("racesPool") final List<Race> racesPool,
                 @JsonProperty("players") final List<Player> players) {
@@ -69,6 +76,7 @@ public class Game implements IGame, Serializable {
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
         this.playerToTransitCells = playerToTransitCells;
+        this.playerAchievableCells = playerAchievableCells;
         this.gameFeatures = gameFeatures;
         this.racesPool = racesPool;
         this.players = players;
@@ -110,6 +118,11 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
+    public Map<Player, Pair<Boolean, List<Cell>>> getPlayerAchievableCells() {
+        return playerAchievableCells;
+    }
+
+    @Override
     public GameFeatures getGameFeatures() {
         return gameFeatures;
     }
@@ -134,6 +147,7 @@ public class Game implements IGame, Serializable {
                 Objects.equals(feudalToCells, game.feudalToCells) &&
                 Objects.equals(ownToCells, game.ownToCells) &&
                 Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
+                Objects.equals(playerAchievableCells, game.playerAchievableCells) &&
                 Objects.equals(gameFeatures, game.gameFeatures) &&
                 Objects.equals(racesPool, game.racesPool) &&
                 Objects.equals(players, game.players);
@@ -142,7 +156,7 @@ public class Game implements IGame, Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                gameFeatures, racesPool, players);
+                playerAchievableCells, gameFeatures, racesPool, players);
     }
 
     @Override
@@ -153,7 +167,8 @@ public class Game implements IGame, Serializable {
                 ", feudalToCells=" + feudalToCells +
                 ", ownToCells=" + ownToCells +
                 ", playerToTransitCells=" + playerToTransitCells +
-                ", raceCellTypeFeatures=" + gameFeatures +
+                ", playerAchievableCells=" + playerAchievableCells +
+                ", gameFeatures=" + gameFeatures +
                 ", racesPool=" + racesPool +
                 ", players=" + players +
                 '}';
