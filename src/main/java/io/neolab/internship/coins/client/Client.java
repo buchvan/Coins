@@ -2,6 +2,7 @@ package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
+import io.neolab.internship.coins.common.question.GameQuestion;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
@@ -54,17 +55,24 @@ public class Client implements IClient {
     public Answer getAnswer(final Question question) throws CoinsException, IOException {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
-                return new CatchCellAnswer(simpleBot.catchCell(question.getPlayer(), question.getGame()));
+                final GameQuestion gameQuestion = (GameQuestion) question;
+                return new CatchCellAnswer(
+                        simpleBot.catchCell(gameQuestion.getPlayer(), gameQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS -> {
+                final GameQuestion gameQuestion = (GameQuestion) question;
                 return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(question.getPlayer(), question.getGame()));
+                        simpleBot.distributionUnits(gameQuestion.getPlayer(), gameQuestion.getGame()));
             }
             case DECLINE_RACE -> {
-                return new DeclineRaceAnswer(simpleBot.declineRaceChoose(question.getPlayer(), question.getGame()));
+                final GameQuestion gameQuestion = (GameQuestion) question;
+                return new DeclineRaceAnswer(
+                        simpleBot.declineRaceChoose(gameQuestion.getPlayer(), gameQuestion.getGame()));
             }
             case CHANGE_RACE -> {
-                return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
+                final GameQuestion gameQuestion = (GameQuestion) question;
+                return new ChangeRaceAnswer(
+                        simpleBot.chooseRace(gameQuestion.getPlayer(), gameQuestion.getGame()));
             }
             case GAME_OVER -> { // TODO: вывод результатов
                 String input;
