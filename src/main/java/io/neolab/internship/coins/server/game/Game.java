@@ -43,7 +43,7 @@ public class Game implements IGame, Serializable {
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, List<Cell>> playerAchievableCells; // игрок ->bсписок достижимых клеток
+    private final Map<Player, Set<Cell>> playerToAchievableCells; // игрок -> множество достижимых клеток за один ход
 
     private final GameFeatures gameFeatures;
     private final List<Race> racesPool;
@@ -57,10 +57,10 @@ public class Game implements IGame, Serializable {
 
     public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final Map<Player, List<Cell>> playerAchievableCells,
+                final Map<Player, Set<Cell>> playerToAchievableCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
 
-        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+        this(board, 0, feudalToCells, ownToCells, playerToTransitCells, playerToAchievableCells,
                 gameFeatures, racesPool, players);
     }
 
@@ -70,7 +70,7 @@ public class Game implements IGame, Serializable {
                 @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
                 @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
                 @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
-                @JsonProperty("playerAchievableCells") final Map<Player, List<Cell>> playerAchievableCells,
+                @JsonProperty("playerToAchievableCells") final Map<Player, Set<Cell>> playerToAchievableCells,
                 @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
                 @JsonProperty("racesPool") final List<Race> racesPool,
                 @JsonProperty("players") final List<Player> players) {
@@ -79,7 +79,7 @@ public class Game implements IGame, Serializable {
         this.feudalToCells = feudalToCells;
         this.ownToCells = ownToCells;
         this.playerToTransitCells = playerToTransitCells;
-        this.playerAchievableCells = playerAchievableCells;
+        this.playerToAchievableCells = playerToAchievableCells;
         this.gameFeatures = gameFeatures;
         this.racesPool = racesPool;
         this.players = players;
@@ -121,8 +121,8 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
-    public Map<Player, List<Cell>> getPlayerAchievableCells() {
-        return playerAchievableCells;
+    public Map<Player, Set<Cell>> getPlayerToAchievableCells() {
+        return playerToAchievableCells;
     }
 
     @Override
@@ -150,7 +150,7 @@ public class Game implements IGame, Serializable {
                 Objects.equals(feudalToCells, game.feudalToCells) &&
                 Objects.equals(ownToCells, game.ownToCells) &&
                 Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
-                Objects.equals(playerAchievableCells, game.playerAchievableCells) &&
+                Objects.equals(playerToAchievableCells, game.playerToAchievableCells) &&
                 Objects.equals(gameFeatures, game.gameFeatures) &&
                 Objects.equals(racesPool, game.racesPool) &&
                 Objects.equals(players, game.players);
@@ -159,7 +159,7 @@ public class Game implements IGame, Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(board, currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                playerAchievableCells, gameFeatures, racesPool, players);
+                playerToAchievableCells, gameFeatures, racesPool, players);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class Game implements IGame, Serializable {
                 ", feudalToCells=" + feudalToCells +
                 ", ownToCells=" + ownToCells +
                 ", playerToTransitCells=" + playerToTransitCells +
-                ", playerAchievableCells=" + playerAchievableCells +
+                ", playerAchievableCells=" + playerToAchievableCells +
                 ", gameFeatures=" + gameFeatures +
                 ", racesPool=" + racesPool +
                 ", players=" + players +

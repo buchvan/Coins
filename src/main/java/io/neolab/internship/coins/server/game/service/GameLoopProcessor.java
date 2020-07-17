@@ -42,25 +42,23 @@ public class GameLoopProcessor {
     /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
-     * @param board                      - борда
-     * @param achievableCells - список достижимых клеток
-     * @param controlledCells            - принадлежащие игроку клетки
+     * @param board           - борда
+     * @param achievableCells - множество достижимых клеток
+     * @param controlledCells - принадлежащие игроку клетки
      */
-    public static void updateAchievableCells(final IBoard board, final List<Cell> achievableCells,
-                                                final List<Cell> controlledCells) {
+    public static void updateAchievableCells(final IBoard board, final Set<Cell> achievableCells,
+                                             final List<Cell> controlledCells) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
             return;
         }
-        final Set<Cell> achievableCellsSet = new HashSet<>();
         controlledCells.forEach(controlledCell -> {
-            achievableCellsSet.add(controlledCell);
-            achievableCellsSet.addAll(
+            achievableCells.add(controlledCell);
+            achievableCells.addAll(
                     getAllNeighboringCells(board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
         });
-        achievableCellsSet.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        achievableCells.addAll(achievableCellsSet);
+        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
     /**
@@ -191,16 +189,16 @@ public class GameLoopProcessor {
     /**
      * Захватить клетку
      *
-     * @param player                - игрок-агрессор
-     * @param catchingCell          - захватываемая клетка
-     * @param neighboringCells      - соседние с захватываемой клеткой клетки
-     * @param tiredUnits            - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param units                 - юниты, вошедшие в клетку
-     * @param gameFeatures          - особенности игры
-     * @param ownToCells            - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells         - множества клеток для каждого феодала
-     * @param transitCells          - транзитные клетки игрока
-     *                              (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player           - игрок-агрессор
+     * @param catchingCell     - захватываемая клетка
+     * @param neighboringCells - соседние с захватываемой клеткой клетки
+     * @param tiredUnits       - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param units            - юниты, вошедшие в клетку
+     * @param gameFeatures     - особенности игры
+     * @param ownToCells       - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells    - множества клеток для каждого феодала
+     * @param transitCells     - транзитные клетки игрока
+     *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     public static void catchCell(final Player player,
                                  final Cell catchingCell,

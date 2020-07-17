@@ -27,13 +27,13 @@ public class GameInitializer {
         //final Board board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
-        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
         final Map<Player, List<Cell>> ownToCells =
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
-        final Map<Player, List<Cell>> playerAchievableCells =
-                initMapWithPlayerKeyListValue(playerList, "playerAchievableCells");
+        final Map<Player, Set<Cell>> playerAchievableCells =
+                initMapWithPlayerKeySetValue(playerList, "playerAchievableCells");
 
         final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
@@ -52,13 +52,13 @@ public class GameInitializer {
 
         final List<Player> playerList = initTestPlayers(playersCount);
 
-        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
         final Map<Player, List<Cell>> ownToCells =
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
-        final Map<Player, List<Cell>> playerAchievableCells =
-                initMapWithPlayerKeyListValue(playerList, "playerAchievableCells");
+        final Map<Player, Set<Cell>> playerAchievableCells =
+                initMapWithPlayerKeySetValue(playerList, "playerAchievableCells");
 
         final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
@@ -152,11 +152,12 @@ public class GameInitializer {
      * @param playerList - список игроков
      * @return инициализированную мапу
      */
-    private static Map<Player, Set<Cell>> initFeudalToCells(final List<Player> playerList) {
-        final Map<Player, Set<Cell>> feudalToCells = new HashMap<>(playerList.size());
-        playerList.forEach(player -> feudalToCells.put(player, new HashSet<>()));
-        LOGGER.debug("{} init: {} ", "feudalToCells", feudalToCells);
-        return feudalToCells;
+    private static Map<Player, Set<Cell>> initMapWithPlayerKeySetValue(final List<Player> playerList,
+                                                                       final String log) {
+        final Map<Player, Set<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
+        playerList.forEach(player -> mapWithPlayerKey.put(player, new HashSet<>()));
+        LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
+        return mapWithPlayerKey;
     }
 
     /**
@@ -171,20 +172,6 @@ public class GameInitializer {
         playerList.forEach(player -> mapWithPlayerKey.put(player, new ArrayList<>()));
         LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
         return mapWithPlayerKey;
-    }
-
-    /**
-     * Инициализация мапы (игрок -> пара(логическое значение, список клеток)) по всем игрокам списка
-     *
-     * @param playerList - список игроков
-     * @return инициализированную мапу
-     */
-    private static Map<Player, Pair<Boolean, List<Cell>>> initMapPlayerAchievableCells(final List<Player> playerList,
-                                                                                       final String log) {
-        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells = new HashMap<>(playerList.size());
-        playerList.forEach(player -> playerAchievableCells.put(player, new Pair<>(false, new ArrayList<>())));
-        LOGGER.debug("{} init: {} ", log, playerAchievableCells);
-        return playerAchievableCells;
     }
 
 

@@ -72,7 +72,7 @@ public interface IGameValidator {
     static void validateCatchCellAnswer(final CatchCellAnswer answer,
                                         final List<Cell> controlledCells,
                                         final IBoard currentBoard,
-                                        final List<Cell> achievableCells,
+                                        final Set<Cell> achievableCells,
                                         final List<Unit> availableUnits,
                                         final GameFeatures gameFeatures,
                                         final Player player) throws CoinsException {

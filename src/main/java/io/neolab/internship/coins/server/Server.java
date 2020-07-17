@@ -23,6 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.updateAchievableCells;
@@ -264,7 +265,7 @@ public class Server implements IServer {
      */
     private void cellCapture(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
         final Player player = serverSomething.player;
-        final List<Cell> achievableCells = game.getPlayerAchievableCells().get(player);
+        final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         updateAchievableCells(game.getBoard(), achievableCells, game.getOwnToCells().get(player));
 
         PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);

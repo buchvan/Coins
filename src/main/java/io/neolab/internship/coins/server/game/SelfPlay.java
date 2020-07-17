@@ -207,7 +207,7 @@ public class SelfPlay {
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
-        final List<Cell> achievableCells = game.getPlayerAchievableCells().get(player);
+        final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         updateAchievableCells(board, achievableCells, controlledCells);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
@@ -220,8 +220,8 @@ public class SelfPlay {
                     .getCellByPosition(catchingCellToUnitsList.getFirst()); // клетка, которую игрок хочет захватить
             final List<Unit> units = catchingCellToUnitsList.getSecond(); // юниты для захвата этой клетки
             if (isCatchCellAttemptSucceed(player, catchingCell, units, board, game.getGameFeatures(),
-                    game.getOwnToCells(), game.getFeudalToCells(), transitCells,
-                    game.getPlayerAchievableCells())) { // если попытка захвата увеначалась успехом
+                    game.getOwnToCells(), game.getFeudalToCells(),
+                    transitCells)) { // если попытка захвата увеначалась успехом
                 if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
                     achievableCells.clear();
                     achievableCells.add(catchingCell);
@@ -236,25 +236,23 @@ public class SelfPlay {
      * Метод для получения достижимых в один ход игроком клеток
      *
      * @param board           - борда
-     * @param achievableCells - список достижимых клеток
+     * @param achievableCells - множество достижимых клеток
      * @param controlledCells - принадлежащие игроку клетки
      */
     private static void updateAchievableCells(final IBoard board,
-                                              final List<Cell> achievableCells,
+                                              final Set<Cell> achievableCells,
                                               final List<Cell> controlledCells) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
             return;
         }
-        final Set<Cell> achievableCellsSet = new HashSet<>();
         controlledCells.forEach(controlledCell -> {
-            achievableCellsSet.add(controlledCell);
-            achievableCellsSet.addAll(
+            achievableCells.add(controlledCell);
+            achievableCells.addAll(
                     getAllNeighboringCells(board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
         });
-        achievableCellsSet.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        achievableCells.addAll(achievableCellsSet);
+        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
     /**
@@ -322,7 +320,6 @@ public class SelfPlay {
      * @param ownToCells            - список подконтрольных клеток для каждого игрока
      * @param feudalToCells         - множества клеток для каждого феодала
      * @param transitCells          - транзитные клетки игрока
-     * @param playerAchievableCells - список достижимых игроком клеток по всем игрокам
      * @return true - если попытка увенчалась успехом, false - иначе
      */
     private static boolean isCatchCellAttemptSucceed(final Player player,
@@ -332,8 +329,7 @@ public class SelfPlay {
                                                      final GameFeatures gameFeatures,
                                                      final Map<Player, List<Cell>> ownToCells,
                                                      final Map<Player, Set<Cell>> feudalToCells,
-                                                     final List<Cell> transitCells,
-                                                     final Map<Player, List<Cell>> playerAchievableCells) {
+                                                     final List<Cell> transitCells) {
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final boolean isControlled = ownToCells.get(player).contains(catchingCell);

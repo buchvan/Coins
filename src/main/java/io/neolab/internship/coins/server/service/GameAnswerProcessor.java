@@ -48,9 +48,8 @@ public class GameAnswerProcessor {
             final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
             final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final Map<Player, List<Cell>> playerAchievableCells =
-                    currentGame.getPlayerAchievableCells();
-            final List<Cell> achievableCells = playerAchievableCells.get(player);
+            final Map<Player, Set<Cell>> playerToAchievableCells = currentGame.getPlayerToAchievableCells();
+            final Set<Cell> achievableCells = playerToAchievableCells.get(player);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
             IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
@@ -131,7 +130,7 @@ public class GameAnswerProcessor {
      * @param ownToCells      - список подконтрольных клеток для каждого игрока
      * @param feudalToCells   - множества клеток для каждого феодала
      * @param transitCells    - транзитные клетки игрока
-     * @param achievableCells - список достижимых клеток
+     * @param achievableCells - множество достижимых клеток
      */
     private static void pretendToCell(final Player player,
                                       final Cell captureCell, final List<Unit> units,
@@ -140,7 +139,7 @@ public class GameAnswerProcessor {
                                       final Map<Player, List<Cell>> ownToCells,
                                       final Map<Player, Set<Cell>> feudalToCells,
                                       final List<Cell> transitCells,
-                                      final List<Cell> achievableCells) {
+                                      final Set<Cell> achievableCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
         final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
