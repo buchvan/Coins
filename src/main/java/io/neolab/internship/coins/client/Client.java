@@ -2,7 +2,7 @@ package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameQuestion;
+import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
@@ -55,24 +55,24 @@ public class Client implements IClient {
     public Answer getAnswer(final Question question) throws CoinsException, IOException {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
-                final GameQuestion gameQuestion = (GameQuestion) question;
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new CatchCellAnswer(
-                        simpleBot.catchCell(gameQuestion.getPlayer(), gameQuestion.getGame()));
+                        simpleBot.catchCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS -> {
-                final GameQuestion gameQuestion = (GameQuestion) question;
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(gameQuestion.getPlayer(), gameQuestion.getGame()));
+                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DECLINE_RACE -> {
-                final GameQuestion gameQuestion = (GameQuestion) question;
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new DeclineRaceAnswer(
-                        simpleBot.declineRaceChoose(gameQuestion.getPlayer(), gameQuestion.getGame()));
+                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case CHANGE_RACE -> {
-                final GameQuestion gameQuestion = (GameQuestion) question;
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new ChangeRaceAnswer(
-                        simpleBot.chooseRace(gameQuestion.getPlayer(), gameQuestion.getGame()));
+                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case GAME_OVER -> { // TODO: вывод результатов
                 String input;

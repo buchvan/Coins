@@ -8,11 +8,11 @@ import io.neolab.internship.coins.server.game.Player;
 import java.util.Objects;
 
 @JsonDeserialize(using = GameQuestionDeserializer.class)
-public class GameQuestion extends Question {
+public class PlayerQuestion extends Question {
     private final IGame game;
     private final Player player;
 
-    public GameQuestion(final QuestionType questionType, final IGame game, final Player player) {
+    public PlayerQuestion(final QuestionType questionType, final IGame game, final Player player) {
         super(questionType);
         this.game = game;
         this.player = player;
@@ -29,10 +29,10 @@ public class GameQuestion extends Question {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof GameQuestion)) return false;
-        final GameQuestion gameQuestion = (GameQuestion) o;
-        return getQuestionType() == gameQuestion.getQuestionType() &&
-                Objects.equals(getGame(), gameQuestion.getGame());
+        if (!(o instanceof PlayerQuestion)) return false;
+        final PlayerQuestion playerQuestion = (PlayerQuestion) o;
+        return getQuestionType() == playerQuestion.getQuestionType() &&
+                Objects.equals(getGame(), playerQuestion.getGame());
     }
 
     @Override

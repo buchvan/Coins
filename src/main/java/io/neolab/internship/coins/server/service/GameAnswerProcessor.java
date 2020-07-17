@@ -5,15 +5,13 @@ import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.GameQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
-import io.neolab.internship.coins.server.validation.IGameValidator;
 import io.neolab.internship.coins.utils.AvailabilityType;
 
 import java.util.*;
@@ -24,10 +22,10 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
  * Класс отвечает за обработку ответов от игроков
  */
 public class GameAnswerProcessor {
-    public static void process(final GameQuestion gameQuestion, final Answer answer) throws CoinsException {
-        final IGame currentGame = gameQuestion.getGame();
-        final Player player = gameQuestion.getPlayer();
-        switch (gameQuestion.getQuestionType()) {
+    public static void process(final PlayerQuestion playerQuestion, final Answer answer) throws CoinsException {
+        final IGame currentGame = playerQuestion.getGame();
+        final Player player = playerQuestion.getPlayer();
+        switch (playerQuestion.getQuestionType()) {
             case DECLINE_RACE -> {
                 final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
                 IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
