@@ -43,8 +43,7 @@ public class Game implements IGame, Serializable {
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells; // игрок ->
-    // (актуальность списка достижимых клеток, список достижимых клеток)
+    private final Map<Player, List<Cell>> playerAchievableCells; // игрок ->bсписок достижимых клеток
 
     private final GameFeatures gameFeatures;
     private final List<Race> racesPool;
@@ -58,7 +57,7 @@ public class Game implements IGame, Serializable {
 
     public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
                 final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells,
+                final Map<Player, List<Cell>> playerAchievableCells,
                 final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
 
         this(board, 0, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
@@ -71,8 +70,7 @@ public class Game implements IGame, Serializable {
                 @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
                 @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
                 @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
-                @JsonProperty("playerAchievableCells") final Map<Player, Pair<Boolean, List<Cell>>>
-                        playerAchievableCells,
+                @JsonProperty("playerAchievableCells") final Map<Player, List<Cell>> playerAchievableCells,
                 @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
                 @JsonProperty("racesPool") final List<Race> racesPool,
                 @JsonProperty("players") final List<Player> players) {
@@ -123,7 +121,7 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
-    public Map<Player, Pair<Boolean, List<Cell>>> getPlayerAchievableCells() {
+    public Map<Player, List<Cell>> getPlayerAchievableCells() {
         return playerAchievableCells;
     }
 

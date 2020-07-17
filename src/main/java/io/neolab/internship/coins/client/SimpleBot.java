@@ -32,8 +32,8 @@ public class SimpleBot implements IBot {
         if (random.nextInt(2) == 1) {
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
-            final List<Cell> achievableCells = GameLoopProcessor.getAchievableCells(board, controlledCells,
-                    game.getPlayerAchievableCells().get(player));
+            final List<Cell> achievableCells = game.getPlayerAchievableCells().get(player);
+            GameLoopProcessor.updateAchievableCells(board, achievableCells, controlledCells);
             final Cell catchingCell = RandomGenerator.chooseItemFromList(achievableCells);
 
             /* Оставляем только те клетки, через которые можно добраться до catchingCell */

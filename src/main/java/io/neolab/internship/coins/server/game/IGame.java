@@ -24,7 +24,7 @@ public interface IGame {
 
     Map<Player, List<Cell>> getPlayerToTransitCells();
 
-    Map<Player, Pair<Boolean, List<Cell>>> getPlayerAchievableCells();
+    Map<Player, List<Cell>> getPlayerAchievableCells();
 
     GameFeatures getGameFeatures();
 

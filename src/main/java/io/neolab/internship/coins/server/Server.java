@@ -8,6 +8,7 @@ import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
+import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.service.GameFinalizer;
 import io.neolab.internship.coins.server.game.service.GameInitializer;
 import io.neolab.internship.coins.server.game.service.GameLogger;
@@ -23,6 +24,8 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.updateAchievableCells;
 
 public class Server implements IServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
@@ -260,12 +263,16 @@ public class Server implements IServer {
      * @throws CoinsException в случае игровой ошибки
      */
     private void cellCapture(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
-        PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, serverSomething.player);
+        final Player player = serverSomething.player;
+        final List<Cell> achievableCells = game.getPlayerAchievableCells().get(player);
+        updateAchievableCells(game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+
+        PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
         CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
         while (catchCellAnswer.getResolution() != null) {
             GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
-            catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, serverSomething.player);
+            catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
             serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
             catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
         }

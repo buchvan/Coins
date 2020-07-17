@@ -43,33 +43,24 @@ public class GameLoopProcessor {
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
      * @param board                      - борда
+     * @param achievableCells - список достижимых клеток
      * @param controlledCells            - принадлежащие игроку клетки
-     * @param isActualAndAchievableCells - пара (isActual, список достижимых клеток)
-     * @return список достижимых в один ход игроком клеток, не подконтрольных ему
      */
-    public static List<Cell> getAchievableCells(final IBoard board,
-                                                final List<Cell> controlledCells,
-                                                final Pair<Boolean, List<Cell>> isActualAndAchievableCells) {
-        final boolean isActual = isActualAndAchievableCells.getFirst();
-        if (isActual) {
-            return isActualAndAchievableCells.getSecond();
-        }
-        isActualAndAchievableCells.setFirst(true);
+    public static void updateAchievableCells(final IBoard board, final List<Cell> achievableCells,
+                                                final List<Cell> controlledCells) {
+        achievableCells.clear();
         if (controlledCells.isEmpty()) {
-            final List<Cell> achievableCells = board.getEdgeCells();
-            isActualAndAchievableCells.setSecond(achievableCells);
-            return achievableCells;
-        } // else
-        final Set<Cell> achievableCells = new HashSet<>();
-        for (final Cell cell : controlledCells) {
-            achievableCells.add(cell);
-            achievableCells.addAll(
-                    getAllNeighboringCells(board, cell)); // добавляем всех соседей каждой клетки, занятой игроком
+            achievableCells.addAll(board.getEdgeCells());
+            return;
         }
-        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
-        final List<Cell> achievableCellsList = new LinkedList<>(achievableCells);
-        isActualAndAchievableCells.setSecond(achievableCellsList);
-        return achievableCellsList;
+        final Set<Cell> achievableCellsSet = new HashSet<>();
+        controlledCells.forEach(controlledCell -> {
+            achievableCellsSet.add(controlledCell);
+            achievableCellsSet.addAll(
+                    getAllNeighboringCells(board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
+        });
+        achievableCellsSet.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
+        achievableCells.addAll(achievableCellsSet);
     }
 
     /**
@@ -210,7 +201,6 @@ public class GameLoopProcessor {
      * @param feudalToCells         - множества клеток для каждого феодала
      * @param transitCells          - транзитные клетки игрока
      *                              (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
-     * @param playerAchievableCells - пары (isActual, список достижимых клеток) для всех игроков
      */
     public static void catchCell(final Player player,
                                  final Cell catchingCell,
@@ -220,15 +210,10 @@ public class GameLoopProcessor {
                                  final GameFeatures gameFeatures,
                                  final Map<Player, List<Cell>> ownToCells,
                                  final Map<Player, Set<Cell>> feudalToCells,
-                                 final List<Cell> transitCells,
-                                 final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells) {
+                                 final List<Cell> transitCells) {
         withdrawUnits(neighboringCells, tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
         final boolean isHasOpponent = isAlivePlayer(defendingPlayer);
-        if (isHasOpponent) {
-            /* Список достижимых клеток защищающегося  игрока считаем более не актуальным */
-            playerAchievableCells.get(defendingPlayer).setFirst(false);
-        }
         depriveCellFeudalAndOwner(catchingCell, isHasOpponent, ownToCells.get(defendingPlayer),
                 feudalToCells.get(defendingPlayer));
         catchingCell.getUnits().addAll(units); // Вводим в захватываемую клетку оставшиеся доступные юниты

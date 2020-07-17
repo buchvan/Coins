@@ -32,8 +32,8 @@ public class GameInitializer {
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
-        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
-                initMapPlayerAchievableCells(playerList, "playerAchievableCells");
+        final Map<Player, List<Cell>> playerAchievableCells =
+                initMapWithPlayerKeyListValue(playerList, "playerAchievableCells");
 
         final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
@@ -57,8 +57,8 @@ public class GameInitializer {
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
-        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
-                initMapPlayerAchievableCells(playerList, "playerAchievableCells");
+        final Map<Player, List<Cell>> playerAchievableCells =
+                initMapWithPlayerKeyListValue(playerList, "playerAchievableCells");
 
         final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
