@@ -23,6 +23,7 @@ public class SelfPlay {
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
+    private static final int PLAYERS_COUNT = 2;
 
     private static final BidiMap<SimpleBot, Player> simpleBotToPlayer = new DualHashBidiMap<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
@@ -38,7 +39,7 @@ public class SelfPlay {
     private static void selfPlay() {
         try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
             LogCleaner.clean();
-            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y);
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             game.getPlayers().forEach(player -> simpleBotToPlayer.put(new SimpleBot(), player));
             gameLoop(game);

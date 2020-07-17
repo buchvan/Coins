@@ -19,14 +19,35 @@ public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
 
-    public static IGame gameInit(final int boardSizeX, final int boardSizeY) throws CoinsException {
+    public static IGame gameInit(final int boardSizeX, final int boardSizeY, final List<Player> playerList)
+            throws CoinsException {
         LOGGER.debug("Init...");
 
         //мок доски
         //final Board board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
-        final List<Player> playerList = initTestPlayers();
+        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, List<Cell>> ownToCells =
+                initMapWithPlayerKeyListValue(playerList, "ownToCells");
+        final Map<Player, List<Cell>> playerToTransitCells =
+                initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+
+        final GameFeatures gameFeatures  = initGameFeatures();
+        final List<Race> racesPool = createRacesPool();
+
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+    }
+
+    public static IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
+            throws CoinsException {
+        LOGGER.debug("Init...");
+
+        //мок доски
+        //final Board board = initBoard(boardSizeX, boardSizeY);
+        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
+
+        final List<Player> playerList = initTestPlayers(playersCount);
 
         final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
         final Map<Player, List<Cell>> ownToCells =
@@ -70,22 +91,54 @@ public class GameInitializer {
 
         /* --- */
 
-        final IBoard board = new Board(boardSizeX, boardSizeY, positionToCellMap);
-
-        LOGGER.debug("Board is created: {} ", board);
-        return board;
+        return new Board(boardSizeX, boardSizeY, positionToCellMap);
     }
+
+//    /**
+//     * Инициализация и создание борды
+//     *
+//     * @return инициализированную борду
+//     */
+//    private static Board initBoard(final int boardSizeX, final int boardSizeY) {
+//        final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+//
+//        /* Доска из самой первой консультации по проекту */
+//
+//        positionToCellMap.put(new Position(0, 0), new Cell(CellType.MUSHROOM));
+//        positionToCellMap.put(new Position(0, 1), new Cell(CellType.LAND));
+//        positionToCellMap.put(new Position(0, 2), new Cell(CellType.WATER));
+//        positionToCellMap.put(new Position(0, 3), new Cell(CellType.MOUNTAIN));
+//
+//        positionToCellMap.put(new Position(1, 0), new Cell(CellType.MOUNTAIN));
+//        positionToCellMap.put(new Position(1, 1), new Cell(CellType.WATER));
+//        positionToCellMap.put(new Position(1, 2), new Cell(CellType.LAND));
+//        positionToCellMap.put(new Position(1, 3), new Cell(CellType.MUSHROOM));
+//
+//        positionToCellMap.put(new Position(2, 0), new Cell(CellType.LAND));
+//        positionToCellMap.put(new Position(2, 1), new Cell(CellType.WATER));
+//        positionToCellMap.put(new Position(2, 2), new Cell(CellType.MUSHROOM));
+//        positionToCellMap.put(new Position(2, 3), new Cell(CellType.MOUNTAIN));
+//
+//        /* --- */
+//
+//        final Board board = new Board(boardSizeX, boardSizeY, positionToCellMap);
+//
+//        LOGGER.debug("Board is created: {} ", board);
+//        return board;
+//    }
 
     /**
      * Инициализация тестовых игроков
      *
      * @return список тестовых игроков
      */
-    private static List<Player> initTestPlayers() {
-        final List<Player> playerList = new LinkedList<>(
-                Arrays.asList(new Player("kvs"),
-                        new Player("bim"))
-        );
+    private static List<Player> initTestPlayers(final int playersCount) {
+        int i = 1;
+        final List<Player> playerList = new LinkedList<>();
+        while (i < playersCount) {
+            playerList.add(new Player("F" + i));
+            i++;
+        }
         LOGGER.debug("Player list is created: {} ", playerList);
         return playerList;
     }

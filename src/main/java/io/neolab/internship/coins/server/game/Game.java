@@ -21,6 +21,7 @@ public class Game implements IGame, Serializable {
     private IBoard board;
 
     private int currentRound;
+    public static final int ROUNDS_COUNT = 10;
 
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
