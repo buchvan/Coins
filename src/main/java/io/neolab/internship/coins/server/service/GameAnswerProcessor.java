@@ -53,7 +53,7 @@ public class GameAnswerProcessor {
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
             final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
             final List<Unit> units = catchCellAnswer.getResolution().getSecond();
-            cellPretend(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
+            pretendToCell(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
                     currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
             return;
         }
@@ -128,14 +128,14 @@ public class GameAnswerProcessor {
      * @param feudalToCells - множества клеток для каждого феодала
      * @param transitCells  - транзитные клетки игрока
      */
-    private static void cellPretend(final Player player,
-                                    final Cell captureCell,
-                                    final List<Unit> units,
-                                    final IBoard board,
-                                    final GameFeatures gameFeatures,
-                                    final Map<Player, List<Cell>> ownToCells,
-                                    final Map<Player, Set<Cell>> feudalToCells,
-                                    final List<Cell> transitCells) {
+    private static void pretendToCell(final Player player,
+                                      final Cell captureCell,
+                                      final List<Unit> units,
+                                      final IBoard board,
+                                      final GameFeatures gameFeatures,
+                                      final Map<Player, List<Cell>> ownToCells,
+                                      final Map<Player, Set<Cell>> feudalToCells,
+                                      final List<Cell> transitCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
         final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
