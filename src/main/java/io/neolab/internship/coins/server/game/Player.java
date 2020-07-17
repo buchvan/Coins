@@ -25,6 +25,10 @@ public class Player implements Serializable {
 
     private int coins = 0;
 
+    public Player() {
+        this(null);
+    }
+
     public Player(final String nickname) {
         this.id = IdGenerator.getCurrentId();
         this.nickname = nickname;

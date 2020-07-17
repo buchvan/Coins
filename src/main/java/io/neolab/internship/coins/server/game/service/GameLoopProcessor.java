@@ -2,6 +2,7 @@ package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
@@ -15,25 +16,27 @@ import java.util.*;
 
 public class GameLoopProcessor {
 
-    private static final int BOARD_SIZE_X = 3;
-    private static final int BOARD_SIZE_Y = 4;
+    /**
+     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится (пока что):
+     * статус каждого юнита игрока - доступен,
+     * снятие юнитов игрока с клеток, в которые они были распределены
+     *
+     * @param player          - игрок, чьи данные нужно обновить
+     * @param controlledCells - принадлежащие игроку клетки
+     */
+    public static void playerRoundBeginUpdate(final Player player, final List<Cell> controlledCells) {
+        makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+        controlledCells.forEach(cell -> cell.getUnits().clear());
+    }
 
     /**
-     * Выбрать игроку новую расу
+     * Конец раунда очередного игрового цикла игроком:
+     * всех юнитов игрока сделать недоступными
      *
-     * @param player    - игрок, выбирающий новую расу
-     * @param racesPool - пул всех доступных рас
+     * @param player - игрок, чьи данные нужно обновить согласно методу
      */
-    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
-        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
-        player.setRace(newRace);
-        /* Добавляем юнитов выбранной расы */
-        int i = 0;
-        while (i < newRace.getUnitsAmount()) {
-            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
-            i++;
-        }
-        GameLogger.printChooseRaceLog(player, newRace);
+    public static void playerRoundEndUpdate(final Player player) {
+        makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
     }
 
     /**
@@ -85,13 +88,13 @@ public class GameLoopProcessor {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
-        while (colIndex < BOARD_SIZE_Y) { // обход по верхней границе борды
+        while (colIndex < board.getSizeY()) { // обход по верхней границе борды
             boardEdgeCells.add(board.getCellByPosition(0, colIndex));
             colIndex++;
         }
         strIndex = 1;
         colIndex--; // colIndex = BOARD_SIZE_Y;
-        while (strIndex < BOARD_SIZE_X) { // обход по правой границе борды
+        while (strIndex < board.getSizeX()) { // обход по правой границе борды
             boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
             strIndex++;
         }
@@ -356,5 +359,56 @@ public class GameLoopProcessor {
                 .addAll(availableUnits.subList(0, unitsCount)); // отправить первые unitsCount доступных юнитов
         makeNAvailableUnitsToNotAvailable(player, unitsCount);
         GameLogger.printCellAfterDefendingLog(player, protectedCell);
+    }
+
+    /**
+     * Обновить число монет у игрока
+     *
+     * @param player        - игрок, чьё число монет необходимо обновить
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param gameFeatures  - особенности игры
+     * @param board         - как ни странно, борда :)
+     */
+    public static void updateCoinsCount(final Player player,
+                                         final Map<Player, Set<Cell>> feudalToCells,
+                                         final GameFeatures gameFeatures,
+                                         final IBoard board) {
+
+        feudalToCells.get(player).forEach(cell -> {
+            updateCoinsCountByCellWithFeatures(player, gameFeatures, cell);
+            player.setCoins(player.getCoins() + cell.getType().getCoinYield());
+            GameLogger.printPlayerCoinsCountByCellUpdatingLog(player, board.getPositionByCell(cell));
+        });
+        GameLogger.printPlayerCoinsCountUpdatingLog(player);
+    }
+
+    /**
+     * Обновить число монет у игрока, учитывая только особенности одной клетки
+     *
+     * @param player       - игрок, чьё число монет необходимо обновить
+     * @param gameFeatures - особенности игры
+     * @param cell         - клетка, чьи особенности мы рассматриваем
+     */
+    private static void updateCoinsCountByCellWithFeatures(final Player player,
+                                                           final GameFeatures gameFeatures,
+                                                           final Cell cell) {
+
+        final Map<CellType, Boolean> cellTypeMet = new HashMap<>(CellType.values().length);
+        Arrays.stream(CellType.values()).forEach(cellType -> cellTypeMet.put(cellType, false));
+        gameFeatures.getFeaturesByRaceAndCellType(player.getRace(), cell.getType())
+                .forEach(feature -> {
+                    if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL) {
+                        final int coefficient = ((CoefficientlyFeature) feature).getCoefficient();
+                        player.increaseCoins(coefficient);
+                        GameLogger.printPlayerCoinsCountByCellTypeUpdatingLog(player, cell.getType());
+                    } else if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP
+                            && !cellTypeMet.get(cell.getType())) {
+
+                        cellTypeMet.put(cell.getType(), true);
+                        final int coefficient = ((CoefficientlyFeature) feature).getCoefficient();
+                        player.increaseCoins(coefficient);
+                        GameLogger.printPlayerCoinsCountByCellTypeGroupUpdatingLog(player, cell.getType());
+                    }
+                });
     }
 }

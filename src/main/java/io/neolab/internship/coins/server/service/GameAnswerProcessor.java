@@ -5,8 +5,7 @@ import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.Question;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -23,30 +22,27 @@ import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*
 /**
  * Класс отвечает за обработку ответов от игроков
  */
-public class GameAnswerProcessor implements IGameAnswerProcessor {
-    @Override
-    public void process(final Question question, final Answer answer) throws CoinsException {
-        try {
-            final IGame currentGame = question.getGame();
-            final Player player = question.getPlayer();
-            if (question.getQuestionType() == QuestionType.DECLINE_RACE) {
+public class GameAnswerProcessor {
+    public static void process(final PlayerQuestion playerQuestion, final Answer answer) throws CoinsException {
+        final IGame currentGame = playerQuestion.getGame();
+        final Player player = playerQuestion.getPlayer();
+        switch (playerQuestion.getQuestionType()) {
+            case DECLINE_RACE -> {
                 final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
                 IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
                 if (declineRaceAnswer.isDeclineRace()) {
                     declineRace(player,
                             currentGame.getOwnToCells().get(player),
                             currentGame.getFeudalToCells().get(player));
-                    return;
                 }
             }
-            if (question.getQuestionType() == QuestionType.CHANGE_RACE) {
+            case CHANGE_RACE -> {
                 final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
                 final List<Race> currentRacesPool = currentGame.getRacesPool();
-                IGameValidator.validateChooseRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
+                IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
                 changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
-                return;
             }
-            if (question.getQuestionType() == QuestionType.CATCH_CELL) {
+            case CATCH_CELL -> {
                 final IBoard currentBoard = currentGame.getBoard();
                 final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
                 final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
@@ -58,9 +54,8 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                 final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
                 catchCells(player, captureCell, currentBoard, currentGame.getGameFeatures(), ownToCells,
                         currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
-                return;
             }
-            if (question.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+            case DISTRIBUTION_UNITS -> {
                 final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
                 final IBoard currentBoard = currentGame.getBoard();
                 final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
@@ -72,10 +67,6 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                         currentGame.getOwnToCells().get(player),
                         currentBoard);
             }
-
-        } catch (CoinsException exception) {
-            GameLogger.printErrorLog(exception);
-            throw exception;
         }
     }
 
@@ -109,6 +100,24 @@ public class GameAnswerProcessor implements IGameAnswerProcessor {
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
         chooseRace(player, racesPool, newRace);
         racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
+    }
+
+    /**
+     * Выбрать игроку новую расу
+     *
+     * @param player    - игрок, выбирающий новую расу
+     * @param racesPool - пул всех доступных рас
+     */
+    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
+        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
+        player.setRace(newRace);
+        /* Добавляем юнитов выбранной расы */
+        int i = 0;
+        while (i < newRace.getUnitsAmount()) {
+            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
+            i++;
+        }
+        GameLogger.printChooseRaceLog(player, newRace);
     }
 
     /**
