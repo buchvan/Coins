@@ -13,7 +13,6 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.List;
 
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
@@ -27,8 +26,10 @@ public class Client implements IClient {
     private final int port; // порт соединения
 
     private Socket socket = null;
+    private BufferedReader inputUser = null; // поток чтения с консоли
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
+
 
     private final IBot simpleBot;
 
@@ -39,7 +40,7 @@ public class Client implements IClient {
      * @param port порт соединения
      */
     private Client(final String ip, final int port) throws CoinsException {
-        try{
+        try {
             this.ip = ip;
             this.ipAddress = InetAddress.getByName(ip);
             this.port = port;
@@ -65,8 +66,15 @@ public class Client implements IClient {
             case CHANGE_RACE -> {
                 return new ChangeRaceAnswer(simpleBot.chooseRace(question.getPlayer(), question.getGame()));
             }
-            case GAME_OVER -> // TODO: вывод результатов
-                    throw new IOException();
+            case GAME_OVER -> { // TODO: вывод результатов
+                String input;
+                do {
+                    input = inputUser.readLine();
+                }
+                while (!Server.Command.EXIT.equalCommand(input));
+                downService();
+                System.exit(0);
+            }
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -79,6 +87,7 @@ public class Client implements IClient {
             return;
         }
         try {
+            inputUser = new BufferedReader(new InputStreamReader(System.in));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (final IOException e) {
