@@ -27,16 +27,19 @@ public class GameInitializer {
         //final Board board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
-        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
         final Map<Player, List<Cell>> ownToCells =
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+        final Map<Player, Set<Cell>> playerAchievableCells =
+                initMapWithPlayerKeySetValue(playerList, "playerAchievableCells");
 
-        final GameFeatures gameFeatures  = initGameFeatures();
+        final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+                gameFeatures, racesPool, playerList);
     }
 
     public static IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
@@ -49,16 +52,19 @@ public class GameInitializer {
 
         final List<Player> playerList = initTestPlayers(playersCount);
 
-        final Map<Player, Set<Cell>> feudalToCells = initFeudalToCells(playerList);
+        final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
         final Map<Player, List<Cell>> ownToCells =
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+        final Map<Player, Set<Cell>> playerAchievableCells =
+                initMapWithPlayerKeySetValue(playerList, "playerAchievableCells");
 
-        final GameFeatures gameFeatures  = initGameFeatures();
+        final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+                gameFeatures, racesPool, playerList);
     }
 
     /**
@@ -130,11 +136,11 @@ public class GameInitializer {
      * @return список тестовых игроков
      */
     private static List<Player> initTestPlayers(final int playersCount) {
-        int i = 1;
+        int i = 0;
         final List<Player> playerList = new LinkedList<>();
         while (i < playersCount) {
-            playerList.add(new Player("F" + i));
             i++;
+            playerList.add(new Player("F" + i));
         }
         LOGGER.debug("Player list is created: {} ", playerList);
         return playerList;
@@ -146,11 +152,12 @@ public class GameInitializer {
      * @param playerList - список игроков
      * @return инициализированную мапу
      */
-    private static Map<Player, Set<Cell>> initFeudalToCells(final List<Player> playerList) {
-        final Map<Player, Set<Cell>> feudalToCells = new HashMap<>(playerList.size());
-        playerList.forEach(player -> feudalToCells.put(player, new HashSet<>()));
-        LOGGER.debug("{} init: {} ", "feudalToCells", feudalToCells);
-        return feudalToCells;
+    private static Map<Player, Set<Cell>> initMapWithPlayerKeySetValue(final List<Player> playerList,
+                                                                       final String log) {
+        final Map<Player, Set<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
+        playerList.forEach(player -> mapWithPlayerKey.put(player, new HashSet<>()));
+        LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
+        return mapWithPlayerKey;
     }
 
     /**

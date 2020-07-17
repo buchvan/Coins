@@ -15,6 +15,7 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.server.validation.IGameValidator;
 import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.Pair;
 
 import java.util.*;
 
@@ -47,14 +48,16 @@ public class GameAnswerProcessor {
             final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
             final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final Set<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells);
+            final Map<Player, Set<Cell>> playerToAchievableCells = currentGame.getPlayerToAchievableCells();
+            final Set<Cell> achievableCells = playerToAchievableCells.get(player);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
             IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
             final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
             final List<Unit> units = catchCellAnswer.getResolution().getSecond();
             pretendToCell(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
-                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player));
+                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player),
+                    achievableCells);
             return;
         }
         if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
@@ -119,36 +122,39 @@ public class GameAnswerProcessor {
     /**
      * Завоевание клеток игроком
      *
-     * @param player        - игрок, проводящий завоёвывание
-     * @param captureCell   - клетка, которую игрок хочет захватить
-     * @param units         - список юнитов, которых игрок направил на захват клетки
-     * @param board         - борда
-     * @param gameFeatures  - особенности игры
-     * @param ownToCells    - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells - множества клеток для каждого феодала
-     * @param transitCells  - транзитные клетки игрока
+     * @param player          - игрок, проводящий завоёвывание
+     * @param captureCell     - клетка, которую игрок хочет захватить
+     * @param units           - список юнитов, направленных на захват клетки
+     * @param board           - борда
+     * @param gameFeatures    - особенности игры
+     * @param ownToCells      - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells   - множества клеток для каждого феодала
+     * @param transitCells    - транзитные клетки игрока
+     * @param achievableCells - множество достижимых клеток
      */
     private static void pretendToCell(final Player player,
-                                      final Cell captureCell,
-                                      final List<Unit> units,
+                                      final Cell captureCell, final List<Unit> units,
                                       final IBoard board,
                                       final GameFeatures gameFeatures,
                                       final Map<Player, List<Cell>> ownToCells,
                                       final Map<Player, Set<Cell>> feudalToCells,
-                                      final List<Cell> transitCells) {
+                                      final List<Cell> transitCells,
+                                      final Set<Cell> achievableCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
         final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
             enterToCell(player, captureCell, neighboringCells, units, board);
+            return;
         }
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
-        final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
-        catchCell(player, captureCell, neighboringCells, units.subList(0, tiredUnitsCount),
-                units.subList(tiredUnitsCount, units.size()),
-                gameFeatures, ownToCells, feudalToCells, transitCells);
+        catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
+                units, gameFeatures, ownToCells, feudalToCells, transitCells);
+        achievableCells.remove(captureCell);
+        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
 
@@ -174,9 +180,8 @@ public class GameAnswerProcessor {
         for (final Map.Entry<Position, List<Unit>> entry : resolutions.entrySet()) {
             final Position position = entry.getKey();
             final List<Unit> units = entry.getValue();
-            final int unitsSize = units.size();
-            GameLogger.printCellDefendingLog(player, unitsSize, position);
-            protectCell(player, availableUnits, board.getCellByPosition(position), unitsSize);
+            GameLogger.printCellDefendingLog(player, units.size(), position);
+            protectCell(player, board.getCellByPosition(position), units);
         }
         GameLogger.printAfterDistributedUnitsLog(player);
     }

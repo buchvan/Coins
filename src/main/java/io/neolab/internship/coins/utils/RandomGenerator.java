@@ -25,7 +25,7 @@ public class RandomGenerator {
      * @return выбранный элемент
      */
     public static <T> T chooseItemFromSet(final Set<T> set) {
-        final int numberOfCell = chooseNumber(set.size()); // номер выбранной клетки из списка
+        final int numberOfCell = chooseNumber(set.size()); // номер выбранной клетки из множества
         int i = 0;
         for (final T t : set) {
             if (i == numberOfCell) {
