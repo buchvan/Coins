@@ -49,7 +49,7 @@ public class BoardFactory implements IBoardFactory {
         * Обозначение: m - грибы, M - горы, L - земля, W - вода
         */
         LOGGER.info(logBoardString.toString());
-        return new Board(positionToCellMap);
+        return new Board(boardSizeX, boardSizeY, positionToCellMap);
     }
 
     /**

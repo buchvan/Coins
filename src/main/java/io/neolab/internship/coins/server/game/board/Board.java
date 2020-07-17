@@ -15,19 +15,35 @@ import java.util.Objects;
 
 @JsonDeserialize
 public class Board implements IBoard, Serializable {
+    private final int sizeX;
+    private final int sizeY;
 
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
     private final BidiMap<Position, Cell> positionToCellMap;
 
     @JsonCreator
-    public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap) {
+    public Board(@JsonProperty("sizeX") final int sizeX,
+                 @JsonProperty("sizeY") final int sizeY,
+                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap) {
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
     }
 
     public Board() {
-        this(new DualHashBidiMap<>());
+        this(3, 4, new DualHashBidiMap<>());
+    }
+
+    @Override
+    public int getSizeX() {
+        return sizeX;
+    }
+
+    @Override
+    public int getSizeY() {
+        return sizeY;
     }
 
     @Override

@@ -1,10 +1,14 @@
 package io.neolab.internship.coins.server.game.board;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
 import org.apache.commons.collections4.BidiMap;
 
 public interface IBoard {
+
+    int getSizeX();
+
+    int getSizeY();
+
+    BidiMap<Position, Cell> getPositionToCellMap();
 
     /**
      * Взять клетку по позиции, на которой она расположена на борде
@@ -30,11 +34,4 @@ public interface IBoard {
      * @return позицию клетки cell
      */
     Position getPositionByCell(final Cell cell);
-
-    /**
-     * Взять биекцию позиций на клетки
-     *
-     * @return биекция позиций на клетки
-     */
-    BidiMap<Position, Cell> getPositionToCellMap();
 }

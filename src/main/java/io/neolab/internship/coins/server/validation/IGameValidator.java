@@ -18,6 +18,7 @@ import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
@@ -39,14 +40,12 @@ public interface IGameValidator {
      * Проверка ответа, отвечающего за выбор расы в начале игры
      *
      * @param answer            ответ, который нужно проверить
-     * @param currentPlayerRace текущая раса игрока
      * @param racesPool         пул доступных рас
      * @throws CoinsException при совпадении новых и текущей расы - SAME_RACES, расы нет в пуле - UNAVAILABLE_NEW_RACE,
      *                        пустой ответ - EMPTY_ANSWER
      */
-    static void validateChooseRaceAnswer(final ChangeRaceAnswer answer,
-                                         final List<Race> racesPool,
-                                         final Race currentPlayerRace) throws CoinsException {
+    static void validateChangeRaceAnswer(final ChangeRaceAnswer answer,
+                                         final List<Race> racesPool) throws CoinsException {
         checkIfAnswerEmpty(answer);
         final Race newRace = answer.getNewRace();
         if (!racesPool.contains(newRace)) {
@@ -71,8 +70,9 @@ public interface IGameValidator {
      * @throws CoinsException пустой ответ - EMPTY_ANSWER
      */
     static void validateCatchCellAnswer(final CatchCellAnswer answer,
+                                        final List<Cell> controlledCells,
                                         final IBoard currentBoard,
-                                        final List<Cell> achievableCells,
+                                        final Set<Cell> achievableCells,
                                         final List<Unit> availableUnits,
                                         final GameFeatures gameFeatures,
                                         final Player player) throws CoinsException {
@@ -90,11 +90,16 @@ public interface IGameValidator {
         if (availableUnits.isEmpty()) {
             throw new CoinsException(ErrorCode.NO_AVAILABLE_UNITS);
         }
+
+        final List<Unit> units = answer.getResolution().getSecond();
+        if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
+            throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
+        }
+
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
-        if (!isCellCapturePossible(answer.getResolution().getSecond().size() + bonusAttack,
-                unitsCountNeededToCatch)) {
+        if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player.getNickname());
             throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
         }
@@ -131,6 +136,6 @@ public interface IGameValidator {
 
     static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
         //есть ли клетка, соответствующая позиции
-        return currentBoard.getCellByPosition(position) != null;
+        return currentBoard.getCellByPosition(position) == null;
     }
 }
