@@ -95,16 +95,6 @@ public class Board implements IBoard, Serializable {
     }
 
     @Override
-    public int getBoardSizeX() {
-        return sizeX;
-    }
-
-    @Override
-    public int getBoardSizeY() {
-        return sizeY;
-    }
-
-    @Override
     public Cell getCellByPosition(final Position position) {
         return getPositionToCellMap().get(position);
     }

@@ -32,11 +32,14 @@ public class GameInitializer {
                 initMapWithPlayerKeyListValue(playerList, "ownToCells");
         final Map<Player, List<Cell>> playerToTransitCells =
                 initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
+        final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
+                initMapPlayerAchievableCells(playerList, "playerAchievableCells");
 
-        final GameFeatures gameFeatures  = initGameFeatures();
+        final GameFeatures gameFeatures = initGameFeatures();
         final List<Race> racesPool = createRacesPool();
 
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, gameFeatures, racesPool, playerList);
+        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
+                gameFeatures, racesPool, playerList);
     }
 
     public static IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
