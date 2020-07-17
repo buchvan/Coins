@@ -60,7 +60,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
-        feudalCells.forEach(cell -> assertNull(cell.getOwn()));
+        feudalCells.forEach(cell -> assertNotNull(cell.getFeudal()));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(false);
         GameAnswerProcessor.process(PlayerQuestion, answer);
-        feudalCells.forEach(cell -> assertNull(cell.getOwn()));
+        feudalCells.forEach(cell -> assertNotNull(cell.getFeudal()));
     }
 
     @Test

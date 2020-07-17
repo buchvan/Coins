@@ -5,6 +5,7 @@ import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -27,20 +28,52 @@ public class SimpleBot implements IBot {
     }
 
     @Override
-    public Pair<Position, List<Unit>> catchCell(final Player player, final IGame game) {
-        return random.nextInt(2) == 1 ?
-                new Pair<>(game.getBoard().getPositionByCell(RandomGenerator
-                        .chooseItemFromList(GameLoopProcessor
-                                .getAchievableCells(game.getBoard(), game.getOwnToCells().get(player),
-                                        game.getPlayerAchievableCells().get(player))
-                        )),
-                        player.getUnitStateToUnits()
-                                .get(AvailabilityType.AVAILABLE)
-                                .subList(
-                                        0,
-                                        RandomGenerator.chooseNumber(player.getUnitsByState(AvailabilityType.AVAILABLE).size())
-                                )
-                ) : null;
+    public Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game) {
+        if (random.nextInt(2) == 1) {
+            final IBoard board = game.getBoard();
+            final List<Cell> controlledCells = game.getOwnToCells().get(player);
+            final Set<Cell> achievableCells = GameLoopProcessor.getAchievableCells(board, controlledCells);
+            final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
+
+            /* Оставляем только те клетки, через которые можно добраться до catchingCell */
+            final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
+            catchingCellNeighboringCells.add(catchingCell);
+            catchingCellNeighboringCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+            catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+
+            final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeCells(board);
+            final Iterator<Unit> iterator = units.iterator();
+            while (iterator.hasNext()) {
+                boolean unitAvailableForCapture = false;
+                final Unit unit = iterator.next();
+                for (final Cell neighboringCell : catchingCellNeighboringCells) {
+                    if (neighboringCell.getUnits().contains(unit)) {
+                        unitAvailableForCapture = true;
+                        break;
+                    }
+                }
+                if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                    unitAvailableForCapture = true;
+                    for (final Cell controlledCell : controlledCells) {
+                        if (!catchingCellNeighboringCells.contains(controlledCell)
+                                && controlledCell.getUnits().contains(unit)) {
+                            unitAvailableForCapture = false;
+                            break;
+                        }
+                    }
+                }
+                if (!unitAvailableForCapture) {
+                    iterator.remove();
+                }
+            }
+            return new Pair<>(board.getPositionByCell(catchingCell),
+                    units.size() > 0
+                            ? units.subList(0, RandomGenerator.chooseNumber(units.size()))
+                            : new LinkedList<>()
+            );
+        } // else
+        return null;
     }
 
     @Override

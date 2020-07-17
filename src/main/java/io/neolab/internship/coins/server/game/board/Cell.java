@@ -19,7 +19,6 @@ public class Cell implements Serializable {
     private final CellType type;
     private final List<Unit> units = new LinkedList<>();
     private Player feudal = null;
-    private Player own = null;
     private Race race;
 
     public Cell(final CellType cellType) {
@@ -37,13 +36,11 @@ public class Cell implements Serializable {
                 @JsonProperty("type") final CellType type,
                 @JsonProperty("units") final List<Unit> units,
                 @JsonProperty("feudal") final Player feudal,
-                @JsonProperty("own") final Player own,
                 @JsonProperty("race") final Race race) {
         this.id = id;
         this.type = type;
         Collections.copy(this.units, units);
         this.feudal = feudal;
-        this.own = own;
         this.race = race;
     }
 
@@ -71,14 +68,6 @@ public class Cell implements Serializable {
         this.feudal = feudal;
     }
 
-    public Player getOwn() {
-        return own;
-    }
-
-    public void setOwn(final Player own) {
-        this.own = own;
-    }
-
     public Race getRace() {
         return race;
     }
@@ -94,7 +83,6 @@ public class Cell implements Serializable {
         final Cell cell = (Cell) o;
         return getType() == cell.getType() &&
                 Objects.equals(getUnits(), cell.getUnits()) &&
-                Objects.equals(getOwn(), cell.getOwn()) &&
                 getRace() == cell.getRace();
     }
 
@@ -110,7 +98,6 @@ public class Cell implements Serializable {
                 ", type=" + type +
                 ", units=" + units +
                 ", feudal=" + feudal +
-                ", own=" + own +
                 ", race=" + race +
                 '}';
     }

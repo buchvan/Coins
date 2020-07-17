@@ -29,52 +29,51 @@ public class GameAnswerProcessor {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
         if (playerQuestion.getQuestionType() == QuestionType.DECLINE_RACE) {
-                final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
-                IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-                if (declineRaceAnswer.isDeclineRace()) {
-                    declineRace(player,
-                            currentGame.getOwnToCells().get(player),
-                            currentGame.getFeudalToCells().get(player));
-                }
-                    return;
+            final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
+            IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
+            if (declineRaceAnswer.isDeclineRace()) {
+                declineRace(player, currentGame.getOwnToCells().get(player));
             }
-            if (playerQuestion.getQuestionType() == QuestionType.CHANGE_RACE) {
-                final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
-                final List<Race> currentRacesPool = currentGame.getRacesPool();
-                IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool, player.getRace());
-                changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
-                return;
-            }
-            if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
-                final IBoard currentBoard = currentGame.getBoard();
-                final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
-                final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
-                final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-                final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
-                        currentGame.getPlayerAchievableCells();
-                final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells,
-                        playerAchievableCells.get(player));
-                final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-                IGameValidator.validateCatchCellAnswer(catchCellAnswer, currentGame.getBoard(),
-                        achievableCells, availableUnits, currentGame.getGameFeatures(), player);
-                final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-                final List<Unit> units = catchCellAnswer.getResolution().getSecond();
-                catchCells(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
-                        currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player),
-                        playerAchievableCells);
-            }
-            if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
-                final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
-                final IBoard currentBoard = currentGame.getBoard();
-                final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
-                        + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
-                IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
-                        currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
-                distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
-                        currentGame.getPlayerToTransitCells().get(player),
-                        currentGame.getOwnToCells().get(player),
-                        currentBoard);
-            }
+            return;
+        }
+        if (playerQuestion.getQuestionType() == QuestionType.CHANGE_RACE) {
+            final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
+            final List<Race> currentRacesPool = currentGame.getRacesPool();
+            IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
+            changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
+            return;
+        }
+        if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
+            final IBoard currentBoard = currentGame.getBoard();
+            final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
+            final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
+            final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
+            final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells =
+                    currentGame.getPlayerAchievableCells();
+            final List<Cell> achievableCells = getAchievableCells(currentBoard, controlledCells,
+                    playerAchievableCells.get(player));
+            final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+            IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
+                    achievableCells, availableUnits, currentGame.getGameFeatures(), player);
+            final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
+            final List<Unit> units = catchCellAnswer.getResolution().getSecond();
+            pretendToCell(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
+                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player),
+                    playerAchievableCells);
+            return;
+        }
+        if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+            final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
+            final IBoard currentBoard = currentGame.getBoard();
+            final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
+                    + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
+            IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
+                    currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
+            distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
+                    currentGame.getPlayerToTransitCells().get(player),
+                    currentGame.getOwnToCells().get(player),
+                    currentBoard);
+        }
     }
 
     /**
@@ -82,15 +81,10 @@ public class GameAnswerProcessor {
      *
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
-     * @param feudalCells     - клетки, приносящие монеты игроку
      */
     private static void declineRace(final Player player,
-                                    final List<Cell> controlledCells,
-                                    final Set<Cell> feudalCells) {
+                                    final List<Cell> controlledCells) {
         GameLogger.printDeclineRaceLog(player);
-        feudalCells
-                .forEach(cell ->
-                        cell.setOwn(null)); // Освобождаем все занятые игроком клетки (юниты остаются там же)
         controlledCells.clear();
     }
 
@@ -132,7 +126,7 @@ public class GameAnswerProcessor {
      *
      * @param player                - игрок, проводящий завоёвывание
      * @param captureCell           - клетка, которую игрок хочет захватить
-     * @param units                 - список юнитов, направленных на захвать клетки
+     * @param units                 - список юнитов, направленных на захват клетки
      * @param board                 - борда
      * @param gameFeatures          - особенности игры
      * @param ownToCells            - список подконтрольных клеток для каждого игрока
@@ -140,22 +134,26 @@ public class GameAnswerProcessor {
      * @param transitCells          - транзитные клетки игрока
      * @param playerAchievableCells - пары (isActual, список достижимых клеток) для всех игроков
      */
-    //TODO: rename
-    private static void catchCells(final Player player,
+    private static void pretendToCell(final Player player,
                                    final Cell captureCell, final List<Unit> units,
-                                   final IBoard board,
-                                   final GameFeatures gameFeatures,
-                                   final Map<Player, List<Cell>> ownToCells,
-                                   final Map<Player, Set<Cell>> feudalToCells,
-                                   final List<Cell> transitCells,
+                                      final IBoard board,
+                                      final GameFeatures gameFeatures,
+                                      final Map<Player, List<Cell>> ownToCells,
+                                      final Map<Player, Set<Cell>> feudalToCells,
+                                      final List<Cell> transitCells,
                                    final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells) {
         GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
+        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+        final boolean isControlled = controlledCells.contains(captureCell);
+        if (isControlled) {
+            enterToCell(player, captureCell, neighboringCells, units, board);
+            return;
+        }
         final List<Cell> achievableCells = getAchievableCells(board,
                 controlledCells, playerAchievableCells.get(player));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
-        //TODO: rename
         catchCell(player, captureCell, units.subList(0, unitsCountNeededToCatch - bonusAttack),
                 gameFeatures, ownToCells, feudalToCells, transitCells, playerAchievableCells);
         achievableCells.remove(captureCell);

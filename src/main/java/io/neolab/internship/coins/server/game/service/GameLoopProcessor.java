@@ -11,7 +11,6 @@ import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.ListProcessor;
 import io.neolab.internship.coins.utils.Pair;
-import io.neolab.internship.coins.utils.RandomGenerator;
 
 import java.util.*;
 
@@ -63,6 +62,7 @@ public class GameLoopProcessor {
         } // else
         final Set<Cell> achievableCells = new HashSet<>();
         for (final Cell cell : controlledCells) {
+            achievableCells.add(cell);
             achievableCells.addAll(
                     getAllNeighboringCells(board, cell)); // добавляем всех соседей каждой клетки, занятой игроком
         }
@@ -97,7 +97,7 @@ public class GameLoopProcessor {
      * @param board - борда, крайние клетки которой мы хотим взять
      * @return список всех крайних клеток борды board
      */
-    private static List<Cell> boardEdgeGetCells(final IBoard board) {
+    public static List<Cell> getBoardEdgeCells(final IBoard board) {
         final List<Cell> boardEdgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -127,6 +127,26 @@ public class GameLoopProcessor {
     }
 
     /**
+     * Вход игрока в свою клетку
+     *
+     * @param player           - игрок
+     * @param targetCell       - клетка, в которую игрок пытается войти
+     * @param neighboringCells - соседние клетки
+     * @param units            - список юнитов, которых игрок послал в клетку
+     * @param board            - борда
+     */
+    public static void enterToCell(final Player player, final Cell targetCell, final List<Cell> neighboringCells,
+                                   final List<Unit> units, final IBoard board) {
+        neighboringCells.add(targetCell);
+        final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
+        final List<Unit> tiredUnits = units.subList(0, tiredUnitsCount);
+        final List<Unit> achievableUnits = units.subList(tiredUnitsCount, units.size());
+        withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
+        targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
+        makeAvailableUnitsToNotAvailable(player, tiredUnits);
+    }
+
+    /**
      * Метод получения числа юнитов, необходимых для захвата клетки
      *
      * @param gameFeatures - особенности игры
@@ -135,7 +155,7 @@ public class GameLoopProcessor {
      */
     public static int getUnitsCountNeededToCatchCell(final GameFeatures gameFeatures,
                                                      final Cell catchingCell) {
-        final Player defendingPlayer = catchingCell.getOwn();
+        final Player defendingPlayer = catchingCell.getFeudal();
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 catchingCell.getRace(),
@@ -182,7 +202,9 @@ public class GameLoopProcessor {
      *
      * @param player                - игрок-агрессор
      * @param catchingCell          - захватываемая клетка
-     * @param units                 - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param neighboringCells      - соседние с захватываемой клеткой клетки
+     * @param tiredUnits            - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param units                 - юниты, вошедшие в клетку
      * @param gameFeatures          - особенности игры
      * @param ownToCells            - список подконтрольных клеток для каждого игрока
      * @param feudalToCells         - множества клеток для каждого феодала
@@ -192,32 +214,50 @@ public class GameLoopProcessor {
      */
     public static void catchCell(final Player player,
                                  final Cell catchingCell,
+                                 final List<Cell> neighboringCells,
+                                 final List<Unit> tiredUnits,
                                  final List<Unit> units,
                                  final GameFeatures gameFeatures,
                                  final Map<Player, List<Cell>> ownToCells,
                                  final Map<Player, Set<Cell>> feudalToCells,
                                  final List<Cell> transitCells,
                                  final Map<Player, Pair<Boolean, List<Cell>>> playerAchievableCells) {
-        makeAvailableUnitsToNotAvailable(player, units);
-        final Player defendingPlayer = catchingCell.getOwn();
+        withdrawUnits(neighboringCells, tiredUnits, units);
+        final Player defendingPlayer = catchingCell.getFeudal();
+        final boolean isHasOpponent = isAlivePlayer(defendingPlayer);
+        if (isHasOpponent) {
+            /* Список достижимых клеток защищающегося  игрока считаем более не актуальным */
+            playerAchievableCells.get(defendingPlayer).setFirst(false);
+        }
+        depriveCellFeudalAndOwner(catchingCell, isHasOpponent, ownToCells.get(defendingPlayer),
+                feudalToCells.get(defendingPlayer));
+        catchingCell.getUnits().addAll(units); // Вводим в захватываемую клетку оставшиеся доступные юниты
+        makeAvailableUnitsToNotAvailable(player, tiredUnits);
         boolean catchingCellIsFeudalizable = true;
-        final boolean haveARival = isAlivePlayer(defendingPlayer);
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 player.getRace(), catchingCell.getType())) { // Смотрим все особенности агрессора
 
             catchingCellIsFeudalizable =
                     catchingCellIsFeudalizable &&
+                            catchCellCheckFeature(isHasOpponent, defendingPlayer, feature);
                             catchCellCheckFeature(catchingCell, haveARival, feature);
         }
-        if (haveARival) {
-            /* Список достижимых клеток защищающегося  игрока считаем более не актуальным */
-            playerAchievableCells.get(defendingPlayer).setFirst(false);
-        }
-        depriveCellFeudalAndOwner(catchingCell, haveARival, ownToCells.get(defendingPlayer),
-                feudalToCells.get(defendingPlayer));
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
         GameLogger.printCatchCellBonusAttackLog(player);
+    }
+
+    /**
+     * Вывести юнитов с клеток
+     *
+     * @param cells - клетки, с которых необходимо вывести юнитов
+     * @param units - юниты, которых необходимо вывести с клеток
+     */
+    @SafeVarargs
+    private static void withdrawUnits(final List<Cell> cells, final List<Unit>... units) {
+        cells.forEach(neighboringCell ->
+                neighboringCell.getUnits().removeIf(unit ->
+                        Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
     }
 
     /**
@@ -228,7 +268,7 @@ public class GameLoopProcessor {
      */
     private static void makeAvailableUnitsToNotAvailable(final Player player, final List<Unit> units) {
         player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).addAll(units);
-        units.clear();
+        player.getUnitsByState(AvailabilityType.AVAILABLE).removeAll(units);
     }
 
     /**
@@ -245,23 +285,22 @@ public class GameLoopProcessor {
      * Проверка особенности на CATCH_CELL_IMPOSSIBLE при захвате клетки и
      * попутная обработка всех остальных типов особенностей
      *
-     * @param catchingCell - захватываемая клетка
-     * @param haveARival   - true - если владелец захватываемой клетки "живой", т. е. не ссылка null и не нейтральный
-     * @param feature      - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
+     * @param isHasOpponent      - true - если владелец захватываемой клетки "живой", т. е. не ссылка null
+     * @param cellOwner - владелец захватываемой клетки
+     * @param feature         - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
-    private static boolean catchCellCheckFeature(final Cell catchingCell, final boolean haveARival,
+    private static boolean catchCellCheckFeature(final boolean isHasOpponent,
+                                                 final Player cellOwner,
                                                  final Feature feature) {
-
-        if (haveARival && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
-            final Player defendingPlayer = catchingCell.getOwn();
+        if (isHasOpponent && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
             int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
             deadUnitsCount = Math.min(
                     deadUnitsCount,
-                    defendingPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
-            killUnits(deadUnitsCount, defendingPlayer);
+                    cellOwner.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
+            killUnits(deadUnitsCount, cellOwner);
             return true;
-        } //else клетка не будет давать монет
+        } //else если клетка не будет давать монет
         return feature.getType() != FeatureType.CATCH_CELL_IMPOSSIBLE;
     }
 
@@ -269,24 +308,24 @@ public class GameLoopProcessor {
      * Лишить клетку владельца и феодала
      *
      * @param cell            - клетка, которую нужно лишить владельца и феодала
-     * @param ownIsAlive      - является ли владелец "живым" игроком? Т.е. не ссылкой null и не нейтральным игроком
+     * @param feudalIsAlive   - является ли владелец "живым" игроком? Т.е. не ссылкой null
      * @param controlledCells - принадлежащие игроку клетки
      * @param feudalCells     - клетки, приносящие монеты игроку
      */
     private static void depriveCellFeudalAndOwner(final Cell cell,
-                                                  final boolean ownIsAlive,
+                                                  final boolean feudalIsAlive,
                                                   final List<Cell> controlledCells,
                                                   final Set<Cell> feudalCells) {
         cell.getUnits().clear(); // Юниты бывшего владельца с этой клетки убираются
-        cell.setFeudal(null);
-        if (ownIsAlive) {
+        if (feudalIsAlive) {
             controlledCells.remove(cell);
+            cell.setFeudal(null);
             feudalCells.remove(cell);
         }
-        cell.setOwn(null);
     }
 
-    /* Дать клетке владельца и, возможно, феодала
+    /**
+     * Дать клетке владельца и, возможно, феодала
      *
      * @param player             - новый владелец и, возможно, феодал клетки
      * @param cell               - клетка, нуждающаяся в новом владельце и феодале
@@ -302,7 +341,6 @@ public class GameLoopProcessor {
                                                final List<Cell> transitCells,
                                                final List<Cell> controlledCells,
                                                final Set<Cell> feudalCells) {
-        cell.setOwn(player);
         cell.setRace(player.getRace());
         controlledCells.add(cell);
         if (cellIsFeudalizable) {
@@ -334,9 +372,10 @@ public class GameLoopProcessor {
     public static void freeTransitCells(final Player player, final List<Cell> transitCells,
                                         final List<Cell> controlledCells) {
         GameLogger.printTransitCellsLog(player, transitCells);
+
         /* Игрок покидает каждую транзитную клетку */
         controlledCells.removeIf(transitCells::contains);
-        transitCells.forEach(transitCell -> transitCell.setOwn(null));
+        transitCells.forEach(transitCell -> transitCell.getUnits().clear());
         transitCells.clear();
 
         GameLogger.printFreedTransitCellsLog(player);
@@ -379,9 +418,9 @@ public class GameLoopProcessor {
      * @param board         - как ни странно, борда :)
      */
     public static void updateCoinsCount(final Player player,
-                                         final Map<Player, Set<Cell>> feudalToCells,
-                                         final GameFeatures gameFeatures,
-                                         final IBoard board) {
+                                        final Map<Player, Set<Cell>> feudalToCells,
+                                        final GameFeatures gameFeatures,
+                                        final IBoard board) {
 
         feudalToCells.get(player).forEach(cell -> {
             updateCoinsCountByCellWithFeatures(player, gameFeatures, cell);
