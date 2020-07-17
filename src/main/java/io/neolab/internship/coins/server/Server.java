@@ -225,7 +225,7 @@ public class Server implements IServer {
                 game.getOwnToCells().get(serverSomething.player));
 
         beginRoundChoice(serverSomething, game);
-        cellCapture(serverSomething, game);
+        captureCell(serverSomething, game);
         distribution(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
@@ -263,7 +263,7 @@ public class Server implements IServer {
      * @throws IOException    в случае ошибки общения с клиентом
      * @throws CoinsException в случае игровой ошибки
      */
-    private void cellCapture(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
+    private void captureCell(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         updateAchievableCells(game.getBoard(), achievableCells, game.getOwnToCells().get(player));

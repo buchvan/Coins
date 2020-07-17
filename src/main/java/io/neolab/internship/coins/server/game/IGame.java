@@ -3,7 +3,6 @@ package io.neolab.internship.coins.server.game;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
-import io.neolab.internship.coins.utils.Pair;
 
 import java.util.List;
 import java.util.Map;

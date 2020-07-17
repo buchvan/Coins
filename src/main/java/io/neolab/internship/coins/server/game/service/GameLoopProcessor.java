@@ -56,9 +56,9 @@ public class GameLoopProcessor {
         controlledCells.forEach(controlledCell -> {
             achievableCells.add(controlledCell);
             achievableCells.addAll(
-                    getAllNeighboringCells(board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
+                    getAllNeighboringCells(
+                            board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
         });
-        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
     /**

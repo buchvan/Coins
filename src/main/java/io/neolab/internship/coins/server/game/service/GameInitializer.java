@@ -136,11 +136,11 @@ public class GameInitializer {
      * @return список тестовых игроков
      */
     private static List<Player> initTestPlayers(final int playersCount) {
-        int i = 1;
+        int i = 0;
         final List<Player> playerList = new LinkedList<>();
         while (i < playersCount) {
-            playerList.add(new Player("F" + i));
             i++;
+            playerList.add(new Player("F" + i));
         }
         LOGGER.debug("Player list is created: {} ", playerList);
         return playerList;
