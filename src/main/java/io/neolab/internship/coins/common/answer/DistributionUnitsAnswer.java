@@ -12,7 +12,7 @@ import io.neolab.internship.coins.server.game.Unit;
 import java.util.*;
 
 public class DistributionUnitsAnswer extends Answer {
-    
+
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class)
     private final Map<Position, List<Unit>> resolutions;

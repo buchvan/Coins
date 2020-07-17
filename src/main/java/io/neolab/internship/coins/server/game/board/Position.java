@@ -1,8 +1,5 @@
 package io.neolab.internship.coins.server.game.board;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +8,6 @@ import java.util.Objects;
 /**
  * Класс позиция, пара целых чисел
  */
-//@JsonSerialize(using = PositionSerializer.class)
 public class Position implements Serializable {
     private final int x;
     private final int y;

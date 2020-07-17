@@ -44,7 +44,7 @@ public interface IGameValidator {
      * @throws CoinsException при совпадении новых и текущей расы - SAME_RACES, расы нет в пуле - UNAVAILABLE_NEW_RACE,
      *                        пустой ответ - EMPTY_ANSWER
      */
-    static void validateChooseRaceAnswer(final ChangeRaceAnswer answer,
+    static void validateChangeRaceAnswer(final ChangeRaceAnswer answer,
                                          final List<Race> racesPool) throws CoinsException {
         checkIfAnswerEmpty(answer);
         final Race newRace = answer.getNewRace();

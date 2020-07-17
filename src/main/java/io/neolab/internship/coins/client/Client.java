@@ -1,12 +1,157 @@
 package io.neolab.internship.coins.client;
 
-import io.neolab.internship.coins.common.answer.Answer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neolab.internship.coins.common.answer.*;
+import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
-import io.neolab.internship.coins.common.question.QuestionType;
-import io.neolab.internship.coins.server.game.board.Board;
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Client {
-    Answer getAnswer(final Question question) {
-        return null;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class Client implements IClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
+
+    private static final String IP = "127.0.0.1";//"localhost";
+    private static final int PORT = Server.PORT;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private final String ip; // ip адрес клиента
+    private final InetAddress ipAddress;
+    private final int port; // порт соединения
+
+    private Socket socket = null;
+    private BufferedReader inputUser = null; // поток чтения с консоли
+    private BufferedReader in = null; // поток чтения из сокета
+    private BufferedWriter out = null; // поток записи в сокет
+
+
+    private final IBot simpleBot;
+
+    /**
+     * для создания необходимо принять адрес и номер порта
+     *
+     * @param ip   ip адрес клиента
+     * @param port порт соединения
+     */
+    private Client(final String ip, final int port) throws CoinsException {
+        try {
+            this.ip = ip;
+            this.ipAddress = InetAddress.getByName(ip);
+            this.port = port;
+            this.simpleBot = new SimpleBot();
+        } catch (final UnknownHostException exception) {
+            throw new CoinsException(ErrorCode.CLIENT_CREATION_FAILED);
+        }
+    }
+
+    @Override
+    public Answer getAnswer(final Question question) throws CoinsException, IOException {
+        switch (question.getQuestionType()) {
+            case CATCH_CELL -> {
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                return new CatchCellAnswer(
+                        simpleBot.catchCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+            case DISTRIBUTION_UNITS -> {
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                return new DistributionUnitsAnswer(
+                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+            case DECLINE_RACE -> {
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                return new DeclineRaceAnswer(
+                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+            case CHANGE_RACE -> {
+                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                return new ChangeRaceAnswer(
+                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+            case GAME_OVER -> { // TODO: вывод результатов
+                String input;
+                do {
+                    input = inputUser.readLine();
+                }
+                while (!Server.Command.EXIT.equalCommand(input));
+                downService();
+                System.exit(0);
+            }
+        }
+        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+    }
+
+    private void startClient() {
+        try {
+            socket = new Socket(this.ip, this.port);
+        } catch (final IOException e) {
+            LOGGER.error("Socket failed");
+            return;
+        }
+        try {
+            inputUser = new BufferedReader(new InputStreamReader(System.in));
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        } catch (final IOException e) {
+            downService();
+            return;
+        }
+        LOGGER.info("Client started, ip: {}, port: {}", ip, port);
+        play();
+    }
+
+    @SuppressWarnings("InfiniteLoopStatement")
+    private void play() {
+        try {
+            while (true) {
+                final Question question =
+                        OBJECT_MAPPER.readValue(in.readLine(), Question.class); // ждем сообщения с сервера
+                LOGGER.info("Input question: {} ", question);
+                final Answer answer = getAnswer(question);
+                LOGGER.info("Output answer: {} ", answer);
+                sendAnswer(answer);
+            }
+        } catch (final IOException | CoinsException e) {
+            downService();
+        }
+    }
+
+    private void sendAnswer(final Answer answer) throws IOException {
+        out.write(OBJECT_MAPPER.writeValueAsString(answer) + "\n");
+        out.flush();
+    }
+
+    /**
+     * закрытие сокета
+     */
+    private void downService() {
+        try {
+            if (!socket.isClosed()) {
+                LOGGER.info("Service is downed");
+                socket.close();
+                if (in != null) {
+                    in.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            }
+        } catch (final IOException ignored) {
+        }
+    }
+
+    public static void main(final String[] args) {
+        try {
+            final Client client = new Client(IP, PORT);
+            client.startClient();
+        } catch (final CoinsException exception) {
+            LOGGER.error("Error!", exception);
+        }
     }
 }
