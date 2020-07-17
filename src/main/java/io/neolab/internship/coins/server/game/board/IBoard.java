@@ -4,7 +4,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
 import org.apache.commons.collections4.BidiMap;
 
+import java.util.List;
+
 public interface IBoard {
+
+    int getBoardSizeX();
+
+    int getBoardSizeY();
 
     /**
      * Взять клетку по позиции, на которой она расположена на борде
@@ -37,4 +43,7 @@ public interface IBoard {
      * @return биекция позиций на клетки
      */
     BidiMap<Position, Cell> getPositionToCellMap();
+
+    /* Метод взятия всех крайних клеток борды */
+    List<Cell> getEdgeCells();
 }
