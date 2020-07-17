@@ -263,7 +263,6 @@ public class SelfPlay {
         final List<Cell> achievableCellsList = new LinkedList<>(achievableCells);
         isActualAndAchievableCells.setSecond(achievableCellsList);
         return achievableCellsList;
-        return new LinkedList<>(achievableCells);
     }
 
     /**

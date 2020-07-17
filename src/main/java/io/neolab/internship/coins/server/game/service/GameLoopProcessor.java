@@ -240,7 +240,6 @@ public class GameLoopProcessor {
             catchingCellIsFeudalizable =
                     catchingCellIsFeudalizable &&
                             catchCellCheckFeature(isHasOpponent, defendingPlayer, feature);
-                            catchCellCheckFeature(catchingCell, haveARival, feature);
         }
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
@@ -285,9 +284,9 @@ public class GameLoopProcessor {
      * Проверка особенности на CATCH_CELL_IMPOSSIBLE при захвате клетки и
      * попутная обработка всех остальных типов особенностей
      *
-     * @param isHasOpponent      - true - если владелец захватываемой клетки "живой", т. е. не ссылка null
-     * @param cellOwner - владелец захватываемой клетки
-     * @param feature         - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
+     * @param isHasOpponent - true - если владелец захватываемой клетки "живой", т. е. не ссылка null
+     * @param cellOwner     - владелец захватываемой клетки
+     * @param feature       - особенность пары (раса агрессора, тип захватываемой клетки), которая рассматривается
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
     private static boolean catchCellCheckFeature(final boolean isHasOpponent,

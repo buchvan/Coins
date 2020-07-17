@@ -19,24 +19,6 @@ public class RandomGenerator {
     }
 
     /**
-     * Выбрать элемент из множества (подбросить монетку)
-     *
-     * @param set - множество доступных на выбор клеток
-     * @return выбранный элемент
-     */
-    public static <T> T chooseItemFromSet(final Set<T> set) {
-        final int numberOfCell = chooseNumber(set.size()); // номер выбранной клетки из списка
-        int i = 0;
-        for (final T t : set) {
-            if (i == numberOfCell) {
-                return t;
-            }
-            i++;
-        }
-        return null;
-    }
-
-    /**
      * Выбрать число (подбросить монетку)
      *
      * @param bound - граница подходящего числа

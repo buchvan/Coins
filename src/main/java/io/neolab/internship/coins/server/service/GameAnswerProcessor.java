@@ -154,8 +154,8 @@ public class GameAnswerProcessor {
                 controlledCells, playerAchievableCells.get(player));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
-        catchCell(player, captureCell, units.subList(0, unitsCountNeededToCatch - bonusAttack),
-                gameFeatures, ownToCells, feudalToCells, transitCells, playerAchievableCells);
+        catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
+                units, gameFeatures, ownToCells, feudalToCells, transitCells, playerAchievableCells);
         achievableCells.remove(captureCell);
         achievableCells.addAll(getAllNeighboringCells(board, captureCell));
         achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
