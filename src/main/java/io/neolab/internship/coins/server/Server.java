@@ -13,6 +13,7 @@ import java.util.List;
 public class Server implements IServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
+    public static final int PORT = 8081;
     private final int CLIENTS_COUNT = 2;
 
     /**
@@ -21,13 +22,28 @@ public class Server implements IServer {
     private List<Pair<Client, Player>> clientToPlayerList = new LinkedList<>();
     private IGame game;
 
+    public enum Command {
+        EXIT("exit"),
+        ;
+
+        private final String commandName;
+
+        Command(final String commandName) {
+            this.commandName = commandName;
+        }
+
+        public boolean equalCommand(final String message) {
+            return commandName.equals(message);
+        }
+    }
+
     @Override
     public void startServer() {
 
     }
 
-    public static void main(String[] args) {
-        Server server = new Server();
+    public static void main(final String[] args) {
+        final Server server = new Server();
         server.startServer();
     }
 }
