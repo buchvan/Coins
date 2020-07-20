@@ -65,8 +65,9 @@ public class SelfPlay {
             });
             // обновление числа монет у каждого игрока
             simpleBotToPlayer.forEach(pair ->
-                    GameLoopProcessor.updateCoinsCount(pair.getSecond(), game.getFeudalToCells().get(pair.getSecond()),
-                    game.getGameFeatures(), game.getBoard()));
+                    GameLoopProcessor.updateCoinsCount(
+                            pair.getSecond(), game.getFeudalToCells().get(pair.getSecond()),
+                            game.getGameFeatures(), game.getBoard()));
 
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(),
                     game.getOwnToCells(), game.getFeudalToCells());
