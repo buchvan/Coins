@@ -2,11 +2,13 @@ package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
+import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
+import io.neolab.internship.coins.server.game.service.GameLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final Question question) throws CoinsException, IOException {
+    public Answer getAnswer(final Question question) throws CoinsException {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
@@ -74,12 +76,9 @@ public class Client implements IClient {
                 return new ChangeRaceAnswer(
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_OVER -> { // TODO: вывод результатов
-                String input;
-                do {
-                    input = inputUser.readLine();
-                }
-                while (!Server.Command.EXIT.equalCommand(input));
+            case GAME_OVER -> {
+                final GameOverQuestion gameOverQuestion = (GameOverQuestion) question;
+                GameLogger.printResultsInGameEnd(gameOverQuestion.getWinners(), gameOverQuestion.getPlayerList());
                 downService();
                 System.exit(0);
             }

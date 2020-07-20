@@ -7,5 +7,5 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import java.io.IOException;
 
 public interface IClient {
-    Answer getAnswer(final Question question) throws CoinsException, IOException;
+    Answer getAnswer(final Question question) throws CoinsException;
 }
