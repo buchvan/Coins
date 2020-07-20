@@ -3,6 +3,7 @@ package io.neolab.internship.coins.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
+import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
 
@@ -17,8 +18,12 @@ public class Communication {
         return mapper.readValue(json, Question.class);
     }
 
-    public static PlayerQuestion deserializeGameQuestion(final String json) throws JsonProcessingException {
+    public static PlayerQuestion deserializePlayerQuestion(final String json) throws JsonProcessingException {
         return mapper.readValue(json, PlayerQuestion.class);
+    }
+
+    public static GameOverQuestion deserializeGameOverQuestion(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, GameOverQuestion.class);
     }
 
     public static String serializeAnswer(final Answer answer) throws JsonProcessingException {
