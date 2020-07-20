@@ -8,6 +8,8 @@ import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
 import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -15,17 +17,18 @@ public class DistributionUnitsAnswer extends Answer {
 
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class)
-    private final Map<Position, List<Unit>> resolutions;
+    private final @NotNull Map<Position, List<Unit>> resolutions;
 
     @JsonCreator
-    public DistributionUnitsAnswer(@JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
+    public DistributionUnitsAnswer(@NotNull @JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
         this.resolutions = resolutions;
     }
 
-    public Map<Position, List<Unit>> getResolutions() {
+    public @NotNull Map<Position, List<Unit>> getResolutions() {
         return resolutions;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

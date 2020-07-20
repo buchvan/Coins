@@ -2,6 +2,7 @@ package io.neolab.internship.coins.common.answer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jetbrains.annotations.Contract;
 
 import java.util.Objects;
 
@@ -17,6 +18,7 @@ public class DeclineRaceAnswer extends Answer {
         return declineRace;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
