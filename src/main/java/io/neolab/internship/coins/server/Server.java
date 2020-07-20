@@ -69,6 +69,7 @@ public class Server implements IServer {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
             } while (isDuplicate);
+            LOGGER.info("Nickname for player: {} ", nickname);
             player = new Player(nickname);
         }
 
@@ -126,9 +127,9 @@ public class Server implements IServer {
     @Override
     public void startServer() {
         try {
-            connectClients();
             LOGGER.info("Server started, port: {}", PORT);
 
+            connectClients();
             final List<Player> playerList = new LinkedList<>();
             serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
@@ -171,11 +172,13 @@ public class Server implements IServer {
      */
     private void connectClients() throws IOException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
-            int currentClientsCount = 0;
-            while (currentClientsCount < CLIENTS_COUNT) {
+            int currentClientsCount = 1;
+            while (currentClientsCount <= CLIENTS_COUNT) {
                 final Socket socket = serverSocket.accept();
                 try {
+                    LOGGER.info("Client {} connects", currentClientsCount);
                     serverList.add(new ServerSomething(this, socket));
+                    LOGGER.info("Client {} connected", currentClientsCount);
                     currentClientsCount++;
                 } catch (final IOException exception) {
                     LOGGER.error("Error!", exception);
