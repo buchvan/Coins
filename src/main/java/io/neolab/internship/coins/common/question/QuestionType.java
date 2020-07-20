@@ -24,6 +24,9 @@ public enum QuestionType {
      */
     CHANGE_RACE,
 
+    /**
+     * Конец игры
+     */
     GAME_OVER,
     ;
 }
