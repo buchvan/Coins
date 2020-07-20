@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common;
+package io.neolab.internship.coins.common.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.common.question;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.deserialize.GameQuestionDeserializer;
+import io.neolab.internship.coins.common.serialization.deserialize.GameQuestionDeserializer;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
 

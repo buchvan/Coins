@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.deserialize;
+package io.neolab.internship.coins.common.serialization.deserialize;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,7 +17,7 @@ import java.util.*;
 public class PlayerDeserializer extends JsonDeserializer<Player> {
     @Override
     public Player deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
-            throws IOException, JsonProcessingException {
+            throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode = jsonParser.getCodec().readTree(jsonParser);
         final int id = jsonNode.get("id").asInt();
