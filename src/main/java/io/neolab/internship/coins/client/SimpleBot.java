@@ -18,7 +18,7 @@ import java.util.*;
 
 public class SimpleBot implements IBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public boolean declineRaceChoose(final Player player, final IGame game) {
