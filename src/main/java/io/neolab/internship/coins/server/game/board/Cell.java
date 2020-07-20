@@ -17,7 +17,7 @@ public class Cell implements Serializable {
     private final int id;
     private final CellType type;
     private final List<Unit> units = new LinkedList<>();
-    private Player feudal = null;
+    private Player feudal = null; // игрок, который получает монеты с данной клетки
     private Race race;
 
     public Cell(final CellType cellType) {
