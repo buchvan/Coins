@@ -2,7 +2,7 @@ package io.neolab.internship.coins.common.communication;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.Communication;
+import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;

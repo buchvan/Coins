@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.AvailabilityTypeDeserializer;
-import io.neolab.internship.coins.common.deserialize.PlayerDeserializer;
-import io.neolab.internship.coins.common.serialize.AvailabilityTypeSerializer;
+import io.neolab.internship.coins.common.serialization.deserialize.AvailabilityTypeDeserializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PlayerDeserializer;
+import io.neolab.internship.coins.common.serialization.serialize.AvailabilityTypeSerializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.IdGenerator;
 
@@ -15,14 +15,21 @@ import java.util.*;
 
 @JsonDeserialize(using = PlayerDeserializer.class)
 public class Player implements Serializable {
+    @JsonProperty
     private final int id;
+
+    @JsonProperty
     private String nickname;
+
+    @JsonProperty
     private Race race;
 
+    @JsonProperty
     @JsonSerialize(keyUsing = AvailabilityTypeSerializer.class)
     @JsonDeserialize(keyUsing = AvailabilityTypeDeserializer.class)
     private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
 
+    @JsonProperty
     private int coins = 0;
 
     public Player() {

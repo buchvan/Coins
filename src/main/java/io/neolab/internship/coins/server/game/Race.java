@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.io.Serializable;
@@ -13,10 +15,15 @@ public enum Race implements Serializable {
     UNDEAD("UNDEAD", 11),
     ;
 
+    @JsonProperty
     private final String title;
+
+    @JsonProperty
     private final int unitsAmount;
 
-    Race(final String title, final int unitsAmount) {
+    @JsonCreator
+    Race(@JsonProperty("title") final String title,
+         @JsonProperty("unitsAmount") final int unitsAmount) {
         this.title = title;
         this.unitsAmount = unitsAmount;
     }

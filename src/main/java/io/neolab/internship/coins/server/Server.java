@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.server;
 
-import io.neolab.internship.coins.common.Communication;
+import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;

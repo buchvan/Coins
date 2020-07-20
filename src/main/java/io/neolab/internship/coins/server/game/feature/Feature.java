@@ -3,7 +3,7 @@ package io.neolab.internship.coins.server.game.feature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.deserialize.FeatureDeserializer;
+import io.neolab.internship.coins.common.serialization.deserialize.FeatureDeserializer;
 
 import java.util.Objects;
 
@@ -12,6 +12,7 @@ import java.util.Objects;
  */
 @JsonDeserialize(using = FeatureDeserializer.class)
 public class Feature implements IFeature {
+    @JsonProperty
     private final FeatureType type;
 
     @JsonCreator
