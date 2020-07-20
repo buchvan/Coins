@@ -7,7 +7,7 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
-import io.neolab.internship.coins.server.game.service.GameLoopProcessor;
+import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
@@ -44,10 +44,10 @@ public class SimpleBot implements IBot {
             GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
-            /* Оставляем только те клетки, через которые можно добраться до catchingCell */
+            /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
             final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
             catchingCellNeighboringCells.add(catchingCell);
-            catchingCellNeighboringCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+            catchingCellNeighboringCells.addAll(board.getNeighboringCells(catchingCell));
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
