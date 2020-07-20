@@ -34,7 +34,7 @@ public class SelfPlay {
      * - Финализатор (результат работы)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
+        try (final GameLoggerFile ignored = new GameLoggerFile()) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
@@ -141,6 +141,7 @@ public class SelfPlay {
             player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
             i++;
         }
+
         GameLogger.printChooseRaceLog(player, newRace);
     }
 
@@ -183,7 +184,7 @@ public class SelfPlay {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        GameLoopProcessor.updateAchievableCells(board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
             /* Пока есть что захватывать и какими войсками захватывать */
@@ -210,14 +211,14 @@ public class SelfPlay {
     /**
      * Метод попытки захвата одной клетки игроком
      *
-     * @param player                - игрок, захватывающий клетку
-     * @param catchingCell          - захватываемая клетка
-     * @param units                 - список юнитов, направленных на захвать клетки
-     * @param board                 - борда
-     * @param gameFeatures          - особенности игры
-     * @param ownToCells            - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells         - множества клеток для каждого феодала
-     * @param transitCells          - транзитные клетки игрока
+     * @param player        - игрок, захватывающий клетку
+     * @param catchingCell  - захватываемая клетка
+     * @param units         - список юнитов, направленных на захвать клетки
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      * @return true - если попытка увенчалась успехом, false - иначе
      */
     private static boolean isCatchCellAttemptSucceed(final Player player,
@@ -228,22 +229,23 @@ public class SelfPlay {
                                                      final Map<Player, List<Cell>> ownToCells,
                                                      final Map<Player, Set<Cell>> feudalToCells,
                                                      final List<Cell> transitCells) {
-        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
-        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final boolean isControlled = ownToCells.get(player).contains(catchingCell);
         if (isControlled) {
             return tryEnterToCell(player, catchingCell, units, board);
         }
+        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
+        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!cellIsCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
-            GameLogger.printCatchCellNotCapturedLog(player.getNickname());
+            GameLogger.printCatchCellNotCapturedLog(player);
             return false;
         }
         final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
         final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, catchingCell);
-        catchCell(player, catchingCell, neighboringCells, units.subList(0, tiredUnitsCount),
-                units.subList(tiredUnitsCount, units.size()), gameFeatures, ownToCells, feudalToCells, transitCells);
+        catchCell(player, catchingCell, neighboringCells, getTiredUnits(units, tiredUnitsCount),
+                getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures, ownToCells, feudalToCells,
+                transitCells);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -259,18 +261,58 @@ public class SelfPlay {
      */
     private static boolean tryEnterToCell(final Player player, final Cell targetCell, final List<Unit> units,
                                           final IBoard board) {
+        GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
+        GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
-        if (IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
-            final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, targetCell);
-            neighboringCells.add(targetCell);
-            final List<Unit> tiredUnits = units.subList(0, tiredUnitsCount);
-            final List<Unit> achievableUnits = units.subList(tiredUnitsCount, units.size());
-            withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
-            targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
-            makeAvailableUnitsToNotAvailable(player, tiredUnits);
-            return true;
+        if (!IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
+            GameLogger.printCellNotEnteredLog(player);
+            return false;
         }
-        return false;
+        enterToCell(player, targetCell, units, tiredUnitsCount, board);
+        return true;
+    }
+
+    /**
+     * Вход игрока в свою клетку
+     *
+     * @param player          - игрок
+     * @param targetCell      - клетка, в которую игрок пытается войти
+     * @param units           - список юнитов, которых игрок послал в клетку
+     * @param tiredUnitsCount - число уставших юнитов
+     * @param board           - борда
+     */
+    private static void enterToCell(final Player player, final Cell targetCell, final List<Unit> units,
+                                    final int tiredUnitsCount, final IBoard board) {
+        final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, targetCell);
+        neighboringCells.add(targetCell);
+        final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
+        final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
+        withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
+        targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
+        makeAvailableUnitsToNotAvailable(player, tiredUnits);
+        GameLogger.printAfterCellEnteringLog(player, targetCell);
+    }
+
+    /**
+     * Взять список уставших юнитов
+     *
+     * @param units           - список всех юнитов
+     * @param tiredUnitsCount - число уставших юнитов
+     * @return список уставших юнитов
+     */
+    private static List<Unit> getTiredUnits(final List<Unit> units, final int tiredUnitsCount) {
+        return units.subList(0, tiredUnitsCount);
+    }
+
+    /**
+     * Взять список оставшихся доступных юнитов
+     *
+     * @param units           - список всех юнитов
+     * @param tiredUnitsCount - число уставших юнитов
+     * @return список оставшихся доступных юнитов
+     */
+    private static List<Unit> getRemainingAvailableUnits(final List<Unit> units, final int tiredUnitsCount) {
+        return units.subList(tiredUnitsCount, units.size());
     }
 
     /**
@@ -350,16 +392,16 @@ public class SelfPlay {
     /**
      * Захватить клетку
      *
-     * @param player                - игрок-агрессор
-     * @param catchingCell          - захватываемая клетка
-     * @param neighboringCells      - соседние с захватываемой клеткой клетки
-     * @param tiredUnits            - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param units                 - юниты, вошедшие в клетку
-     * @param gameFeatures          - особенности игры
-     * @param ownToCells            - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells         - множества клеток для каждого феодала
-     * @param transitCells          - транзитные клетки игрока
-     *                              (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player           - игрок-агрессор
+     * @param catchingCell     - захватываемая клетка
+     * @param neighboringCells - соседние с захватываемой клеткой клетки
+     * @param tiredUnits       - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param units            - юниты, вошедшие в клетку
+     * @param gameFeatures     - особенности игры
+     * @param ownToCells       - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells    - множества клеток для каждого феодала
+     * @param transitCells     - транзитные клетки игрока
+     *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     private static void catchCell(final Player player,
                                   final Cell catchingCell,
@@ -394,13 +436,14 @@ public class SelfPlay {
      * Вывести юнитов с клеток
      *
      * @param cells - клетки, с которых необходимо вывести юнитов
-     * @param units - юниты, которых необходимо вывести с клеток
+     * @param units - списки юнитов, которых необходимо вывести с их клеток
      */
     @SafeVarargs
     private static void withdrawUnits(final List<Cell> cells, final List<Unit>... units) {
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
+        GameLogger.printAfterWithdrawCellsLog(cells);
     }
 
     /**

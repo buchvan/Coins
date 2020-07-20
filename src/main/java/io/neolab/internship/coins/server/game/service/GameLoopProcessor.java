@@ -17,13 +17,14 @@ import java.util.*;
 public class GameLoopProcessor {
 
     /**
-     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится (пока что):
+     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
      *
      * @param player - игрок, чьи данные нужно обновить
      */
     public static void playerRoundBeginUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+        GameLogger.printRoundBeginUpdateLog(player);
     }
 
     /**
@@ -34,28 +35,31 @@ public class GameLoopProcessor {
      */
     public static void playerRoundEndUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
+        GameLogger.printRoundEndUpdateLog(player);
     }
 
     /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
+     * @param player          - игрок
      * @param board           - борда
      * @param achievableCells - множество достижимых клеток
      * @param controlledCells - принадлежащие игроку клетки
      */
-    public static void updateAchievableCells(final IBoard board, final Set<Cell> achievableCells,
+    public static void updateAchievableCells(final Player player, final IBoard board, final Set<Cell> achievableCells,
                                              final List<Cell> controlledCells) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
-            return;
+        } else {
+            controlledCells.forEach(controlledCell -> {
+                achievableCells.add(controlledCell);
+                achievableCells.addAll(
+                        getAllNeighboringCells(
+                                board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
+            });
         }
-        controlledCells.forEach(controlledCell -> {
-            achievableCells.add(controlledCell);
-            achievableCells.addAll(
-                    getAllNeighboringCells(
-                            board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
-        });
+        GameLogger.printUpdateAchievableCellsLog(player, achievableCells);
     }
 
     /**
@@ -88,13 +92,14 @@ public class GameLoopProcessor {
      */
     public static void enterToCell(final Player player, final Cell targetCell, final List<Cell> neighboringCells,
                                    final List<Unit> units, final IBoard board) {
-        neighboringCells.add(targetCell);
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
+        neighboringCells.add(targetCell);
         final List<Unit> tiredUnits = units.subList(0, tiredUnitsCount);
         final List<Unit> achievableUnits = units.subList(tiredUnitsCount, units.size());
         withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
+        GameLogger.printAfterCellEnteringLog(player, targetCell);
     }
 
     /**
@@ -202,6 +207,7 @@ public class GameLoopProcessor {
         cells.forEach(neighboringCell ->
                 neighboringCell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
+        GameLogger.printAfterWithdrawCellsLog(cells);
     }
 
     /**

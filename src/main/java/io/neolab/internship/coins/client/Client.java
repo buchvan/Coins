@@ -56,25 +56,30 @@ public class Client implements IClient {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                LOGGER.info("Catch cell question: {} ", playerQuestion);
                 return new CatchCellAnswer(
                         simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                LOGGER.info("Distribution units question: {} ", playerQuestion);
                 return new DistributionUnitsAnswer(
                         simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DECLINE_RACE -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                LOGGER.info("Decline race question: {} ", playerQuestion);
                 return new DeclineRaceAnswer(
                         simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case CHANGE_RACE -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
+                LOGGER.info("Change race question: {} ", playerQuestion);
                 return new ChangeRaceAnswer(
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case GAME_OVER -> { // TODO: вывод результатов
+                LOGGER.info("Game over question: {} ", question);
                 String input;
                 do {
                     input = inputUser.readLine();
