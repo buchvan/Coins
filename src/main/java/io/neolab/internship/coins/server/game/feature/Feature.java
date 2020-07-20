@@ -8,7 +8,7 @@ import io.neolab.internship.coins.common.deserialize.FeatureDeserializer;
 import java.util.Objects;
 
 /**
- * Особенность пары раса-тип_клетки (Race-CellType)
+ * Особенность пары (раса, тип_клетки) (Race, CellType)
  */
 @JsonDeserialize(using = FeatureDeserializer.class)
 public class Feature implements IFeature {

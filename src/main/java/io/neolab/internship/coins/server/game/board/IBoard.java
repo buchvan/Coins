@@ -46,6 +46,8 @@ public interface IBoard {
      */
     Position getPositionByCell(final Cell cell);
 
-    /* Метод взятия всех крайних клеток борды */
+    /**
+     * @return список крайних клеток борды
+     */
     List<Cell> getEdgeCells();
 }
