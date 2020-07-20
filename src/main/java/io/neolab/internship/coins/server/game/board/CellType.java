@@ -2,6 +2,9 @@ package io.neolab.internship.coins.server.game.board;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 
@@ -11,23 +14,24 @@ public enum CellType implements Serializable {
     MOUNTAIN("MOUNTAIN", 1, 3, "M"),
     WATER("WATER", 1, 1, "W");
 
-    private final String title;
-    private final String view;
+    private final @NotNull String title;
+    private final @NotNull String view;
     private final int catchDifficulty; // Сложность захвата клетки
     private final int coinYield; // Число монет, которое приносит клетка
 
+    @Contract(pure = true)
     @JsonCreator
-    CellType(@JsonProperty("title") final String title,
+    CellType(@NotNull @JsonProperty("title") final String title,
              @JsonProperty("coinYield") final int coinYield,
              @JsonProperty("catchDifficulty") final int catchDifficulty,
-             @JsonProperty("view") final String view) {
+             @NotNull @JsonProperty("view") final String view) {
         this.view = view;
         this.title = title;
         this.coinYield = coinYield;
         this.catchDifficulty = catchDifficulty;
     }
 
-    public static CellType getCellTypeByTitle(final String title) {
+    public static @Nullable CellType getCellTypeByTitle(final @NotNull String title) {
         for (final CellType cellType : CellType.values()) {
             if (cellType.title.equals(title)) {
                 return cellType;
@@ -36,24 +40,29 @@ public enum CellType implements Serializable {
         return null;
     }
 
-    public String getTitle() {
+    @Contract(pure = true)
+    public @NotNull String getTitle() {
         return title;
     }
 
+    @Contract(pure = true)
     public int getCoinYield() {
         return coinYield;
     }
 
-    public String getView() {
+    @Contract(pure = true)
+    public @NotNull String getView() {
         return view;
     }
 
+    @Contract(pure = true)
     public int getCatchDifficulty() {
         return catchDifficulty;
     }
 
+    @Contract(pure = true)
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "CellType{" +
                 "title='" + title + '\'' +
                 ", view='" + view + '\'' +

@@ -1,6 +1,8 @@
 package io.neolab.internship.coins.server.game.board;
 
 import org.apache.commons.collections4.BidiMap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -19,7 +21,7 @@ public interface IBoard {
     /**
      * @return отображение позиций в клетки
      */
-    BidiMap<Position, Cell> getPositionToCellMap();
+    @NotNull BidiMap<Position, Cell> getPositionToCellMap();
 
     /**
      * Взять клетку по позиции, на которой она расположена на борде
@@ -27,7 +29,7 @@ public interface IBoard {
      * @param position - позиция, по которой нужно взять клетку
      * @return клетку, расположенную на позиции position
      */
-    Cell getCellByPosition(final Position position);
+    @Nullable Cell getCellByPosition(final Position position);
 
     /**
      * Взять клетку по позиции, на которой она расположена на борде
@@ -36,7 +38,7 @@ public interface IBoard {
      * @param y - позиция по y, по которой нужно взять клетку
      * @return клетку, расположенную на позиции position
      */
-    Cell getCellByPosition(final int x, final int y);
+    @Nullable Cell getCellByPosition(final int x, final int y);
 
     /**
      * Взять позицию клетки
@@ -44,22 +46,22 @@ public interface IBoard {
      * @param cell - клетка, чью позиция мы спрашиваем у борды
      * @return позицию клетки cell
      */
-    Position getPositionByCell(final Cell cell);
+    @NotNull Position getPositionByCell(final @NotNull Cell cell);
 
     /**
      * @return список крайних клеток борды
      */
-    List<Cell> getEdgeCells();
+    @NotNull List<Cell> getEdgeCells();
 
     /**
      * @param cell - клетка
      * @return список соседних с cell клеток
      */
-    List<Cell> getNeighboringCells(final Cell cell);
+    @Nullable List<Cell> getNeighboringCells(final @NotNull Cell cell);
 
     /**
-     * @param cell - клетка
+     * @param cell             - клетка
      * @param neighboringCells - список соседних с cell клеток
      */
-    void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells);
+    void putNeighboringCells(final @NotNull Cell cell, final @NotNull List<Cell> neighboringCells);
 }

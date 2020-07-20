@@ -6,6 +6,9 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.IdGenerator;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -15,16 +18,16 @@ import java.util.Objects;
 
 public class Cell implements Serializable {
     private final int id;
-    private final CellType type;
-    private final List<Unit> units = new LinkedList<>();
-    private Player feudal = null; // игрок, который получает монеты с данной клетки
-    private Race race;
+    private final @NotNull CellType type;
+    private final @NotNull List<Unit> units = new LinkedList<>();
+    private @Nullable Player feudal = null; // игрок, который получает монеты с данной клетки
+    private @Nullable Race race;
 
-    public Cell(final CellType cellType) {
+    public Cell(final @NotNull CellType cellType) {
         this(cellType, null);
     }
 
-    public Cell(final CellType type, final Race race) {
+    public Cell(final @NotNull CellType type, final @Nullable Race race) {
         this.id = IdGenerator.getCurrentId();
         this.type = type;
         this.race = race;
@@ -32,10 +35,10 @@ public class Cell implements Serializable {
 
     @JsonCreator
     public Cell(@JsonProperty("id") final int id,
-                @JsonProperty("type") final CellType type,
-                @JsonProperty("units") final List<Unit> units,
-                @JsonProperty("feudal") final Player feudal,
-                @JsonProperty("race") final Race race) {
+                @JsonProperty("type") final @NotNull CellType type,
+                @JsonProperty("units") final @NotNull List<Unit> units,
+                @JsonProperty("feudal") final @Nullable Player feudal,
+                @JsonProperty("race") final @Nullable Race race) {
         this.id = id;
         this.type = type;
         Collections.copy(this.units, units);
@@ -47,34 +50,31 @@ public class Cell implements Serializable {
         return id;
     }
 
-    public CellType getType() {
+    public @NotNull CellType getType() {
         return type;
     }
 
-    public List<Unit> getUnits() {
+    public @NotNull List<Unit> getUnits() {
         return units;
     }
 
-    public void setUnits(final List<Unit> units) {
-        Collections.copy(this.units, units);
-    }
-
-    public Player getFeudal() {
+    public @Nullable Player getFeudal() {
         return feudal;
     }
 
-    public void setFeudal(final Player feudal) {
+    public void setFeudal(final @Nullable Player feudal) {
         this.feudal = feudal;
     }
 
-    public Race getRace() {
+    public @Nullable Race getRace() {
         return race;
     }
 
-    public void setRace(final Race race) {
+    public void setRace(final @Nullable Race race) {
         this.race = race;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

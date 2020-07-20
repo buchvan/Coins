@@ -11,6 +11,9 @@ import io.neolab.internship.coins.common.serialize.CellSerializer;
 import io.neolab.internship.coins.common.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -22,15 +25,15 @@ public class Board implements IBoard, Serializable {
 
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
-    private final BidiMap<Position, Cell> positionToCellMap;
+    private final @NotNull BidiMap<Position, Cell> positionToCellMap;
 
-    private final List<Cell> edgeCells;
+    private final @NotNull List<Cell> edgeCells;
 
     @JsonSerialize(keyUsing = CellSerializer.class)
     @JsonDeserialize(keyUsing = CellKeyDeserializer.class)
-    private final Map<Cell, List<Cell>> cellToNeighboringCells;
+    private final @NotNull Map<Cell, List<Cell>> cellToNeighboringCells;
 
-    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
+    public Board(final int sizeX, final int sizeY, final @NotNull BidiMap<Position, Cell> positionToCellMap) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
@@ -67,9 +70,9 @@ public class Board implements IBoard, Serializable {
     @JsonCreator
     public Board(@JsonProperty("sizeX") final int sizeX,
                  @JsonProperty("sizeY") final int sizeY,
-                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
-                 @JsonProperty("edgeCells") final List<Cell> edgeCells,
-                 @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
+                 @NotNull @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+                 @NotNull @JsonProperty("edgeCells") final List<Cell> edgeCells,
+                 @NotNull @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
@@ -93,40 +96,41 @@ public class Board implements IBoard, Serializable {
     }
 
     @Override
-    public BidiMap<Position, Cell> getPositionToCellMap() {
+    public @NotNull BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
     }
 
     @Override
-    public List<Cell> getEdgeCells() {
+    public @NotNull List<Cell> getEdgeCells() {
         return edgeCells;
     }
 
     @Override
-    public List<Cell> getNeighboringCells(final Cell cell) {
+    public @Nullable List<Cell> getNeighboringCells(final @NotNull Cell cell) {
         return cellToNeighboringCells.get(cell);
     }
 
     @Override
-    public void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells) {
+    public void putNeighboringCells(final @NotNull Cell cell, final @NotNull List<Cell> neighboringCells) {
         cellToNeighboringCells.put(cell, neighboringCells);
     }
 
     @Override
-    public Cell getCellByPosition(final Position position) {
+    public @Nullable Cell getCellByPosition(final @NotNull Position position) {
         return getPositionToCellMap().get(position);
     }
 
     @Override
-    public Cell getCellByPosition(final int x, final int y) {
+    public @Nullable Cell getCellByPosition(final int x, final int y) {
         return getCellByPosition(new Position(x, y));
     }
 
     @Override
-    public Position getPositionByCell(final Cell cell) {
+    public @NotNull Position getPositionByCell(final @NotNull Cell cell) {
         return getPositionToCellMap().getKey(cell);
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
