@@ -165,7 +165,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
-        
+
         List<Unit> cellUnitsAfterDeclining = someCellByPosition.getUnits();
         assertTrue(cellUnitsAfterDeclining.contains(someUnit1));
         assertTrue(cellUnitsAfterDeclining.contains(someUnit2));
