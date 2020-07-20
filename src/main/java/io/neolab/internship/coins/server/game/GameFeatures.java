@@ -8,6 +8,7 @@ import io.neolab.internship.coins.common.deserialize.PairRaceCellTypeDeserialize
 import io.neolab.internship.coins.common.serialize.PairRaceCellTypeSerializer;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.feature.Feature;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.io.Serializable;

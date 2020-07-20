@@ -10,7 +10,8 @@ import io.neolab.internship.coins.common.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
-import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 
 import java.io.Serializable;
 import java.util.*;
