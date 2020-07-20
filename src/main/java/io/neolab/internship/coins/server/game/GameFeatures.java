@@ -18,8 +18,8 @@ public class GameFeatures implements Serializable {
 
     @JsonSerialize(keyUsing = PairRaceCellTypeSerializer.class)
     @JsonDeserialize(keyUsing = PairRaceCellTypeDeserializer.class)
-    private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures; // (раса, тип клетки) ->
-    // список соответствующих им особенностей
+    /* (раса, тип клетки) -> список соответствующих им особенностей */
+    private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures;
 
     public GameFeatures() {
         this(new HashMap<>());
@@ -27,7 +27,7 @@ public class GameFeatures implements Serializable {
 
     @JsonCreator
     public GameFeatures(@JsonProperty("raceCellTypeFeatures") final Map<Pair<Race, CellType>, List<Feature>>
-                                    raceCellTypeFeatures) {
+                                raceCellTypeFeatures) {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
     }
 
