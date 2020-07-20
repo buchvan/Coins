@@ -100,7 +100,7 @@ public interface IGameValidator {
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
-            GameLogger.printCatchCellNotCapturedLog(player.getNickname());
+            GameLogger.printCatchCellNotCapturedLog(player);
             throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
         }
 

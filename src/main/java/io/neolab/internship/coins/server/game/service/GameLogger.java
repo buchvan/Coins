@@ -77,6 +77,24 @@ public class GameLogger {
     }
 
     /**
+     * Вывод лога об обновлении игрока в начале его раунда
+     *
+     * @param player - игрок, который обновляется
+     */
+    public static void printRoundBeginUpdateLog(final Player player) {
+        LOGGER.info("Player {} is updated in round begin ", player.getNickname());
+    }
+
+    /**
+     * Вывод лога об обновлении игрока в конце его раунда
+     *
+     * @param player - игрок, который обновляется
+     */
+    public static void printRoundEndUpdateLog(final Player player) {
+        LOGGER.info("Player {} is updated in round end ", player.getNickname());
+    }
+
+    /**
      * Вывод лога о следующем игроке
      *
      * @param player - следующий игрок
@@ -105,6 +123,72 @@ public class GameLogger {
     }
 
     /**
+     * Вывод лога о попытке входа в свою клетку
+     *
+     * @param player       - игрок, пытающийся войти юнитами в свою клетку
+     * @param cellPosition - позиция клетки на борде
+     */
+    public static void printCellTryEnterLog(final Player player, final Position cellPosition) {
+        LOGGER.debug("Player {} try enter to his cell {} ", player.getNickname(), cellPosition);
+    }
+
+    /**
+     * Вывод лога о выборе игроком числа юнитов для захвата клетки
+     *
+     * @param player     - игрок, выбравший число юнитов для входа в свою клетку
+     * @param unitsCount - выбранное число юнитов
+     */
+    public static void printCellTryEnterUnitsQuantityLog(final Player player, final int unitsCount) {
+        LOGGER.debug("Player {} try enter to his cell units in quantity {} ", player.getNickname(), unitsCount);
+    }
+
+    /**
+     * Вывод лога о неудачном входе в свою клетку
+     *
+     * @param player - игрок, который не смог войти в свою клетку
+     */
+    public static void printCellNotEnteredLog(final Player player) {
+        LOGGER.debug("The cell is not entered. The player {} retreated ", player.getNickname());
+    }
+
+    /**
+     * Вывод лога после входа в свою клетку
+     *
+     * @param player - игрок, вошедший в свою клетку
+     * @param cell   - клетка игрока
+     */
+    public static void printAfterCellEnteringLog(final Player player, final Cell cell) {
+        LOGGER.debug("+++++++++++++++++++++++++++++++");
+        LOGGER.debug("Cell after entering: ");
+        printCellInformationLog(cell);
+        LOGGER.debug("Player after entering: ");
+        printPlayerUnitsInformationLog(player);
+        LOGGER.debug("+++++++++++++++++++++++++++++++");
+    }
+
+    /**
+     * Вывод лога с информацией о клетке
+     *
+     * @param cell - клетка
+     */
+    public static void printCellInformationLog(final Cell cell) {
+        LOGGER.debug("CellType: {} ", cell.getType().getTitle());
+        LOGGER.debug("Race: {} ", cell.getRace().getTitle());
+        LOGGER.debug("Feudal: {} ", cell.getFeudal() != null ? cell.getFeudal().getNickname() : "NULL");
+        LOGGER.debug("Units: {} ", cell.getUnits());
+    }
+
+    /**
+     * Вывод лога с информацией о юнитов игрока
+     *
+     * @param player - игрок
+     */
+    public static void printPlayerUnitsInformationLog(final Player player) {
+        LOGGER.debug("Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
+        LOGGER.debug("Not available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE));
+    }
+
+    /**
      * Вывод лога о попытке захвата клетки
      *
      * @param player       - игрок, пытающийся захватить клетку
@@ -127,10 +211,10 @@ public class GameLogger {
     /**
      * Вывод лога о неудачном захвате клетки
      *
-     * @param aggressorNickname - никнэйм игрока, который не смог захватить клетку
+     * @param player - игрок, который не смог захватить клетку
      */
-    public static void printCatchCellNotCapturedLog(final String aggressorNickname) {
-        LOGGER.debug("The cell is not captured. The aggressor {} retreated ", aggressorNickname);
+    public static void printCatchCellNotCapturedLog(final Player player) {
+        LOGGER.debug("The cell is not captured. The aggressor {} retreated ", player.getNickname());
     }
 
     /**
@@ -201,14 +285,9 @@ public class GameLogger {
     public static void printAfterCellCatchingLog(final Player player, final Cell catchingCell) {
         LOGGER.debug("+++++++++++++++++++++++++++++++");
         LOGGER.debug("Cell after catching: ");
-        LOGGER.debug("CellType: {} ", catchingCell.getType().getTitle());
-        LOGGER.debug("Race: {} ", catchingCell.getRace().getTitle());
-        LOGGER.debug("Feudal: {} ",
-                catchingCell.getFeudal() != null ? catchingCell.getFeudal().getNickname() : "NULL");
-        LOGGER.debug("Units: {} ", catchingCell.getUnits());
+        printCellInformationLog(catchingCell);
         LOGGER.debug("Player after catching: ");
-        LOGGER.debug("Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
-        LOGGER.debug("Not available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE));
+        printPlayerUnitsInformationLog(player);
         LOGGER.debug("+++++++++++++++++++++++++++++++");
     }
 
@@ -221,15 +300,7 @@ public class GameLogger {
      */
     public static void printTransitCellsLog(final Player player, final List<Cell> transitCells) {
         LOGGER.debug("* Transit cells of player {}: ", player.getNickname());
-        transitCells.forEach(transitCell -> {
-            LOGGER.debug("--- CellType: {} ", transitCell.getType().getTitle());
-            LOGGER.debug("--- Race: {} ", transitCell.getRace().getTitle());
-            LOGGER.debug("--- Feudal: {} ",
-                    transitCell.getFeudal() != null ?
-                            transitCell.getFeudal().getNickname() :
-                            "NULL");
-            LOGGER.debug("--- Units: {} ", transitCell.getUnits());
-        });
+        transitCells.forEach(GameLogger::printCellInformationLog);
     }
 
     /**
@@ -271,13 +342,9 @@ public class GameLogger {
      */
     public static void printCellAfterDefendingLog(final Player player, final Cell protectedCell) {
         LOGGER.debug("Cell after defending: ");
-        LOGGER.debug("--- Feudal: {} ", protectedCell.getFeudal() != null ?
-                protectedCell.getFeudal().getNickname() :
-                "NULL");
-        LOGGER.debug("--- Units: {} ", protectedCell.getUnits());
+        printCellInformationLog(protectedCell);
         LOGGER.debug("Player {} after defending: ", player.getNickname());
-        LOGGER.debug("--- Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
-        LOGGER.debug("--- Not available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE));
+        printPlayerUnitsInformationLog(player);
     }
 
     /**

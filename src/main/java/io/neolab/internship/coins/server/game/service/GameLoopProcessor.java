@@ -17,16 +17,14 @@ import java.util.*;
 public class GameLoopProcessor {
 
     /**
-     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится (пока что):
+     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
-     * снятие юнитов игрока с клеток, в которые они были распределены
      *
      * @param player          - игрок, чьи данные нужно обновить
-     * @param controlledCells - принадлежащие игроку клетки
      */
-    public static void playerRoundBeginUpdate(final Player player, final List<Cell> controlledCells) {
+    public static void playerRoundBeginUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
-        controlledCells.forEach(cell -> cell.getUnits().clear());
+        GameLogger.printRoundBeginUpdateLog(player);
     }
 
     /**
@@ -37,6 +35,7 @@ public class GameLoopProcessor {
      */
     public static void playerRoundEndUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
+        GameLogger.printRoundEndUpdateLog(player);
     }
 
     /**
