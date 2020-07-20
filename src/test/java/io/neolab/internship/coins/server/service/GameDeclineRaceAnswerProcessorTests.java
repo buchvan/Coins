@@ -9,10 +9,14 @@ import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.server.game.board.Position;
+import org.apache.commons.collections4.BidiMap;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -137,5 +141,43 @@ public class GameDeclineRaceAnswerProcessorTests {
         assertTrue(feudalCells.contains(feudalCell));
         assertTrue(feudalCells.contains(feudalCell1));
         assertEquals(2, feudalCells.size());
+    }
+
+    @Test
+    public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+
+        Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
+        Cell someCellByPosition = game.getBoard().getCellByPosition(somePosition);
+        List<Unit> cellUnits = new ArrayList<>();
+        Unit someUnit1 = new Unit();
+        Unit someUnit2 = new Unit();
+        cellUnits.add(someUnit1);
+        cellUnits.add(someUnit2);
+        someCellByPosition.setUnits(cellUnits);
+
+        final List<Cell> feudalCells = new LinkedList<>();
+        feudalCells.add(someCellByPosition);
+        final Player declineRacePlayer = getSomePlayer(game);
+        someCellByPosition.setFeudal(declineRacePlayer);
+        game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
+
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final Answer answer = new DeclineRaceAnswer(true);
+        GameAnswerProcessor.process(PlayerQuestion, answer);
+        
+        List<Unit> cellUnitsAfterDeclining = someCellByPosition.getUnits();
+        assertTrue(cellUnitsAfterDeclining.contains(someUnit1));
+        assertTrue(cellUnitsAfterDeclining.contains(someUnit2));
+        assertEquals(2, cellUnitsAfterDeclining.size());
+    }
+
+    private Position getSomeBoardPosition(BidiMap<Position, Cell> positionCellBidiMap) {
+        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
+        return positionCellBidiMap.getKey(cells.get(0));
+    }
+
+    private Player getSomePlayer(IGame game) {
+        return game.getPlayers().get(0);
     }
 }
