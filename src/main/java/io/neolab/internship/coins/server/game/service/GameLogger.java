@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class GameLogger {
-    public static final Logger LOGGER = LoggerFactory.getLogger(GameLogger.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameLogger.class);
 
     /**
      * Вывод лога о файле, куда ведётся логгирование

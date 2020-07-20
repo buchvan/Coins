@@ -140,6 +140,7 @@ public class Server implements IServer {
             }
             while (game.getCurrentRound() < Game.ROUNDS_COUNT) {
                 game.incrementCurrentRound();
+                GameLogger.printRoundBeginLog(game.getCurrentRound());
                 serverList.forEach(serverSomething -> {
                     GameLogger.printNextPlayerLog(serverSomething.player);
                     try {
@@ -161,7 +162,6 @@ public class Server implements IServer {
                 GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(), game.getOwnToCells(),
                         game.getFeudalToCells());
             }
-
             GameFinalizer.finalize(game.getPlayers());
 
         } catch (final CoinsException | IOException exception) {
@@ -225,7 +225,7 @@ public class Server implements IServer {
 
         beginRoundChoice(serverSomething, game);
         captureCell(serverSomething, game);
-        distribution(serverSomething, game);
+        distributionUnits(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
         GameLoopProcessor.playerRoundEndUpdate(serverSomething.player);
@@ -285,7 +285,7 @@ public class Server implements IServer {
      * @throws IOException    в случае ошибки общения с клиентом
      * @throws CoinsException в случае игровой ошибки
      */
-    private void distribution(final ServerSomething serverSomething, final IGame game)
+    private void distributionUnits(final ServerSomething serverSomething, final IGame game)
             throws IOException, CoinsException {
 
         final PlayerQuestion distributionQuestion = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS,
