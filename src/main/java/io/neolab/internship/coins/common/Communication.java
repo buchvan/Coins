@@ -6,12 +6,13 @@ import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Модуль сериализации-десериализации
  */
 public class Communication {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final @NotNull ObjectMapper mapper = new ObjectMapper();
 
     /**
      * Сериализация вопроса
@@ -20,7 +21,7 @@ public class Communication {
      * @return json-строку - сериализованный вопрос
      * @throws JsonProcessingException, если writeValueAsString this throws
      */
-    public static String serializeQuestion(final Question question) throws JsonProcessingException {
+    public static @NotNull String serializeQuestion(final @NotNull Question question) throws JsonProcessingException {
         return mapper.writeValueAsString(question);
     }
 
@@ -31,7 +32,8 @@ public class Communication {
      * @return вопрос игроку
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static PlayerQuestion deserializePlayerQuestion(final String json) throws JsonProcessingException {
+    public static @NotNull PlayerQuestion deserializePlayerQuestion(final @NotNull String json)
+            throws JsonProcessingException {
         return mapper.readValue(json, PlayerQuestion.class);
     }
 
@@ -42,7 +44,8 @@ public class Communication {
      * @return вопрос в конце игры
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static GameOverQuestion deserializeGameOverQuestion(final String json) throws JsonProcessingException {
+    public static @NotNull GameOverQuestion deserializeGameOverQuestion(final @NotNull String json)
+            throws JsonProcessingException {
         return mapper.readValue(json, GameOverQuestion.class);
     }
 
@@ -53,7 +56,7 @@ public class Communication {
      * @return json-строку - сериализованный ответ
      * @throws JsonProcessingException, если writeValueAsString this throws
      */
-    public static String serializeAnswer(final Answer answer) throws JsonProcessingException {
+    public static @NotNull String serializeAnswer(final @NotNull Answer answer) throws JsonProcessingException {
         return mapper.writeValueAsString(answer);
     }
 
@@ -64,7 +67,8 @@ public class Communication {
      * @return ответ на вопрос захвата клетки
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static CatchCellAnswer deserializeCatchCellAnswer(final String json) throws JsonProcessingException {
+    public static @NotNull CatchCellAnswer deserializeCatchCellAnswer(final @NotNull String json)
+            throws JsonProcessingException {
         return mapper.readValue(json, CatchCellAnswer.class);
     }
 
@@ -75,7 +79,8 @@ public class Communication {
      * @return ответ на вопрос смены расы
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static ChangeRaceAnswer deserializeChangeRaceAnswer(final String json) throws JsonProcessingException {
+    public static @NotNull ChangeRaceAnswer deserializeChangeRaceAnswer(final @NotNull String json)
+            throws JsonProcessingException {
         return mapper.readValue(json, ChangeRaceAnswer.class);
     }
 
@@ -86,7 +91,8 @@ public class Communication {
      * @return ответ на вопрос ухода в упадок
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static DeclineRaceAnswer deserializeDeclineRaceAnswer(final String json) throws JsonProcessingException {
+    public static @NotNull DeclineRaceAnswer deserializeDeclineRaceAnswer(final @NotNull String json)
+            throws JsonProcessingException {
         return mapper.readValue(json, DeclineRaceAnswer.class);
     }
 
@@ -97,7 +103,7 @@ public class Communication {
      * @return ответ на вопрос распределения юнитов
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static DistributionUnitsAnswer deserializeDistributionUnitsAnswer(final String json)
+    public static @NotNull DistributionUnitsAnswer deserializeDistributionUnitsAnswer(final @NotNull String json)
             throws JsonProcessingException {
         return mapper.readValue(json, DistributionUnitsAnswer.class);
     }
