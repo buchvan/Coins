@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.game;
 
-import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -19,14 +19,14 @@ public interface IGame {
     /**
      * @return борду
      */
-    IBoard getBoard();
+    @NotNull IBoard getBoard();
 
     /**
      * Сеттер борды
      *
      * @param board - новая борда
      */
-    void setBoard(final Board board);
+    void setBoard(final @NotNull IBoard board);
 
     /**
      * @return номер текущего раунда
@@ -36,35 +36,35 @@ public interface IGame {
     /**
      * @return отображение игроков в множества клеток, приносящих им монеты
      */
-    Map<Player, Set<Cell>> getFeudalToCells();
+    @NotNull Map<Player, Set<Cell>> getFeudalToCells();
 
     /**
      * @return отображение игроков в списки клеток, подконтрольных им
      */
-    Map<Player, List<Cell>> getOwnToCells();
+    @NotNull Map<Player, List<Cell>> getOwnToCells();
 
     /**
      * @return отображение игроков в списки их транзитных клеток
      */
-    Map<Player, List<Cell>> getPlayerToTransitCells();
+    @NotNull Map<Player, List<Cell>> getPlayerToTransitCells();
 
     /**
      * @return отображение игроков в множества клеток, достижимых ими за один ход
      */
-    Map<Player, Set<Cell>> getPlayerToAchievableCells();
+    @NotNull Map<Player, Set<Cell>> getPlayerToAchievableCells();
 
     /**
      * @return игровые особенности
      */
-    GameFeatures getGameFeatures();
+    @NotNull GameFeatures getGameFeatures();
 
     /**
      * @return пул (список) рас
      */
-    List<Race> getRacesPool();
+    @NotNull List<Race> getRacesPool();
 
     /**
      * @return список игроков
      */
-    List<Player> getPlayers();
+    @NotNull List<Player> getPlayers();
 }
