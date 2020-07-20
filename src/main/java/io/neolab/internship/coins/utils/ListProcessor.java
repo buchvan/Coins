@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public class ListProcessor {
@@ -11,7 +13,7 @@ public class ListProcessor {
      * @param list - произвольный список
      * @param <T>  - любой параметр
      */
-    public static <T> void removeFirstN(final int N, final List<T> list) {
+    public static <T> void removeFirstN(final int N, final @NotNull List<T> list) {
         if (N < 0) {
             throw new IndexOutOfBoundsException(); // TODO: Своё исключение?
         }
