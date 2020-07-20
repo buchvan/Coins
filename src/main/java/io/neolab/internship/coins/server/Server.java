@@ -141,16 +141,10 @@ public class Server implements IServer {
             while (game.getCurrentRound() < Game.ROUNDS_COUNT) {
                 game.incrementCurrentRound();
                 GameLogger.printRoundBeginLog(game.getCurrentRound());
-                serverList.forEach(serverSomething -> {
+                for (final ServerSomething serverSomething : serverList) {
                     GameLogger.printNextPlayerLog(serverSomething.player);
-                    try {
-                        playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
-                    } catch (final CoinsException | IOException exception) {
-                        LOGGER.error("Error!", exception);
-                        serverList.forEach(ServerSomething::downService);
-                        serverList.clear();
-                    }
-                });
+                    playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
+                }
 
                 /* обновление числа монет у каждого игрока */
                 game.getPlayers()
@@ -163,7 +157,6 @@ public class Server implements IServer {
                         game.getFeudalToCells());
             }
             GameFinalizer.finalize(game.getPlayers());
-
         } catch (final CoinsException | IOException exception) {
             LOGGER.error("Error!!!", exception);
             serverList.forEach(ServerSomething::downService);
