@@ -243,7 +243,8 @@ public class Server implements IServer {
      * @throws IOException    в случае ошибки общения с клиентом
      * @throws CoinsException в случае игровой ошибки
      */
-    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException, CoinsException {
+    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game)
+            throws IOException, CoinsException {
         final PlayerQuestion declineRaceQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE,
                 game, serverSomething.player);
         serverSomething.send(Communication.serializeQuestion(declineRaceQuestion));
@@ -266,7 +267,8 @@ public class Server implements IServer {
      * @throws IOException    в случае ошибки общения с клиентом
      * @throws CoinsException в случае игровой ошибки
      */
-    private void captureCell(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
+    private void captureCell(final ServerSomething serverSomething, final IGame game)
+            throws CoinsException, IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
