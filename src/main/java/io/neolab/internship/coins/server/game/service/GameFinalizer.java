@@ -2,7 +2,7 @@ package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
-import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.player.Player;
 
 import java.util.LinkedList;
 import java.util.List;
