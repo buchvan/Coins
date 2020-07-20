@@ -3,6 +3,9 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.player.Player;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +18,7 @@ public class GameFinalizer {
      * @param playerList - список игроков.
      * @return список победителей
      */
-    public static List<Player> finalize(final List<Player> playerList) throws CoinsException {
+    public static @NotNull List<Player> finalize(final @Nullable List<Player> playerList) throws CoinsException {
         final int maxCoinsCount = getMaxCoinsCount(playerList);
         final List<Player> winners = getWinners(maxCoinsCount, playerList);
         GameLogger.printResultsInGameEnd(winners, playerList);
@@ -26,7 +29,8 @@ public class GameFinalizer {
      * @param playerList - список игроков
      * @return максимальное кол-во монет, имеющихся у одного игрока
      */
-    public static int getMaxCoinsCount(final List<Player> playerList) throws CoinsException {
+    @Contract("null -> fail")
+    public static int getMaxCoinsCount(final @Nullable List<Player> playerList) throws CoinsException {
         if (playerList == null) {
             throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
         }
@@ -41,8 +45,9 @@ public class GameFinalizer {
      * @param playerList    - список игроков
      * @return список победителей (игроков, имеющих монет в кол-ве maxCoinsCount)
      */
-    public static List<Player> getWinners(final int maxCoinsCount,
-                                          final List<Player> playerList) throws CoinsException {
+    @Contract("_, null -> fail")
+    public static @NotNull List<Player> getWinners(final int maxCoinsCount,
+                                                   final @Nullable List<Player> playerList) throws CoinsException {
         if (playerList == null) {
             throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
         }
