@@ -9,8 +9,6 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.service.*;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import io.neolab.internship.coins.utils.*;
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.io.IOException;
 import java.util.*;
@@ -22,7 +20,7 @@ public class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static final BidiMap<SimpleBot, Player> simpleBotToPlayer = new DualHashBidiMap<>(); // каждому симплботу
+    private static final List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
 
 
@@ -38,7 +36,7 @@ public class SelfPlay {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
-            game.getPlayers().forEach(player -> simpleBotToPlayer.put(new SimpleBot(), player));
+            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
             GameFinalizer.finalize(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
@@ -53,26 +51,22 @@ public class SelfPlay {
      */
     private static void gameLoop(final IGame game) {
         GameLogger.printStartGameChoiceLog();
-        final List<Player> playerList = game.getPlayers();
-        playerList.forEach(player ->
-                GameAnswerProcessor.chooseRace(player, game.getRacesPool(),
-                        simpleBotToPlayer.getKey(player).chooseRace(player, game)));
+        simpleBotToPlayer.forEach(pair ->
+                GameAnswerProcessor.chooseRace(pair.getSecond(), game.getRacesPool(),
+                        pair.getFirst().chooseRace(pair.getSecond(), game)));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
             GameLogger.printRoundBeginLog(game.getCurrentRound());
-            playerList.forEach(player -> {
-                GameLogger.printNextPlayerLog(player);
-
-                // Раунд игрока. Все свои решения он принимает здесь
-                playerRound(player, simpleBotToPlayer.getKey(player), game);
+            simpleBotToPlayer.forEach(pair -> {
+                GameLogger.printNextPlayerLog(pair.getSecond());
+                playerRound(pair.getSecond(), pair.getFirst(),
+                        game); // Раунд игрока. Все свои решения он принимает здесь
             });
-
             // обновление числа монет у каждого игрока
-            playerList.forEach(player ->
-                    GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
-                            game.getGameFeatures(),
-                            game.getBoard()));
+            simpleBotToPlayer.forEach(pair ->
+                    GameLoopProcessor.updateCoinsCount(pair.getSecond(), game.getFeudalToCells().get(pair.getSecond()),
+                    game.getGameFeatures(), game.getBoard()));
 
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(),
                     game.getOwnToCells(), game.getFeudalToCells());
