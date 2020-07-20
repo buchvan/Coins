@@ -23,13 +23,10 @@ import static org.junit.Assert.*;
 
 public class GameDistributionUnitsAnswerProcessorTests {
 
-    private final GameAnswerProcessor gameAnswerProcessor = new GameAnswerProcessor();
-
     @Test
     public void distributionUnitsNoAvailableUnitsTest() throws CoinsException {
         IGame game = gameInit(2, 2, 2);
-        List<Player> players = game.getPlayers();
-        Player player = players.get(0);
+        Player player = getSomePlayer(game);
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
         PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer();
@@ -40,29 +37,19 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
     @Test
     public void distributionUnitsNotEnoughUnitsTest() throws CoinsException {
-        IGame game = gameInit(2,2, 2);
+        IGame game = gameInit(2, 2, 2);
 
-        List<Player> players = game.getPlayers();
-        Player player = players.get(0);
-        List<Unit> playerUnits = new ArrayList<>();
-        playerUnits.add(new Unit());
-        player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
+        Player player = getSomePlayer(game);
+        setPlayerUnits(player);
+        setControlledPlayerCells(game, player);
 
-        List<Cell> controlledCells = new LinkedList<>();
-        controlledCells.add(new Cell(CellType.LAND));
-        controlledCells.add(new Cell(CellType.WATER));
-        game.getOwnToCells().get(player).addAll(controlledCells);
-
-        Map<Position, List<Unit>> resolution = new HashMap<>();
-        BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
-        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
-        Position somePosition = positionCellBidiMap.getKey(cells.get(0));
-
+        Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
         List<Unit> unitsForResolutions = new ArrayList<>();
         unitsForResolutions.add(new Unit());
         unitsForResolutions.add(new Unit());
-
+        Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
+
         PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer(resolution);
 
@@ -73,15 +60,11 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
     @Test
     public void distributionUnitsWrongPositionTest() throws CoinsException {
-        IGame game = gameInit(2,2, 2);
-        List<Player> players = game.getPlayers();
-        List<Cell> controlledCells = new LinkedList<>();
-        controlledCells.add(new Cell(CellType.LAND));
-        controlledCells.add(new Cell(CellType.WATER));
-        Player player = players.get(0);
-        game.getOwnToCells().get(player).addAll(controlledCells);
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        setControlledPlayerCells(game, player);
         Map<Position, List<Unit>> resolution = new HashMap<>();
-        resolution.put(new Position(100, 100), new ArrayList<>());
+        resolution.put(new Position(100, 100), Collections.emptyList());
         PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
@@ -91,67 +74,71 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
     @Test
     public void distributionUnitsRightUnitsInsertionsToCellTest() throws CoinsException {
-        IGame game = gameInit(2,2, 2);
+        IGame game = gameInit(2, 2, 2);
 
-        List<Player> players = game.getPlayers();
-        Player player = players.get(0);
-        List<Unit> playerUnits = new ArrayList<>();
-        playerUnits.add(new Unit());
-        player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
+        Player player = getSomePlayer(game);
+        setPlayerUnits(player);
+        setControlledPlayerCells(game, player);
 
-        List<Cell> controlledCells = new LinkedList<>();
-        controlledCells.add(new Cell(CellType.LAND));
-        controlledCells.add(new Cell(CellType.WATER));
-        game.getOwnToCells().get(player).addAll(controlledCells);
-
-        Map<Position, List<Unit>> resolution = new HashMap<>();
         BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
-        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
-        Position somePosition = positionCellBidiMap.getKey(cells.get(0));
-
+        Position somePosition = getSomeBoardPosition(positionCellBidiMap);
         List<Unit> unitsForResolutions = new ArrayList<>();
         Unit someUnit = new Unit();
         unitsForResolutions.add(someUnit);
-
+        Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
+
         PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer(resolution);
 
         GameAnswerProcessor.process(question, answer);
-        assertEquals(1, positionCellBidiMap.get(somePosition).getUnits().size());
-        assertEquals(someUnit.getId(), positionCellBidiMap.get(somePosition).getUnits().get(0).getId());
+        List<Unit> positionCells = positionCellBidiMap.get(somePosition).getUnits();
+        assertEquals(1, positionCells.size());
+        assertEquals(someUnit.getId(), positionCells.get(0).getId());
     }
 
     @Test
     public void distributionUnitsNewUnitsBecomeNotUnavailable() throws CoinsException {
-        IGame game = gameInit(2,2, 2);
+        IGame game = gameInit(2, 2, 2);
 
-        List<Player> players = game.getPlayers();
-        Player player = players.get(0);
-        List<Unit> playerUnits = new ArrayList<>();
-        playerUnits.add(new Unit());
-        player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
+        Player player = getSomePlayer(game);
+        setPlayerUnits(player);
+        setControlledPlayerCells(game, player);
 
-        List<Cell> controlledCells = new LinkedList<>();
-        controlledCells.add(new Cell(CellType.LAND));
-        controlledCells.add(new Cell(CellType.WATER));
-        game.getOwnToCells().get(player).addAll(controlledCells);
-
-        Map<Position, List<Unit>> resolution = new HashMap<>();
-        BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
-        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
-        Position somePosition = positionCellBidiMap.getKey(cells.get(0));
-
+        Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
         List<Unit> unitsForResolutions = new ArrayList<>();
         Unit someUnit = new Unit();
         unitsForResolutions.add(someUnit);
-
+        Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
+
         PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer(resolution);
 
         GameAnswerProcessor.process(question, answer);
 
-        assertTrue( player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
+        assertTrue(player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
+    }
+
+    private Player getSomePlayer(IGame game) {
+        return game.getPlayers().get(0);
+    }
+
+    private void setControlledPlayerCells(IGame game, Player player) {
+        List<Cell> controlledCells = new LinkedList<>();
+        controlledCells.add(new Cell(CellType.LAND));
+        controlledCells.add(new Cell(CellType.WATER));
+        game.getOwnToCells().get(player).addAll(controlledCells);
+    }
+
+    private void setPlayerUnits(Player player) {
+        List<Unit> playerUnits = new ArrayList<>();
+        playerUnits.add(new Unit());
+        player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
+    }
+
+    private Position getSomeBoardPosition(BidiMap<Position, Cell> positionCellBidiMap) {
+        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
+        return positionCellBidiMap.getKey(cells.get(0));
     }
 }
