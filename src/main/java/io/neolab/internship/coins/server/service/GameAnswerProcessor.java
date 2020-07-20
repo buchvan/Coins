@@ -47,7 +47,7 @@ public class GameAnswerProcessor {
             GameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
             LOGGER.debug("Answer is valid");
             if (declineRaceAnswer.isDeclineRace()) {
-                declineRace(player, currentGame.getOwnToCells().get(player));
+                declineRaceProcess(player, currentGame.getOwnToCells().get(player));
             }
             return;
         }
@@ -57,7 +57,7 @@ public class GameAnswerProcessor {
             final List<Race> currentRacesPool = currentGame.getRacesPool();
             GameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
             LOGGER.debug("Answer is valid");
-            changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
+            changeRaceProcess(player, changeRaceAnswer.getNewRace(), currentRacesPool);
             return;
         }
         if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
@@ -88,7 +88,7 @@ public class GameAnswerProcessor {
             GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
                     currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
             LOGGER.debug("Answer is valid");
-            distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
+            distributionUnitsProcess(player, distributionUnitsAnswer.getResolutions(),
                     currentGame.getPlayerToTransitCells().get(player),
                     currentGame.getOwnToCells().get(player),
                     currentBoard);
@@ -101,7 +101,7 @@ public class GameAnswerProcessor {
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
      */
-    private static void declineRace(final Player player, final List<Cell> controlledCells) {
+    private static void declineRaceProcess(final Player player, final List<Cell> controlledCells) {
         GameLogger.printDeclineRaceLog(player);
         controlledCells.clear();
     }
@@ -112,7 +112,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    public static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
+    public static void changeRaceProcess(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -195,7 +195,7 @@ public class GameAnswerProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param board           - борда
      */
-    public static void distributionUnitsToCell(final Player player, final Map<Position, List<Unit>> resolutions,
+    public static void distributionUnitsProcess(final Player player, final Map<Position, List<Unit>> resolutions,
                                                final List<Cell> transitCells, final List<Cell> controlledCells,
                                                final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);

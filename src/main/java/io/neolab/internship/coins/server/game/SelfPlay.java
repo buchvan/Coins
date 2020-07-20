@@ -60,7 +60,7 @@ public class SelfPlay {
             GameLogger.printRoundBeginLog(game.getCurrentRound());
             simpleBotToPlayer.forEach(pair -> {
                 GameLogger.printNextPlayerLog(pair.getSecond());
-                playerRound(pair.getSecond(), pair.getFirst(),
+                playerRoundProcess(pair.getSecond(), pair.getFirst(),
                         game); // Раунд игрока. Все свои решения он принимает здесь
             });
             simpleBotToPlayer.forEach(pair -> // обновление числа монет у каждого игрока
@@ -79,12 +79,12 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void playerRound(final Player player, final IBot simpleBot, final IGame game) {
+    private static void playerRoundProcess(final Player player, final IBot simpleBot, final IGame game) {
         GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
         if (simpleBot.declineRaceChoose(player, game)) { // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
-            declineRace(player, simpleBot, game); // Уход в упадок
+            declineRaceProcess(player, simpleBot, game); // Уход в упадок
         }
-        catchCells(player, simpleBot, game); // Завоёвывание клеток
+        cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
         distributionUnits(player, simpleBot, game); // Распределение войск
         GameLoopProcessor.playerRoundEndUpdate(player); // "затухание" (дезактивация) данных игрока в конце раунда
     }
@@ -96,10 +96,10 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void declineRace(final Player player, final IBot simpleBot, final IGame game) {
+    private static void declineRaceProcess(final Player player, final IBot simpleBot, final IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
+        GameAnswerProcessor.changeRaceProcess(player, simpleBot.chooseRace(player, game), game.getRacesPool());
     }
 
     /**
@@ -109,7 +109,7 @@ public class SelfPlay {
      * @param simpleBot - симплбот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void catchCells(final Player player, final IBot simpleBot, final IGame game) {
+    private static void cellCaptureProcess(final Player player, final IBot simpleBot, final IGame game) {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -168,7 +168,7 @@ public class SelfPlay {
         GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
-        if (!cellIsCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
+        if (!isCellCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
             return false;
         }
@@ -196,7 +196,7 @@ public class SelfPlay {
         GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
         GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
-        if (!IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
+        if (!isPossibleEnterToCell(units.size(), tiredUnitsCount)) {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
@@ -211,7 +211,7 @@ public class SelfPlay {
      * @param tiredUnitsCount - число уставших юнитов
      * @return true - если, игрок может войти в клетку, false - иначе
      */
-    private static boolean IsPossibleEnterToCell(final int unitsSize, final int tiredUnitsCount) {
+    private static boolean isPossibleEnterToCell(final int unitsSize, final int tiredUnitsCount) {
         return unitsSize >= tiredUnitsCount;
     }
 
@@ -222,7 +222,7 @@ public class SelfPlay {
      * @param necessaryAttackPower - необходимая сила атаки на эту клетку для её захвата
      * @return true - если клетку можно захватить, имея attackPower, false - иначе
      */
-    private static boolean cellIsCatching(final int attackPower, final int necessaryAttackPower) {
+    private static boolean isCellCatching(final int attackPower, final int necessaryAttackPower) {
         return attackPower >= necessaryAttackPower;
     }
 
