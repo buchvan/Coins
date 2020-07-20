@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.*;
 public class PlayerDeserializer extends JsonDeserializer<Player> {
     @Override
     public Player deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
-            throws IOException, JsonProcessingException {
+            throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode = jsonParser.getCodec().readTree(jsonParser);
         final int id = jsonNode.get("id").asInt();

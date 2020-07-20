@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.utils.Pair;
 

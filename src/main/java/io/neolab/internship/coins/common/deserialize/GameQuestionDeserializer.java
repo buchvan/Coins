@@ -9,7 +9,7 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.player.Player;
 
 import java.io.IOException;
 
