@@ -193,7 +193,7 @@ public class GameLogger {
      */
     public static void printCellInformationLog(final Cell cell) {
         LOGGER.debug("CellType: {} ", cell.getType().getTitle());
-        LOGGER.debug("Race: {} ", cell.getRace().getTitle());
+        LOGGER.debug("Race: {} ", cell.getRace() != null ? cell.getRace().getTitle() : "NULL");
         LOGGER.debug("Feudal: {} ", cell.getFeudal() != null ? cell.getFeudal().getNickname() : "NULL");
         LOGGER.debug("Units: {} ", cell.getUnits());
     }
