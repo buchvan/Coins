@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-public class PositionToCellBidiMapDeserializer extends JsonDeserializer<BidiMap> {
+public class PositionToCellBidiMapDeserializer extends JsonDeserializer<BidiMap<Position, Cell>> {
     @Override
-    public BidiMap deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
+    public BidiMap<Position, Cell> deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
             throws IOException {
 
         final JsonNode jsonNode = jsonParser.getCodec().readTree(jsonParser);

@@ -17,10 +17,6 @@ public class DistributionUnitsAnswer extends Answer {
     @JsonDeserialize(keyUsing = PositionDeserializer.class)
     private final Map<Position, List<Unit>> resolutions;
 
-    public DistributionUnitsAnswer() {
-        this.resolutions = new HashMap<>();
-    }
-
     @JsonCreator
     public DistributionUnitsAnswer(@JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
         this.resolutions = resolutions;
