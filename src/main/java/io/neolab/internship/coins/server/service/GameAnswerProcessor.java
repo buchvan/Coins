@@ -26,11 +26,18 @@ import java.util.*;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*;
 
 /**
- * Класс отвечает за обработку ответов от игроков
+ * Класс, отвечащий за обработку ответов от игроков
  */
 public class GameAnswerProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameAnswerProcessor.class);
 
+    /**
+     * Основной метод данного процессора, в котором происходит вся обработка ответов
+     *
+     * @param playerQuestion - вопрос игроку
+     * @param answer         - ответ игрока
+     * @throws CoinsException в случае невалидности ответа
+     */
     public static void process(final PlayerQuestion playerQuestion, final Answer answer) throws CoinsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
@@ -94,8 +101,7 @@ public class GameAnswerProcessor {
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
      */
-    private static void declineRace(final Player player,
-                                    final List<Cell> controlledCells) {
+    private static void declineRace(final Player player, final List<Cell> controlledCells) {
         GameLogger.printDeclineRaceLog(player);
         controlledCells.clear();
     }
@@ -160,7 +166,7 @@ public class GameAnswerProcessor {
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
             final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
-            enterToCell(player, captureCell, units, tiredUnitsCount,board);
+            enterToCell(player, captureCell, units, tiredUnitsCount, board);
             return;
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
