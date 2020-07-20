@@ -29,7 +29,7 @@ public class SelfPlay {
      * - Создание борды
      * - Добавление метаинформации о игре(борда, игроки, юниты)
      * - Игровой цикл
-     * - Финализатор (результат работы)
+     * - Финализатор (результат игры)
      */
     private static void selfPlay() {
         try (final GameLoggerFile ignored = new GameLoggerFile()) {
