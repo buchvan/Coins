@@ -32,7 +32,12 @@ public class GameLogger {
      * @param game - созданная игра
      */
     public static void printGameCreatedLog(final IGame game) {
-        LOGGER.debug("Game is created: {} ", game);
+        LOGGER.debug("---");
+        LOGGER.debug("Game is created: ");
+        LOGGER.debug("Board: {} ", game.getBoard());
+        LOGGER.debug("Players: {} ", game.getPlayers());
+        LOGGER.debug("Pool of races: {} ", game.getRacesPool());
+        LOGGER.debug("---");
     }
 
     /**
@@ -96,7 +101,7 @@ public class GameLogger {
      */
     public static void printBeginCatchCellsLog(final Player player) {
         LOGGER.debug("=================================");
-        LOGGER.debug("* Player {} catch cells! *", player.getNickname());
+        LOGGER.debug("* Player {} captures cells! *", player.getNickname());
     }
 
     /**
@@ -112,8 +117,8 @@ public class GameLogger {
     /**
      * Вывод лога о выборе игроком числа юнитов для захвата клетки
      *
-     * @param aggressorNickname     - никнэйм игрок, выбравший число юнитов для захвата
-     * @param unitsCount - выбранное число юнитов
+     * @param aggressorNickname - никнэйм игрок, выбравший число юнитов для захвата
+     * @param unitsCount        - выбранное число юнитов
      */
     public static void printCatchCellUnitsQuantityLog(final String aggressorNickname, final int unitsCount) {
         LOGGER.debug("Player {} capture units in quantity {} ", aggressorNickname, unitsCount);
@@ -132,7 +137,7 @@ public class GameLogger {
      * Вывод лога о применении особенности при обороне клетки
      *
      * @param defendingPlayerNickname - никнэйм игрок, защищающего клетку
-     * @param catchingCell    - захватываемая клетка
+     * @param catchingCell            - захватываемая клетка
      */
     public static void printCatchCellDefenseFeatureLog(final String defendingPlayerNickname, final Cell catchingCell) {
         LOGGER.debug("Player stumbled upon a defense of {} in cellType {} of defending player {}",
@@ -174,7 +179,7 @@ public class GameLogger {
      * @param player - игрок, захвативший клетку
      */
     public static void printCatchCellBonusAttackLog(final Player player) {
-        LOGGER.info("Cell is catched of player {} ", player.getNickname());
+        LOGGER.info("Cell is captured of player {} ", player.getNickname());
     }
 
     /**
@@ -220,7 +225,9 @@ public class GameLogger {
             LOGGER.debug("--- CellType: {} ", transitCell.getType().getTitle());
             LOGGER.debug("--- Race: {} ", transitCell.getRace().getTitle());
             LOGGER.debug("--- Feudal: {} ",
-                    transitCell.getFeudal() != null ? transitCell.getFeudal().getNickname() : "NULL");
+                    transitCell.getFeudal() != null ?
+                            transitCell.getFeudal().getNickname() :
+                            "NULL");
             LOGGER.debug("--- Units: {} ", transitCell.getUnits());
         });
     }
@@ -350,7 +357,7 @@ public class GameLogger {
                                                final Map<Player, Set<Cell>> feudalToCells) {
 
         playerList.forEach(player ->
-                LOGGER.debug("Player {}: [ coins {}, feudal for: {} cells, controled: {} cells ] ",
+                LOGGER.debug("Player {}: [ coins {}, feudal for: {} cells, controlled: {} cells ] ",
                         player.getNickname(), player.getCoins(),
                         feudalToCells.get(player).size(), ownToCells.get(player).size()));
     }
