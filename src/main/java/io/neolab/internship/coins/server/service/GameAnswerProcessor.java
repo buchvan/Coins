@@ -40,56 +40,42 @@ public class GameAnswerProcessor {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
         if (playerQuestion.getQuestionType() == QuestionType.DECLINE_RACE) {
-            final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
-            LOGGER.debug("Decline race answer: {} ", declineRaceAnswer);
-            GameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
-            LOGGER.debug("Answer is valid");
-            if (declineRaceAnswer.isDeclineRace()) {
-                declineRaceProcess(player, currentGame.getOwnToCells().get(player));
-            }
+            declineRaceProcess(answer, player, currentGame.getOwnToCells().get(player));
             return;
         }
         if (playerQuestion.getQuestionType() == QuestionType.CHANGE_RACE) {
-            final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
-            LOGGER.debug("Change race answer: {} ", changeRaceAnswer);
-            final List<Race> currentRacesPool = currentGame.getRacesPool();
-            GameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
-            LOGGER.debug("Answer is valid");
-            changeRaceProcess(player, changeRaceAnswer.getNewRace(), currentRacesPool);
+            changeRaceProcess(answer, player, currentGame.getRacesPool());
             return;
         }
         if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
-            final IBoard currentBoard = currentGame.getBoard();
-            final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
-            LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
-            final Map<Player, List<Cell>> ownToCells = currentGame.getOwnToCells();
-            final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
-            final Map<Player, Set<Cell>> playerToAchievableCells = currentGame.getPlayerToAchievableCells();
-            final Set<Cell> achievableCells = playerToAchievableCells.get(player);
-            final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-            GameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
-                    achievableCells, availableUnits, currentGame.getGameFeatures(), player);
-            LOGGER.debug("Answer is valid");
-            final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-            final List<Unit> units = catchCellAnswer.getResolution().getSecond();
-            pretendToCell(player, captureCell, units, currentBoard, currentGame.getGameFeatures(), ownToCells,
-                    currentGame.getFeudalToCells(), currentGame.getPlayerToTransitCells().get(player),
-                    achievableCells);
+            captureCellProcess(answer, player, currentGame.getBoard(), currentGame.getGameFeatures(),
+                    currentGame.getOwnToCells(), currentGame.getFeudalToCells(),
+                    currentGame.getPlayerToTransitCells().get(player),
+                    currentGame.getPlayerToAchievableCells().get(player));
             return;
         }
         if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
-            final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
-            LOGGER.debug("Distribution units answer: {} ", distributionUnitsAnswer);
-            final IBoard currentBoard = currentGame.getBoard();
-            final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
-                    + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
-            GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
-                    currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
-            LOGGER.debug("Answer is valid");
-            distributionUnitsProcess(player, distributionUnitsAnswer.getResolutions(),
-                    currentGame.getPlayerToTransitCells().get(player),
-                    currentGame.getOwnToCells().get(player),
-                    currentBoard);
+            distributionUnitsProcess(answer, player, currentGame.getBoard(),
+                    currentGame.getOwnToCells().get(player), currentGame.getPlayerToTransitCells().get(player));
+        }
+    }
+
+    /**
+     * Процесс ухода в упадок
+     *
+     * @param answer          - ответ
+     * @param player          - игрок
+     * @param controlledCells - подконтрольные игроку клетки
+     * @throws CoinsException при невалидном ответе
+     */
+    private static void declineRaceProcess(final Answer answer, final Player player, final List<Cell> controlledCells)
+            throws CoinsException {
+        final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
+        LOGGER.debug("Decline race answer: {} ", declineRaceAnswer);
+        GameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
+        LOGGER.debug("Answer is valid");
+        if (declineRaceAnswer.isDeclineRace()) {
+            declineRace(player, controlledCells);
         }
     }
 
@@ -99,9 +85,26 @@ public class GameAnswerProcessor {
      * @param player          - игрок, который решил идти в упадок
      * @param controlledCells - принадлежащие игроку клетки
      */
-    private static void declineRaceProcess(final Player player, final List<Cell> controlledCells) {
+    private static void declineRace(final Player player, final List<Cell> controlledCells) {
         GameLogger.printDeclineRaceLog(player);
         controlledCells.clear();
+    }
+
+    /**
+     * Процесс смены расы игроком
+     *
+     * @param answer    - ответ
+     * @param player    - игрок
+     * @param racesPool - пул рас
+     * @throws CoinsException при невалидном ответе
+     */
+    private static void changeRaceProcess(final Answer answer, final Player player, final List<Race> racesPool)
+            throws CoinsException {
+        final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
+        LOGGER.debug("Change race answer: {} ", changeRaceAnswer);
+        GameValidator.validateChangeRaceAnswer(changeRaceAnswer, racesPool);
+        LOGGER.debug("Answer is valid");
+        changeRace(player, changeRaceAnswer.getNewRace(), racesPool);
     }
 
     /**
@@ -110,7 +113,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    public static void changeRaceProcess(final Player player, final Race newRace, final List<Race> racesPool) {
+    private static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -137,6 +140,40 @@ public class GameAnswerProcessor {
         }
 
         GameLogger.printChooseRaceLog(player, newRace);
+    }
+
+    /**
+     * Процесс захвата клетки
+     *
+     * @param answer          - ответ
+     * @param player          - игрок
+     * @param board           - борда
+     * @param gameFeatures    - особенности игры
+     * @param ownToCells      - отображение игроков в списки подконтрольных им клеток
+     * @param feudalToCells   - отображение игроков во множества приносящих им монеты клеток
+     * @param transitCells    - список транзитных клеток игрока
+     * @param achievableCells - множество достижимых за одних ход игроком клеток
+     * @throws CoinsException в случае если ответ невалиден
+     */
+    private static void captureCellProcess(final Answer answer,
+                                           final Player player,
+                                           final IBoard board,
+                                           final GameFeatures gameFeatures,
+                                           final Map<Player, List<Cell>> ownToCells,
+                                           final Map<Player, Set<Cell>> feudalToCells,
+                                           final List<Cell> transitCells,
+                                           final Set<Cell> achievableCells) throws CoinsException {
+        final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
+        LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
+        final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
+        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+        GameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, board,
+                achievableCells, availableUnits, gameFeatures, player);
+        LOGGER.debug("Answer is valid");
+        final Cell captureCell = board.getCellByPosition(catchCellAnswer.getResolution().getFirst());
+        final List<Unit> units = catchCellAnswer.getResolution().getSecond();
+        pretendToCell(player, captureCell, units, board, gameFeatures,
+                ownToCells, feudalToCells, transitCells, achievableCells);
     }
 
     /**
@@ -182,6 +219,29 @@ public class GameAnswerProcessor {
         achievableCells.addAll(getAllNeighboringCells(board, captureCell));
     }
 
+    /**
+     * Процесс распределения юнитов
+     *
+     * @param answer          - ответ
+     * @param player          - игрок
+     * @param board           - борда
+     * @param controlledCells - список подконтрольных игроку клеток
+     * @param transitCells    - список транизтных клеток игрока
+     * @throws CoinsException в случае если ответ невалиден
+     */
+    private static void distributionUnitsProcess(final Answer answer, final Player player, final IBoard board,
+                                                 final List<Cell> controlledCells, final List<Cell> transitCells)
+            throws CoinsException {
+        final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
+        LOGGER.debug("Distribution units answer: {} ", distributionUnitsAnswer);
+        final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
+                + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
+        GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer, board,
+                controlledCells, playerUnitsAmount);
+        LOGGER.debug("Answer is valid");
+        distributionUnits(player, distributionUnitsAnswer.getResolutions(), transitCells, controlledCells, board);
+    }
+
 
     /**
      * Метод для распределения юнитов игроком
@@ -194,9 +254,9 @@ public class GameAnswerProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param board           - борда
      */
-    public static void distributionUnitsProcess(final Player player, final Map<Position, List<Unit>> resolutions,
-                                                final List<Cell> transitCells, final List<Cell> controlledCells,
-                                                final IBoard board) {
+    public static void distributionUnits(final Player player, final Map<Position, List<Unit>> resolutions,
+                                         final List<Cell> transitCells, final List<Cell> controlledCells,
+                                         final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
         freeTransitCells(player, transitCells, controlledCells);
         makeAllUnitsSomeState(player,
