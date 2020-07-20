@@ -124,6 +124,8 @@ public interface IGameValidator {
                 throw new CoinsException(ErrorCode.WRONG_POSITION);
             }
         }
+        System.out.println("ANSWER UNITS AMOUNT " + answerUnitsAmount);
+        System.out.println("PLAYER UNITS AMOUNT " + playerUnitsAmount);
         //игрок хочет распределить больше юнитов чем у него есть
         if (answerUnitsAmount > playerUnitsAmount) {
             throw new CoinsException(ErrorCode.NOT_ENOUGH_UNITS);

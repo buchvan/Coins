@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
@@ -54,27 +55,27 @@ public class Client implements IClient {
     @Override
     public Answer getAnswer(final Question question) throws CoinsException, IOException {
         switch (question.getQuestionType()) {
-            case CATCH_CELL -> {
+            case CATCH_CELL: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new CatchCellAnswer(
                         simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case DISTRIBUTION_UNITS -> {
+            case DISTRIBUTION_UNITS: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new DistributionUnitsAnswer(
                         simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case DECLINE_RACE -> {
+            case DECLINE_RACE: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new DeclineRaceAnswer(
                         simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case CHANGE_RACE -> {
+            case CHANGE_RACE: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
                 return new ChangeRaceAnswer(
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_OVER -> { // TODO: вывод результатов
+            case GAME_OVER: { // TODO: вывод результатов
                 String input;
                 do {
                     input = inputUser.readLine();
@@ -85,6 +86,7 @@ public class Client implements IClient {
             }
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+
     }
 
     private void startClient() {
