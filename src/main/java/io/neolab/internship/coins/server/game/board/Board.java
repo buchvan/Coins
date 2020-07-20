@@ -11,6 +11,8 @@ import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 @JsonDeserialize
@@ -22,14 +24,50 @@ public class Board implements IBoard, Serializable {
     @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
     private final BidiMap<Position, Cell> positionToCellMap;
 
-    @JsonCreator
-    public Board(@JsonProperty("sizeX") final int sizeX,
-                 @JsonProperty("sizeY") final int sizeY,
-                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap) {
+    private final List<Cell> edgeCells;
+
+    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
+        edgeCells = new LinkedList<>();
+        int strIndex;
+        int colIndex = 0;
+        while (colIndex < sizeY) { // обход по верхней границе борды
+            edgeCells.add(positionToCellMap.get(new Position(0, colIndex)));
+            colIndex++;
+        }
+        strIndex = 1;
+        colIndex--; // colIndex = BOARD_SIZE_Y;
+        while (strIndex < sizeX) { // обход по правой границе борды
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            strIndex++;
+        }
+        strIndex--; // strIndex = BOARD_SIZE_X;
+        colIndex--; // colIndex = BOARD_SIZE_Y - 1;
+        while (colIndex >= 0) { // обход по нижней границе борды
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            colIndex--;
+        }
+        strIndex--; // strIndex = BOARD_SIZE_X - 1;
+        colIndex++; // strIndex = 0;
+        while (strIndex > 0) { // обход по левой границе борды
+            edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
+            strIndex--;
+        }
+    }
+
+    @JsonCreator
+    public Board(@JsonProperty("sizeX") final int sizeX,
+                 @JsonProperty("sizeY") final int sizeY,
+                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+                 @JsonProperty("edgeCells") final List<Cell> edgeCells) {
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
+        this.positionToCellMap = new DualHashBidiMap<>();
+        positionToCellMap.forEach(this.positionToCellMap::put);
+        this.edgeCells = edgeCells;
     }
 
     public Board() {
@@ -49,6 +87,11 @@ public class Board implements IBoard, Serializable {
     @Override
     public BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
+    }
+
+    @Override
+    public List<Cell> getEdgeCells() {
+        return edgeCells;
     }
 
     @Override

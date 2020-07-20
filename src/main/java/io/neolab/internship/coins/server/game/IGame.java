@@ -23,6 +23,8 @@ public interface IGame {
 
     Map<Player, List<Cell>> getPlayerToTransitCells();
 
+    Map<Player, Set<Cell>> getPlayerToAchievableCells();
+
     GameFeatures getGameFeatures();
 
     List<Race> getRacesPool();

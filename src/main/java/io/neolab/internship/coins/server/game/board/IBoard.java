@@ -2,6 +2,8 @@ package io.neolab.internship.coins.server.game.board;
 
 import org.apache.commons.collections4.BidiMap;
 
+import java.util.List;
+
 public interface IBoard {
 
     int getSizeX();
@@ -34,4 +36,7 @@ public interface IBoard {
      * @return позицию клетки cell
      */
     Position getPositionByCell(final Cell cell);
+
+    /* Метод взятия всех крайних клеток борды */
+    List<Cell> getEdgeCells();
 }
