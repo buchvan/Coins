@@ -113,6 +113,16 @@ public class GameLogger {
     }
 
     /**
+     * Вывод лога об обновлении множества достижимых игроком клеток
+     *
+     * @param player          - игрок
+     * @param achievableCells - множество достижимых клеток
+     */
+    public static void printUpdateAchievableCellsLog(final Player player, final Set<Cell> achievableCells) {
+        LOGGER.info("Player {} updated his achievable cells: {} ", player.getNickname(), achievableCells);
+    }
+
+    /**
      * Вывод лога о начале захвата клеток
      *
      * @param player - игрок, начинающий захватывать клетки
@@ -164,6 +174,16 @@ public class GameLogger {
         LOGGER.debug("Player after entering: ");
         printPlayerUnitsInformationLog(player);
         LOGGER.debug("+++++++++++++++++++++++++++++++");
+    }
+
+    /**
+     * Вывод лога после освобождения юнитами клеток
+     *
+     * @param cells - список клеток
+     */
+    public static void printAfterWithdrawCellsLog(final List<Cell> cells) {
+        LOGGER.debug("Cells after withdraw of units: ");
+        cells.forEach(GameLogger::printCellInformationLog);
     }
 
     /**

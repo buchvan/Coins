@@ -265,8 +265,7 @@ public class Server implements IServer {
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        updateAchievableCells(game.getBoard(), achievableCells, game.getOwnToCells().get(player));
-
+        updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
         CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
