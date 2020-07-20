@@ -15,15 +15,13 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.service.GameLogger;
-import io.neolab.internship.coins.server.game.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.*;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
 
 /**
  * Класс, отвечащий за обработку ответов от игроков
@@ -172,6 +170,7 @@ public class GameAnswerProcessor {
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
         GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+        neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
         catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
@@ -196,8 +195,8 @@ public class GameAnswerProcessor {
      * @param board           - борда
      */
     public static void distributionUnitsProcess(final Player player, final Map<Position, List<Unit>> resolutions,
-                                               final List<Cell> transitCells, final List<Cell> controlledCells,
-                                               final IBoard board) {
+                                                final List<Cell> transitCells, final List<Cell> controlledCells,
+                                                final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
         freeTransitCells(player, transitCells, controlledCells);
         makeAllUnitsSomeState(player,

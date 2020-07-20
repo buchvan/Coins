@@ -14,26 +14,25 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
-import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
-import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
 /**
  * Валидатор ответов игрока
  */
-public class GameValidator {
+class GameValidator {
     /**
      * Проверка на пустой ответ
      *
      * @param answer - ответ, который нужно проверить
      * @throws CoinsException в случае пустого ответа выбрасывается исключение с кодом ошибки EMPTY_ANSWER
      */
-    static void checkIfAnswerEmpty(final Answer answer) throws CoinsException {
+    private static void checkIfAnswerEmpty(final Answer answer) throws CoinsException {
         if (answer == null) {
             throw new CoinsException(ErrorCode.EMPTY_ANSWER);
         }
@@ -148,7 +147,7 @@ public class GameValidator {
      * @param necessaryAttackPower - необходимая для захвата сила атаки
      * @return true, если клетка захватываема, false - иначе
      */
-    static boolean isCellCapturePossible(final int attackPower, final int necessaryAttackPower) {
+    private static boolean isCellCapturePossible(final int attackPower, final int necessaryAttackPower) {
         return attackPower >= necessaryAttackPower;
     }
 
@@ -157,7 +156,7 @@ public class GameValidator {
      * @param currentBoard - борда
      * @return true, если на борде существует клетка с такой позицией
      */
-    static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
+    private static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
         //есть ли клетка, соответствующая позиции
         return currentBoard.getCellByPosition(position) == null;
     }

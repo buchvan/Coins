@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -192,10 +192,10 @@ public class GameLogger {
      * @param cell - клетка
      */
     public static void printCellInformationLog(final Cell cell) {
-        LOGGER.debug("CellType: {} ", cell.getType().getTitle());
-        LOGGER.debug("Race: {} ", cell.getRace() != null ? cell.getRace().getTitle() : "NULL");
-        LOGGER.debug("Feudal: {} ", cell.getFeudal() != null ? cell.getFeudal().getNickname() : "NULL");
-        LOGGER.debug("Units: {} ", cell.getUnits());
+        LOGGER.debug("--- CellType: {} ", cell.getType().getTitle());
+        LOGGER.debug("--- Race: {} ", cell.getRace() != null ? cell.getRace().getTitle() : "NULL");
+        LOGGER.debug("--- Feudal: {} ", cell.getFeudal() != null ? cell.getFeudal().getNickname() : "NULL");
+        LOGGER.debug("--- Units: {} ", cell.getUnits());
     }
 
     /**
@@ -204,8 +204,8 @@ public class GameLogger {
      * @param player - игрок
      */
     public static void printPlayerUnitsInformationLog(final Player player) {
-        LOGGER.debug("Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
-        LOGGER.debug("Not available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE));
+        LOGGER.debug("--- Available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE));
+        LOGGER.debug("--- Not available units: {} ", player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE));
     }
 
     /**
@@ -282,7 +282,7 @@ public class GameLogger {
      *
      * @param player - игрок, захвативший клетку
      */
-    public static void printCatchCellBonusAttackLog(final Player player) {
+    public static void printCapturedCellLog(final Player player) {
         LOGGER.info("Cell is captured of player {} ", player.getNickname());
     }
 
@@ -461,12 +461,12 @@ public class GameLogger {
         LOGGER.info("Game OVER !!!");
         LOGGER.info("Winners: ");
         winners.forEach(winner ->
-                LOGGER.info("Player {} - coins {} ", winner.getNickname(), winner.getCoins()));
+                LOGGER.info("--- Player {} - coins {} ", winner.getNickname(), winner.getCoins()));
         LOGGER.info("***************************************");
         LOGGER.info("Results of other players: ");
         playerList.forEach(player -> {
             if (!winners.contains(player)) {
-                LOGGER.info("Player {} - coins {} ", player.getNickname(), player.getCoins());
+                LOGGER.info("--- Player {} - coins {} ", player.getNickname(), player.getCoins());
             }
         });
     }

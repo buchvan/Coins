@@ -1,19 +1,19 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.IBot;
 import io.neolab.internship.coins.client.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.GameFeatures;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.service.*;
-import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import io.neolab.internship.coins.utils.*;
 
 import java.io.IOException;
 import java.util.*;
 
-public class SelfPlay {
+class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
 
     private static final int BOARD_SIZE_X = 3;
@@ -133,7 +133,10 @@ public class SelfPlay {
                     achievableCells.clear();
                     achievableCells.add(catchingCell);
                 }
-                achievableCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+                final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, catchingCell);
+                achievableCells.addAll(neighboringCells);
+                neighboringCells.forEach(neighboringCell ->
+                        GameLoopProcessor.updateNeighboringCellsIfNecessary(board, neighboringCell));
             }
         }
     }
@@ -173,7 +176,9 @@ public class SelfPlay {
             return false;
         }
         final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
-        final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, catchingCell);
+        final List<Cell> neighboringCells = new LinkedList<>(
+                GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+        neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         GameLoopProcessor.catchCell(player, catchingCell, neighboringCells,
                 GameLoopProcessor.getTiredUnits(units, tiredUnitsCount),
                 GameLoopProcessor.getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures,
@@ -192,7 +197,7 @@ public class SelfPlay {
      * @return true - если попытка удачная, false - иначе
      */
     private static boolean isTryEnterToCellSucceed(final Player player, final Cell targetCell, final List<Unit> units,
-                                          final IBoard board) {
+                                                   final IBoard board) {
         GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
         GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();

@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.server.service;
 
 import org.slf4j.MDC;
 

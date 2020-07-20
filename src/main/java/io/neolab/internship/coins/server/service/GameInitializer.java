@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
@@ -19,7 +19,6 @@ import java.util.*;
 
 public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
-
 
     public static IGame gameInit(final int boardSizeX, final int boardSizeY, final List<Player> playerList)
             throws CoinsException {

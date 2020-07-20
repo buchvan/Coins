@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.game.service;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.service.GameInitializer;
 import org.junit.Assert;
 import org.junit.Test;
 
