@@ -102,7 +102,7 @@ class SelfPlay {
                                            final @NotNull IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRaceProcess(player, simpleBot.chooseRace(player, game), game.getRacesPool());
+        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
     }
 
     /**

@@ -22,8 +22,15 @@ import static org.junit.Assert.*;
 public class GameDeclineRaceAnswerProcessorTests {
 
     @Test
-    public void emptyAnswerTest() {
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, new Game(), new Player("test"));
+    public void emptyAnswerTest() throws CoinsException {
+        final List<Cell> controlledCells = new LinkedList<>();
+        controlledCells.add(new Cell(CellType.LAND));
+        controlledCells.add(new Cell(CellType.WATER));
+        final IGame game = gameInit(2, 2, 2);
+        final List<Player> players = game.getPlayers();
+        final Player player = players.get(0);
+        game.getOwnToCells().get(player).addAll(controlledCells);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, player);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(PlayerQuestion, null));
         assertEquals(ErrorCode.EMPTY_ANSWER, exception.getErrorCode());

@@ -72,7 +72,8 @@ public class GameAnswerProcessor {
      * @param controlledCells - подконтрольные игроку клетки
      * @throws CoinsException при невалидном ответе
      */
-    private static void declineRaceProcess(final Answer answer, final Player player, final List<Cell> controlledCells)
+    private static void declineRaceProcess(final @Nullable Answer answer, final @NotNull Player player,
+                                           final @NotNull List<Cell> controlledCells)
             throws CoinsException {
         final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
         LOGGER.debug("Decline race answer: {} ", declineRaceAnswer);
@@ -102,13 +103,14 @@ public class GameAnswerProcessor {
      * @param racesPool - пул рас
      * @throws CoinsException при невалидном ответе
      */
-    private static void changeRaceProcess(final Answer answer, final Player player, final List<Race> racesPool)
+    private static void changeRaceProcess(final @Nullable Answer answer, final @NotNull Player player,
+                                          final @NotNull List<Race> racesPool)
             throws CoinsException {
         final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
         LOGGER.debug("Change race answer: {} ", changeRaceAnswer);
         GameValidator.validateChangeRaceAnswer(changeRaceAnswer, racesPool);
         LOGGER.debug("Answer is valid");
-        changeRace(player, changeRaceAnswer.getNewRace(), racesPool);
+        changeRace(player, Objects.requireNonNull(changeRaceAnswer).getNewRace(), racesPool);
     }
 
     /**
@@ -117,8 +119,8 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    private static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
-                                         final @NotNull List<Race> racesPool) {
+    static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
+                           final @NotNull List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -161,14 +163,14 @@ public class GameAnswerProcessor {
      * @param achievableCells - множество достижимых за одних ход игроком клеток
      * @throws CoinsException в случае если ответ невалиден
      */
-    private static void captureCellProcess(final Answer answer,
-                                           final Player player,
-                                           final IBoard board,
-                                           final GameFeatures gameFeatures,
-                                           final Map<Player, List<Cell>> ownToCells,
-                                           final Map<Player, Set<Cell>> feudalToCells,
-                                           final List<Cell> transitCells,
-                                           final Set<Cell> achievableCells) throws CoinsException {
+    private static void captureCellProcess(final @Nullable Answer answer,
+                                           final @NotNull Player player,
+                                           final @NotNull IBoard board,
+                                           final @NotNull GameFeatures gameFeatures,
+                                           final @NotNull Map<Player, List<Cell>> ownToCells,
+                                           final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                                           final @NotNull List<Cell> transitCells,
+                                           final @NotNull Set<Cell> achievableCells) throws CoinsException {
         final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
         LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
         final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
@@ -176,8 +178,10 @@ public class GameAnswerProcessor {
         GameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, board,
                 achievableCells, availableUnits, gameFeatures, player);
         LOGGER.debug("Answer is valid");
-        final Cell captureCell = board.getCellByPosition(catchCellAnswer.getResolution().getFirst());
-        final List<Unit> units = catchCellAnswer.getResolution().getSecond();
+        final Pair<Position, List<Unit>> resolution =
+                Objects.requireNonNull(Objects.requireNonNull(catchCellAnswer).getResolution());
+        final Cell captureCell = Objects.requireNonNull(board.getCellByPosition(resolution.getFirst()));
+        final List<Unit> units = resolution.getSecond();
         pretendToCell(player, captureCell, units, board, gameFeatures,
                 ownToCells, feudalToCells, transitCells, achievableCells);
     }
@@ -236,8 +240,10 @@ public class GameAnswerProcessor {
      * @param transitCells    - список транизтных клеток игрока
      * @throws CoinsException в случае если ответ невалиден
      */
-    private static void distributionUnitsProcess(final Answer answer, final Player player, final IBoard board,
-                                                 final List<Cell> controlledCells, final List<Cell> transitCells)
+    private static void distributionUnitsProcess(final @Nullable Answer answer, final @NotNull Player player,
+                                                 final @NotNull IBoard board,
+                                                 final @NotNull List<Cell> controlledCells,
+                                                 final @NotNull List<Cell> transitCells)
             throws CoinsException {
         final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
         LOGGER.debug("Distribution units answer: {} ", distributionUnitsAnswer);
@@ -246,7 +252,8 @@ public class GameAnswerProcessor {
         GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer, board,
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
-        distributionUnits(player, distributionUnitsAnswer.getResolutions(), transitCells, controlledCells, board);
+        distributionUnits(player, Objects.requireNonNull(distributionUnitsAnswer).getResolutions(),
+                transitCells, controlledCells, board);
     }
 
 
@@ -262,9 +269,9 @@ public class GameAnswerProcessor {
      * @param board           - борда
      */
     public static void distributionUnits(final @NotNull Player player,
-                                                final @NotNull Map<Position, List<Unit>> resolutions,
+                                         final @NotNull Map<Position, List<Unit>> resolutions,
                                          final @NotNull List<Cell> transitCells,
-                                                final @NotNull List<Cell> controlledCells,
+                                         final @NotNull List<Cell> controlledCells,
                                          final @NotNull IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
         freeTransitCells(player, transitCells, controlledCells);
