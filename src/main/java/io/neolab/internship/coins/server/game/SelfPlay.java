@@ -139,7 +139,7 @@ public class SelfPlay {
     }
 
     /**
-     * Метод попытки захвата одной клетки игроком
+     * Попытка захвата одной клетки игроком
      *
      * @param player        - игрок, захватывающий клетку
      * @param catchingCell  - захватываемая клетка
@@ -162,7 +162,7 @@ public class SelfPlay {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(catchingCell);
         if (isControlled) {
-            return tryEnterToCell(player, catchingCell, units, board);
+            return isTryEnterToCellSucceed(player, catchingCell, units, board);
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
@@ -191,7 +191,7 @@ public class SelfPlay {
      * @param board      - борда
      * @return true - если попытка удачная, false - иначе
      */
-    private static boolean tryEnterToCell(final Player player, final Cell targetCell, final List<Unit> units,
+    private static boolean isTryEnterToCellSucceed(final Player player, final Cell targetCell, final List<Unit> units,
                                           final IBoard board) {
         GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
         GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
