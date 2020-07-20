@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.game.player;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
