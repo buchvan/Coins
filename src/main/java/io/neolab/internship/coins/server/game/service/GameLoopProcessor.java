@@ -19,14 +19,11 @@ public class GameLoopProcessor {
     /**
      * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится (пока что):
      * статус каждого юнита игрока - доступен,
-     * снятие юнитов игрока с клеток, в которые они были распределены
      *
-     * @param player          - игрок, чьи данные нужно обновить
-     * @param controlledCells - принадлежащие игроку клетки
+     * @param player - игрок, чьи данные нужно обновить
      */
-    public static void playerRoundBeginUpdate(final Player player, final List<Cell> controlledCells) {
+    public static void playerRoundBeginUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
-        controlledCells.forEach(cell -> cell.getUnits().clear());
     }
 
     /**
@@ -78,41 +75,6 @@ public class GameLoopProcessor {
             }
         });
         return neighboringCells;
-    }
-
-    /**
-     * Метод взятия всех крайних клеток борды
-     *
-     * @param board - борда, крайние клетки которой мы хотим взять
-     * @return список всех крайних клеток борды board
-     */
-    public static List<Cell> getBoardEdgeCells(final IBoard board) {
-        final List<Cell> boardEdgeCells = new LinkedList<>();
-        int strIndex;
-        int colIndex = 0;
-        while (colIndex < board.getSizeY()) { // обход по верхней границе борды
-            boardEdgeCells.add(board.getCellByPosition(0, colIndex));
-            colIndex++;
-        }
-        strIndex = 1;
-        colIndex--; // colIndex = BOARD_SIZE_Y;
-        while (strIndex < board.getSizeX()) { // обход по правой границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            strIndex++;
-        }
-        strIndex--; // strIndex = BOARD_SIZE_X;
-        colIndex--; // colIndex = BOARD_SIZE_Y - 1;
-        while (colIndex >= 0) { // обход по нижней границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            colIndex--;
-        }
-        strIndex--; // strIndex = BOARD_SIZE_X - 1;
-        colIndex++; // strIndex = 0;
-        while (strIndex > 0) { // обход по левой границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            strIndex--;
-        }
-        return boardEdgeCells;
     }
 
     /**

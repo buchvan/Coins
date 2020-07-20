@@ -221,8 +221,7 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         /* Активация данных игрока в начале раунда */
-        GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player,
-                game.getOwnToCells().get(serverSomething.player));
+        GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player);
 
         beginRoundChoice(serverSomething, game);
         captureCell(serverSomething, game);

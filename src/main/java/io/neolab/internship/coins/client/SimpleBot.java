@@ -43,7 +43,7 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            final List<Cell> boardEdgeCells = GameLoopProcessor.getBoardEdgeCells(board);
+            final List<Cell> boardEdgeCells = board.getEdgeCells();
             final Iterator<Unit> iterator = units.iterator();
             while (iterator.hasNext()) {
                 boolean unitAvailableForCapture = false;
