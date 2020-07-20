@@ -44,10 +44,10 @@ public class GameDistributionUnitsAnswerProcessorTests {
         Player player = players.get(0);
         Map<Position, List<Unit>> resolution = new HashMap<>();
         BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
-        //TODO: complete...
+        System.out.println(player);
+
     }
 
-    //FIXME: failed - null pointer
     @Test
     public void distributionUnitsWrongPositionTest() throws CoinsException {
         IGame game = gameInit(2,2, 2);
