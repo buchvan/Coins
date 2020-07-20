@@ -3,6 +3,8 @@ package io.neolab.internship.coins.server.game.player;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.utils.IdGenerator;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -14,10 +16,12 @@ public class Unit implements Serializable {
         this.id = IdGenerator.getCurrentId();
     }
 
-    public Unit(final Unit unit) {
+    @Contract(pure = true)
+    public Unit(final @NotNull Unit unit) {
         this.id = unit.id;
     }
 
+    @Contract(pure = true)
     @JsonCreator
     public Unit(@JsonProperty("id") final int id) {
         this.id = id;
@@ -27,6 +31,7 @@ public class Unit implements Serializable {
         return id;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
