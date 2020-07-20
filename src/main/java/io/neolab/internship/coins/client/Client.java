@@ -9,6 +9,7 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +19,14 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client implements IClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final String IP = "127.0.0.1";//"localhost";
+    private static final @NotNull String IP = "127.0.0.1";//"localhost";
     private static final int PORT = Server.PORT;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final @NotNull ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private final String ip; // ip адрес клиента
-    private final InetAddress ipAddress;
+    private final @NotNull String ip; // ip адрес клиента
+    private final @NotNull InetAddress ipAddress;
     private final int port; // порт соединения
 
     private Socket socket = null;
@@ -34,7 +35,7 @@ public class Client implements IClient {
     private BufferedWriter out = null; // поток записи в сокет
 
 
-    private final IBot simpleBot;
+    private final @NotNull IBot simpleBot;
 
     /**
      * для создания необходимо принять адрес и номер порта
@@ -42,7 +43,7 @@ public class Client implements IClient {
      * @param ip   ip адрес клиента
      * @param port порт соединения
      */
-    private Client(final String ip, final int port) throws CoinsException {
+    private Client(final @NotNull String ip, final int port) throws CoinsException {
         try {
             this.ip = ip;
             this.ipAddress = InetAddress.getByName(ip);
@@ -54,7 +55,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final Question question) throws CoinsException {
+    public @NotNull Answer getAnswer(final @NotNull Question question) throws CoinsException {
         switch (question.getQuestionType()) {
             case CATCH_CELL -> {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) question;
@@ -126,7 +127,7 @@ public class Client implements IClient {
         }
     }
 
-    private void sendAnswer(final Answer answer) throws IOException {
+    private void sendAnswer(final @NotNull Answer answer) throws IOException {
         out.write(OBJECT_MAPPER.writeValueAsString(answer) + "\n");
         out.flush();
     }

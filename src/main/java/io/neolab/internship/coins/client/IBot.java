@@ -6,6 +6,8 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +20,13 @@ public interface IBot {
      * @param game   - объект, хранящий всю метаинформацию об игре
      * @return true - если идти в упадок, false - иначе
      */
-    boolean declineRaceChoose(final Player player, final IGame game);
+    boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game);
 
     /**
      * @param game - объект, хранящий всю метаинформацию об игре
      * @return выбранную расу
      */
-    Race chooseRace(final Player player, final IGame game);
+    @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game);
 
     /**
      * Выбрать клетку для захвата
@@ -33,7 +35,7 @@ public interface IBot {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @return пару: выбранная для захвата клетка, список юнитов для её захвата
      */
-    Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game);
+    @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player, final @NotNull IGame game);
 
     /**
      * Выбрать клетки для защиты
@@ -42,5 +44,5 @@ public interface IBot {
      * @param game   - объект, хранящий всю метаинформацию об игре
      * @return отображение выбранных для защиты клеток в списки юнитов для их защиты
      */
-    Map<Position, List<Unit>> distributionUnits(final Player player, final IGame game);
+    @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game);
 }
