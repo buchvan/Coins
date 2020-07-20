@@ -105,7 +105,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    private static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
+    public static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -155,21 +155,25 @@ public class GameAnswerProcessor {
                                       final Map<Player, Set<Cell>> feudalToCells,
                                       final List<Cell> transitCells,
                                       final Set<Cell> achievableCells) {
-        GameLogger.printBeginCatchCellsLog(player);
         final List<Cell> controlledCells = ownToCells.get(player);
-        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
-            enterToCell(player, captureCell, neighboringCells, units, board);
+            final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
+            enterToCell(player, captureCell, units, tiredUnitsCount,board);
             return;
         }
+        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
+        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
+        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
         catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
                 units, gameFeatures, ownToCells, feudalToCells, transitCells);
-        achievableCells.remove(captureCell);
+        if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
+            achievableCells.clear();
+            achievableCells.add(captureCell);
+        }
         achievableCells.addAll(getAllNeighboringCells(board, captureCell));
-        achievableCells.removeIf(controlledCells::contains); // удаляем те клетки, которые уже заняты игроком
     }
 
 
@@ -191,12 +195,10 @@ public class GameAnswerProcessor {
         freeTransitCells(player, transitCells, controlledCells);
         makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
-        for (final Map.Entry<Position, List<Unit>> entry : resolutions.entrySet()) {
-            final Position position = entry.getKey();
-            final List<Unit> units = entry.getValue();
+        resolutions.forEach((position, units) -> {
             GameLogger.printCellDefendingLog(player, units.size(), position);
-            protectCell(player, board.getCellByPosition(position), units);
-        }
+            GameLoopProcessor.protectCell(player, board.getCellByPosition(position), units);
+        });
         GameLogger.printAfterDistributedUnitsLog(player);
     }
 }
