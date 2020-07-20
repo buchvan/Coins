@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game.feature;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 
 /**
@@ -9,5 +11,5 @@ public interface IFeature extends Serializable {
     /**
      * @return тип особенности
      */
-    FeatureType getType();
+    @NotNull FeatureType getType();
 }
