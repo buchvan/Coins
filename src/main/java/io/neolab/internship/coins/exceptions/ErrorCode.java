@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.exceptions;
 
+import org.jetbrains.annotations.NotNull;
+
 public enum ErrorCode {
     CLIENT_CREATION_FAILED("Client creation failed"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
@@ -15,13 +17,13 @@ public enum ErrorCode {
     QUESTION_TYPE_NOT_FOUND("Type of question not found"),
     ;
 
-    private final String message;
+    private final @NotNull String message;
 
-    ErrorCode(final String message) {
+    ErrorCode(final @NotNull String message) {
         this.message = message;
     }
 
-    public String getMessage() {
+    public @NotNull String getMessage() {
         return message;
     }
 }
