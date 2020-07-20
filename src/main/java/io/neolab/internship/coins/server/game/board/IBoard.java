@@ -50,4 +50,16 @@ public interface IBoard {
      * @return список крайних клеток борды
      */
     List<Cell> getEdgeCells();
+
+    /**
+     * @param cell - клетка
+     * @return список соседних с cell клеток
+     */
+    List<Cell> getNeighboringCells(final Cell cell);
+
+    /**
+     * @param cell - клетка
+     * @param neighboringCells - список соседних с cell клеток
+     */
+    void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells);
 }
