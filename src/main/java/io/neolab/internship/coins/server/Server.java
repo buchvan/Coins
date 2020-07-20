@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server;
 import io.neolab.internship.coins.common.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
 import io.neolab.internship.coins.common.question.QuestionType;
@@ -162,8 +163,13 @@ public class Server implements IServer {
                         game.getFeudalToCells());
             }
 
-            GameFinalizer.finalize(game.getPlayers());
-
+            final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
+            final GameOverQuestion gameOverQuestion =
+                    new GameOverQuestion(QuestionType.GAME_OVER, winners, game.getPlayers());
+            for (final ServerSomething serverSomething : serverList) {
+                serverSomething.send(Communication.serializeQuestion(gameOverQuestion));
+                serverSomething.downService();
+            }
         } catch (final CoinsException | IOException exception) {
             LOGGER.error("Error!!!", exception);
             serverList.forEach(ServerSomething::downService);
