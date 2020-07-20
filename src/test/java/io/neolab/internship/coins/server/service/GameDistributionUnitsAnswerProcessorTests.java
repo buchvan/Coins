@@ -2,7 +2,7 @@ package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
@@ -26,20 +26,20 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
     @Test
     public void distributionUnitsNoAvailableUnitsTest() throws CoinsException {
-        IGame game = gameInit(2, 2);
+        IGame game = gameInit(2, 2, 2);
         List<Player> players = game.getPlayers();
         Player player = players.get(0);
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
-        Question question = new Question(QuestionType.DISTRIBUTION_UNITS, game, player);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer();
         CoinsException exception = assertThrows(CoinsException.class,
-                () -> gameAnswerProcessor.process(question, answer));
+                () -> GameAnswerProcessor.process(question, answer));
         assertEquals(ErrorCode.NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
     }
 
     @Test
     public void distributionUnitsNotEnoughUnitsTest() throws CoinsException {
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2,2, 2);
         List<Player> players = game.getPlayers();
         Player player = players.get(0);
         Map<Position, List<Unit>> resolution = new HashMap<>();
@@ -50,7 +50,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
     //FIXME: failed - null pointer
     @Test
     public void distributionUnitsWrongPositionTest() throws CoinsException {
-        IGame game = gameInit(2,2);
+        IGame game = gameInit(2,2, 2);
         List<Player> players = game.getPlayers();
         List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
@@ -59,10 +59,10 @@ public class GameDistributionUnitsAnswerProcessorTests {
         game.getOwnToCells().get(player).addAll(controlledCells);
         Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(new Position(100, 100), new ArrayList<>());
-        Question question = new Question(QuestionType.DISTRIBUTION_UNITS, game, player);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
         Answer answer = new DistributionUnitsAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                () -> gameAnswerProcessor.process(question, answer));
+                () -> GameAnswerProcessor.process(question, answer));
         assertEquals(ErrorCode.WRONG_POSITION, exception.getErrorCode());
     }
 }
