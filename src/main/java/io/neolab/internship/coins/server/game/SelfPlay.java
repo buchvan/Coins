@@ -37,7 +37,7 @@ public class SelfPlay {
      * - Финализатор (результат работы)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile loggerFile = new GameLoggerFile()) {
+        try (final GameLoggerFile ignored = new GameLoggerFile()) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
@@ -88,7 +88,7 @@ public class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void playerRound(final Player player, final IBot simpleBot, final IGame game) {
-        playerRoundBeginUpdate(player, game.getOwnToCells().get(player));  // активация данных игрока в начале раунда
+        playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
         if (simpleBot.declineRaceChoose(player, game)) { // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRace(player, simpleBot, game); // Уход в упадок
         }
@@ -98,15 +98,14 @@ public class SelfPlay {
     }
 
     /**
-     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится (пока что):
+     * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
-     * снятие юнитов игрока с клеток, в которые они были распределены
      *
-     * @param player          - игрок, чьи данные нужно обновить
-     * @param controlledCells - принадлежащие игроку клетки
+     * @param player - игрок, чьи данные нужно обновить
      */
-    private static void playerRoundBeginUpdate(final Player player, final List<Cell> controlledCells) {
+    private static void playerRoundBeginUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+        GameLogger.printRoundBeginUpdateLog(player);
     }
 
     /**
@@ -117,6 +116,7 @@ public class SelfPlay {
      */
     private static void playerRoundEndUpdate(final Player player) {
         makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
+        GameLogger.printRoundEndUpdateLog(player);
     }
 
     /**
@@ -166,6 +166,7 @@ public class SelfPlay {
             player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
             i++;
         }
+
         GameLogger.printChooseRaceLog(player, newRace);
     }
 
@@ -208,7 +209,7 @@ public class SelfPlay {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        updateAchievableCells(board, achievableCells, controlledCells);
+        updateAchievableCells(player, board, achievableCells, controlledCells);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
             /* Пока есть что захватывать и какими войсками захватывать */
@@ -235,59 +236,27 @@ public class SelfPlay {
     /**
      * Метод для получения достижимых в один ход игроком клеток
      *
+     * @param player          - игрок
      * @param board           - борда
      * @param achievableCells - множество достижимых клеток
      * @param controlledCells - принадлежащие игроку клетки
      */
-    private static void updateAchievableCells(final IBoard board,
+    private static void updateAchievableCells(final Player player,
+                                              final IBoard board,
                                               final Set<Cell> achievableCells,
                                               final List<Cell> controlledCells) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
-            return;
+        } else {
+            controlledCells.forEach(controlledCell -> {
+                achievableCells.add(controlledCell);
+                achievableCells.addAll(
+                        getAllNeighboringCells(
+                                board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
+            });
         }
-        controlledCells.forEach(controlledCell -> {
-            achievableCells.add(controlledCell);
-            achievableCells.addAll(
-                    getAllNeighboringCells(
-                            board, controlledCell)); // добавляем всех соседей каждой клетки, занятой игроком
-        });
-    }
-
-    /**
-     * Метод взятия всех крайних клеток борды
-     *
-     * @param board - борда, крайние клетки которой мы хотим взять
-     * @return список всех крайних клеток борды board
-     */
-    private static List<Cell> getBoardEdgeGetCells(final IBoard board) {
-        final List<Cell> boardEdgeCells = new LinkedList<>();
-        int strIndex;
-        int colIndex = 0;
-        while (colIndex < BOARD_SIZE_Y) { // обход по верхней границе борды
-            boardEdgeCells.add(board.getCellByPosition(0, colIndex));
-            colIndex++;
-        }
-        strIndex = 1;
-        colIndex--; // colIndex = BOARD_SIZE_Y;
-        while (strIndex < BOARD_SIZE_X) { // обход по правой границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            strIndex++;
-        }
-        strIndex--; // strIndex = BOARD_SIZE_X;
-        colIndex--; // colIndex = BOARD_SIZE_Y - 1;
-        while (colIndex >= 0) { // обход по нижней границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            colIndex--;
-        }
-        strIndex--; // strIndex = BOARD_SIZE_X - 1;
-        colIndex++; // strIndex = 0;
-        while (strIndex > 0) { // обход по левой границе борды
-            boardEdgeCells.add(board.getCellByPosition(strIndex, colIndex));
-            strIndex--;
-        }
-        return boardEdgeCells;
+        GameLogger.printUpdateAchievableCellsLog(player, achievableCells);
     }
 
     /**
@@ -312,14 +281,14 @@ public class SelfPlay {
     /**
      * Метод попытки захвата одной клетки игроком
      *
-     * @param player                - игрок, захватывающий клетку
-     * @param catchingCell          - захватываемая клетка
-     * @param units                 - список юнитов, направленных на захвать клетки
-     * @param board                 - борда
-     * @param gameFeatures          - особенности игры
-     * @param ownToCells            - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells         - множества клеток для каждого феодала
-     * @param transitCells          - транзитные клетки игрока
+     * @param player        - игрок, захватывающий клетку
+     * @param catchingCell  - захватываемая клетка
+     * @param units         - список юнитов, направленных на захвать клетки
+     * @param board         - борда
+     * @param gameFeatures  - особенности игры
+     * @param ownToCells    - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells - множества клеток для каждого феодала
+     * @param transitCells  - транзитные клетки игрока
      * @return true - если попытка увенчалась успехом, false - иначе
      */
     private static boolean isCatchCellAttemptSucceed(final Player player,
@@ -330,22 +299,23 @@ public class SelfPlay {
                                                      final Map<Player, List<Cell>> ownToCells,
                                                      final Map<Player, Set<Cell>> feudalToCells,
                                                      final List<Cell> transitCells) {
-        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
-        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final boolean isControlled = ownToCells.get(player).contains(catchingCell);
         if (isControlled) {
             return tryEnterToCell(player, catchingCell, units, board);
         }
+        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
+        GameLogger.printCatchCellUnitsQuantityLog(player.getNickname(), units.size());
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!cellIsCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
-            GameLogger.printCatchCellNotCapturedLog(player.getNickname());
+            GameLogger.printCatchCellNotCapturedLog(player);
             return false;
         }
         final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
         final List<Cell> neighboringCells = getAllNeighboringCells(board, catchingCell);
-        catchCell(player, catchingCell, neighboringCells, units.subList(0, tiredUnitsCount),
-                units.subList(tiredUnitsCount, units.size()), gameFeatures, ownToCells, feudalToCells, transitCells);
+        catchCell(player, catchingCell, neighboringCells, getTiredUnits(units, tiredUnitsCount),
+                getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures, ownToCells, feudalToCells,
+                transitCells);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -361,18 +331,58 @@ public class SelfPlay {
      */
     private static boolean tryEnterToCell(final Player player, final Cell targetCell, final List<Unit> units,
                                           final IBoard board) {
+        GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
+        GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
         final int tiredUnitsCount = targetCell.getType().getCatchDifficulty();
-        if (IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
-            final List<Cell> neighboringCells = getAllNeighboringCells(board, targetCell);
-            neighboringCells.add(targetCell);
-            final List<Unit> tiredUnits = units.subList(0, tiredUnitsCount);
-            final List<Unit> achievableUnits = units.subList(tiredUnitsCount, units.size());
-            withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
-            targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
-            makeAvailableUnitsToNotAvailable(player, tiredUnits);
-            return true;
+        if (!IsPossibleEnterToCell(units.size(), tiredUnitsCount)) {
+            GameLogger.printCellNotEnteredLog(player);
+            return false;
         }
-        return false;
+        enterToCell(player, targetCell, units, tiredUnitsCount, board);
+        return true;
+    }
+
+    /**
+     * Вход игрока в свою клетку
+     *
+     * @param player          - игрок
+     * @param targetCell      - клетка, в которую игрок пытается войти
+     * @param units           - список юнитов, которых игрок послал в клетку
+     * @param tiredUnitsCount - число уставших юнитов
+     * @param board           - борда
+     */
+    private static void enterToCell(final Player player, final Cell targetCell, final List<Unit> units,
+                                    final int tiredUnitsCount, final IBoard board) {
+        final List<Cell> neighboringCells = getAllNeighboringCells(board, targetCell);
+        neighboringCells.add(targetCell);
+        final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
+        final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
+        withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
+        targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
+        makeAvailableUnitsToNotAvailable(player, tiredUnits);
+        GameLogger.printAfterCellEnteringLog(player, targetCell);
+    }
+
+    /**
+     * Взять список уставших юнитов
+     *
+     * @param units           - список всех юнитов
+     * @param tiredUnitsCount - число уставших юнитов
+     * @return список уставших юнитов
+     */
+    private static List<Unit> getTiredUnits(final List<Unit> units, final int tiredUnitsCount) {
+        return units.subList(0, tiredUnitsCount);
+    }
+
+    /**
+     * Взять список оставшихся доступных юнитов
+     *
+     * @param units           - список всех юнитов
+     * @param tiredUnitsCount - число уставших юнитов
+     * @return список оставшихся доступных юнитов
+     */
+    private static List<Unit> getRemainingAvailableUnits(final List<Unit> units, final int tiredUnitsCount) {
+        return units.subList(tiredUnitsCount, units.size());
     }
 
     /**
@@ -452,16 +462,16 @@ public class SelfPlay {
     /**
      * Захватить клетку
      *
-     * @param player                - игрок-агрессор
-     * @param catchingCell          - захватываемая клетка
-     * @param neighboringCells      - соседние с захватываемой клеткой клетки
-     * @param tiredUnits            - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
-     * @param units                 - юниты, вошедшие в клетку
-     * @param gameFeatures          - особенности игры
-     * @param ownToCells            - список подконтрольных клеток для каждого игрока
-     * @param feudalToCells         - множества клеток для каждого феодала
-     * @param transitCells          - транзитные клетки игрока
-     *                              (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
+     * @param player           - игрок-агрессор
+     * @param catchingCell     - захватываемая клетка
+     * @param neighboringCells - соседние с захватываемой клеткой клетки
+     * @param tiredUnits       - список "уставших юнитов" (юнитов, которые перестанут быть доступными в этом раунде)
+     * @param units            - юниты, вошедшие в клетку
+     * @param gameFeatures     - особенности игры
+     * @param ownToCells       - список подконтрольных клеток для каждого игрока
+     * @param feudalToCells    - множества клеток для каждого феодала
+     * @param transitCells     - транзитные клетки игрока
+     *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     private static void catchCell(final Player player,
                                   final Cell catchingCell,
@@ -496,13 +506,14 @@ public class SelfPlay {
      * Вывести юнитов с клеток
      *
      * @param cells - клетки, с которых необходимо вывести юнитов
-     * @param units - юниты, которых необходимо вывести с клеток
+     * @param units - списки юнитов, которых необходимо вывести с их клеток
      */
     @SafeVarargs
     private static void withdrawUnits(final List<Cell> cells, final List<Unit>... units) {
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
+        GameLogger.printAfterWithdrawCellsLog(cells);
     }
 
     /**

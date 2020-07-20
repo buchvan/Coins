@@ -70,6 +70,7 @@ public class Server implements IServer {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
             } while (isDuplicate);
+            LOGGER.info("Nickname for player: {} ", nickname);
             player = new Player(nickname);
         }
 
@@ -127,9 +128,9 @@ public class Server implements IServer {
     @Override
     public void startServer() {
         try {
-            connectClients();
             LOGGER.info("Server started, port: {}", PORT);
 
+            connectClients();
             final List<Player> playerList = new LinkedList<>();
             serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
@@ -141,16 +142,11 @@ public class Server implements IServer {
             }
             while (game.getCurrentRound() < Game.ROUNDS_COUNT) {
                 game.incrementCurrentRound();
-                serverList.forEach(serverSomething -> {
+                GameLogger.printRoundBeginLog(game.getCurrentRound());
+                for (final ServerSomething serverSomething : serverList) {
                     GameLogger.printNextPlayerLog(serverSomething.player);
-                    try {
-                        playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
-                    } catch (final CoinsException | IOException exception) {
-                        LOGGER.error("Error!", exception);
-                        serverList.forEach(ServerSomething::downService);
-                        serverList.clear();
-                    }
-                });
+                    playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
+                }
 
                 /* обновление числа монет у каждого игрока */
                 game.getPlayers()
@@ -184,11 +180,13 @@ public class Server implements IServer {
      */
     private void connectClients() throws IOException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
-            int currentClientsCount = 0;
-            while (currentClientsCount < CLIENTS_COUNT) {
+            int currentClientsCount = 1;
+            while (currentClientsCount <= CLIENTS_COUNT) {
                 final Socket socket = serverSocket.accept();
                 try {
+                    LOGGER.info("Client {} connects", currentClientsCount);
                     serverList.add(new ServerSomething(this, socket));
+                    LOGGER.info("Client {} connected", currentClientsCount);
                     currentClientsCount++;
                 } catch (final IOException exception) {
                     LOGGER.error("Error!", exception);
@@ -227,12 +225,11 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         /* Активация данных игрока в начале раунда */
-        GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player,
-                game.getOwnToCells().get(serverSomething.player));
+        GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player);
 
         beginRoundChoice(serverSomething, game);
         captureCell(serverSomething, game);
-        distribution(serverSomething, game);
+        distributionUnits(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
         GameLoopProcessor.playerRoundEndUpdate(serverSomething.player);
@@ -272,8 +269,7 @@ public class Server implements IServer {
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws CoinsException, IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        updateAchievableCells(game.getBoard(), achievableCells, game.getOwnToCells().get(player));
-
+        updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
         CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
@@ -293,7 +289,7 @@ public class Server implements IServer {
      * @throws IOException    в случае ошибки общения с клиентом
      * @throws CoinsException в случае игровой ошибки
      */
-    private void distribution(final ServerSomething serverSomething, final IGame game)
+    private void distributionUnits(final ServerSomething serverSomething, final IGame game)
             throws IOException, CoinsException {
 
         final PlayerQuestion distributionQuestion = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS,
