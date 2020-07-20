@@ -1,18 +1,23 @@
 package io.neolab.internship.coins.common.question;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 public class Question {
-    private final QuestionType questionType;
+    private final @NotNull QuestionType questionType;
 
-    public Question(final QuestionType questionType) {
+    @Contract(pure = true)
+    public Question(final @NotNull QuestionType questionType) {
         this.questionType = questionType;
     }
 
-    public QuestionType getQuestionType() {
+    public @NotNull QuestionType getQuestionType() {
         return questionType;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
