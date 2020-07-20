@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.util.Date;
@@ -8,7 +9,7 @@ import java.util.Date;
  * Вспомогательный класс логгера, отвечающий за логгирование в файл
  */
 public class GameLoggerFile implements AutoCloseable {
-    private final String logFileName;
+    private final @NotNull String logFileName;
 
     /**
      * Выбор имени файла-лога и настройка логгирования в него осуществляются прямо в конструкторе
