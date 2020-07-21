@@ -65,7 +65,8 @@ public class Cell implements Serializable {
     }
 
     public void setUnits(final List<Unit> units) {
-        Collections.copy(this.units, units);
+        this.units.clear();
+        this.units.addAll(units);
     }
 
     public Player getFeudal() {

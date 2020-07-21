@@ -95,7 +95,6 @@ public interface IGameValidator {
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
             throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
         }
-
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
