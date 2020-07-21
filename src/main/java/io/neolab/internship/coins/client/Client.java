@@ -5,6 +5,7 @@ import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
