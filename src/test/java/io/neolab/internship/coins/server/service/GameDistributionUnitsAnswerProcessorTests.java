@@ -94,7 +94,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         GameAnswerProcessor.process(question, answer);
         List<Unit> positionCells = positionCellBidiMap.get(somePosition).getUnits();
         assertEquals(1, positionCells.size());
-        assertEquals(someUnit.getId(), positionCells.get(0).getId());
+        assertEquals(someUnit, positionCells.get(0));
     }
 
     @Test

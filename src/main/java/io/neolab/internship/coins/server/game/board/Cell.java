@@ -17,7 +17,7 @@ import java.util.Objects;
 public class Cell implements Serializable {
     private final int id;
     private final CellType type;
-    private List<Unit> units = new LinkedList<>();
+    private final List<Unit> units = new LinkedList<>();
     private Player feudal = null;
     private Race race;
 
@@ -57,7 +57,8 @@ public class Cell implements Serializable {
     }
 
     public void setUnits(final List<Unit> units) {
-        this.units = new LinkedList<Unit>(units);
+        this.units.clear();
+        this.units.addAll(units);
     }
 
     public Player getFeudal() {
