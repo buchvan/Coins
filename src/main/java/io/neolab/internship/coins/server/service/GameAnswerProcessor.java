@@ -113,7 +113,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    private static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
+    static void changeRace(final Player player, final Race newRace, final List<Race> racesPool) {
         final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -128,7 +128,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
      */
-    public static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
+    static void chooseRace(final Player player, final List<Race> racesPool, final Race newRace) {
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
 
@@ -254,7 +254,7 @@ public class GameAnswerProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param board           - борда
      */
-    public static void distributionUnits(final Player player, final Map<Position, List<Unit>> resolutions,
+    private static void distributionUnits(final Player player, final Map<Position, List<Unit>> resolutions,
                                          final List<Cell> transitCells, final List<Cell> controlledCells,
                                          final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);

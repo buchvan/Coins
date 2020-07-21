@@ -7,16 +7,6 @@ import java.util.List;
 public interface IBoard {
 
     /**
-     * @return число строк
-     */
-    int getSizeX();
-
-    /**
-     * @return число столбцов
-     */
-    int getSizeY();
-
-    /**
      * @return отображение позиций в клетки
      */
     BidiMap<Position, Cell> getPositionToCellMap();

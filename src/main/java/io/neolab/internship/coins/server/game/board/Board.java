@@ -17,9 +17,6 @@ import java.util.*;
 
 @JsonDeserialize
 public class Board implements IBoard, Serializable {
-    private final int sizeX;
-    private final int sizeY;
-
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
     private final BidiMap<Position, Cell> positionToCellMap;
@@ -31,8 +28,6 @@ public class Board implements IBoard, Serializable {
     private final Map<Cell, List<Cell>> cellToNeighboringCells;
 
     public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
         edgeCells = new LinkedList<>();
@@ -65,13 +60,9 @@ public class Board implements IBoard, Serializable {
     }
 
     @JsonCreator
-    public Board(@JsonProperty("sizeX") final int sizeX,
-                 @JsonProperty("sizeY") final int sizeY,
-                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+    public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
                  @JsonProperty("edgeCells") final List<Cell> edgeCells,
                  @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
         this.edgeCells = edgeCells;
@@ -80,16 +71,6 @@ public class Board implements IBoard, Serializable {
 
     public Board() {
         this(3, 4, new DualHashBidiMap<>());
-    }
-
-    @Override
-    public int getSizeX() {
-        return sizeX;
-    }
-
-    @Override
-    public int getSizeY() {
-        return sizeY;
     }
 
     @Override
