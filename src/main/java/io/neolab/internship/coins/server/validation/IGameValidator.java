@@ -12,6 +12,7 @@ import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Race;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.service.GameLogger;
@@ -92,6 +93,9 @@ public interface IGameValidator {
         }
 
         final List<Unit> units = answer.getResolution().getSecond();
+        if(player.getRace() != Race.AMPHIBIAN && cellForAttempt.getType() == CellType.WATER) {
+            throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
+        }
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
             throw new CoinsException(ErrorCode.ENTER_CELL_IMPOSSIBLE);
         }

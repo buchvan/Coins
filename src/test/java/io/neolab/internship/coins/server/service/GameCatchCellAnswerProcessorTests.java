@@ -31,11 +31,11 @@ public class GameCatchCellAnswerProcessorTests {
     public void catchCellWrongPositionTest() throws CoinsException {
         IGame game = gameInit(2, 2, 2);
         Player player = getSomePlayer(game);
-        Pair<Position, List<Unit>> resolution  = new Pair<>(new Position(100, 100), Collections.emptyList());
+        Pair<Position, List<Unit>> resolution = new Pair<>(new Position(100, 100), Collections.emptyList());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.WRONG_POSITION, exception.getErrorCode());
     }
 
@@ -43,11 +43,11 @@ public class GameCatchCellAnswerProcessorTests {
     public void catchCellNoCellForCatching() throws CoinsException {
         IGame game = gameInit(2, 2, 2);
         Player player = getSomePlayer(game);
-        Pair<Position, List<Unit>> resolution  = new Pair<>(new Position(1, 1), Collections.emptyList());
+        Pair<Position, List<Unit>> resolution = new Pair<>(new Position(1, 1), Collections.emptyList());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.NO_ACHIEVABLE_CELL, exception.getErrorCode());
     }
 
@@ -62,11 +62,11 @@ public class GameCatchCellAnswerProcessorTests {
         achievableCells.add(someCell);
         game.getPlayerToAchievableCells().put(player, achievableCells);
 
-        Pair<Position, List<Unit>> resolution  = new Pair<>(somePosition, Collections.emptyList());
+        Pair<Position, List<Unit>> resolution = new Pair<>(somePosition, Collections.emptyList());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.NO_AVAILABLE_UNITS, exception.getErrorCode());
     }
 
@@ -94,11 +94,11 @@ public class GameCatchCellAnswerProcessorTests {
         List<Cell> controlledCells = ownToCells.get(player);
         controlledCells.add(landCell);
 
-        Pair<Position, List<Unit>> resolution  = new Pair<>(landPosition, new ArrayList<>());
+        Pair<Position, List<Unit>> resolution = new Pair<>(landPosition, new ArrayList<>());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
@@ -126,11 +126,11 @@ public class GameCatchCellAnswerProcessorTests {
         List<Cell> controlledCells = ownToCells.get(player);
         controlledCells.add(mushroomCell);
 
-        Pair<Position, List<Unit>> resolution  = new Pair<>(mushroomPosition, new ArrayList<>());
+        Pair<Position, List<Unit>> resolution = new Pair<>(mushroomPosition, new ArrayList<>());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
@@ -158,11 +158,11 @@ public class GameCatchCellAnswerProcessorTests {
         List<Cell> controlledCells = ownToCells.get(player);
         controlledCells.add(mountainCell);
 
-        Pair<Position, List<Unit>> resolution  = new Pair<>(mountainPosition, new ArrayList<>());
+        Pair<Position, List<Unit>> resolution = new Pair<>(mountainPosition, new ArrayList<>());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
@@ -170,7 +170,7 @@ public class GameCatchCellAnswerProcessorTests {
     public void catchControlledCellWaterNotEnoughUnits() throws CoinsException {
         IGame game = gameInit(2, 2, 2);
         Player player = getSomePlayer(game);
-        player.setRace(Race.UNDEAD);
+        player.setRace(Race.AMPHIBIAN);
         setPlayerUnits(player, 1);
 
         IBoard board = game.getBoard();
@@ -190,13 +190,166 @@ public class GameCatchCellAnswerProcessorTests {
         List<Cell> controlledCells = ownToCells.get(player);
         controlledCells.add(waterCell);
 
-        Pair<Position, List<Unit>> resolution  = new Pair<>(waterPosition, new ArrayList<>());
+        Pair<Position, List<Unit>> resolution = new Pair<>(waterPosition, new ArrayList<>());
         PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         Answer catchCellAnswer = new CatchCellAnswer(resolution);
         CoinsException exception = assertThrows(CoinsException.class,
-                ()-> GameAnswerProcessor.process(question, catchCellAnswer));
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
         assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
+
+    @Test
+    public void catchLandCellSucceed() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 2);
+
+        IBoard board = game.getBoard();
+        Cell landCell = board.getPositionToCellMap()
+                .values()
+                .stream()
+                .filter(cell -> cell.getType() == CellType.LAND)
+                .collect(Collectors.toList())
+                .get(0);
+        Position landPosition = board.getPositionByCell(landCell);
+
+        Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.add(landCell);
+        game.getPlayerToAchievableCells().put(player, achievableCells);
+
+        List<Unit> units = new ArrayList<>();
+        units.add(new Unit());
+        units.add(new Unit());
+        Pair<Position, List<Unit>> resolution = new Pair<>(landPosition, units);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        Answer catchCellAnswer = new CatchCellAnswer(resolution);
+        GameAnswerProcessor.process(question, catchCellAnswer);
+        assertEquals(player, landCell.getFeudal());
+    }
+
+    @Test
+    public void catchMountainCellSucceed() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 3);
+
+        IBoard board = game.getBoard();
+        Cell cell = board.getPositionToCellMap()
+                .values()
+                .stream()
+                .filter(c -> c.getType() == CellType.MOUNTAIN)
+                .collect(Collectors.toList())
+                .get(0);
+        Position position = board.getPositionByCell(cell);
+
+        Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.add(cell);
+        game.getPlayerToAchievableCells().put(player, achievableCells);
+
+        List<Unit> units = new ArrayList<>();
+        units.add(new Unit());
+        units.add(new Unit());
+        units.add(new Unit());
+        Pair<Position, List<Unit>> resolution = new Pair<>(position, units);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        Answer catchCellAnswer = new CatchCellAnswer(resolution);
+        GameAnswerProcessor.process(question, catchCellAnswer);
+        assertEquals(player, cell.getFeudal());
+    }
+
+    @Test
+    public void catchMushroomCellSucceed() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 3);
+
+        IBoard board = game.getBoard();
+        Cell cell = board.getPositionToCellMap()
+                .values()
+                .stream()
+                .filter(c -> c.getType() == CellType.MUSHROOM)
+                .collect(Collectors.toList())
+                .get(0);
+        Position position = board.getPositionByCell(cell);
+
+        Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.add(cell);
+        game.getPlayerToAchievableCells().put(player, achievableCells);
+
+        List<Unit> units = new ArrayList<>();
+        units.add(new Unit());
+        units.add(new Unit());
+        Pair<Position, List<Unit>> resolution = new Pair<>(position, units);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        Answer catchCellAnswer = new CatchCellAnswer(resolution);
+        GameAnswerProcessor.process(question, catchCellAnswer);
+        assertEquals(player, cell.getFeudal());
+    }
+
+    @Test
+    public void catchWaterCellByAmphibianSucceed() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        player.setRace(Race.AMPHIBIAN);
+        setPlayerUnits(player, 1);
+
+        IBoard board = game.getBoard();
+        Cell cell = board.getPositionToCellMap()
+                .values()
+                .stream()
+                .filter(c -> c.getType() == CellType.WATER)
+                .collect(Collectors.toList())
+                .get(0);
+        Position position = board.getPositionByCell(cell);
+
+        Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.add(cell);
+        game.getPlayerToAchievableCells().put(player, achievableCells);
+
+        List<Unit> units = new ArrayList<>();
+        units.add(new Unit());
+        units.add(new Unit());
+        Pair<Position, List<Unit>> resolution = new Pair<>(position, units);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        Answer catchCellAnswer = new CatchCellAnswer(resolution);
+        GameAnswerProcessor.process(question, catchCellAnswer);
+        assertEquals(player, cell.getFeudal());
+    }
+
+    @Test
+    public void catchWaterCellByAmphibianFailed() throws CoinsException {
+        IGame game = gameInit(2, 2, 2);
+        Player player = getSomePlayer(game);
+        player.setRace(Race.ORC);
+        setPlayerUnits(player, 3);
+
+        IBoard board = game.getBoard();
+        Cell cell = board.getPositionToCellMap()
+                .values()
+                .stream()
+                .filter(c -> c.getType() == CellType.WATER)
+                .collect(Collectors.toList())
+                .get(0);
+        Position position = board.getPositionByCell(cell);
+
+        Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.add(cell);
+        game.getPlayerToAchievableCells().put(player, achievableCells);
+
+        List<Unit> units = new ArrayList<>();
+        units.add(new Unit());
+        units.add(new Unit());
+        Pair<Position, List<Unit>> resolution = new Pair<>(position, units);
+        PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        Answer catchCellAnswer = new CatchCellAnswer(resolution);
+        CoinsException exception = assertThrows(CoinsException.class,
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
+        assertEquals(ErrorCode.CELL_CAPTURE_IMPOSSIBLE, exception.getErrorCode());
+    }
+
 
     private Player getSomePlayer(IGame game) {
         return game.getPlayers().get(0);
@@ -209,7 +362,7 @@ public class GameCatchCellAnswerProcessorTests {
 
     private void setPlayerUnits(Player player, int unitsAmount) {
         List<Unit> playerUnits = new ArrayList<>();
-        for(int i =0; i < unitsAmount; i++) {
+        for (int i = 0; i < unitsAmount; i++) {
             playerUnits.add(new Unit());
         }
         player.getUnitStateToUnits().put(AvailabilityType.AVAILABLE, playerUnits);
