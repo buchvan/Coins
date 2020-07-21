@@ -14,6 +14,7 @@ import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.apache.commons.collections4.BidiMap;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
@@ -120,24 +121,24 @@ public class GameDistributionUnitsAnswerProcessorTests {
         assertTrue(player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
     }
 
-    private Player getSomePlayer(final IGame game) {
+    private @NotNull Player getSomePlayer(final @NotNull IGame game) {
         return game.getPlayers().get(0);
     }
 
-    private void setControlledPlayerCells(final IGame game, final Player player) {
+    private void setControlledPlayerCells(final @NotNull IGame game, final @NotNull Player player) {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         game.getOwnToCells().get(player).addAll(controlledCells);
     }
 
-    private void setPlayerUnits(final Player player) {
+    private void setPlayerUnits(final @NotNull Player player) {
         final List<Unit> playerUnits = new ArrayList<>();
         playerUnits.add(new Unit());
         player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
     }
 
-    private Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
+    private @NotNull Position getSomeBoardPosition(final @NotNull BidiMap<Position, Cell> positionCellBidiMap) {
         final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
         return positionCellBidiMap.getKey(cells.get(0));
     }

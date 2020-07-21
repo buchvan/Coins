@@ -13,6 +13,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
 import org.apache.commons.collections4.BidiMap;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -179,12 +180,12 @@ public class GameDeclineRaceAnswerProcessorTests {
         assertEquals(2, cellUnitsAfterDeclining.size());
     }
 
-    private Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
+    private @NotNull Position getSomeBoardPosition(final @NotNull BidiMap<Position, Cell> positionCellBidiMap) {
         final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
         return positionCellBidiMap.getKey(cells.get(0));
     }
 
-    private Player getSomePlayer(final IGame game) {
+    private @NotNull Player getSomePlayer(final @NotNull IGame game) {
         return game.getPlayers().get(0);
     }
 }
