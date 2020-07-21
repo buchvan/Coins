@@ -6,7 +6,6 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.QuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
-import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -19,6 +18,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
 import static org.junit.Assert.*;
@@ -152,16 +152,16 @@ public class GameDeclineRaceAnswerProcessorTests {
 
     @Test
     public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException {
-        IGame game = gameInit(2, 2, 2);
+        final IGame game = gameInit(2, 2, 2);
 
-        Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
-        Cell someCellByPosition = game.getBoard().getCellByPosition(somePosition);
-        List<Unit> cellUnits = new ArrayList<>();
-        Unit someUnit1 = new Unit();
-        Unit someUnit2 = new Unit();
+        final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
+        final Cell someCellByPosition = game.getBoard().getCellByPosition(somePosition);
+        final List<Unit> cellUnits = new ArrayList<>();
+        final Unit someUnit1 = new Unit();
+        final Unit someUnit2 = new Unit();
         cellUnits.add(someUnit1);
         cellUnits.add(someUnit2);
-        someCellByPosition.setUnits(cellUnits);
+        Objects.requireNonNull(someCellByPosition).getUnits().addAll(cellUnits);
 
         final List<Cell> feudalCells = new LinkedList<>();
         feudalCells.add(someCellByPosition);
@@ -173,18 +173,18 @@ public class GameDeclineRaceAnswerProcessorTests {
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
 
-        List<Unit> cellUnitsAfterDeclining = someCellByPosition.getUnits();
+        final List<Unit> cellUnitsAfterDeclining = someCellByPosition.getUnits();
         assertTrue(cellUnitsAfterDeclining.contains(someUnit1));
         assertTrue(cellUnitsAfterDeclining.contains(someUnit2));
         assertEquals(2, cellUnitsAfterDeclining.size());
     }
 
-    private Position getSomeBoardPosition(BidiMap<Position, Cell> positionCellBidiMap) {
-        List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
+    private Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
+        final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
         return positionCellBidiMap.getKey(cells.get(0));
     }
 
-    private Player getSomePlayer(IGame game) {
+    private Player getSomePlayer(final IGame game) {
         return game.getPlayers().get(0);
     }
 }

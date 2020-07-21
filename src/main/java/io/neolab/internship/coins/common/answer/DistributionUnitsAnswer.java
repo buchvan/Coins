@@ -10,6 +10,7 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -17,14 +18,18 @@ public class DistributionUnitsAnswer extends Answer {
 
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionDeserializer.class)
-    private final @NotNull Map<Position, List<Unit>> resolutions;
+    private final @Nullable Map<Position, List<Unit>> resolutions;
+
+    public DistributionUnitsAnswer() {
+        this(null);
+    }
 
     @JsonCreator
-    public DistributionUnitsAnswer(@NotNull @JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
+    public DistributionUnitsAnswer(@Nullable @JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
         this.resolutions = resolutions;
     }
 
-    public @NotNull Map<Position, List<Unit>> getResolutions() {
+    public @Nullable Map<Position, List<Unit>> getResolutions() {
         return resolutions;
     }
 
