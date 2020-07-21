@@ -140,7 +140,7 @@ public class CommunicationTest {
         final PlayerQuestion expected = getTestGameQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final PlayerQuestion actual = Communication.deserializeGameQuestion(json);
+        final PlayerQuestion actual = (PlayerQuestion) Communication.deserializeQuestion(json);
         assertEquals(expected, actual);
     }
 
@@ -148,7 +148,7 @@ public class CommunicationTest {
     public void testEquivalentQuestionCommunication3() throws CoinsException, JsonProcessingException {
         final PlayerQuestion expected = getTestGameQuestion();
         final String json = Communication.serializeQuestion(expected);
-        final PlayerQuestion actual = Communication.deserializeGameQuestion(json);
+        final PlayerQuestion actual = (PlayerQuestion) Communication.deserializeQuestion(json);
         assertEquals(expected, actual);
     }
 
@@ -173,7 +173,7 @@ public class CommunicationTest {
         pair.getSecond().add(new Unit());
         final CatchCellAnswer expected = new CatchCellAnswer(pair);
         final String json = Communication.serializeAnswer(expected);
-        final CatchCellAnswer actual = Communication.deserializeCatchCellAnswer(json);
+        final CatchCellAnswer actual = (CatchCellAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -190,7 +190,7 @@ public class CommunicationTest {
     public void testEquivalentChangeRaceAnswerCommunication2() throws JsonProcessingException {
         final ChangeRaceAnswer expected = new ChangeRaceAnswer(Race.ELF);
         final String json = Communication.serializeAnswer(expected);
-        final ChangeRaceAnswer actual = Communication.deserializeChangeRaceAnswer(json);
+        final ChangeRaceAnswer actual = (ChangeRaceAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -207,7 +207,7 @@ public class CommunicationTest {
     public void testEquivalentDeclineRaceAnswerCommunication2() throws JsonProcessingException {
         final DeclineRaceAnswer expected = new DeclineRaceAnswer(true);
         final String json = Communication.serializeAnswer(expected);
-        final DeclineRaceAnswer actual = Communication.deserializeDeclineRaceAnswer(json);
+        final DeclineRaceAnswer actual = (DeclineRaceAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -244,7 +244,7 @@ public class CommunicationTest {
         final DistributionUnitsAnswer expected = new DistributionUnitsAnswer(map);
 
         final String json = Communication.serializeAnswer(expected);
-        final DistributionUnitsAnswer actual = Communication.deserializeDistributionUnitsAnswer(json);
+        final DistributionUnitsAnswer actual = (DistributionUnitsAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
