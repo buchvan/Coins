@@ -7,7 +7,7 @@ import io.neolab.internship.coins.server.game.board.Position;
 
 import java.io.IOException;
 
-public class PositionDeserializer extends KeyDeserializer {
+public class PositionKeyDeserializer extends KeyDeserializer {
 
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)

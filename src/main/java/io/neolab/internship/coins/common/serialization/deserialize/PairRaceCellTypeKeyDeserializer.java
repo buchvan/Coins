@@ -3,15 +3,18 @@ package io.neolab.internship.coins.common.serialization.deserialize;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.utils.Pair;
 
 import java.io.IOException;
 
-public class AvailabilityTypeDeserializer extends KeyDeserializer {
+public class PairRaceCellTypeKeyDeserializer extends KeyDeserializer {
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)
             throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(s, AvailabilityType.class);
+        final Pair<String, String> pair = mapper.readValue(s, Pair.class);
+        return new Pair<>(Race.getRaceByTitle(pair.getFirst()), CellType.getCellTypeByTitle(pair.getSecond()));
     }
 }
