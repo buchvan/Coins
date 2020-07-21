@@ -1,11 +1,20 @@
 package io.neolab.internship.coins.common.question;
 
+import com.fasterxml.jackson.annotation.*;
+
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PlayerQuestion.class, name = "PlayerQuestion"),
+})
 public class Question {
+    @JsonProperty
     private final QuestionType questionType;
 
-    public Question(final QuestionType questionType) {
+    @JsonCreator
+    public Question(@JsonProperty("questionType") final QuestionType questionType) {
         this.questionType = questionType;
     }
 

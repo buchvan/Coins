@@ -7,6 +7,7 @@ import io.neolab.internship.coins.server.game.Race;
 import java.util.Objects;
 
 public class ChangeRaceAnswer extends Answer {
+    @JsonProperty
     private final Race newRace;
 
     @JsonCreator
