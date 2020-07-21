@@ -204,7 +204,7 @@ public class Server implements IServer {
         final PlayerQuestion playerQuestion
                 = new PlayerQuestion(QuestionType.CHANGE_RACE, game, serverSomething.player);
         serverSomething.send(Communication.serializeQuestion(playerQuestion));
-        GameAnswerProcessor.process(playerQuestion, Communication.deserializeChangeRaceAnswer(serverSomething.read()));
+        GameAnswerProcessor.process(playerQuestion, Communication.deserializeAnswer(serverSomething.read()));
     }
 
     /**
@@ -239,14 +239,14 @@ public class Server implements IServer {
         final PlayerQuestion declineRaceQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE,
                 game, serverSomething.player);
         serverSomething.send(Communication.serializeQuestion(declineRaceQuestion));
-        final DeclineRaceAnswer answer = Communication.deserializeDeclineRaceAnswer(serverSomething.read());
+        final DeclineRaceAnswer answer = (DeclineRaceAnswer) Communication.deserializeAnswer(serverSomething.read());
         GameAnswerProcessor.process(declineRaceQuestion, answer);
         if (answer.isDeclineRace()) {
             final PlayerQuestion changeRaceQuestion = new PlayerQuestion(QuestionType.CHANGE_RACE,
                     game, serverSomething.player);
             serverSomething.send(Communication.serializeQuestion(changeRaceQuestion));
             GameAnswerProcessor.process(changeRaceQuestion,
-                    Communication.deserializeChangeRaceAnswer(serverSomething.read()));
+                    Communication.deserializeAnswer(serverSomething.read()));
         }
     }
 
@@ -264,12 +264,12 @@ public class Server implements IServer {
         updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         PlayerQuestion catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
         serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
-        CatchCellAnswer catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
+        CatchCellAnswer catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
         while (catchCellAnswer.getResolution() != null) {
             GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
             catchCellQuestion = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
             serverSomething.send(Communication.serializeQuestion(catchCellQuestion));
-            catchCellAnswer = Communication.deserializeCatchCellAnswer(serverSomething.read());
+            catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
         }
     }
 
@@ -288,7 +288,7 @@ public class Server implements IServer {
                 game, serverSomething.player);
         serverSomething.send(Communication.serializeQuestion(distributionQuestion));
         GameAnswerProcessor.process(distributionQuestion,
-                Communication.deserializeDistributionUnitsAnswer(serverSomething.read()));
+                Communication.deserializeAnswer(serverSomething.read()));
     }
 
     public static void main(final String[] args) {
