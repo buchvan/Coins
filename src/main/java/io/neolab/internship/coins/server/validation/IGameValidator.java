@@ -93,7 +93,7 @@ public interface IGameValidator {
 
         final List<Unit> units = answer.getResolution().getSecond();
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
-            throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
+            throw new CoinsException(ErrorCode.ENTER_CELL_IMPOSSIBLE);
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
