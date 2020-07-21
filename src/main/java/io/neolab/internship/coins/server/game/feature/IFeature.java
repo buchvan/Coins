@@ -13,6 +13,7 @@ import java.io.Serializable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Feature.class, name = "Feature"),
+        @JsonSubTypes.Type(value = ICoefficientlyFeature.class, name = "ICoefficientlyFeature"),
 })
 public interface IFeature extends Serializable {
     FeatureType getType();
