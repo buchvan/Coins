@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.Objects;
 

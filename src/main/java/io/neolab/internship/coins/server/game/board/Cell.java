@@ -2,7 +2,6 @@ package io.neolab.internship.coins.server.game.board;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neolab.internship.coins.server.game.Player;
 import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.Race;
