@@ -21,10 +21,11 @@ import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.updateAchievableCells;
 
@@ -33,11 +34,12 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
+    private static final int GAMES_COUNT = 1;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
-    private final ConcurrentLinkedQueue<ServerSomething> serverList = new ConcurrentLinkedQueue<>();
+    private final Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
     private static class ServerSomething {
 
@@ -65,8 +67,10 @@ public class Server implements IServer {
             boolean isDuplicate = false;
             do {
                 nickname = in.readLine();
-                for (final ServerSomething serverSomething : server.serverList) {
-                    isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
+                for (final ConcurrentLinkedQueue<ServerSomething> item : server.serverSomethings.values()) {
+                    for (final ServerSomething serverSomething : item) {
+                        isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
+                    }
                 }
             } while (isDuplicate);
             LOGGER.info("Nickname for player: {} ", nickname);
@@ -128,8 +132,30 @@ public class Server implements IServer {
     public void startServer() {
         try {
             LOGGER.info("Server started, port: {}", PORT);
+            final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
+            for (int i = 0; i < GAMES_COUNT; i++) {
+                final int gameId = i;
+                threadPool.execute(() -> startGame(gameId));
+            }
+            threadPool.shutdown();
+            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (final InterruptedException exception) {
+            LOGGER.error("Error!!!", exception);
+            serverSomethings.values()
+                    .forEach(serverSomethingsList -> serverSomethingsList
+                            .forEach(ServerSomething::downService));
+            serverSomethings.clear();
+        }
+    }
 
-            connectClients();
+    /**
+     * @param gameId - id игры
+     */
+    private void startGame(final int gameId) {
+        serverSomethings.put(gameId, new ConcurrentLinkedQueue<>());
+        final ConcurrentLinkedQueue<ServerSomething> serverList = serverSomethings.get(gameId);
+        try {
+            connectClients(serverList);
             final List<Player> playerList = new LinkedList<>();
             serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
@@ -161,16 +187,17 @@ public class Server implements IServer {
         } catch (final CoinsException | IOException exception) {
             LOGGER.error("Error!!!", exception);
             serverList.forEach(ServerSomething::downService);
-            serverList.clear();
+            serverSomethings.remove(gameId);
         }
     }
 
     /**
      * Подключает клиентов к серверу
      *
+     * @param serverList - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private void connectClients() throws IOException {
+    private void connectClients(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
