@@ -3,7 +3,6 @@ package io.neolab.internship.coins.server;
 import io.neolab.internship.coins.common.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
-import io.neolab.internship.coins.common.question.GameOverQuestion;
 import io.neolab.internship.coins.common.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
