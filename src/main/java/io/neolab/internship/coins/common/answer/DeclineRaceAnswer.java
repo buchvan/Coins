@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class DeclineRaceAnswer extends Answer {
+    @JsonProperty
     private final boolean declineRace;
 
     @JsonCreator

@@ -1,9 +1,7 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.game.player;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 //import io.neolab.internship.coins.common.deserialize.UnitDeserializer;
 //import io.neolab.internship.coins.common.serialize.UnitSerializer;
 import io.neolab.internship.coins.utils.IdGenerator;
@@ -11,8 +9,6 @@ import io.neolab.internship.coins.utils.IdGenerator;
 import java.io.Serializable;
 import java.util.Objects;
 
-//@JsonSerialize(using = UnitSerializer.class)
-//@JsonDeserialize(using = UnitDeserializer.class)
 public class Unit implements Serializable {
     private final int id;
 

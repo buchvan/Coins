@@ -4,15 +4,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.server.game.board.Board;
+import io.neolab.internship.coins.server.game.Game;
 
 import java.io.IOException;
 
-public class BoardDeserializer extends JsonDeserializer<Board> {
+public class GameDeserializer extends JsonDeserializer<Game> {
     @Override
-    public Board deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
+    public Game deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
             throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(jsonParser, Board.class);
+        return mapper.readValue(jsonParser, Game.class);
     }
 }

@@ -2,14 +2,11 @@ package io.neolab.internship.coins.server.game.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
-import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.player.Race;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
