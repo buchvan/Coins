@@ -1,14 +1,13 @@
 package io.neolab.internship.coins.server.game.board;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.neolab.internship.coins.common.deserialize.CellKeyDeserializer;
-import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
-import io.neolab.internship.coins.common.deserialize.PositionToCellBidiMapDeserializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PositionKeyDeserializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PositionToCellBidiMapDeserializer;
 import io.neolab.internship.coins.common.serialize.CellSerializer;
-import io.neolab.internship.coins.common.serialize.PositionSerializer;
+import io.neolab.internship.coins.common.serialization.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.jetbrains.annotations.Contract;
@@ -18,15 +17,19 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 import java.util.*;
 
-@JsonDeserialize
 public class Board implements IBoard, Serializable {
+    @JsonProperty
     private final int sizeX;
+
+    @JsonProperty
     private final int sizeY;
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
-    @JsonDeserialize(keyUsing = PositionDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
-    private final @NotNull BidiMap<Position, Cell> positionToCellMap;
+    @JsonDeserialize(keyUsing = PositionKeyDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
+    private final NotNull BidiMap<Position, Cell> positionToCellMap;
 
+    @JsonProperty
     private final @NotNull List<Cell> edgeCells;
 
     @JsonSerialize(keyUsing = CellSerializer.class)

@@ -14,9 +14,16 @@ public enum CellType implements Serializable {
     MOUNTAIN("MOUNTAIN", 1, 3, "M"),
     WATER("WATER", 1, 1, "W");
 
+    @JsonProperty
     private final @NotNull String title;
+
+    @JsonProperty
     private final @NotNull String view;
+
+    @JsonProperty
     private final int catchDifficulty; // Сложность захвата клетки
+
+    @JsonProperty
     private final int coinYield; // Число монет, которое приносит клетка
 
     @Contract(pure = true)

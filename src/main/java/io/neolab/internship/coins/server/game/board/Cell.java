@@ -17,10 +17,19 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cell implements Serializable {
+    @JsonProperty
     private final int id;
+
+    @JsonProperty
     private final @NotNull CellType type;
+
+    @JsonProperty
     private final @NotNull List<Unit> units = new LinkedList<>();
+
+    @JsonProperty
     private @Nullable Player feudal = null; // игрок, который получает монеты с данной клетки
+
+    @JsonProperty
     private @Nullable Race race;
 
     public Cell(final @NotNull CellType cellType) {

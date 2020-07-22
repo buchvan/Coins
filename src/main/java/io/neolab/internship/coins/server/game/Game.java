@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.BoardDeserializer;
-import io.neolab.internship.coins.common.deserialize.PlayerKeyDeserializer;
-import io.neolab.internship.coins.common.serialize.PlayerSerializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PlayerKeyDeserializer;
+import io.neolab.internship.coins.common.serialization.serialize.PlayerSerializer;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -20,20 +19,25 @@ import java.util.*;
 
 public class Game implements IGame, Serializable {
 
-    @JsonDeserialize(using = BoardDeserializer.class)
+    @JsonProperty
     private @NotNull IBoard board;
 
+    @JsonProperty
     private int currentRound;
+
     public static final int ROUNDS_COUNT = 10;
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final @NotNull Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final @NotNull Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final @NotNull Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток,
@@ -43,15 +47,19 @@ public class Game implements IGame, Serializable {
 //        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
 //        transitCells.removeIf(feudalToCells.get(player)::contains);
 
-
+    @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
     private final @NotNull Map<Player, Set<Cell>> playerToAchievableCells; // игрок -> множество достижимых за один ход
     // клеток
 
+    @JsonProperty
     private final @NotNull GameFeatures gameFeatures;
+
+    @JsonProperty
     private final @NotNull List<Race> racesPool;
 
+    @JsonProperty
     private final @NotNull List<Player> players;
 
     public Game() {

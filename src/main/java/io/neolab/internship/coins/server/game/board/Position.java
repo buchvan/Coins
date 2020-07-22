@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +14,10 @@ import java.util.Objects;
  * Класс позиция, пара целых чисел
  */
 public class Position implements Serializable {
+    @JsonProperty
     private final int x;
+
+    @JsonProperty
     private final int y;
 
     /**

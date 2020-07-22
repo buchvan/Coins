@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class ChangeRaceAnswer extends Answer {
+    @JsonProperty
     private final @NotNull Race newRace;
 
     @JsonCreator

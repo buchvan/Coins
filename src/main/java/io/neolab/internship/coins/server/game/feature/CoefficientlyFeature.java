@@ -11,6 +11,7 @@ import java.util.Objects;
  * Особенность с целочисленным коэффициентом пары раса-тип_клетки (Race-CellType)
  */
 public class CoefficientlyFeature extends Feature implements ICoefficientlyFeature {
+    @JsonProperty
     private final int coefficient;
 
     @JsonCreator

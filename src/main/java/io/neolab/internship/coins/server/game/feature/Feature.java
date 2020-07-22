@@ -1,9 +1,6 @@
 package io.neolab.internship.coins.server.game.feature;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.deserialize.FeatureDeserializer;
+import com.fasterxml.jackson.annotation.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,8 +9,13 @@ import java.util.Objects;
 /**
  * Особенность пары (раса, тип_клетки) (Race, CellType)
  */
-@JsonDeserialize(using = FeatureDeserializer.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CoefficientlyFeature.class, name = "CoefficientlyFeature"),
+})
 public class Feature implements IFeature {
+    @JsonProperty
     private final @NotNull FeatureType type;
 
     @Contract(pure = true)

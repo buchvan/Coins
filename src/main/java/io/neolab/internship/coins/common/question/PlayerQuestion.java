@@ -2,8 +2,6 @@ package io.neolab.internship.coins.common.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neolab.internship.coins.common.deserialize.GameDeserializer;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import org.jetbrains.annotations.Contract;
@@ -12,11 +10,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class PlayerQuestion extends ServerMessage {
+    @JsonProperty
     private final PlayerQuestionType playerQuestionType;
 
-    @JsonDeserialize(using = GameDeserializer.class)
+    @JsonProperty
     private final @NotNull IGame game;
 
+    @JsonProperty
     private final @NotNull Player player;
 
     @JsonCreator

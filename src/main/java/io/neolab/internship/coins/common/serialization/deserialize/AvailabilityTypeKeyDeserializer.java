@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.deserialize;
+package io.neolab.internship.coins.common.serialization.deserialize;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
@@ -7,7 +7,7 @@ import io.neolab.internship.coins.utils.AvailabilityType;
 
 import java.io.IOException;
 
-public class AvailabilityTypeDeserializer extends KeyDeserializer {
+public class AvailabilityTypeKeyDeserializer extends KeyDeserializer {
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)
             throws IOException {

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.PositionDeserializer;
-import io.neolab.internship.coins.common.serialize.PositionSerializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PositionKeyDeserializer;
+import io.neolab.internship.coins.common.serialization.serialize.PositionSerializer;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;
 import org.jetbrains.annotations.Contract;
@@ -16,8 +16,9 @@ import java.util.*;
 
 public class DistributionUnitsAnswer extends Answer {
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
-    @JsonDeserialize(keyUsing = PositionDeserializer.class)
+    @JsonDeserialize(keyUsing = PositionKeyDeserializer.class)
     private final @Nullable Map<Position, List<Unit>> resolutions;
 
     public DistributionUnitsAnswer() {

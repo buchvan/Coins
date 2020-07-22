@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.Objects;
 
 public class DeclineRaceAnswer extends Answer {
+    @JsonProperty
     private final boolean declineRace;
 
     @JsonCreator
