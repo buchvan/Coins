@@ -27,10 +27,15 @@ public class Board implements IBoard, Serializable {
     @JsonDeserialize(keyUsing = CellKeyDeserializer.class)
     private final Map<Cell, List<Cell>> cellToNeighboringCells;
 
-    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
-        this.positionToCellMap = new DualHashBidiMap<>();
-        positionToCellMap.forEach(this.positionToCellMap::put);
-        edgeCells = new LinkedList<>();
+    /**
+     * @param sizeX             - число строк
+     * @param sizeY             - число столбцов
+     * @param positionToCellMap - позиция в клетку
+     * @return список крайних клеток
+     */
+    private static List<Cell> findEdgeCells(final int sizeX, final int sizeY,
+                                            final BidiMap<Position, Cell> positionToCellMap) {
+        final List<Cell> edgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
         while (colIndex < sizeY) { // обход по верхней границе борды
@@ -38,24 +43,30 @@ public class Board implements IBoard, Serializable {
             colIndex++;
         }
         strIndex = 1;
-        colIndex--; // colIndex = BOARD_SIZE_Y;
+        colIndex--; // colIndex = sizeY;
         while (strIndex < sizeX) { // обход по правой границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             strIndex++;
         }
-        strIndex--; // strIndex = BOARD_SIZE_X;
-        colIndex--; // colIndex = BOARD_SIZE_Y - 1;
+        strIndex--; // strIndex = sizeX;
+        colIndex--; // colIndex = sizeY - 1;
         while (colIndex >= 0) { // обход по нижней границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             colIndex--;
         }
-        strIndex--; // strIndex = BOARD_SIZE_X - 1;
+        strIndex--; // strIndex = sizeX - 1;
         colIndex++; // strIndex = 0;
         while (strIndex > 0) { // обход по левой границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             strIndex--;
         }
+        return edgeCells;
+    }
 
+    public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
+        this.positionToCellMap = new DualHashBidiMap<>();
+        positionToCellMap.forEach(this.positionToCellMap::put);
+        edgeCells = findEdgeCells(sizeX, sizeY, positionToCellMap);
         this.cellToNeighboringCells = new HashMap<>();
     }
 
