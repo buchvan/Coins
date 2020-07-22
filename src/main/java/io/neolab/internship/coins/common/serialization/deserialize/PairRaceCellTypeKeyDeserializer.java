@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.deserialize;
+package io.neolab.internship.coins.common.serialization.deserialize;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
@@ -9,7 +9,7 @@ import io.neolab.internship.coins.utils.Pair;
 
 import java.io.IOException;
 
-public class PairRaceCellTypeDeserializer extends KeyDeserializer {
+public class PairRaceCellTypeKeyDeserializer extends KeyDeserializer {
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)
             throws IOException {

@@ -2,7 +2,7 @@ package io.neolab.internship.coins.common.communication;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.Communication;
+import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
@@ -132,7 +132,7 @@ public class CommunicationTest {
     public void testEquivalentPlayerQuestionCommunication1() throws CoinsException, JsonProcessingException {
         final PlayerQuestion expected = getTestPlayerQuestion();
         final ObjectMapper mapper = new ObjectMapper();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final PlayerQuestion actual = mapper.readValue(json, PlayerQuestion.class);
         assertEquals(expected, actual);
     }
@@ -142,15 +142,15 @@ public class CommunicationTest {
         final PlayerQuestion expected = getTestPlayerQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final PlayerQuestion actual = Communication.deserializePlayerQuestion(json);
+        final PlayerQuestion actual = (PlayerQuestion) Communication.deserializeServerMessage(json);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testEquivalentPlayerQuestionCommunication3() throws CoinsException, JsonProcessingException {
         final PlayerQuestion expected = getTestPlayerQuestion();
-        final String json = Communication.serializeQuestion(expected);
-        final PlayerQuestion actual = Communication.deserializePlayerQuestion(json);
+        final String json = Communication.serializeServerMessage(expected);
+        final PlayerQuestion actual = (PlayerQuestion) Communication.deserializeServerMessage(json);
         assertEquals(expected, actual);
     }
 
@@ -191,7 +191,7 @@ public class CommunicationTest {
     public void testEquivalentGameOverQuestionCommunication1() throws JsonProcessingException {
         final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final GameOverMessage actual = mapper.readValue(json, GameOverMessage.class);
         assertEquals(expected, actual);
     }
@@ -201,15 +201,15 @@ public class CommunicationTest {
         final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final GameOverMessage actual = Communication.deserializeGameOverQuestion(json);
+        final GameOverMessage actual = (GameOverMessage) Communication.deserializeServerMessage(json);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testEquivalentGameOverQuestionCommunication3() throws JsonProcessingException {
         final GameOverMessage expected = getTestGameOverQuestion();
-        final String json = Communication.serializeQuestion(expected);
-        final GameOverMessage actual = Communication.deserializeGameOverQuestion(json);
+        final String json = Communication.serializeServerMessage(expected);
+        final GameOverMessage actual = (GameOverMessage) Communication.deserializeServerMessage(json);
         assertEquals(expected, actual);
     }
 
@@ -234,7 +234,7 @@ public class CommunicationTest {
         pair.getSecond().add(new Unit());
         final CatchCellAnswer expected = new CatchCellAnswer(pair);
         final String json = Communication.serializeAnswer(expected);
-        final CatchCellAnswer actual = Communication.deserializeCatchCellAnswer(json);
+        final CatchCellAnswer actual = (CatchCellAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -251,7 +251,7 @@ public class CommunicationTest {
     public void testEquivalentChangeRaceAnswerCommunication2() throws JsonProcessingException {
         final ChangeRaceAnswer expected = new ChangeRaceAnswer(Race.ELF);
         final String json = Communication.serializeAnswer(expected);
-        final ChangeRaceAnswer actual = Communication.deserializeChangeRaceAnswer(json);
+        final ChangeRaceAnswer actual = (ChangeRaceAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -268,7 +268,7 @@ public class CommunicationTest {
     public void testEquivalentDeclineRaceAnswerCommunication2() throws JsonProcessingException {
         final DeclineRaceAnswer expected = new DeclineRaceAnswer(true);
         final String json = Communication.serializeAnswer(expected);
-        final DeclineRaceAnswer actual = Communication.deserializeDeclineRaceAnswer(json);
+        final DeclineRaceAnswer actual = (DeclineRaceAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
@@ -305,7 +305,7 @@ public class CommunicationTest {
         final DistributionUnitsAnswer expected = new DistributionUnitsAnswer(map);
 
         final String json = Communication.serializeAnswer(expected);
-        final DistributionUnitsAnswer actual = Communication.deserializeDistributionUnitsAnswer(json);
+        final DistributionUnitsAnswer actual = (DistributionUnitsAnswer) Communication.deserializeAnswer(json);
         assertEquals(expected, actual);
     }
 
