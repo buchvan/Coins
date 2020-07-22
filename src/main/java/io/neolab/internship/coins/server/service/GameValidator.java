@@ -98,7 +98,7 @@ class GameValidator {
         }
         final List<Unit> units = answer.getResolution().getSecond();
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
