@@ -101,9 +101,7 @@ public interface IGameValidator {
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
-        System.out.println("NEED: " + unitsCountNeededToCatch);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
-        System.out.println("EXISTS: " + (units.size() + bonusAttack));
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
             throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);

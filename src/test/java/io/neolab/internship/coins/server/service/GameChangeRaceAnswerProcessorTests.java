@@ -15,15 +15,16 @@ import org.junit.Test;
 import java.util.List;
 
 import static io.neolab.internship.coins.server.game.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.TestUtils.getSomePlayer;
 import static org.junit.Assert.*;
 
 public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceUnavailableNewRaceTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
+        final IGame game = gameInit(2, 2, 2);
         game.getRacesPool().remove(Race.ELF);
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, game.getPlayers().get(0));
+        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, getSomePlayer(game));
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
@@ -32,9 +33,9 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceUnavailableNewRaceDeletedFromPoolTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
+        final IGame game = gameInit(2, 2, 2);
         game.getRacesPool().remove(Race.ELF);
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, game.getPlayers().get(0));
+        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, getSomePlayer(game));
         final Answer answer = new ChangeRaceAnswer(Race.MUSHROOM);
         GameAnswerProcessor.process(question, answer);
         assertFalse(game.getRacesPool().contains(Race.MUSHROOM));
@@ -42,10 +43,10 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceOldRaceReturnsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
+        final IGame game = gameInit(2, 2, 2);
         final List<Race> races = game.getRacesPool();
         races.remove(Race.ELF);
-        final Player player = game.getPlayers().get(0);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.AMPHIBIAN);
@@ -55,10 +56,10 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceRightNewRacesTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
+        final IGame game = gameInit(2, 2, 2);
         final List<Race> races = game.getRacesPool();
         races.remove(Race.ELF);
-        final Player player = game.getPlayers().get(0);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.AMPHIBIAN);
@@ -68,8 +69,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceAmphibianRightAvailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.AMPHIBIAN);
@@ -80,8 +81,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceAmphibianRightUnavailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.AMPHIBIAN);
@@ -92,8 +93,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceElfRightAvailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.MUSHROOM);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
@@ -103,8 +104,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceElfRightUnavailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.MUSHROOM);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
@@ -114,8 +115,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceOrcRightAvailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.ORC);
@@ -125,8 +126,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceOrcRightUnavailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.ORC);
@@ -136,8 +137,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceGnomeRightAvailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.GNOME);
@@ -147,8 +148,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceGnomeRightUnavailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.GNOME);
@@ -158,8 +159,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceUndeadRightAvailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.UNDEAD);
@@ -169,8 +170,8 @@ public class GameChangeRaceAnswerProcessorTests {
 
     @Test
     public void changeRaceUndeadRightUnavailableUnitsTest() throws CoinsException {
-        final IGame game = gameInit(2,2, 2);
-        final Player player = game.getPlayers().get(0);
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
         player.setRace(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, player);
         final Answer answer = new ChangeRaceAnswer(Race.UNDEAD);
