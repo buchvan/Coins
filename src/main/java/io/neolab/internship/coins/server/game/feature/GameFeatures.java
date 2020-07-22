@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.deserialize.PairRaceCellTypeDeserializer;
-import io.neolab.internship.coins.common.serialize.PairRaceCellTypeSerializer;
+import io.neolab.internship.coins.common.serialization.serialize.PairRaceCellTypeSerializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PairRaceCellTypeKeyDeserializer;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
@@ -15,8 +15,9 @@ import java.util.*;
 
 public class GameFeatures implements Serializable {
 
+    @JsonProperty
     @JsonSerialize(keyUsing = PairRaceCellTypeSerializer.class)
-    @JsonDeserialize(keyUsing = PairRaceCellTypeDeserializer.class)
+    @JsonDeserialize(keyUsing = PairRaceCellTypeKeyDeserializer.class)
     private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures; // (раса, тип клетки) ->
     // список соответствующих им особенностей
 
