@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -43,22 +43,22 @@ public class GameAnswerProcessor {
             throws CoinsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
-        if (playerQuestion.getQuestionType() == QuestionType.DECLINE_RACE) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DECLINE_RACE) {
             declineRaceProcess(answer, player, currentGame.getOwnToCells().get(player));
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.CHANGE_RACE) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CHANGE_RACE) {
             changeRaceProcess(answer, player, currentGame.getRacesPool());
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CATCH_CELL) {
             captureCellProcess(answer, player, currentGame.getBoard(), currentGame.getGameFeatures(),
                     currentGame.getOwnToCells(), currentGame.getFeudalToCells(),
                     currentGame.getPlayerToTransitCells().get(player),
                     currentGame.getPlayerToAchievableCells().get(player));
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DISTRIBUTION_UNITS) {
             distributionUnitsProcess(answer, player, currentGame.getBoard(),
                     currentGame.getOwnToCells().get(player), currentGame.getPlayerToTransitCells().get(player));
         }

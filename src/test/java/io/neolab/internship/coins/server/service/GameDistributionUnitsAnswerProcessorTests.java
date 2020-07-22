@@ -3,7 +3,8 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -29,7 +30,8 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
         final Answer answer = new DistributionUnitsAnswer();
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
@@ -51,7 +53,8 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
         final Answer answer = new DistributionUnitsAnswer(resolution);
 
         final CoinsException exception = assertThrows(CoinsException.class,
@@ -66,7 +69,8 @@ public class GameDistributionUnitsAnswerProcessorTests {
         setControlledPlayerCells(game, player);
         final Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(new Position(100, 100), Collections.emptyList());
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
         final Answer answer = new DistributionUnitsAnswer(resolution);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
@@ -89,7 +93,8 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
         final Answer answer = new DistributionUnitsAnswer(resolution);
 
         GameAnswerProcessor.process(question, answer);
@@ -113,7 +118,8 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Map<Position, List<Unit>> resolution = new HashMap<>();
         resolution.put(somePosition, unitsForResolutions);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.DISTRIBUTION_UNITS, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
         final Answer answer = new DistributionUnitsAnswer(resolution);
 
         GameAnswerProcessor.process(question, answer);

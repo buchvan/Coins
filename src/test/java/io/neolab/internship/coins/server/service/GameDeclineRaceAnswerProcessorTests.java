@@ -3,7 +3,8 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -35,7 +36,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         final List<Player> players = game.getPlayers();
         final Player player = players.get(0);
         game.getOwnToCells().get(player).addAll(controlledCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, player);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, player);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(PlayerQuestion, null));
         assertEquals(ErrorCode.EMPTY_ANSWER, exception.getErrorCode());
@@ -50,7 +52,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         final List<Player> players = game.getPlayers();
         final Player declineRacePlayer = players.get(0);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         assertEquals(0, game.getOwnToCells().get(declineRacePlayer).size());
@@ -69,7 +72,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         feudalCells.forEach(cell -> assertNotNull(cell.getFeudal()));
@@ -88,7 +92,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         assertTrue(feudalCells.contains(feudalCell));
@@ -105,7 +110,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         final List<Player> players = game.getPlayers();
         final Player declineRacePlayer = players.get(0);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(false);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         assertEquals(2, game.getOwnToCells().get(declineRacePlayer).size());
@@ -124,7 +130,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(false);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         feudalCells.forEach(cell -> assertNotNull(cell.getFeudal()));
@@ -143,7 +150,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(false);
         GameAnswerProcessor.process(PlayerQuestion, answer);
         assertTrue(feudalCells.contains(feudalCell));
@@ -170,7 +178,8 @@ public class GameDeclineRaceAnswerProcessorTests {
         someCellByPosition.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
 
-        final PlayerQuestion PlayerQuestion = new PlayerQuestion(QuestionType.DECLINE_RACE, game, declineRacePlayer);
+        final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
         final Answer answer = new DeclineRaceAnswer(true);
         GameAnswerProcessor.process(PlayerQuestion, answer);
 
