@@ -30,7 +30,7 @@ public class GameChangeRaceAnswerProcessorTests {
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.UNAVAILABLE_NEW_RACE, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE, exception.getErrorCode());
     }
 
     @Test

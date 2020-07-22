@@ -35,7 +35,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer();
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.NOT_ENOUGH_UNITS, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
     }
 
     @Test
@@ -74,7 +74,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer(resolution);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.WRONG_POSITION, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
     }
 
     @Test

@@ -14,6 +14,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.WRONG_POSITION, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
     }
 
     @Test
@@ -53,7 +54,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.NO_ACHIEVABLE_CELL, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL, exception.getErrorCode());
     }
 
     @Test
@@ -73,7 +74,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.NO_AVAILABLE_UNITS, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_NO_AVAILABLE_UNITS, exception.getErrorCode());
     }
 
     @Test
@@ -96,7 +97,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
     @Test
@@ -119,7 +120,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
     @Test
@@ -142,7 +143,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
     @Test
@@ -165,7 +166,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, catchCellAnswer));
-        assertEquals(ErrorCode.ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE, exception.getErrorCode());
     }
 
     @Test
@@ -185,6 +186,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(landCell), 2));
         assertEquals(player, landCell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
+        assertTrue(game.getOwnToCells().get(player).contains(landCell));
     }
 
     @Test
@@ -204,6 +208,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 3));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
@@ -223,6 +230,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 2));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
@@ -242,10 +252,13 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 2));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
-    public void catchWaterCellByAmphibianFailedTest() throws CoinsException {
+    public void catchWaterCellNotByAmphibianTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.ORC);
@@ -258,10 +271,13 @@ public class GameCatchCellAnswerProcessorTests {
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
-        final CoinsException exception = assertThrows(CoinsException.class,
-                () -> GameAnswerProcessor.process(question,
-                        createCatchCellAnswer(board.getPositionByCell(cell), 2)));
-        assertEquals(ErrorCode.CELL_CAPTURE_IMPOSSIBLE, exception.getErrorCode());
+        GameAnswerProcessor.process(question,
+                createCatchCellAnswer(board.getPositionByCell(cell), 2));
+        assertNull(cell.getFeudal());
+        assertFalse(game.getFeudalToCells().get(player).contains(cell));
+        assertTrue(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
+
     }
 
     @Test
@@ -280,6 +296,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 1));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
@@ -303,6 +322,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 5));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
@@ -326,6 +348,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertEquals(player, cell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(cell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
+        assertTrue(game.getOwnToCells().get(player).contains(cell));
     }
 
     @Test
@@ -356,7 +381,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchGnomeCellsUnitsDeadTest() throws CoinsException {
+    public void catchCellCheckOpponentUnitsDeadTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
@@ -378,6 +403,7 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertEquals(player, cell.getFeudal());
+        assertTrue(otherPlayer.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
     }
 
     @Test
@@ -398,6 +424,9 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(landCell), 5));
         assertEquals(player, landCell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
+        assertTrue(game.getOwnToCells().get(player).contains(landCell));
     }
 
     @Test
@@ -417,6 +446,6 @@ public class GameCatchCellAnswerProcessorTests {
         final CoinsException coinsException = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question,
                         createCatchCellAnswer(new Position(2, 2), 1)));
-        assertEquals(ErrorCode.NO_ACHIEVABLE_CELL, coinsException.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL, coinsException.getErrorCode());
     }
 }

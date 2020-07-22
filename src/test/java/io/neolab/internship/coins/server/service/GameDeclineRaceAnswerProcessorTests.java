@@ -14,7 +14,6 @@ import io.neolab.internship.coins.server.game.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
-import org.apache.commons.collections4.BidiMap;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class GameDeclineRaceAnswerProcessorTests {
                 PlayerQuestionType.DECLINE_RACE, new Game(), new Player("test"));
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(PlayerQuestion, null));
-        assertEquals(ErrorCode.EMPTY_ANSWER, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER, exception.getErrorCode());
     }
 
     @Test
