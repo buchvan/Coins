@@ -470,8 +470,7 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question, catchCellAnswer);
         assertEquals(player, cell.getFeudal());
     }
-
-    //FIXME: failed
+    
     @Test
     public void catchGnomeCellByGnomeOwnersUnitsDeadTest() throws CoinsException {
         IGame game = gameInit(2, 2, 2);
@@ -501,9 +500,9 @@ public class GameCatchCellAnswerProcessorTests {
         Map<Player, List<Cell>> ownToCells = game.getOwnToCells();
         List<Cell> controlledCells = ownToCells.get(otherPlayer);
         controlledCells.add(cell);
-
+        cell.setRace(Race.GNOME);
         Position position = board.getPositionByCell(cell);
-
+        cell.setFeudal(otherPlayer);
         List<Unit> resolutionUnits = new ArrayList<>();
         resolutionUnits.add(new Unit());
         resolutionUnits.add(new Unit());
