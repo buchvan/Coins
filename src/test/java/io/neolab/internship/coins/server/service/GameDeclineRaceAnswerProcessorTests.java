@@ -14,7 +14,6 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
-import org.apache.commons.collections4.BidiMap;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -22,6 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.TestUtils.getSomeBoardPosition;
+import static io.neolab.internship.coins.server.service.TestUtils.getSomePlayer;
 import static org.junit.Assert.*;
 
 public class GameDeclineRaceAnswerProcessorTests {
@@ -32,7 +33,7 @@ public class GameDeclineRaceAnswerProcessorTests {
                 PlayerQuestionType.DECLINE_RACE, new Game(), new Player("test"));
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(PlayerQuestion, null));
-        assertEquals(ErrorCode.EMPTY_ANSWER, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER, exception.getErrorCode());
     }
 
     @Test
@@ -41,8 +42,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
         final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
@@ -59,8 +59,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
@@ -79,8 +78,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
@@ -99,8 +97,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         game.getOwnToCells().get(declineRacePlayer).addAll(controlledCells);
         final PlayerQuestion PlayerQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DECLINE_RACE, game, declineRacePlayer);
@@ -117,8 +114,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
@@ -137,8 +133,7 @@ public class GameDeclineRaceAnswerProcessorTests {
         feudalCells.add(feudalCell);
         feudalCells.add(feudalCell1);
         final IGame game = gameInit(2, 2, 2);
-        final List<Player> players = game.getPlayers();
-        final Player declineRacePlayer = players.get(0);
+        final Player declineRacePlayer = getSomePlayer(game);
         feudalCell.setFeudal(declineRacePlayer);
         feudalCell1.setFeudal(declineRacePlayer);
         game.getFeudalToCells().get(declineRacePlayer).addAll(feudalCells);
@@ -179,14 +174,5 @@ public class GameDeclineRaceAnswerProcessorTests {
         assertTrue(cellUnitsAfterDeclining.contains(someUnit1));
         assertTrue(cellUnitsAfterDeclining.contains(someUnit2));
         assertEquals(2, cellUnitsAfterDeclining.size());
-    }
-
-    private Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
-        final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
-        return positionCellBidiMap.getKey(cells.get(0));
-    }
-
-    private Player getSomePlayer(final IGame game) {
-        return game.getPlayers().get(0);
     }
 }
