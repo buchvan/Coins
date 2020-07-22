@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static io.neolab.internship.coins.server.game.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.TestUtils.*;
 import static org.junit.Assert.*;
 
 public class GameDistributionUnitsAnswerProcessorTests {
@@ -34,7 +35,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer();
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
     }
 
     @Test
@@ -42,7 +43,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player);
+        setPlayerUnits(player, 1);
         setControlledPlayerCells(game, player);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
@@ -58,7 +59,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.NOT_ENOUGH_UNITS, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
     }
 
     @Test
@@ -73,7 +74,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer(resolution);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.WRONG_POSITION, exception.getErrorCode());
+        assertEquals(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
     }
 
     @Test
@@ -81,7 +82,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player);
+        setPlayerUnits(player, 1);
         setControlledPlayerCells(game, player);
 
         final BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
@@ -107,7 +108,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player);
+        setPlayerUnits(player, 1);
         setControlledPlayerCells(game, player);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
@@ -135,16 +136,5 @@ public class GameDistributionUnitsAnswerProcessorTests {
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         game.getOwnToCells().get(player).addAll(controlledCells);
-    }
-
-    private void setPlayerUnits(final Player player) {
-        final List<Unit> playerUnits = new ArrayList<>();
-        playerUnits.add(new Unit());
-        player.getUnitStateToUnits().put(AvailabilityType.NOT_AVAILABLE, playerUnits);
-    }
-
-    private Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
-        final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
-        return positionCellBidiMap.getKey(cells.get(0));
     }
 }
