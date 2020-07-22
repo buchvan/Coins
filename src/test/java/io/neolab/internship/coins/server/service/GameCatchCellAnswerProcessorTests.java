@@ -397,6 +397,7 @@ public class GameCatchCellAnswerProcessorTests {
         setCellAsControlled(cell, game, otherPlayer);
         cell.setRace(Race.GNOME);
         cell.setFeudal(otherPlayer);
+        setPlayerUnits(otherPlayer, 2);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
