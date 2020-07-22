@@ -1,9 +1,9 @@
-package io.neolab.internship.coins.common.deserialize;
+package io.neolab.internship.coins.common.serialization.deserialize;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.player.Player;
 
 import java.io.IOException;
 

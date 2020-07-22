@@ -1,15 +1,15 @@
-package io.neolab.internship.coins.common.deserialize;
+package io.neolab.internship.coins.common.serialization.deserialize;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.io.IOException;
 
-public class PairRaceCellTypeDeserializer extends KeyDeserializer {
+public class PairRaceCellTypeKeyDeserializer extends KeyDeserializer {
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)
             throws IOException {

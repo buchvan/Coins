@@ -1,6 +1,4 @@
-package io.neolab.internship.coins.server.game;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+package io.neolab.internship.coins.server.game.player;
 
 import java.io.Serializable;
 

@@ -6,16 +6,18 @@ import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.service.GameLogger;
-import io.neolab.internship.coins.server.validation.IGameValidator;
 import io.neolab.internship.coins.utils.AvailabilityType;
-import io.neolab.internship.coins.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,26 +34,26 @@ public class GameAnswerProcessor {
     public static void process(final PlayerQuestion playerQuestion, final Answer answer) throws CoinsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
-        if (playerQuestion.getQuestionType() == QuestionType.DECLINE_RACE) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DECLINE_RACE) {
             final DeclineRaceAnswer declineRaceAnswer = (DeclineRaceAnswer) answer;
             LOGGER.debug("Decline race answer: {} ", declineRaceAnswer);
-            IGameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
+            GameValidator.validateDeclineRaceAnswer(declineRaceAnswer);
             LOGGER.debug("Answer is valid");
             if (declineRaceAnswer.isDeclineRace()) {
                 declineRace(player, currentGame.getOwnToCells().get(player));
             }
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.CHANGE_RACE) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CHANGE_RACE) {
             final ChangeRaceAnswer changeRaceAnswer = (ChangeRaceAnswer) answer;
             LOGGER.debug("Change race answer: {} ", changeRaceAnswer);
             final List<Race> currentRacesPool = currentGame.getRacesPool();
-            IGameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
+            GameValidator.validateChangeRaceAnswer(changeRaceAnswer, currentRacesPool);
             LOGGER.debug("Answer is valid");
             changeRace(player, changeRaceAnswer.getNewRace(), currentRacesPool);
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.CATCH_CELL) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CATCH_CELL) {
             final IBoard currentBoard = currentGame.getBoard();
             final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
             LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
@@ -60,7 +62,7 @@ public class GameAnswerProcessor {
             final Map<Player, Set<Cell>> playerToAchievableCells = currentGame.getPlayerToAchievableCells();
             final Set<Cell> achievableCells = playerToAchievableCells.get(player);
             final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-            IGameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
+            GameValidator.validateCatchCellAnswer(catchCellAnswer, controlledCells, currentGame.getBoard(),
                     achievableCells, availableUnits, currentGame.getGameFeatures(), player);
             LOGGER.debug("Answer is valid");
             final Cell captureCell = currentBoard.getCellByPosition(catchCellAnswer.getResolution().getFirst());
@@ -70,13 +72,13 @@ public class GameAnswerProcessor {
                     achievableCells);
             return;
         }
-        if (playerQuestion.getQuestionType() == QuestionType.DISTRIBUTION_UNITS) {
+        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DISTRIBUTION_UNITS) {
             final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
             LOGGER.debug("Distribution units answer: {} ", distributionUnitsAnswer);
             final IBoard currentBoard = currentGame.getBoard();
             final int playerUnitsAmount = player.getUnitsByState(AvailabilityType.AVAILABLE).size()
                     + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size();
-            IGameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
+            GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer,
                     currentBoard, currentGame.getOwnToCells().get(player), playerUnitsAmount);
             LOGGER.debug("Answer is valid");
             distributionUnitsToCell(player, distributionUnitsAnswer.getResolutions(),
