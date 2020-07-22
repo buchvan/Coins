@@ -1,9 +1,9 @@
 package io.neolab.internship.coins.client;
 
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.Pair;
 

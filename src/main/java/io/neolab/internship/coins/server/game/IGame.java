@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 
 import java.util.List;
 import java.util.Map;

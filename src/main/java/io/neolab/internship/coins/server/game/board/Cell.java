@@ -2,9 +2,9 @@ package io.neolab.internship.coins.server.game.board;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Unit;
-import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.io.Serializable;

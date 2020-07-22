@@ -3,7 +3,7 @@ package io.neolab.internship.coins.common.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.Player;
+import io.neolab.internship.coins.server.game.player.Player;
 
 import java.util.Objects;
 

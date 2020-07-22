@@ -7,11 +7,10 @@ import io.neolab.internship.coins.common.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.service.GameFinalizer;
-import io.neolab.internship.coins.server.game.service.GameInitializer;
-import io.neolab.internship.coins.server.game.service.GameLogger;
-import io.neolab.internship.coins.server.game.service.GameLoopProcessor;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.service.*;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
+import io.neolab.internship.coins.utils.LogCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,9 +123,10 @@ public class Server implements IServer {
 
     @Override
     public void startServer() {
-        try {
-            LOGGER.info("Server started, port: {}", PORT);
+        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+            LogCleaner.clean();
 
+            LOGGER.info("Server started, port: {}", PORT);
             connectClients();
             final List<Player> playerList = new LinkedList<>();
             serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
@@ -300,7 +300,7 @@ public class Server implements IServer {
     }
 
     public static void main(final String[] args) {
-        final Server server = new Server();
+        final IServer server = new Server();
         server.startServer();
     }
 }

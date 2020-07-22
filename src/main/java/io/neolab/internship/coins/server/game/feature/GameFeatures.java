@@ -1,13 +1,13 @@
-package io.neolab.internship.coins.server.game;
+package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.neolab.internship.coins.common.serialization.deserialize.PairRaceCellTypeKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.serialize.PairRaceCellTypeSerializer;
+import io.neolab.internship.coins.common.serialization.deserialize.PairRaceCellTypeKeyDeserializer;
 import io.neolab.internship.coins.server.game.board.CellType;
-import io.neolab.internship.coins.server.game.feature.Feature;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
 
 import java.io.Serializable;

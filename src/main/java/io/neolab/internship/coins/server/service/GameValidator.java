@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.validation;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
@@ -7,16 +7,13 @@ import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
-import io.neolab.internship.coins.server.game.GameFeatures;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
-import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
-import io.neolab.internship.coins.server.game.feature.Feature;
-import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.server.game.service.GameLogger;
 
 import java.util.List;
@@ -26,7 +23,7 @@ import java.util.Set;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
-public interface IGameValidator {
+public class GameValidator {
     /**
      * Проверка на пустой ответ
      *
@@ -98,6 +95,7 @@ public interface IGameValidator {
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
             throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
         }
+
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
