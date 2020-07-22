@@ -8,8 +8,8 @@ import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Race;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -21,8 +21,9 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static io.neolab.internship.coins.server.game.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
 import static io.neolab.internship.coins.server.service.TestUtils.*;
 import static org.junit.Assert.*;
 
@@ -65,7 +66,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Position somePosition = getSomeBoardPosition(board.getPositionToCellMap());
         final Cell someCell = board.getCellByPosition(somePosition);
-        someCell.setFeudal(player);
+        Objects.requireNonNull(someCell).setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(someCell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -440,7 +441,7 @@ public class GameCatchCellAnswerProcessorTests {
         final Position from = new Position(0, 0);
         final Cell cell = game.getBoard().getCellByPosition(from);
         setUnitToCell(cell, 2);
-        cell.setFeudal(player);
+        Objects.requireNonNull(cell).setFeudal(player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);

@@ -3,8 +3,8 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.Player;
-import io.neolab.internship.coins.server.game.Unit;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -69,6 +69,7 @@ public class TestUtils {
             cellUnits.add(new Unit());
         }
 
-        cell.setUnits(cellUnits);
+        cell.getUnits().clear();
+        cell.getUnits().addAll(cellUnits);
     }
 }
