@@ -138,7 +138,7 @@ public class Server implements IServer {
             }
             threadPool.shutdown();
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (final InterruptedException exception) {
+        } catch (final IOException | InterruptedException exception) {
             LOGGER.error("Error!!!", exception);
             serverSomethings.values()
                     .forEach(serverSomethingsList -> serverSomethingsList
