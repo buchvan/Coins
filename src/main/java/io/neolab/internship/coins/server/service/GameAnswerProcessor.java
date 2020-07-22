@@ -16,7 +16,6 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
