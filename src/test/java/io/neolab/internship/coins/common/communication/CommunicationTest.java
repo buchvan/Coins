@@ -7,9 +7,10 @@ import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.GameOverQuestion;
+import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -87,10 +88,10 @@ public class CommunicationTest {
 
     @Test
     public void testEquivalentQuestionType() throws JsonProcessingException {
-        final QuestionType expected = QuestionType.CATCH_CELL;
+        final PlayerQuestionType expected = PlayerQuestionType.CATCH_CELL;
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final QuestionType actual = mapper.readValue(json, QuestionType.class);
+        final PlayerQuestionType actual = mapper.readValue(json, PlayerQuestionType.class);
         assertEquals(expected, actual);
     }
 
@@ -113,9 +114,9 @@ public class CommunicationTest {
         player.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
         player.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
 
-        final QuestionType questionType = QuestionType.CATCH_CELL;
+        final PlayerQuestionType playerQuestionType = PlayerQuestionType.CATCH_CELL;
 
-        return new PlayerQuestion(questionType, game, player);
+        return new PlayerQuestion(ServerMessageType.GAME_QUESTION, playerQuestionType, game, player);
     }
 
     @Test
@@ -153,7 +154,7 @@ public class CommunicationTest {
         assertEquals(expected, actual);
     }
 
-    private GameOverQuestion getTestGameOverQuestion() {
+    private GameOverMessage getTestGameOverQuestion() {
         final List<Player> playerList = new LinkedList<>();
 
         final Player kvs = new Player("kvs");
@@ -170,45 +171,45 @@ public class CommunicationTest {
         kvs.getUnitsByState(AvailabilityType.AVAILABLE).add(new Unit());
         playerList.add(bim);
 
-        final QuestionType questionType = QuestionType.GAME_OVER;
+        final ServerMessageType serverMessageType = ServerMessageType.GAME_OVER;
         final List<Player> winners = new LinkedList<>();
         winners.add(kvs);
 
-        return new GameOverQuestion(questionType, winners, playerList);
+        return new GameOverMessage(serverMessageType, winners, playerList);
     }
 
     @Test
     public void testEquivalentGameOverQuestion() throws JsonProcessingException {
-        final GameOverQuestion expected = getTestGameOverQuestion();
+        final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final GameOverQuestion actual = mapper.readValue(json, GameOverQuestion.class);
+        final GameOverMessage actual = mapper.readValue(json, GameOverMessage.class);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testEquivalentGameOverQuestionCommunication1() throws JsonProcessingException {
-        final GameOverQuestion expected = getTestGameOverQuestion();
+        final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = Communication.serializeQuestion(expected);
-        final GameOverQuestion actual = mapper.readValue(json, GameOverQuestion.class);
+        final GameOverMessage actual = mapper.readValue(json, GameOverMessage.class);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testEquivalentGameOverQuestionCommunication2() throws JsonProcessingException {
-        final GameOverQuestion expected = getTestGameOverQuestion();
+        final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
         final String json = mapper.writeValueAsString(expected);
-        final GameOverQuestion actual = Communication.deserializeGameOverQuestion(json);
+        final GameOverMessage actual = Communication.deserializeGameOverQuestion(json);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testEquivalentGameOverQuestionCommunication3() throws JsonProcessingException {
-        final GameOverQuestion expected = getTestGameOverQuestion();
+        final GameOverMessage expected = getTestGameOverQuestion();
         final String json = Communication.serializeQuestion(expected);
-        final GameOverQuestion actual = Communication.deserializeGameOverQuestion(json);
+        final GameOverMessage actual = Communication.deserializeGameOverQuestion(json);
         assertEquals(expected, actual);
     }
 

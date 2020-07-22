@@ -7,15 +7,15 @@ import io.neolab.internship.coins.server.game.Player;
 import java.util.List;
 import java.util.Objects;
 
-public class GameOverQuestion extends Question {
+public class GameOverMessage extends ServerMessage {
     private final List<Player> winners;
     private final List<Player> playerList;
 
     @JsonCreator
-    public GameOverQuestion(@JsonProperty("questionType") final QuestionType questionType,
-                            @JsonProperty("winners") final List<Player> winners,
-                            @JsonProperty("playerList") final List<Player> playerList) {
-        super(questionType);
+    public GameOverMessage(@JsonProperty("questionType") final ServerMessageType serverMessageType,
+                           @JsonProperty("winners") final List<Player> winners,
+                           @JsonProperty("playerList") final List<Player> playerList) {
+        super(serverMessageType);
         this.winners = winners;
         this.playerList = playerList;
     }
@@ -33,7 +33,7 @@ public class GameOverQuestion extends Question {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        final GameOverQuestion that = (GameOverQuestion) o;
+        final GameOverMessage that = (GameOverMessage) o;
         return Objects.equals(winners, that.winners) &&
                 Objects.equals(playerList, that.playerList);
     }

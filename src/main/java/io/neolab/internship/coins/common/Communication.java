@@ -3,27 +3,27 @@ package io.neolab.internship.coins.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameOverQuestion;
+import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.ServerMessage;
 
 public class Communication {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static String serializeQuestion(final Question question) throws JsonProcessingException {
-        return mapper.writeValueAsString(question);
+    public static String serializeQuestion(final ServerMessage serverMessage) throws JsonProcessingException {
+        return mapper.writeValueAsString(serverMessage);
     }
 
-    public static Question deserializeQuestion(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, Question.class);
+    public static ServerMessage deserializeQuestion(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, ServerMessage.class);
     }
 
     public static PlayerQuestion deserializePlayerQuestion(final String json) throws JsonProcessingException {
         return mapper.readValue(json, PlayerQuestion.class);
     }
 
-    public static GameOverQuestion deserializeGameOverQuestion(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, GameOverQuestion.class);
+    public static GameOverMessage deserializeGameOverQuestion(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, GameOverMessage.class);
     }
 
     public static String serializeAnswer(final Answer answer) throws JsonProcessingException {

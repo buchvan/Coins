@@ -9,7 +9,8 @@ import io.neolab.internship.coins.server.game.Player;
 
 import java.util.Objects;
 
-public class PlayerQuestion extends Question {
+public class PlayerQuestion extends ServerMessage {
+    private final PlayerQuestionType playerQuestionType;
 
     @JsonDeserialize(using = GameDeserializer.class)
     private final IGame game;
@@ -17,10 +18,12 @@ public class PlayerQuestion extends Question {
     private final Player player;
 
     @JsonCreator
-    public PlayerQuestion(@JsonProperty("questionType") final QuestionType questionType,
+    public PlayerQuestion(@JsonProperty("serverMessageType") final ServerMessageType serverMessageType,
+                          @JsonProperty("playerQuestionType") final PlayerQuestionType playerQuestionType,
                           @JsonProperty("game") final IGame game,
                           @JsonProperty("player") final Player player) {
-        super(questionType);
+        super(serverMessageType);
+        this.playerQuestionType = playerQuestionType;
         this.game = game;
         this.player = player;
     }
@@ -33,25 +36,32 @@ public class PlayerQuestion extends Question {
         return player;
     }
 
+    public PlayerQuestionType getPlayerQuestionType() {
+        return playerQuestionType;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof PlayerQuestion)) return false;
-        final PlayerQuestion playerQuestion = (PlayerQuestion) o;
-        return getQuestionType() == playerQuestion.getQuestionType() &&
-                Objects.equals(getGame(), playerQuestion.getGame());
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        final PlayerQuestion that = (PlayerQuestion) o;
+        return playerQuestionType == that.playerQuestionType &&
+                Objects.equals(game, that.game) &&
+                Objects.equals(player, that.player);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getQuestionType(), getGame());
+        return Objects.hash(super.hashCode(), playerQuestionType, game, player);
     }
 
     @Override
     public String toString() {
-        return "Question{" +
-                "questionType=" + getQuestionType() +
+        return "PlayerQuestion{" +
+                "playerQuestionType=" + playerQuestionType +
                 ", game=" + game +
+                ", player=" + player +
                 '}';
     }
 }

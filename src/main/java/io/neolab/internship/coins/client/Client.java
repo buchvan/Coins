@@ -2,10 +2,9 @@ package io.neolab.internship.coins.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameOverQuestion;
+import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.Question;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.ServerMessage;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
@@ -55,36 +54,37 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final Question question) throws CoinsException {
-        switch (question.getQuestionType()) {
-            case CATCH_CELL: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
-                LOGGER.info("Catch cell question: {} ", playerQuestion);
-                return new CatchCellAnswer(
-                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
-            }
-            case DISTRIBUTION_UNITS: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
-                LOGGER.info("Distribution units question: {} ", playerQuestion);
-                return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
-            }
-            case DECLINE_RACE: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
-                LOGGER.info("Decline race question: {} ", playerQuestion);
-                return new DeclineRaceAnswer(
-                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
-            }
-            case CHANGE_RACE: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) question;
-                LOGGER.info("Change race question: {} ", playerQuestion);
-                return new ChangeRaceAnswer(
-                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException {
+        switch (serverMessage.getServerMessageType()) {
+            case GAME_QUESTION: {
+                final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
+                switch (playerQuestion.getPlayerQuestionType()) {
+                    case CATCH_CELL: {
+                        LOGGER.info("Catch cell question: {} ", playerQuestion);
+                        return new CatchCellAnswer(
+                                simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                    }
+                    case DISTRIBUTION_UNITS: {
+                        LOGGER.info("Distribution units question: {} ", playerQuestion);
+                        return new DistributionUnitsAnswer(
+                                simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                    }
+                    case DECLINE_RACE: {
+                        LOGGER.info("Decline race question: {} ", playerQuestion);
+                        return new DeclineRaceAnswer(
+                                simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                    }
+                    case CHANGE_RACE: {
+                        LOGGER.info("Change race question: {} ", playerQuestion);
+                        return new ChangeRaceAnswer(
+                                simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                    }
+                }
             }
             case GAME_OVER: {
-                LOGGER.info("Game over question: {} ", question);
-                final GameOverQuestion gameOverQuestion = (GameOverQuestion) question;
-                GameLogger.printResultsInGameEnd(gameOverQuestion.getWinners(), gameOverQuestion.getPlayerList());
+                LOGGER.info("Game over question: {} ", serverMessage);
+                final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
+                GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
                 downService();
                 System.exit(0);
             }
@@ -115,10 +115,10 @@ public class Client implements IClient {
     private void play() {
         try {
             while (true) {
-                final Question question =
-                        OBJECT_MAPPER.readValue(in.readLine(), Question.class); // ждем сообщения с сервера
-                LOGGER.info("Input question: {} ", question);
-                final Answer answer = getAnswer(question);
+                final ServerMessage serverMessage =
+                        OBJECT_MAPPER.readValue(in.readLine(), ServerMessage.class); // ждем сообщения с сервера
+                LOGGER.info("Input question: {} ", serverMessage);
+                final Answer answer = getAnswer(serverMessage);
                 LOGGER.info("Output answer: {} ", answer);
                 sendAnswer(answer);
             }
