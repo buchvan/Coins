@@ -3,7 +3,7 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.IBot;
 import io.neolab.internship.coins.client.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.GameFeatures;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.player.Player;

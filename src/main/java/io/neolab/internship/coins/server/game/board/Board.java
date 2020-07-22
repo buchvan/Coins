@@ -27,7 +27,7 @@ public class Board implements IBoard, Serializable {
     @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionKeyDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
-    private final NotNull BidiMap<Position, Cell> positionToCellMap;
+    private final @NotNull BidiMap<Position, Cell> positionToCellMap;
 
     @JsonProperty
     private final @NotNull List<Cell> edgeCells;

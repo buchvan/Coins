@@ -16,7 +16,6 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.service.GameLogger;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -254,7 +253,8 @@ public class GameAnswerProcessor {
         GameValidator.validateDistributionUnitsAnswer(distributionUnitsAnswer, board,
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
-        distributionUnits(player, Objects.requireNonNull(distributionUnitsAnswer).getResolutions(),
+        distributionUnits(player,
+                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()),
                 transitCells, controlledCells, board);
     }
 

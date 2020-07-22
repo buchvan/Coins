@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
