@@ -403,7 +403,7 @@ public class GameCatchCellAnswerProcessorTests {
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertEquals(player, cell.getFeudal());
-        assertTrue(otherPlayer.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
+        assertTrue(otherPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).isEmpty());
     }
 
     @Test
