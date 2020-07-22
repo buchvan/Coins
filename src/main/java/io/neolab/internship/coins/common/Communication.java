@@ -3,9 +3,9 @@ package io.neolab.internship.coins.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameOverQuestion;
+import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.Question;
+import io.neolab.internship.coins.common.question.ServerMessage;
 
 /**
  * Модуль сериализации-десериализации
@@ -20,8 +20,12 @@ public class Communication {
      * @return json-строку - сериализованный вопрос
      * @throws JsonProcessingException, если writeValueAsString this throws
      */
-    public static String serializeQuestion(final Question question) throws JsonProcessingException {
-        return mapper.writeValueAsString(question);
+    public static String serializeQuestion(final ServerMessage serverMessage) throws JsonProcessingException {
+        return mapper.writeValueAsString(serverMessage);
+    }
+
+    public static ServerMessage deserializeQuestion(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, ServerMessage.class);
     }
 
     /**
@@ -36,14 +40,14 @@ public class Communication {
     }
 
     /**
-     * Десериализация вопроса в конце игры
+     * Десериализация сообщения игроку в конце игры
      *
      * @param json - json-строка - сериализованный вопрос
      * @return вопрос в конце игры
      * @throws JsonProcessingException, если readValue this throws
      */
-    public static GameOverQuestion deserializeGameOverQuestion(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, GameOverQuestion.class);
+    public static GameOverMessage deserializeGameOverQuestion(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, GameOverMessage.class);
     }
 
     /**
