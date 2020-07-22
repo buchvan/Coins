@@ -34,7 +34,7 @@ class GameValidator {
      */
     private static void checkIfAnswerEmpty(final Answer answer) throws CoinsException {
         if (answer == null) {
-            throw new CoinsException(ErrorCode.EMPTY_ANSWER);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER);
         }
     }
 
@@ -51,7 +51,7 @@ class GameValidator {
         checkIfAnswerEmpty(answer);
         final Race newRace = answer.getNewRace();
         if (!racesPool.contains(newRace)) {
-            throw new CoinsException(ErrorCode.UNAVAILABLE_NEW_RACE);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE);
         }
     }
 
@@ -86,26 +86,26 @@ class GameValidator {
         final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
         //есть ли клетка, соответствующая позиции
         if (checkIfCellDoesntExists(answer.getResolution().getFirst(), currentBoard)) {
-            throw new CoinsException(ErrorCode.WRONG_POSITION);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
         }
         //клетка достижима
         if (!achievableCells.contains(cellForAttempt)) {
-            throw new CoinsException(ErrorCode.INVALID_ACHIEVABLE_CELL);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL);
         }
         //есть ли войска для захвата
         if (availableUnits.isEmpty()) {
-            throw new CoinsException(ErrorCode.NO_AVAILABLE_UNITS);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NO_AVAILABLE_UNITS);
         }
         final List<Unit> units = answer.getResolution().getSecond();
         if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
-            throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
-            throw new CoinsException(ErrorCode.CELL_CAPTURE_IMPOSSIBLE);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);
         }
     }
 
@@ -125,7 +125,7 @@ class GameValidator {
         checkIfAnswerEmpty(answer);
         //Некуда распределять войска
         if (controlledCells.isEmpty()) {
-            throw new CoinsException(ErrorCode.NO_PLACE_FOR_DISTRIBUTION);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION);
         }
         int answerUnitsAmount = 0;
         for (final Map.Entry<Position, List<Unit>> entry : answer.getResolutions().entrySet()) {
@@ -133,12 +133,12 @@ class GameValidator {
             final List<Unit> units = entry.getValue();
             answerUnitsAmount += units.size();
             if (checkIfCellDoesntExists(position, currentBoard)) {
-                throw new CoinsException(ErrorCode.WRONG_POSITION);
+                throw new CoinsException(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
             }
         }
         //игрок хочет распределить больше юнитов чем у него есть
         if (answerUnitsAmount > playerUnitsAmount) {
-            throw new CoinsException(ErrorCode.NOT_ENOUGH_UNITS);
+            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS);
         }
     }
 

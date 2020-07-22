@@ -7,7 +7,6 @@ public enum ErrorCode {
     ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE("New race in available in races pool"),
     SAME_RACES("Current and new races are the same"),
     ANSWER_VALIDATION_WRONG_POSITION("Position is wrong"),
-    NO_ACHIEVABLE_CELL("No achievable cells to cell attempt"),
     ANSWER_VALIDATION_NO_AVAILABLE_UNITS("No available units for cell attempt"),
     ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE("Cell capture impossible"),
     ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION("No place for distribution"),
