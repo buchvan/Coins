@@ -3,7 +3,8 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.QuestionType;
+import io.neolab.internship.coins.common.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -30,7 +31,8 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(new Position(100, 100), Collections.emptyList()));
 
@@ -44,7 +46,8 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(new Position(1, 1), Collections.emptyList()));
 
@@ -64,7 +67,8 @@ public class GameCatchCellAnswerProcessorTests {
         someCell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(someCell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(new Pair<>(somePosition, Collections.emptyList()));
 
         final CoinsException exception = assertThrows(CoinsException.class,
@@ -85,7 +89,8 @@ public class GameCatchCellAnswerProcessorTests {
         game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
         setCellAsControlled(landCell, game, player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(board.getPositionByCell(landCell), Collections.emptyList()));
 
@@ -107,7 +112,8 @@ public class GameCatchCellAnswerProcessorTests {
         game.getPlayerToAchievableCells().put(player, setAchievableCell(mushroomCell));
         setCellAsControlled(mushroomCell, game, player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(board.getPositionByCell(mushroomCell), Collections.emptyList()));
 
@@ -129,7 +135,8 @@ public class GameCatchCellAnswerProcessorTests {
         game.getPlayerToAchievableCells().put(player, setAchievableCell(mountainCell));
         setCellAsControlled(mountainCell, game, player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(board.getPositionByCell(mountainCell), Collections.emptyList()));
 
@@ -151,7 +158,8 @@ public class GameCatchCellAnswerProcessorTests {
         waterCell.setFeudal(player);
         setCellAsControlled(waterCell, game, player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final Answer catchCellAnswer = new CatchCellAnswer(
                 new Pair<>(board.getPositionByCell(waterCell), Collections.emptyList()));
 
@@ -172,7 +180,8 @@ public class GameCatchCellAnswerProcessorTests {
         landCell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(landCell), 2));
         assertEquals(player, landCell.getFeudal());
@@ -190,7 +199,8 @@ public class GameCatchCellAnswerProcessorTests {
         cell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 3));
         assertEquals(player, cell.getFeudal());
@@ -208,7 +218,8 @@ public class GameCatchCellAnswerProcessorTests {
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
         cell.setFeudal(player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 2));
         assertEquals(player, cell.getFeudal());
@@ -226,7 +237,8 @@ public class GameCatchCellAnswerProcessorTests {
         cell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 2));
         assertEquals(player, cell.getFeudal());
@@ -244,7 +256,8 @@ public class GameCatchCellAnswerProcessorTests {
         cell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question,
                         createCatchCellAnswer(board.getPositionByCell(cell), 2)));
@@ -262,7 +275,8 @@ public class GameCatchCellAnswerProcessorTests {
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 1));
         assertEquals(player, cell.getFeudal());
@@ -284,7 +298,8 @@ public class GameCatchCellAnswerProcessorTests {
         setUnitToCell(cell, 2);
         game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 5));
         assertEquals(player, cell.getFeudal());
@@ -306,7 +321,8 @@ public class GameCatchCellAnswerProcessorTests {
         otherPlayer.setRace(Race.GNOME);
         setCellAsControlled(cell, game, otherPlayer);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertEquals(player, cell.getFeudal());
@@ -332,7 +348,8 @@ public class GameCatchCellAnswerProcessorTests {
         cell.setRace(Race.GNOME);
         cell.setFeudal(otherPlayer);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertTrue(controlledCells.isEmpty());
@@ -356,7 +373,8 @@ public class GameCatchCellAnswerProcessorTests {
         cell.setRace(Race.GNOME);
         cell.setFeudal(otherPlayer);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), 6));
         assertEquals(player, cell.getFeudal());
@@ -375,7 +393,8 @@ public class GameCatchCellAnswerProcessorTests {
         game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
         landCell.setRace(Race.MUSHROOM);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(landCell), 5));
         assertEquals(player, landCell.getFeudal());
@@ -393,7 +412,8 @@ public class GameCatchCellAnswerProcessorTests {
         setUnitToCell(cell, 2);
         cell.setFeudal(player);
 
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CATCH_CELL, game, player);
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
         final CoinsException coinsException = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question,
                         createCatchCellAnswer(new Position(2, 2), 1)));

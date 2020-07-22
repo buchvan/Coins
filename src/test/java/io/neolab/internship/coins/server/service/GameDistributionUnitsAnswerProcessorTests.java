@@ -133,8 +133,6 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
     private void setControlledPlayerCells(final IGame game, final Player player) {
         final List<Cell> controlledCells = new LinkedList<>();
-    private void setControlledPlayerCells(final IGame game, final Player player) {
-        final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         game.getOwnToCells().get(player).addAll(controlledCells);

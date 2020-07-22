@@ -27,7 +27,6 @@ public class GameChangeRaceAnswerProcessorTests {
         game.getRacesPool().remove(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CHANGE_RACE, game, game.getPlayers().get(0));
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, getSomePlayer(game));
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
@@ -40,7 +39,6 @@ public class GameChangeRaceAnswerProcessorTests {
         game.getRacesPool().remove(Race.ELF);
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CHANGE_RACE, game, game.getPlayers().get(0));
-        final PlayerQuestion question = new PlayerQuestion(QuestionType.CHANGE_RACE, game, getSomePlayer(game));
         final Answer answer = new ChangeRaceAnswer(Race.MUSHROOM);
         GameAnswerProcessor.process(question, answer);
         assertFalse(game.getRacesPool().contains(Race.MUSHROOM));
