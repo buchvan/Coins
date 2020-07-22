@@ -8,7 +8,7 @@ import io.neolab.internship.coins.common.question.ServerMessage;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
-import io.neolab.internship.coins.server.game.service.GameLogger;
+import io.neolab.internship.coins.server.service.GameLogger;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

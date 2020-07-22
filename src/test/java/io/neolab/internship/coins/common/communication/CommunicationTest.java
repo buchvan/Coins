@@ -136,7 +136,7 @@ public class CommunicationTest {
     public void testEquivalentPlayerQuestionCommunication1() throws CoinsException, JsonProcessingException {
         final PlayerQuestion expected = getTestPlayerQuestion();
         final ObjectMapper mapper = new ObjectMapper();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final PlayerQuestion actual = mapper.readValue(json, PlayerQuestion.class);
         assertEquals(expected, actual);
     }
@@ -153,7 +153,7 @@ public class CommunicationTest {
     @Test
     public void testEquivalentPlayerQuestionCommunication3() throws CoinsException, JsonProcessingException {
         final PlayerQuestion expected = getTestPlayerQuestion();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final PlayerQuestion actual = Communication.deserializePlayerQuestion(json);
         assertEquals(expected, actual);
     }
@@ -195,7 +195,7 @@ public class CommunicationTest {
     public void testEquivalentGameOverQuestionCommunication1() throws JsonProcessingException {
         final GameOverMessage expected = getTestGameOverQuestion();
         final ObjectMapper mapper = new ObjectMapper();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final GameOverMessage actual = mapper.readValue(json, GameOverMessage.class);
         assertEquals(expected, actual);
     }
@@ -212,7 +212,7 @@ public class CommunicationTest {
     @Test
     public void testEquivalentGameOverQuestionCommunication3() throws JsonProcessingException {
         final GameOverMessage expected = getTestGameOverQuestion();
-        final String json = Communication.serializeQuestion(expected);
+        final String json = Communication.serializeServerMessage(expected);
         final GameOverMessage actual = Communication.deserializeGameOverQuestion(json);
         assertEquals(expected, actual);
     }

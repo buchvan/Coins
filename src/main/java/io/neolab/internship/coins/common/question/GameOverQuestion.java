@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Objects;
 
-public class GameOverQuestion extends Question {
+public class GameOverQuestion extends ServerMessage {
     private final @NotNull List<Player> winners;
     private final @NotNull List<Player> playerList;
 
     @JsonCreator
-    public GameOverQuestion(@NotNull @JsonProperty("questionType") final QuestionType questionType,
+    public GameOverQuestion(@NotNull @JsonProperty("questionType") final ServerMessageType questionType,
                             @NotNull @JsonProperty("winners") final List<Player> winners,
                             @NotNull @JsonProperty("playerList") final List<Player> playerList) {
         super(questionType);
