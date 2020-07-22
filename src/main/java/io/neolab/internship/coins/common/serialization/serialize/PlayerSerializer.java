@@ -1,10 +1,10 @@
-package io.neolab.internship.coins.common.serialize;
+package io.neolab.internship.coins.common.serialization.serialize;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.Player;
 
 import java.io.IOException;
 

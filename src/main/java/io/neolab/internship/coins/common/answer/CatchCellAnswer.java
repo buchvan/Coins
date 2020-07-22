@@ -10,11 +10,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class CatchCellAnswer extends Answer {
+    @JsonProperty
     private final Pair<Position, List<Unit>> resolution;
-
-    public CatchCellAnswer() {
-        this.resolution = null;
-    }
 
     @JsonCreator
     public CatchCellAnswer(@JsonProperty("resolution") final Pair<Position, List<Unit>> resolution) {

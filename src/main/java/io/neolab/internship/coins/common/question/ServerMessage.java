@@ -1,11 +1,21 @@
 package io.neolab.internship.coins.common.question;
 
+import com.fasterxml.jackson.annotation.*;
+
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PlayerQuestion.class, name = "PlayerQuestion"),
+        @JsonSubTypes.Type(value = GameOverMessage.class, name = "GameOverMessage"),
+})
 public class ServerMessage {
+    @JsonProperty
     private final ServerMessageType serverMessageType;
 
-    public ServerMessage(final ServerMessageType serverMessageType) {
+    @JsonCreator
+    public ServerMessage(@JsonProperty("serverMessageType") final ServerMessageType serverMessageType) {
         this.serverMessageType = serverMessageType;
     }
 

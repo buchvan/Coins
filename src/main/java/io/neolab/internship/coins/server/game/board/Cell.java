@@ -14,10 +14,19 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cell implements Serializable {
+    @JsonProperty
     private final int id;
+
+    @JsonProperty
     private final CellType type;
+
+    @JsonProperty
     private final List<Unit> units = new LinkedList<>();
+
+    @JsonProperty
     private Player feudal = null;
+
+    @JsonProperty
     private Race race;
 
     public Cell(final CellType cellType) {
