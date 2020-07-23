@@ -5,6 +5,7 @@ import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.ServerMessage;
+import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
@@ -122,19 +123,20 @@ public class Client implements IClient {
         try {
             while (true) {
                 final ServerMessage serverMessage =
-                        OBJECT_MAPPER.readValue(in.readLine(), ServerMessage.class); // ждем сообщения с сервера
+                        Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", serverMessage);
                 final Answer answer = getAnswer(serverMessage);
                 LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(answer);
+                sendAnswer(Communication.serializeAnswer(answer));
             }
         } catch (final IOException | CoinsException e) {
+            LOGGER.error("Error", e);
             downService();
         }
     }
 
-    private void sendAnswer(final Answer answer) throws IOException {
-        out.write(OBJECT_MAPPER.writeValueAsString(answer) + "\n");
+    private void sendAnswer(final String json) throws IOException {
+        out.write(json + "\n");
         out.flush();
     }
 

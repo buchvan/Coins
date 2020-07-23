@@ -68,8 +68,7 @@ public class Board implements IBoard, Serializable {
                  @JsonProperty("edgeCells") final List<Cell> edgeCells) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-        this.positionToCellMap = new DualHashBidiMap<>();
-        positionToCellMap.forEach(this.positionToCellMap::put);
+        this.positionToCellMap = positionToCellMap;
         this.edgeCells = edgeCells;
     }
 
