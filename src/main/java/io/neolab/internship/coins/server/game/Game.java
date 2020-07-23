@@ -12,9 +12,11 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Game implements IGame, Serializable {
 
@@ -93,6 +95,103 @@ public class Game implements IGame, Serializable {
         this.gameFeatures = gameFeatures;
         this.racesPool = racesPool;
         this.players = players;
+    }
+
+    @Override
+    public Game getCopy() {
+        final IBoard board = this.board.getCopy();
+        final List<Player> players = new LinkedList<>();
+        this.players.forEach(player -> players.add(player.getCopy()));
+        final Map<Player, Set<Cell>> feudalToCells =
+                getCopyPlayerToCellsSet(this.feudalToCells, true, this.board, board, players);
+        final Map<Player, List<Cell>> ownToCells =
+                getCopyPlayerToCellsList(this.ownToCells, true, this.board, board, players);
+        final Map<Player, List<Cell>> playerToTransitCells =
+                getCopyPlayerToCellsList(this.playerToTransitCells, false, this.board, board, players);
+        final Map<Player, Set<Cell>> playerToAchievableCells =
+                getCopyPlayerToCellsSet(this.playerToAchievableCells, false, this.board, board, players);
+
+        return new Game(board, this.currentRound, feudalToCells, ownToCells, playerToTransitCells,
+                playerToAchievableCells, this.gameFeatures.getCopy(), new LinkedList<>(this.racesPool), players);
+    }
+
+    /**
+     * Взять копию мапы игрок -> список клеток
+     *
+     * @param playerToCellsList - мапа, чью копию нужно взять
+     * @param isOwn             - если это мапа ownToCells
+     * @param board             - оригинальная борда
+     * @param boardCopy         - копия борды
+     * @param copyPlayers       - список копий игроков
+     * @return копию мапы игрок -> список клеток
+     */
+    private static Map<Player, List<Cell>> getCopyPlayerToCellsList(final Map<Player, List<Cell>> playerToCellsList,
+                                                                    final boolean isOwn,
+                                                                    final IBoard board, final IBoard boardCopy,
+                                                                    final List<Player> copyPlayers) {
+        final Map<Player, List<Cell>> playerToCellsListCopy = new HashMap<>(playerToCellsList.size());
+        playerToCellsList.forEach((player, cells) -> {
+            final List<Cell> cellsCopy = new LinkedList<>();
+            cells.forEach(cell ->
+                    cellsCopy.add(boardCopy.getCellByPosition(board.getPositionByCell(cell))));
+            final Player playerCopy = findPlayerCopy(player, copyPlayers);
+            if (isOwn) {
+                /* Добавляем в копии клеток ссылки на тех юнитов, которые имеются у копии соответствующего игрока */
+                cellsCopy.forEach(cell -> {
+                    final List<Unit> unitList = cell.getUnits();
+                    final int unitListSize = unitList.size();
+                    playerCopy.getUnitStateToUnits().values().forEach(units ->
+                            unitList.addAll(units.stream()
+                                    .filter(unitList::contains)
+                                    .collect(Collectors.toList())));
+                    cell.getUnits().subList(0, unitListSize).clear();
+                });
+            }
+            playerToCellsListCopy.put(playerCopy, cellsCopy);
+        });
+        return playerToCellsListCopy;
+    }
+
+    /**
+     * Взять копию мапы игрок -> множество клеток
+     *
+     * @param playerToCellsSet - мапа, чью копию нужно взять
+     * @param isFeudal         - если это мапа feudalToCells
+     * @param board            - оригинальная борда
+     * @param boardCopy        - копия борды
+     * @param copyPlayers      - список копий игроков
+     * @return копию мапы игрок -> список клеток
+     */
+    private static Map<Player, Set<Cell>> getCopyPlayerToCellsSet(final Map<Player, Set<Cell>> playerToCellsSet,
+                                                                  final boolean isFeudal,
+                                                                  final IBoard board, final IBoard boardCopy,
+                                                                  final List<Player> copyPlayers) {
+        final Map<Player, Set<Cell>> playerToCellsSetCopy = new HashMap<>(playerToCellsSet.size());
+        playerToCellsSet.forEach((player, cells) -> {
+            final Set<Cell> cellsCopy = new HashSet<>(cells.size());
+            cells.forEach(cell ->
+                    cellsCopy.add(boardCopy.getCellByPosition(board.getPositionByCell(cell))));
+            final Player playerCopy = findPlayerCopy(player, copyPlayers);
+            if (isFeudal) {
+                cellsCopy.forEach(cell -> cell.setFeudal(playerCopy));
+            }
+            playerToCellsSetCopy.put(playerCopy, cellsCopy);
+        });
+        return playerToCellsSetCopy;
+    }
+
+    /**
+     * Найти копию игрока в списке
+     *
+     * @param player      - игрок, копию которого нужно найти
+     * @param copyPlayers - список копий игроков
+     * @return копию игрока
+     */
+    private static Player findPlayerCopy(final Player player, final List<Player> copyPlayers) {
+        return copyPlayers.stream()
+                .filter(playerItem -> playerItem.equals(player))
+                .findFirst()
+                .orElseThrow();
     }
 
     @Override

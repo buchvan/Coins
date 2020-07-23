@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
@@ -25,7 +24,6 @@ public class Client implements IClient {
 
     private static final String IP = "localhost";
     private static final int PORT = Server.PORT;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final String ip; // ip адрес клиента
     private final InetAddress ipAddress;
@@ -126,7 +124,7 @@ public class Client implements IClient {
                 if (serverMessage.getServerMessageType() == GAME_QUESTION) {
                     final Answer answer = getAnswer((PlayerQuestion) serverMessage);
                     LOGGER.info("Output answer: {} ", answer);
-                    sendAnswer(Communication.serializeAnswer(answer));
+                    sendMessage(Communication.serializeClientMessage(answer));
                 } else if (serverMessage.getServerMessageType() == NICKNAME) {
                     LOGGER.info("Nickname question: {}", serverMessage);
                     final Answer answer = new NicknameAnswer(nickname);
@@ -138,11 +136,20 @@ public class Client implements IClient {
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
+            sendDisconnectMessage();
             downService();
         }
     }
 
-    private void sendAnswer(final String json) throws IOException {
+    private void sendDisconnectMessage() {
+        try {
+            sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+        } catch (final IOException exception) {
+            LOGGER.error("Error", exception);
+        }
+    }
+
+    private void sendMessage(final String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
@@ -161,6 +168,9 @@ public class Client implements IClient {
                 if (out != null) {
                     out.close();
                 }
+                if (keyboardReader != null) {
+                    keyboardReader.close();
+                }
             }
         } catch (final IOException ignored) {
         }
@@ -172,8 +182,18 @@ public class Client implements IClient {
             System.out.println("Please, enter nickname");
             nickname = keyboardReader.readLine();
             LOGGER.info("Entered nickname: {}", nickname);
-            keyboardReader.close();
         }
+    }
+
+    private void tryAgainEnterNickname() throws IOException {
+        String nickname;
+        do {
+            System.out.println("Nickname is duplicate! Try again");
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
+        } while (nickname.isEmpty() || nickname.equals(this.nickname));
+        this.nickname = nickname;
     }
 
     public static void main(final String[] args) {

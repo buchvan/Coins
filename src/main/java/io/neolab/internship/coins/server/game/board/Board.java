@@ -86,6 +86,14 @@ public class Board implements IBoard, Serializable {
     }
 
     @Override
+    public IBoard getCopy() {
+        final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+        this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position.getCopy(), cell.getCopy()));
+        return new Board(this.sizeX, this.sizeY, positionToCellMap,
+                getEdgeCells(this.sizeX, this.sizeY, positionToCellMap));
+    }
+
+    @Override
     public BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
     }

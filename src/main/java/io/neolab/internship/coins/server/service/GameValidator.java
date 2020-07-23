@@ -82,7 +82,6 @@ class GameValidator {
                                         final List<Unit> availableUnits,
                                         final GameFeatures gameFeatures,
                                         final Player player) throws CoinsException {
-        System.out.println("ANSWER:" + answer);
         checkIfAnswerEmpty(answer);
         final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
         //есть ли клетка, соответствующая позиции
