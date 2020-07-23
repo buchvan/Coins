@@ -16,5 +16,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = DistributionUnitsAnswer.class, name = "DistributionUnitsAnswer"),
         @JsonSubTypes.Type(value = NicknameAnswer.class, name = "NicknameAnswer"),
 })
-public abstract class Answer {
+public class Answer extends ClientMessage {
+    public Answer() {
+        super(ClientMessageType.ANSWER);
+    }
 }
