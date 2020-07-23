@@ -1,7 +1,8 @@
 package io.neolab.internship.coins.common.answer;
 
 public enum ClientMessageType {
+    GAME_READY,
     DISCONNECTED,
-    ANSWER,
+    GAME_ANSWER,
     ;
 }

@@ -24,6 +24,7 @@ public class DistributionUnitsAnswer extends Answer {
 
     @JsonCreator
     public DistributionUnitsAnswer(@JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
+        super(ClientMessageType.GAME_ANSWER);
         this.resolutions = resolutions;
     }
 

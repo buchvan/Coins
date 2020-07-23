@@ -15,6 +15,7 @@ public class CatchCellAnswer extends Answer {
 
     @JsonCreator
     public CatchCellAnswer(@JsonProperty("resolution") final Pair<Position, List<Unit>> resolution) {
+        super(ClientMessageType.GAME_ANSWER);
         this.resolution = resolution;
     }
 
