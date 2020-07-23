@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server;
 
+import io.neolab.internship.coins.common.answer.NicknameAnswer;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
@@ -58,7 +59,7 @@ public class Server implements IServer {
             String nickname;
             boolean isDuplicate = false;
             do {
-                nickname = in.readLine();
+                nickname = ((NicknameAnswer) Communication.deserializeAnswer(in.readLine())).getNickname();
                 for (final ServerSomething serverSomething : server.serverList) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
@@ -217,7 +218,7 @@ public class Server implements IServer {
      * @param game            - объект, хранящий всю метаинформацию об игре
      */
     private void playerRound(final ServerSomething serverSomething, final IGame game)
-            throws IOException, CoinsException {
+            throws IOException {
 
         /* Активация данных игрока в начале раунда */
         GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player);
@@ -235,22 +236,26 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
-     * @throws CoinsException в случае игровой ошибки
+     * @throws IOException в случае ошибки общения с клиентом
      */
-    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game)
-            throws IOException, CoinsException {
-        final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                PlayerQuestionType.DECLINE_RACE, game, serverSomething.player);
-        serverSomething.send(Communication.serializeServerMessage(declineRaceQuestion));
-        final DeclineRaceAnswer answer = (DeclineRaceAnswer) Communication.deserializeAnswer(serverSomething.read());
-        GameAnswerProcessor.process(declineRaceQuestion, answer);
-        if (answer.isDeclineRace()) {
-            final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                    PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
-            serverSomething.send(Communication.serializeServerMessage(changeRaceQuestion));
-            GameAnswerProcessor.process(changeRaceQuestion,
-                    Communication.deserializeAnswer(serverSomething.read()));
+    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException {
+        while (true) {
+            try {
+                final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                        PlayerQuestionType.DECLINE_RACE, game, serverSomething.player);
+                serverSomething.send(Communication.serializeServerMessage(declineRaceQuestion));
+                final DeclineRaceAnswer answer = (DeclineRaceAnswer) Communication.deserializeAnswer(serverSomething.read());
+                GameAnswerProcessor.process(declineRaceQuestion, answer);
+                if (answer.isDeclineRace()) {
+                    final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                            PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
+                    serverSomething.send(Communication.serializeServerMessage(changeRaceQuestion));
+                    GameAnswerProcessor.process(changeRaceQuestion,
+                            Communication.deserializeAnswer(serverSomething.read()));
+                }
+                break;
+            } catch (final CoinsException ignored) {
+            }
         }
     }
 
@@ -259,25 +264,29 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
-     * @throws CoinsException в случае игровой ошибки
+     * @throws IOException в случае ошибки общения с клиентом
      */
-    private void captureCell(final ServerSomething serverSomething, final IGame game)
-            throws CoinsException, IOException {
+    private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
                 player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
-        PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                PlayerQuestionType.CATCH_CELL, game, player);
-        serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-        CatchCellAnswer catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
-        while (catchCellAnswer.getResolution() != null) {
-            GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
-            catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                    PlayerQuestionType.CATCH_CELL, game, player);
-            serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-            catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
+        while (true) {
+            try {
+                PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                        PlayerQuestionType.CATCH_CELL, game, player);
+                serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
+                CatchCellAnswer catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
+                while (catchCellAnswer.getResolution() != null) {
+                    GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
+                    catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                            PlayerQuestionType.CATCH_CELL, game, player);
+                    serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
+                    catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
+                }
+                break;
+            } catch (final CoinsException ignored) {
+            }
         }
     }
 
@@ -287,16 +296,26 @@ public class Server implements IServer {
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @throws IOException    в случае ошибки общения с клиентом
-     * @throws CoinsException в случае игровой ошибки
      */
     private void distributionUnits(final ServerSomething serverSomething, final IGame game)
-            throws IOException, CoinsException {
+            throws IOException {
 
-        final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
-        serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
-        GameAnswerProcessor.process(distributionQuestion,
-                Communication.deserializeAnswer(serverSomething.read()));
+        final Player player = serverSomething.player;
+        GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
+                game.getOwnToCells().get(player));
+        if (!game.getOwnToCells().get(player).isEmpty()) {
+            while (true) {
+                try {
+                    final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                            PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
+                    serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
+                    GameAnswerProcessor.process(distributionQuestion,
+                            Communication.deserializeAnswer(serverSomething.read()));
+                    break;
+                } catch (final CoinsException ignored) {
+                }
+            }
+        }
     }
 
     public static void main(final String[] args) {

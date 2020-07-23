@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Board implements IBoard, Serializable {
+
     @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionKeyDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
@@ -75,8 +76,7 @@ public class Board implements IBoard, Serializable {
     public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
                  @JsonProperty("edgeCells") final List<Cell> edgeCells,
                  @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
-        this.positionToCellMap = new DualHashBidiMap<>();
-        positionToCellMap.forEach(this.positionToCellMap::put);
+        this.positionToCellMap = positionToCellMap;
         this.edgeCells = edgeCells;
         this.cellToNeighboringCells = cellToNeighboringCells;
     }

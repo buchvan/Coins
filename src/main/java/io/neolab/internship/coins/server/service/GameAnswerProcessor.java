@@ -120,7 +120,9 @@ public class GameAnswerProcessor {
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
         chooseRace(player, racesPool, newRace);
-        racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
+        if (oldRace != null) {
+            racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
+        }
     }
 
     /**
