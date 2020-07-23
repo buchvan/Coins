@@ -20,7 +20,7 @@ import java.net.UnknownHostException;
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final String IP = "127.0.0.1";//"localhost";
+    private static final String IP = "localhost";
     private static final int PORT = Server.PORT;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -29,9 +29,11 @@ public class Client implements IClient {
     private final int port; // порт соединения
 
     private Socket socket = null;
-    private BufferedReader inputUser = null; // поток чтения с консоли
+    private BufferedReader keyboardReader = null; // поток чтения с консоли
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
+
+    private String nickname = "";
 
 
     private final IBot simpleBot;
@@ -56,6 +58,10 @@ public class Client implements IClient {
     @Override
     public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException {
         switch (serverMessage.getServerMessageType()) {
+            case NICKNAME: {
+                LOGGER.info("Nickname question: {}", serverMessage);
+                return new NicknameAnswer(nickname);
+            }
             case GAME_QUESTION: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
                 switch (playerQuestion.getPlayerQuestionType()) {
@@ -94,20 +100,21 @@ public class Client implements IClient {
 
     private void startClient() {
         try {
-            socket = new Socket(this.ip, this.port);
+            socket = new Socket(this.ipAddress, this.port);
         } catch (final IOException e) {
             LOGGER.error("Socket failed");
             return;
         }
         try {
-            inputUser = new BufferedReader(new InputStreamReader(System.in));
+            keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            LOGGER.info("Client started, ip: {}, port: {}", ip, port);
+            enterNickname();
         } catch (final IOException e) {
             downService();
             return;
         }
-        LOGGER.info("Client started, ip: {}, port: {}", ip, port);
         play();
     }
 
@@ -148,6 +155,15 @@ public class Client implements IClient {
                 }
             }
         } catch (final IOException ignored) {
+        }
+    }
+
+    private void enterNickname() throws IOException {
+        System.out.println("Welcome to the game!");
+        while (nickname.isEmpty()) {
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
         }
     }
 
