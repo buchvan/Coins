@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
@@ -56,12 +55,19 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException {
+    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException, IOException {
         switch (serverMessage.getServerMessageType()) {
             case NICKNAME: {
                 LOGGER.info("Nickname question: {}", serverMessage);
                 return new NicknameAnswer(nickname);
             }
+            case NICKNAME_DUPLICATE:
+                LOGGER.info("Duplicate nickname question: {}", serverMessage);
+                tryAgainEnterNickname();
+                return new NicknameAnswer(nickname);
+            case CONFIRMATION_OF_READINESS:
+                LOGGER.info("Ready question: {}", serverMessage);
+                return new Answer(ClientMessageType.GAME_READY);
             case GAME_QUESTION: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
                 switch (playerQuestion.getPlayerQuestionType()) {
@@ -158,6 +164,9 @@ public class Client implements IClient {
                 if (out != null) {
                     out.close();
                 }
+                if (keyboardReader != null) {
+                    keyboardReader.close();
+                }
             }
         } catch (final IOException ignored) {
         }
@@ -169,8 +178,18 @@ public class Client implements IClient {
             System.out.println("Please, enter nickname");
             nickname = keyboardReader.readLine();
             LOGGER.info("Entered nickname: {}", nickname);
-            keyboardReader.close();
         }
+    }
+
+    private void tryAgainEnterNickname() throws IOException {
+        String nickname;
+        do {
+            System.out.println("Nickname is duplicate! Try again");
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
+        } while (nickname.isEmpty() || nickname.equals(this.nickname));
+        this.nickname = nickname;
     }
 
     public static void main(final String[] args) {
