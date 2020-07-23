@@ -49,7 +49,7 @@ public class Server implements IServer {
          * Для общения с клиентом необходим сокет (адресные данные)
          *
          * @param serverList - список уже подключённых к игре клиентов
-         * @param socket - сокет
+         * @param socket     - сокет
          */
         private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> serverList, final Socket socket)
                 throws IOException {
@@ -64,7 +64,7 @@ public class Server implements IServer {
             String nickname;
             boolean isDuplicate = false;
             nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
-            for (final ServerSomething serverSomething : server.serverList) {
+            for (final ServerSomething serverSomething : serverList) {
                 isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
             }
             while (isDuplicate) {
@@ -73,7 +73,7 @@ public class Server implements IServer {
                 out.flush();
                 nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
                 isDuplicate = false;
-                for (final ServerSomething serverSomething : server.serverList) {
+                for (final ServerSomething serverSomething : serverList) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
             }
@@ -210,7 +210,7 @@ public class Server implements IServer {
                     socket.close();
                 }
             }
-            handShake();
+            handShake(serverList);
         } catch (final BindException exception) {
             LOGGER.error("Error!", exception);
         }
@@ -219,10 +219,11 @@ public class Server implements IServer {
     /**
      * HandShake
      *
+     * @param serverList - очередь клиентов игры
      * @throws IOException    при ошибке общения с клиентом
      * @throws CoinsException если клиент ответил "не готов"
      */
-    private void handShake() throws IOException, CoinsException {
+    private void handShake(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException, CoinsException {
         final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
         for (final ServerSomething serverSomething : serverList) {
             serverSomething.send(Communication.serializeServerMessage(question));

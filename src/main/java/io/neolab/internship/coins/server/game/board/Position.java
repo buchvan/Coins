@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
@@ -49,11 +51,14 @@ public class Position implements Serializable {
         this(0, 0);
     }
 
-    public Position(final int x, final int y) {
+    @JsonCreator
+    public Position(@JsonProperty("x") final int x,
+                    @JsonProperty("y") final int y) {
         this.x = x;
         this.y = y;
     }
 
+    @JsonIgnore
     public Position getCopy() {
         return new Position(this.x, this.y);
     }

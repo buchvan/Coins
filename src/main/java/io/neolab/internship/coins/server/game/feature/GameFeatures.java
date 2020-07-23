@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -31,6 +32,7 @@ public class GameFeatures implements Serializable {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
     }
 
+    @JsonIgnore
     public GameFeatures getCopy() {
         final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures =
                 new HashMap<>(this.raceCellTypeFeatures.size());

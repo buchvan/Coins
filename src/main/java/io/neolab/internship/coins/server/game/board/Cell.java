@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.board;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -51,6 +52,7 @@ public class Cell implements Serializable {
         this.race = race;
     }
 
+    @JsonIgnore
     public Cell getCopy() {
         final List<Unit> units = new LinkedList<>();
         this.units.forEach(unit -> units.add(unit.getCopy()));

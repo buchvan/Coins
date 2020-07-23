@@ -82,6 +82,7 @@ public class Board implements IBoard, Serializable {
         this(3, 4, new DualHashBidiMap<>());
     }
 
+    @JsonIgnore
     @Override
     public IBoard getCopy() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();

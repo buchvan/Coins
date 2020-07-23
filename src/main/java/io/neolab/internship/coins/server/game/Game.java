@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -97,6 +98,7 @@ public class Game implements IGame, Serializable {
         this.players = players;
     }
 
+    @JsonIgnore
     @Override
     public Game getCopy() {
         final IBoard board = this.board.getCopy();
