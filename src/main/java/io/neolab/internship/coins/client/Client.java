@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
@@ -23,7 +22,6 @@ public class Client implements IClient {
 
     private static final String IP = "localhost";
     private static final int PORT = Server.PORT;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final String ip; // ip адрес клиента
     private final InetAddress ipAddress;

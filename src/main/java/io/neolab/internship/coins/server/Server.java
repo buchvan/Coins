@@ -32,7 +32,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 1;
+    private static final int GAMES_COUNT = 2;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -49,10 +49,11 @@ public class Server implements IServer {
         /**
          * Для общения с клиентом необходим сокет (адресные данные)
          *
-         * @param server - сервер
+         * @param serverList - список уже подключённых к игре клиентов
          * @param socket - сокет
          */
-        private ServerSomething(final Server server, final Socket socket) throws IOException {
+        private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> serverList, final Socket socket)
+                throws IOException {
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию исключения, оно пробросится дальше
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -65,11 +66,9 @@ public class Server implements IServer {
             boolean isDuplicate = false;
             do {
                 nickname = ((NicknameAnswer) Communication.deserializeAnswer(in.readLine())).getNickname();
-                for (final ConcurrentLinkedQueue<ServerSomething> item : server.serverSomethings.values()) {
-                    for (final ServerSomething serverSomething : item) {
+                    for (final ServerSomething serverSomething : serverList) {
                         isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                     }
-                }
             } while (isDuplicate);
             LOGGER.info("Nickname for player: {} ", nickname);
             player = new Player(nickname);
@@ -152,8 +151,8 @@ public class Server implements IServer {
      * @param gameId - id игры
      */
     private void startGame(final int gameId) {
-        serverSomethings.put(gameId, new ConcurrentLinkedQueue<>());
-        final ConcurrentLinkedQueue<ServerSomething> serverList = serverSomethings.get(gameId);
+        final ConcurrentLinkedQueue<ServerSomething> serverList = new ConcurrentLinkedQueue<>();
+        serverSomethings.put(gameId, serverList);
         try {
             connectClients(serverList);
             final List<Player> playerList = new LinkedList<>();
@@ -204,14 +203,14 @@ public class Server implements IServer {
      * @param serverList - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private void connectClients(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException {
+    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
                 final Socket socket = serverSocket.accept();
                 try {
                     LOGGER.info("Client {} connects", currentClientsCount);
-                    serverList.add(new ServerSomething(this, socket));
+                    serverList.add(new ServerSomething(serverList, socket));
                     LOGGER.info("Client {} connected", currentClientsCount);
                     currentClientsCount++;
                 } catch (final IOException exception) {
@@ -267,7 +266,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException {
         while (true) {
@@ -295,7 +294,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
         final Player player = serverSomething.player;
@@ -325,7 +324,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void distributionUnits(final ServerSomething serverSomething, final IGame game)
             throws IOException {
