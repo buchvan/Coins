@@ -16,11 +16,11 @@ public class Communication {
         return mapper.readValue(json, ServerMessage.class);
     }
 
-    public static String serializeAnswer(final Answer answer) throws JsonProcessingException {
-        return mapper.writeValueAsString(answer);
+    public static String serializeClientMessage(final ClientMessage clientMessage) throws JsonProcessingException {
+        return mapper.writeValueAsString(clientMessage);
     }
 
-    public static Answer deserializeAnswer(final String json) throws JsonProcessingException {
-        return mapper.readValue(json, Answer.class);
+    public static ClientMessage deserializeClientMessage(final String json) throws JsonProcessingException {
+        return mapper.readValue(json, ClientMessage.class);
     }
 }

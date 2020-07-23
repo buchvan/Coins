@@ -55,12 +55,19 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException {
+    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException, IOException {
         switch (serverMessage.getServerMessageType()) {
             case NICKNAME: {
                 LOGGER.info("Nickname question: {}", serverMessage);
                 return new NicknameAnswer(nickname);
             }
+            case NICKNAME_DUPLICATE:
+                LOGGER.info("Duplicate nickname question: {}", serverMessage);
+                tryAgainEnterNickname();
+                return new NicknameAnswer(nickname);
+            case CONFIRMATION_OF_READINESS:
+                LOGGER.info("Ready question: {}", serverMessage);
+                return new Answer(ClientMessageType.GAME_READY);
             case GAME_QUESTION: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
                 switch (playerQuestion.getPlayerQuestionType()) {
@@ -125,15 +132,24 @@ public class Client implements IClient {
                 LOGGER.info("Input question: {} ", serverMessage);
                 final Answer answer = getAnswer(serverMessage);
                 LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(Communication.serializeAnswer(answer));
+                sendMessage(Communication.serializeClientMessage(answer));
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
+            sendDisconnectMessage();
             downService();
         }
     }
 
-    private void sendAnswer(final String json) throws IOException {
+    private void sendDisconnectMessage() {
+        try {
+            sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+        } catch (final IOException exception) {
+            LOGGER.error("Error", exception);
+        }
+    }
+
+    private void sendMessage(final String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
@@ -152,6 +168,9 @@ public class Client implements IClient {
                 if (out != null) {
                     out.close();
                 }
+                if (keyboardReader != null) {
+                    keyboardReader.close();
+                }
             }
         } catch (final IOException ignored) {
         }
@@ -163,8 +182,18 @@ public class Client implements IClient {
             System.out.println("Please, enter nickname");
             nickname = keyboardReader.readLine();
             LOGGER.info("Entered nickname: {}", nickname);
-            keyboardReader.close();
         }
+    }
+
+    private void tryAgainEnterNickname() throws IOException {
+        String nickname;
+        do {
+            System.out.println("Nickname is duplicate! Try again");
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
+        } while (nickname.isEmpty() || nickname.equals(this.nickname));
+        this.nickname = nickname;
     }
 
     public static void main(final String[] args) {

@@ -13,6 +13,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = Board.class, name = "Board"),
 })
 public interface IBoard {
+    IBoard getCopy();
 
     int getSizeX();
 

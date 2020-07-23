@@ -20,6 +20,8 @@ import java.util.Set;
         @JsonSubTypes.Type(value = Game.class, name = "Game"),
 })
 public interface IGame {
+    IGame getCopy();
+
     void incrementCurrentRound();
 
     IBoard getBoard();

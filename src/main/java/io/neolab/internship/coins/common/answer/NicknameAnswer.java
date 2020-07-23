@@ -11,6 +11,7 @@ public class NicknameAnswer extends Answer {
 
     @JsonCreator
     public NicknameAnswer(@JsonProperty("nickname")final String nickname) {
+        super(ClientMessageType.GAME_ANSWER);
         this.nickname = nickname;
     }
 

@@ -51,6 +51,12 @@ public class Cell implements Serializable {
         this.race = race;
     }
 
+    public Cell getCopy() {
+        final List<Unit> units = new LinkedList<>();
+        this.units.forEach(unit -> units.add(unit.getCopy()));
+        return new Cell(this.id, this.type, units, null, this.race);
+    }
+
     public int getId() {
         return id;
     }

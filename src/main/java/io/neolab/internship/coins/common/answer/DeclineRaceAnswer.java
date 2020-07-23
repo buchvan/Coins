@@ -11,6 +11,7 @@ public class DeclineRaceAnswer extends Answer {
 
     @JsonCreator
     public DeclineRaceAnswer(@JsonProperty("declineRace") final boolean declineRace) {
+        super(ClientMessageType.GAME_ANSWER);
         this.declineRace = declineRace;
     }
 
