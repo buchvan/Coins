@@ -23,7 +23,6 @@ public class Client implements IClient {
 
     private static final String IP = "localhost";
     private static final int PORT = Server.PORT;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final String ip; // ip адрес клиента
     private final InetAddress ipAddress;
@@ -127,15 +126,20 @@ public class Client implements IClient {
                 LOGGER.info("Input question: {} ", serverMessage);
                 final Answer answer = getAnswer(serverMessage);
                 LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(Communication.serializeAnswer(answer));
+                sendMessage(Communication.serializeClientMessage(answer));
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
+            try {
+                sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+            } catch (final IOException exception) {
+                LOGGER.error("Error", exception);
+            }
             downService();
         }
     }
 
-    private void sendAnswer(final String json) throws IOException {
+    private void sendMessage(final String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }

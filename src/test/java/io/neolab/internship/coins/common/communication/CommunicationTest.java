@@ -236,8 +236,8 @@ public class CommunicationTest {
         pair.getSecond().add(new Unit());
         pair.getSecond().add(new Unit());
         final CatchCellAnswer expected = new CatchCellAnswer(pair);
-        final String json = Communication.serializeAnswer(expected);
-        final CatchCellAnswer actual = (CatchCellAnswer) Communication.deserializeAnswer(json);
+        final String json = Communication.serializeClientMessage(expected);
+        final CatchCellAnswer actual = (CatchCellAnswer) Communication.deserializeClientMessage(json);
         assertEquals(expected, actual);
     }
 
@@ -253,8 +253,8 @@ public class CommunicationTest {
     @Test
     public void testEquivalentChangeRaceAnswerCommunication2() throws JsonProcessingException {
         final ChangeRaceAnswer expected = new ChangeRaceAnswer(Race.ELF);
-        final String json = Communication.serializeAnswer(expected);
-        final ChangeRaceAnswer actual = (ChangeRaceAnswer) Communication.deserializeAnswer(json);
+        final String json = Communication.serializeClientMessage(expected);
+        final ChangeRaceAnswer actual = (ChangeRaceAnswer) Communication.deserializeClientMessage(json);
         assertEquals(expected, actual);
     }
 
@@ -270,8 +270,8 @@ public class CommunicationTest {
     @Test
     public void testEquivalentDeclineRaceAnswerCommunication2() throws JsonProcessingException {
         final DeclineRaceAnswer expected = new DeclineRaceAnswer(true);
-        final String json = Communication.serializeAnswer(expected);
-        final DeclineRaceAnswer actual = (DeclineRaceAnswer) Communication.deserializeAnswer(json);
+        final String json = Communication.serializeClientMessage(expected);
+        final DeclineRaceAnswer actual = (DeclineRaceAnswer) Communication.deserializeClientMessage(json);
         assertEquals(expected, actual);
     }
 
@@ -307,8 +307,8 @@ public class CommunicationTest {
         map.put(new Position(2, 3), new LinkedList<>());
         final DistributionUnitsAnswer expected = new DistributionUnitsAnswer(map);
 
-        final String json = Communication.serializeAnswer(expected);
-        final DistributionUnitsAnswer actual = (DistributionUnitsAnswer) Communication.deserializeAnswer(json);
+        final String json = Communication.serializeClientMessage(expected);
+        final DistributionUnitsAnswer actual = (DistributionUnitsAnswer) Communication.deserializeClientMessage(json);
         assertEquals(expected, actual);
     }
 

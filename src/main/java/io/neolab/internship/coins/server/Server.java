@@ -1,5 +1,8 @@
 package io.neolab.internship.coins.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neolab.internship.coins.common.answer.Answer;
 import io.neolab.internship.coins.common.answer.NicknameAnswer;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.answer.CatchCellAnswer;
@@ -41,6 +44,7 @@ public class Server implements IServer {
 
         private final Socket socket;
         private final BufferedReader in; // поток чтения из сокета
+        private String buffer; // последнее сообщение из сокета
         private final BufferedWriter out; // поток записи в сокет
         private final Player player;
 
@@ -62,7 +66,7 @@ public class Server implements IServer {
             String nickname;
             boolean isDuplicate = false;
             do {
-                nickname = ((NicknameAnswer) Communication.deserializeAnswer(in.readLine())).getNickname();
+                nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
                 for (final ServerSomething serverSomething : server.serverList) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
@@ -89,12 +93,8 @@ public class Server implements IServer {
          * @throws IOException в случае ошибки получения сообщения
          */
         private String read() throws IOException {
-//            String message = in.readLine();
-//            while (message == null) {
-//                message = in.readLine();
-//            }
-//            return message;
-            return in.readLine();
+            buffer = in.readLine();
+            return buffer;
         }
 
         /**
@@ -169,7 +169,7 @@ public class Server implements IServer {
                 serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
                 serverSomething.downService();
             }
-        } catch (final CoinsException | IOException exception) {
+        } catch (final CoinsException | ClassCastException | IOException exception) {
             LOGGER.error("Error!!!", exception);
             serverList.forEach(ServerSomething::downService);
             serverList.clear();
@@ -216,7 +216,8 @@ public class Server implements IServer {
                 = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
         serverSomething.send(Communication.serializeServerMessage(playerQuestion));
-        GameAnswerProcessor.process(playerQuestion, Communication.deserializeAnswer(serverSomething.read()));
+        GameAnswerProcessor.process(playerQuestion,
+                (Answer) Communication.deserializeClientMessage(serverSomething.read()));
     }
 
     /**
@@ -252,17 +253,19 @@ public class Server implements IServer {
                 final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                         PlayerQuestionType.DECLINE_RACE, game, serverSomething.player);
                 serverSomething.send(Communication.serializeServerMessage(declineRaceQuestion));
-                final DeclineRaceAnswer answer = (DeclineRaceAnswer) Communication.deserializeAnswer(serverSomething.read());
+                final DeclineRaceAnswer answer =
+                        (DeclineRaceAnswer) Communication.deserializeClientMessage(serverSomething.read());
                 GameAnswerProcessor.process(declineRaceQuestion, answer);
                 if (answer.isDeclineRace()) {
                     final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                             PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
                     serverSomething.send(Communication.serializeServerMessage(changeRaceQuestion));
                     GameAnswerProcessor.process(changeRaceQuestion,
-                            Communication.deserializeAnswer(serverSomething.read()));
+                            (Answer) Communication.deserializeClientMessage(serverSomething.read()));
                 }
                 break;
             } catch (final CoinsException ignored) {
+                // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
     }
@@ -283,16 +286,18 @@ public class Server implements IServer {
                 PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                         PlayerQuestionType.CATCH_CELL, game, player);
                 serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-                CatchCellAnswer catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
+                CatchCellAnswer catchCellAnswer =
+                        (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
                 while (catchCellAnswer.getResolution() != null) {
                     GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
                     catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                             PlayerQuestionType.CATCH_CELL, game, player);
                     serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-                    catchCellAnswer = (CatchCellAnswer) Communication.deserializeAnswer(serverSomething.read());
+                    catchCellAnswer = (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
                 }
                 break;
             } catch (final CoinsException ignored) {
+                // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
     }
@@ -317,9 +322,10 @@ public class Server implements IServer {
                             PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
                     serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
                     GameAnswerProcessor.process(distributionQuestion,
-                            Communication.deserializeAnswer(serverSomething.read()));
+                            (Answer) Communication.deserializeClientMessage(serverSomething.read()));
                     break;
                 } catch (final CoinsException ignored) {
+                    // TODO: сообщение клиенту, что он что-то сделал неправильно
                 }
             }
         }
