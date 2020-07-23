@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.question.*;
@@ -64,7 +65,7 @@ public class Server implements IServer {
             for (final ServerSomething serverSomething : server.serverList) {
                 isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
             }
-            while (isDuplicate){
+            while (isDuplicate) {
                 serverMessage = new ServerMessage(ServerMessageType.NICKNAME_DUPLICATE);
                 out.write(Communication.serializeServerMessage(serverMessage) + "\n");
                 out.flush();
@@ -111,21 +112,6 @@ public class Server implements IServer {
                 }
             } catch (final IOException ignored) {
             }
-        }
-    }
-
-    public enum Command {
-        EXIT("exit"),
-        ;
-
-        private final String commandName;
-
-        Command(final String commandName) {
-            this.commandName = commandName;
-        }
-
-        public boolean equalCommand(final String message) {
-            return commandName.equals(message);
         }
     }
 
@@ -198,18 +184,26 @@ public class Server implements IServer {
                     socket.close();
                 }
             }
-
-            /* вроде это называется shake */
-            final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
-            for (final ServerSomething serverSomething : serverList) {
-                serverSomething.send(Communication.serializeServerMessage(question));
-                final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
-                if (answer.getMessageType() != ClientMessageType.GAME_READY) {
-                    throw new CoinsException(ErrorCode.CLIENT_FELL_OFF);
-                }
-            }
+            handShake();
         } catch (final BindException exception) {
             LOGGER.error("Error!", exception);
+        }
+    }
+
+    /**
+     * HandShake
+     *
+     * @throws IOException    при ошибке общения с клиентом
+     * @throws CoinsException если клиент ответил "не готов"
+     */
+    private void handShake() throws IOException, CoinsException {
+        final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
+        for (final ServerSomething serverSomething : serverList) {
+            serverSomething.send(Communication.serializeServerMessage(question));
+            final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
+            if (answer.getMessageType() != ClientMessageType.GAME_READY) {
+                throw new CoinsException(ErrorCode.CLIENT_FELL_OFF);
+            }
         }
     }
 
