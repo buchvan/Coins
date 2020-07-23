@@ -12,5 +12,5 @@ public interface IClient {
      * @return ответ на вопрос
      * @throws CoinsException в случае неизвестного типа вопроса
      */
-    Answer getAnswer(final ServerMessage serverMessage) throws CoinsException;
+    Answer getAnswer(final ServerMessage question) throws CoinsException;
 }

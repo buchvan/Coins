@@ -107,23 +107,6 @@ public class Server implements IServer {
         }
     }
 
-    public enum Command {
-        EXIT("exit"),
-        ;
-
-        private final @NotNull String commandName;
-
-        @Contract(pure = true)
-        Command(final @NotNull String commandName) {
-            this.commandName = commandName;
-        }
-
-        @Contract(value = "null -> false", pure = true)
-        public boolean equalCommand(final String message) {
-            return commandName.equals(message);
-        }
-    }
-
     @Override
     public void startServer() {
         try (final GameLoggerFile ignored = new GameLoggerFile()) {
