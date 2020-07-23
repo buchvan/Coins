@@ -78,8 +78,7 @@ public class Board implements IBoard, Serializable {
                  @NotNull @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-        this.positionToCellMap = new DualHashBidiMap<>();
-        positionToCellMap.forEach(this.positionToCellMap::put);
+        this.positionToCellMap = positionToCellMap;
         this.edgeCells = edgeCells;
         this.cellToNeighboringCells = cellToNeighboringCells;
     }

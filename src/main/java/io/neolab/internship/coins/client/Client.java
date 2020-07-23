@@ -5,6 +5,7 @@ import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.ServerMessage;
+import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
@@ -21,7 +22,7 @@ import java.net.UnknownHostException;
 public class Client implements IClient {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final @NotNull String IP = "127.0.0.1";//"localhost";
+    private static final @NotNull String IP = "localhost";
     private static final int PORT = Server.PORT;
     private static final @NotNull ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -30,9 +31,11 @@ public class Client implements IClient {
     private final int port; // порт соединения
 
     private Socket socket = null;
-    private BufferedReader inputUser = null; // поток чтения с консоли
+    private BufferedReader keyboardReader = null; // поток чтения с консоли
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
+
+    private String nickname = "";
 
 
     private final @NotNull IBot simpleBot;
@@ -57,6 +60,10 @@ public class Client implements IClient {
     @Override
     public @NotNull Answer getAnswer(final @NotNull ServerMessage serverMessage) throws CoinsException {
         switch (serverMessage.getServerMessageType()) {
+            case NICKNAME: {
+                LOGGER.info("Nickname question: {}", serverMessage);
+                return new NicknameAnswer(nickname);
+            }
             case GAME_QUESTION: {
                 final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
                 switch (playerQuestion.getPlayerQuestionType()) {
@@ -95,21 +102,21 @@ public class Client implements IClient {
 
     private void startClient() {
         try {
-            socket = new Socket(this.ip, this.port);
+            socket = new Socket(this.ipAddress, this.port);
         } catch (final IOException e) {
             LOGGER.error("Socket failed");
             return;
         }
         try {
-            inputUser = new BufferedReader(new InputStreamReader(System.in));
+            keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            LOGGER.info("Client started, ip: {}, port: {}", ip, port);
+            enterNickname();
+            play();
         } catch (final IOException e) {
             downService();
-            return;
         }
-        LOGGER.info("Client started, ip: {}, port: {}", ip, port);
-        play();
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
@@ -117,19 +124,20 @@ public class Client implements IClient {
         try {
             while (true) {
                 final ServerMessage serverMessage =
-                        OBJECT_MAPPER.readValue(in.readLine(), ServerMessage.class); // ждем сообщения с сервера
+                        Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", serverMessage);
                 final Answer answer = getAnswer(serverMessage);
                 LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(answer);
+                sendAnswer(Communication.serializeAnswer(answer));
             }
         } catch (final IOException | CoinsException e) {
+            LOGGER.error("Error", e);
             downService();
         }
     }
 
-    private void sendAnswer(final @NotNull Answer answer) throws IOException {
-        out.write(OBJECT_MAPPER.writeValueAsString(answer) + "\n");
+    private void sendAnswer(final@NotNull String json) throws IOException {
+        out.write(json + "\n");
         out.flush();
     }
 
@@ -149,6 +157,16 @@ public class Client implements IClient {
                 }
             }
         } catch (final IOException ignored) {
+        }
+    }
+
+    private void enterNickname() throws IOException {
+        System.out.println("Welcome to the game!");
+        while (nickname.isEmpty()) {
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
+            keyboardReader.close();
         }
     }
 

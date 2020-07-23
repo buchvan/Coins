@@ -32,4 +32,11 @@ public class DeclineRaceAnswer extends Answer {
     public int hashCode() {
         return Objects.hash(isDeclineRace());
     }
+
+    @Override
+    public String toString() {
+        return "DeclineRaceAnswer{" +
+                "declineRace=" + declineRace +
+                '}';
+    }
 }

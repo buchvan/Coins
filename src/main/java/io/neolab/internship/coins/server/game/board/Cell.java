@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +49,7 @@ public class Cell implements Serializable {
                 @JsonProperty("race") final @Nullable Race race) {
         this.id = id;
         this.type = type;
-        Collections.copy(this.units, units);
+        this.units.addAll(units);
         this.feudal = feudal;
         this.race = race;
     }
