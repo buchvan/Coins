@@ -136,12 +136,16 @@ public class Client implements IClient {
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
-            try {
-                sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
-            } catch (final IOException exception) {
-                LOGGER.error("Error", exception);
-            }
+            sendDisconnectMessage();
             downService();
+        }
+    }
+
+    private void sendDisconnectMessage() {
+        try {
+            sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+        } catch (final IOException exception) {
+            LOGGER.error("Error", exception);
         }
     }
 

@@ -201,7 +201,7 @@ public class Server implements IServer {
             serverSomething.send(Communication.serializeServerMessage(question));
             final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
             if (answer.getMessageType() != ClientMessageType.GAME_READY) {
-                throw new CoinsException(ErrorCode.CLIENT_FELL_OFF);
+                throw new CoinsException(ErrorCode.CLIENT_DISCONNECTION);
             }
         }
     }
