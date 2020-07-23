@@ -35,7 +35,7 @@ public class Client implements IClient {
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
 
-    private String nickname = "";
+    private @NotNull String nickname = "";
 
 
     private final @NotNull IBot simpleBot;
