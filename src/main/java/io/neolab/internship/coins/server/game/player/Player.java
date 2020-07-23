@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.player;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -62,7 +63,8 @@ public class Player implements Serializable {
         this.coins = coins;
     }
 
-    public Player getCopy() {
+    @JsonIgnore
+    public @NotNull Player getCopy() {
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
         this.unitStateToUnits.forEach((availabilityType, units) -> {
             final List<Unit> unitList = new LinkedList<>();

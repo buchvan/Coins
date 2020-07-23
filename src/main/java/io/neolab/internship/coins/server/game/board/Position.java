@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.Contract;
@@ -59,7 +60,8 @@ public class Position implements Serializable {
         this.y = y;
     }
 
-    public Position getCopy() {
+    @JsonIgnore
+    public @NotNull Position getCopy() {
         return new Position(this.x, this.y);
     }
 

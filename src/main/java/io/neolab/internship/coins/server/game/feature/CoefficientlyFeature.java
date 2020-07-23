@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,8 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
         this.coefficient = coefficient;
     }
 
-    public CoefficientlyFeature getCopy() {
+    @JsonIgnore
+    public @NotNull CoefficientlyFeature getCopy() {
         return new CoefficientlyFeature(getType(), coefficient);
     }
 

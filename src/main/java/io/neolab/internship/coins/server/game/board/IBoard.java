@@ -56,11 +56,6 @@ public interface IBoard {
     @NotNull List<Cell> getEdgeCells();
 
     /**
-     * @return список крайних клеток борды
-     */
-    @NotNull List<Cell> getEdgeCells();
-
-    /**
      * @param cell - клетка
      * @return список соседних с cell клеток
      */

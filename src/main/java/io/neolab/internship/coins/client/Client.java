@@ -85,7 +85,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void readMessage(final ServerMessage serverMessage) throws CoinsException {
+    public void readMessage(final @NotNull ServerMessage serverMessage) throws CoinsException {
         if (serverMessage.getServerMessageType() == GAME_OVER) {
             LOGGER.info("Game over question: {} ", serverMessage);
             final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;

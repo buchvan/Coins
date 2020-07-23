@@ -24,7 +24,8 @@ public class Feature implements IFeature {
         this.type = type;
     }
 
-    public Feature getCopy() {
+    @JsonIgnore
+    public @NotNull Feature getCopy() {
         return new Feature(type);
     }
 

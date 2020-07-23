@@ -76,7 +76,7 @@ public class Board implements IBoard, Serializable {
     }
 
     @JsonCreator
-    public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+    public Board(@NotNull @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
                  @NotNull @JsonProperty("edgeCells") final List<Cell> edgeCells,
                  @NotNull @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
         this.positionToCellMap = positionToCellMap;
@@ -88,8 +88,9 @@ public class Board implements IBoard, Serializable {
         this(3, 4, new DualHashBidiMap<>());
     }
 
+    @JsonIgnore
     @Override
-    public IBoard getCopy() {
+    public @NotNull IBoard getCopy() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
         this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position.getCopy(), cell.getCopy()));
 
@@ -115,16 +116,6 @@ public class Board implements IBoard, Serializable {
     @Override
     public @NotNull List<Cell> getEdgeCells() {
         return edgeCells;
-    }
-
-    @Override
-    public List<Cell> getNeighboringCells(final Cell cell) {
-        return cellToNeighboringCells.get(cell);
-    }
-
-    @Override
-    public void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells) {
-        cellToNeighboringCells.put(cell, neighboringCells);
     }
 
     @Override
