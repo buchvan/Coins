@@ -12,6 +12,7 @@ public class ChangeRaceAnswer extends Answer {
 
     @JsonCreator
     public ChangeRaceAnswer(@JsonProperty("newRace") final Race newRace) {
+        super(ClientMessageType.GAME_ANSWER);
         this.newRace = newRace;
     }
 
