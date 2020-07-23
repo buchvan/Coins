@@ -21,6 +21,7 @@ public class Communication {
     }
 
     public static Answer deserializeAnswer(final String json) throws JsonProcessingException {
+        System.out.println("COMMUNICATION ANSWER: " + json);
         return mapper.readValue(json, Answer.class);
     }
 }
