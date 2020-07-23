@@ -175,7 +175,7 @@ public class Server implements IServer {
                 /* обновление числа монет у каждого игрока */
                 game.getPlayers()
                         .forEach(player ->
-                                GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells(),
+                                GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
                                         game.getGameFeatures(),
                                         game.getBoard()));
 
