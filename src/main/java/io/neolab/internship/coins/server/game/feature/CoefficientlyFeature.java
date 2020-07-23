@@ -21,6 +21,10 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
         this.coefficient = coefficient;
     }
 
+    public CoefficientlyFeature getCopy() {
+        return new CoefficientlyFeature(getType(), coefficient);
+    }
+
     @Override
     public int getCoefficient() {
         return coefficient;

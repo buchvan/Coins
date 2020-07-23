@@ -21,6 +21,8 @@ import java.util.Set;
         @JsonSubTypes.Type(value = Game.class, name = "Game"),
 })
 public interface IGame {
+    IGame getCopy();
+
     /**
      * Увеличить номер текущего раунда
      */

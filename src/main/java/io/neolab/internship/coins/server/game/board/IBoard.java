@@ -15,16 +15,10 @@ import java.util.List;
         @JsonSubTypes.Type(value = Board.class, name = "Board"),
 })
 public interface IBoard {
-
     /**
-     * @return число строк
+     * @return копию данного объекта
      */
-    int getSizeX();
-
-    /**
-     * @return число столбцов
-     */
-    int getSizeY();
+    @NotNull IBoard getCopy();
 
     /**
      * @return отображение позиций в клетки
@@ -55,6 +49,11 @@ public interface IBoard {
      * @return позицию клетки cell
      */
     @NotNull Position getPositionByCell(final @NotNull Cell cell);
+
+    /**
+     * @return список крайних клеток борды
+     */
+    @NotNull List<Cell> getEdgeCells();
 
     /**
      * @return список крайних клеток борды

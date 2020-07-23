@@ -59,6 +59,10 @@ public class Position implements Serializable {
         this.y = y;
     }
 
+    public Position getCopy() {
+        return new Position(this.x, this.y);
+    }
+
     public int getX() {
         return x;
     }

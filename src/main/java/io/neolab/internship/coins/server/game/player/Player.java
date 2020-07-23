@@ -16,14 +16,21 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Player implements Serializable {
+    @JsonProperty
     private final int id;
+
+    @JsonProperty
     private @NotNull String nickname;
+
+    @JsonProperty
     private @Nullable Race race;
 
+    @JsonProperty
     @JsonSerialize(keyUsing = AvailabilityTypeSerializer.class)
     @JsonDeserialize(keyUsing = AvailabilityTypeKeyDeserializer.class)
     private final @NotNull Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
 
+    @JsonProperty
     private int coins = 0;
 
     public Player(final @NotNull String nickname) {
@@ -53,6 +60,16 @@ public class Player implements Serializable {
             this.unitStateToUnits.put(entry.getKey(), units);
         }
         this.coins = coins;
+    }
+
+    public Player getCopy() {
+        final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
+        this.unitStateToUnits.forEach((availabilityType, units) -> {
+            final List<Unit> unitList = new LinkedList<>();
+            units.forEach(unit -> unitList.add(unit.getCopy()));
+            unitStateToUnits.put(availabilityType, unitList);
+        });
+        return new Player(this.id, this.nickname, this.race, unitStateToUnits, this.coins);
     }
 
     public int getId() {

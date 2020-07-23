@@ -21,6 +21,10 @@ public class Unit implements Serializable {
         this.id = unit.id;
     }
 
+    public Unit getCopy() {
+        return new Unit(this.id);
+    }
+
     @Contract(pure = true)
     @JsonCreator
     public Unit(@JsonProperty("id") final int id) {

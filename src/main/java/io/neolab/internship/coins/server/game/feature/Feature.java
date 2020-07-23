@@ -24,6 +24,10 @@ public class Feature implements IFeature {
         this.type = type;
     }
 
+    public Feature getCopy() {
+        return new Feature(type);
+    }
+
     @Override
     public @NotNull FeatureType getType() {
         return type;

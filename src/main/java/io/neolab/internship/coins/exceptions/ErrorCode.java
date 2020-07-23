@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public enum ErrorCode {
     CLIENT_CREATION_FAILED("Client creation failed"),
+    CLIENT_DISCONNECTION("Client disconnection"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
     ANSWER_VALIDATION_ERROR_EMPTY_ANSWER("Answer is empty"),
     ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE("New race in available in races pool"),

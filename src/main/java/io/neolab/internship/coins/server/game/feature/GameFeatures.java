@@ -27,8 +27,21 @@ public class GameFeatures implements Serializable {
 
     @JsonCreator
     public GameFeatures(@JsonProperty("raceCellTypeFeatures") final Map<Pair<Race, CellType>, List<Feature>>
-                                    raceCellTypeFeatures) {
+                                raceCellTypeFeatures) {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
+    }
+
+    public GameFeatures getCopy() {
+        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures =
+                new HashMap<>(this.raceCellTypeFeatures.size());
+        this.raceCellTypeFeatures.forEach((raceCellTypePair, features) -> {
+            final List<Feature> featureList = new LinkedList<>();
+            features.forEach(feature -> featureList.add(feature.getCopy()));
+            raceCellTypeFeatures.put(
+                    new Pair<>(raceCellTypePair.getFirst(),
+                    raceCellTypePair.getSecond()), featureList);
+        });
+        return new GameFeatures(raceCellTypeFeatures);
     }
 
     public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {

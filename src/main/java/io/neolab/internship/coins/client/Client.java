@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
@@ -19,12 +18,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import static io.neolab.internship.coins.common.question.ServerMessageType.*;
+
 public class Client implements IClient {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
     private static final @NotNull String IP = "localhost";
     private static final int PORT = Server.PORT;
-    private static final @NotNull ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final @NotNull String ip; // ip адрес клиента
     private final @NotNull InetAddress ipAddress;
@@ -58,44 +58,40 @@ public class Client implements IClient {
     }
 
     @Override
-    public @NotNull Answer getAnswer(final @NotNull ServerMessage serverMessage) throws CoinsException {
-        switch (serverMessage.getServerMessageType()) {
-            case NICKNAME: {
-                LOGGER.info("Nickname question: {}", serverMessage);
-                return new NicknameAnswer(nickname);
+    public @NotNull Answer getAnswer(final @NotNull PlayerQuestion playerQuestion) throws CoinsException {
+        switch (playerQuestion.getPlayerQuestionType()) {
+            case CATCH_CELL: {
+                LOGGER.info("Catch cell question: {} ", playerQuestion);
+                return new CatchCellAnswer(
+                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_QUESTION: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
-                switch (playerQuestion.getPlayerQuestionType()) {
-                    case CATCH_CELL: {
-                        LOGGER.info("Catch cell question: {} ", playerQuestion);
-                        return new CatchCellAnswer(
-                                simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DISTRIBUTION_UNITS: {
-                        LOGGER.info("Distribution units question: {} ", playerQuestion);
-                        return new DistributionUnitsAnswer(
-                                simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DECLINE_RACE: {
-                        LOGGER.info("Decline race question: {} ", playerQuestion);
-                        return new DeclineRaceAnswer(
-                                simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case CHANGE_RACE: {
-                        LOGGER.info("Change race question: {} ", playerQuestion);
-                        return new ChangeRaceAnswer(
-                                simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                }
+            case DISTRIBUTION_UNITS: {
+                LOGGER.info("Distribution units question: {} ", playerQuestion);
+                return new DistributionUnitsAnswer(
+                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_OVER: {
-                LOGGER.info("Game over question: {} ", serverMessage);
-                final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
-                GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                downService();
-                System.exit(0);
+            case DECLINE_RACE: {
+                LOGGER.info("Decline race question: {} ", playerQuestion);
+                return new DeclineRaceAnswer(
+                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
+            case CHANGE_RACE: {
+                LOGGER.info("Change race question: {} ", playerQuestion);
+                return new ChangeRaceAnswer(
+                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+        }
+        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+    }
+
+    @Override
+    public void readMessage(final ServerMessage serverMessage) throws CoinsException {
+        if (serverMessage.getServerMessageType() == GAME_OVER) {
+            LOGGER.info("Game over question: {} ", serverMessage);
+            final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
+            GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
+            downService();
+            System.exit(0);
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -126,17 +122,42 @@ public class Client implements IClient {
                 final ServerMessage serverMessage =
                         Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", serverMessage);
-                final Answer answer = getAnswer(serverMessage);
-                LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(Communication.serializeAnswer(answer));
+                if (serverMessage.getServerMessageType() == GAME_QUESTION) {
+                    final Answer answer = getAnswer((PlayerQuestion) serverMessage);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME) {
+                    LOGGER.info("Nickname question: {}", serverMessage);
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
+                    LOGGER.info("Nickname duplicate question: {}", serverMessage);
+                    tryAgainEnterNickname();
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == GAME_OVER) {
+                    readMessage(serverMessage);
+                }
+                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
+            sendDisconnectMessage();
             downService();
         }
     }
 
-    private void sendAnswer(final@NotNull String json) throws IOException {
+    private void sendDisconnectMessage() {
+        try {
+            sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+        } catch (final IOException exception) {
+            LOGGER.error("Error", exception);
+        }
+    }
+
+    private void sendMessage(final@NotNull String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
@@ -155,6 +176,9 @@ public class Client implements IClient {
                 if (out != null) {
                     out.close();
                 }
+                if (keyboardReader != null) {
+                    keyboardReader.close();
+                }
             }
         } catch (final IOException ignored) {
         }
@@ -166,8 +190,18 @@ public class Client implements IClient {
             System.out.println("Please, enter nickname");
             nickname = keyboardReader.readLine();
             LOGGER.info("Entered nickname: {}", nickname);
-            keyboardReader.close();
         }
+    }
+
+    private void tryAgainEnterNickname() throws IOException {
+        String nickname;
+        do {
+            System.out.println("Nickname is duplicate! Try again");
+            System.out.println("Please, enter nickname");
+            nickname = keyboardReader.readLine();
+            LOGGER.info("Entered nickname: {}", nickname);
+        } while (nickname.isEmpty() || nickname.equals(this.nickname));
+        this.nickname = nickname;
     }
 
     public static void main(final String[] args) {

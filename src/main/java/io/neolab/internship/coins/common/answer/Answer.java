@@ -1,8 +1,6 @@
 package io.neolab.internship.coins.common.answer;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 
 /**
  * Абстрактный класс ответа. Класс-родитель для всех различных ответов клиента
@@ -16,5 +14,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = DistributionUnitsAnswer.class, name = "DistributionUnitsAnswer"),
         @JsonSubTypes.Type(value = NicknameAnswer.class, name = "NicknameAnswer"),
 })
-public abstract class Answer {
+public class Answer extends ClientMessage {
+    @JsonCreator
+    public Answer(@JsonProperty("type") final ClientMessageType type) {
+        super(type);
+    }
 }

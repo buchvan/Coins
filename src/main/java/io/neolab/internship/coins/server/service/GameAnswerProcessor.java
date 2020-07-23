@@ -138,7 +138,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
      */
-    public static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
+    static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
                                   final @NotNull Race newRace) {
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
@@ -272,13 +272,12 @@ public class GameAnswerProcessor {
      * @param controlledCells - принадлежащие игроку клетки
      * @param board           - борда
      */
-    public static void distributionUnits(final @NotNull Player player,
+    private static void distributionUnits(final @NotNull Player player,
                                          final @NotNull Map<Position, List<Unit>> resolutions,
                                          final @NotNull List<Cell> transitCells,
                                          final @NotNull List<Cell> controlledCells,
                                          final @NotNull IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
-        freeTransitCells(player, transitCells, controlledCells);
         makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         resolutions.forEach((position, units) -> {
