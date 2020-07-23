@@ -111,11 +111,10 @@ public class Client implements IClient {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             LOGGER.info("Client started, ip: {}, port: {}", ip, port);
             enterNickname();
+            play();
         } catch (final IOException e) {
             downService();
-            return;
         }
-        play();
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
@@ -164,6 +163,7 @@ public class Client implements IClient {
             System.out.println("Please, enter nickname");
             nickname = keyboardReader.readLine();
             LOGGER.info("Entered nickname: {}", nickname);
+            keyboardReader.close();
         }
     }
 
