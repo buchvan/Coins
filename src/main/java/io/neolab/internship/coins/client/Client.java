@@ -129,10 +129,17 @@ public class Client implements IClient {
                     LOGGER.info("Nickname question: {}", serverMessage);
                     final Answer answer = new NicknameAnswer(nickname);
                     LOGGER.info("Output answer: {} ", answer);
-                    sendAnswer(Communication.serializeAnswer(answer));
-                } else {
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
+                    LOGGER.info("Nickname duplicate question: {}", serverMessage);
+                    tryAgainEnterNickname();
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == GAME_OVER) {
                     readMessage(serverMessage);
                 }
+                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);
