@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.question.*;
