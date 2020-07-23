@@ -368,7 +368,7 @@ public class GameLoopProcessor {
      *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      * @param controlledCells - принадлежащие игроку клетки
      */
-    static void freeTransitCells(final Player player, final List<Cell> transitCells,
+    public static void freeTransitCells(final Player player, final List<Cell> transitCells,
                                  final List<Cell> controlledCells) {
         GameLogger.printTransitCellsLog(player, transitCells);
 

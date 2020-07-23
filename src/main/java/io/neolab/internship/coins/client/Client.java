@@ -59,44 +59,40 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException {
-        switch (serverMessage.getServerMessageType()) {
-            case NICKNAME: {
-                LOGGER.info("Nickname question: {}", serverMessage);
-                return new NicknameAnswer(nickname);
+    public Answer getAnswer(final PlayerQuestion playerQuestion) throws CoinsException {
+        switch (playerQuestion.getPlayerQuestionType()) {
+            case CATCH_CELL: {
+                LOGGER.info("Catch cell question: {} ", playerQuestion);
+                return new CatchCellAnswer(
+                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_QUESTION: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
-                switch (playerQuestion.getPlayerQuestionType()) {
-                    case CATCH_CELL: {
-                        LOGGER.info("Catch cell question: {} ", playerQuestion);
-                        return new CatchCellAnswer(
-                                simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DISTRIBUTION_UNITS: {
-                        LOGGER.info("Distribution units question: {} ", playerQuestion);
-                        return new DistributionUnitsAnswer(
-                                simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DECLINE_RACE: {
-                        LOGGER.info("Decline race question: {} ", playerQuestion);
-                        return new DeclineRaceAnswer(
-                                simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case CHANGE_RACE: {
-                        LOGGER.info("Change race question: {} ", playerQuestion);
-                        return new ChangeRaceAnswer(
-                                simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                }
+            case DISTRIBUTION_UNITS: {
+                LOGGER.info("Distribution units question: {} ", playerQuestion);
+                return new DistributionUnitsAnswer(
+                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_OVER: {
-                LOGGER.info("Game over question: {} ", serverMessage);
-                final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
-                GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                downService();
-                System.exit(0);
+            case DECLINE_RACE: {
+                LOGGER.info("Decline race question: {} ", playerQuestion);
+                return new DeclineRaceAnswer(
+                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
+            case CHANGE_RACE: {
+                LOGGER.info("Change race question: {} ", playerQuestion);
+                return new ChangeRaceAnswer(
+                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+        }
+        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+    }
+
+    @Override
+    public void readMessage(final ServerMessage serverMessage) throws CoinsException {
+        if (serverMessage.getServerMessageType() == GAME_OVER) {
+            LOGGER.info("Game over question: {} ", serverMessage);
+            final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
+            GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
+            downService();
+            System.exit(0);
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -127,9 +123,18 @@ public class Client implements IClient {
                 final ServerMessage serverMessage =
                         Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", serverMessage);
-                final Answer answer = getAnswer(serverMessage);
-                LOGGER.info("Output answer: {} ", answer);
-                sendAnswer(Communication.serializeAnswer(answer));
+                if (serverMessage.getServerMessageType() == GAME_QUESTION) {
+                    final Answer answer = getAnswer((PlayerQuestion) serverMessage);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendAnswer(Communication.serializeAnswer(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME) {
+                    LOGGER.info("Nickname question: {}", serverMessage);
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendAnswer(Communication.serializeAnswer(answer));
+                } else {
+                    readMessage(serverMessage);
+                }
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);

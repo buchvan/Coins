@@ -261,7 +261,6 @@ public class GameAnswerProcessor {
                                          final List<Cell> transitCells, final List<Cell> controlledCells,
                                          final IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
-        freeTransitCells(player, transitCells, controlledCells);
         makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         resolutions.forEach((position, units) -> {
