@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Pair<T, U> implements Serializable {
+    @JsonProperty
     private T first;
+    @JsonProperty
     private U second;
 
     @JsonCreator

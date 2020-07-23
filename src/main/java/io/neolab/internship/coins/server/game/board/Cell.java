@@ -8,7 +8,6 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.IdGenerator;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +46,7 @@ public class Cell implements Serializable {
                 @JsonProperty("race") final Race race) {
         this.id = id;
         this.type = type;
-        Collections.copy(this.units, units);
+        this.units.addAll(units);
         this.feudal = feudal;
         this.race = race;
     }
