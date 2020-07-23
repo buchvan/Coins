@@ -1,14 +1,10 @@
 package io.neolab.internship.coins.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.NicknameAnswer;
+import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -44,7 +40,6 @@ public class Server implements IServer {
 
         private final Socket socket;
         private final BufferedReader in; // поток чтения из сокета
-        private String buffer; // последнее сообщение из сокета
         private final BufferedWriter out; // поток записи в сокет
         private final Player player;
 
@@ -60,17 +55,25 @@ public class Server implements IServer {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-            final ServerMessage serverMessage = new ServerMessage(ServerMessageType.NICKNAME);
+            ServerMessage serverMessage = new ServerMessage(ServerMessageType.NICKNAME);
             out.write(Communication.serializeServerMessage(serverMessage) + "\n");
             out.flush();
             String nickname;
             boolean isDuplicate = false;
-            do {
+            nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
+            for (final ServerSomething serverSomething : server.serverList) {
+                isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
+            }
+            while (isDuplicate){
+                serverMessage = new ServerMessage(ServerMessageType.NICKNAME_DUPLICATE);
+                out.write(Communication.serializeServerMessage(serverMessage) + "\n");
+                out.flush();
                 nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
+                isDuplicate = false;
                 for (final ServerSomething serverSomething : server.serverList) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
-            } while (isDuplicate);
+            }
             LOGGER.info("Nickname for player: {} ", nickname);
             player = new Player(nickname);
         }
@@ -93,8 +96,7 @@ public class Server implements IServer {
          * @throws IOException в случае ошибки получения сообщения
          */
         private String read() throws IOException {
-            buffer = in.readLine();
-            return buffer;
+            return in.readLine();
         }
 
         /**
@@ -181,7 +183,7 @@ public class Server implements IServer {
      *
      * @throws IOException при ошибке подключения
      */
-    private void connectClients() throws IOException {
+    private void connectClients() throws IOException, CoinsException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
@@ -194,6 +196,16 @@ public class Server implements IServer {
                 } catch (final IOException exception) {
                     LOGGER.error("Error!", exception);
                     socket.close();
+                }
+            }
+
+            /* вроде это называется shake */
+            final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
+            for (final ServerSomething serverSomething : serverList) {
+                serverSomething.send(Communication.serializeServerMessage(question));
+                final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
+                if (answer.getMessageType() != ClientMessageType.GAME_READY) {
+                    throw new CoinsException(ErrorCode.CLIENT_FELL_OFF);
                 }
             }
         } catch (final BindException exception) {
@@ -245,7 +257,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException {
         while (true) {
@@ -275,7 +287,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
         final Player player = serverSomething.player;
@@ -307,7 +319,7 @@ public class Server implements IServer {
      *
      * @param serverSomething - клиент текущего игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
-     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws IOException в случае ошибки общения с клиентом
      */
     private void distributionUnits(final ServerSomething serverSomething, final IGame game)
             throws IOException {
