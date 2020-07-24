@@ -30,7 +30,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 1;
+    private static final int GAMES_COUNT = 2;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -48,7 +48,7 @@ public class Server implements IServer {
          * Для общения с клиентом необходим сокет (адресные данные)
          *
          * @param clients - список уже подключённых к игре клиентов
-         * @param socket     - сокет
+         * @param socket  - сокет
          */
         private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> clients, final Socket socket)
                 throws IOException {
@@ -188,29 +188,55 @@ public class Server implements IServer {
         }
     }
 
+    private static synchronized Socket getSocket() throws IOException {
+        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+            return serverSocket.accept();
+        }
+    }
+
     /**
      * Подключает клиентов к серверу
      *
      * @param clients - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
-            int currentClientsCount = 1;
-            while (currentClientsCount <= CLIENTS_COUNT) {
-                final Socket socket = serverSocket.accept();
-                try {
-                    LOGGER.info("Client {} connects", currentClientsCount);
-                    clients.add(new ServerSomething(clients, socket));
-                    LOGGER.info("Client {} connected", currentClientsCount);
-                    currentClientsCount++;
-                } catch (final IOException exception) {
-                    LOGGER.error("Error!", exception);
-                    socket.close();
+    private void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
+        int currentClientsCount = 1;
+        final ExecutorService connectClient = Executors.newFixedThreadPool(CLIENTS_COUNT);
+        while (currentClientsCount <= CLIENTS_COUNT) {
+            final int currentClientId = currentClientsCount;
+            connectClient.execute(() -> {
+                Socket socket;
+                while (true) {
+                    try {
+                        socket = getSocket();
+                    } catch (final IOException exception) {
+                        LOGGER.error("Error!", exception);
+                        continue;
+                    }
+                    try {
+                        LOGGER.info("Client {} connects", currentClientId);
+                        clients.add(new ServerSomething(clients, socket));
+                        LOGGER.info("Client {} connected", currentClientId);
+                    } catch (final IOException exception) {
+                        LOGGER.error("Error!", exception);
+                        try {
+                            socket.close();
+                        } catch (final IOException e) {
+                            LOGGER.error("Error!", e);
+                        }
+                        continue;
+                    }
+                    break;
                 }
-            }
+            });
+            currentClientsCount++;
+        }
+        try {
+            connectClient.shutdown();
+            connectClient.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             handShake(clients);
-        } catch (final BindException exception) {
+        } catch (final InterruptedException exception) {
             LOGGER.error("Error!", exception);
         }
     }
