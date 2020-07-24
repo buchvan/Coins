@@ -22,7 +22,7 @@ public class SimpleBot implements IBot {
 
     @Override
     public boolean declineRaceChoose(final Player player, final IGame game) {
-        final boolean choice = random.nextInt(2) == 1;
+        final boolean choice = RandomGenerator.isYes();
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
     }
@@ -36,7 +36,7 @@ public class SimpleBot implements IBot {
 
     @Override
     public Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game) {
-        if (random.nextInt(2) == 1) {
+        if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -94,7 +94,7 @@ public class SimpleBot implements IBot {
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         List<Unit> units = new LinkedList<>();
-        while (availableUnits.size() > 0 && random.nextInt(2) == 1) {
+        while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
             final Cell protectedCell = RandomGenerator.chooseItemFromList(
                     game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
             units.addAll(availableUnits.subList(units.size(), RandomGenerator.chooseNumber(

@@ -45,4 +45,13 @@ public class RandomGenerator {
     public static int chooseNumber(final int bound) {
         return random.nextInt(bound);
     }
+
+    /**
+     * Подбрасываем монетку
+     *
+     * @return true - если 1, false - если 0
+     */
+    public static boolean isYes() {
+        return chooseNumber(2) == 1;
+    }
 }
