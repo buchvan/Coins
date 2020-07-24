@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.game.player;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -17,7 +18,7 @@ public class Player implements Serializable {
     private final int id;
 
     @JsonProperty
-    private String nickname;
+    private final String nickname;
 
     @JsonProperty
     private Race race;
@@ -63,6 +64,7 @@ public class Player implements Serializable {
         this.coins = coins;
     }
 
+    @JsonIgnore
     public Player getCopy() {
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
         this.unitStateToUnits.forEach((availabilityType, units) -> {
@@ -79,10 +81,6 @@ public class Player implements Serializable {
 
     public String getNickname() {
         return nickname;
-    }
-
-    public void setNickname(final String nickname) {
-        this.nickname = nickname;
     }
 
     public Race getRace() {

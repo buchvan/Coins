@@ -21,6 +21,7 @@ public class Feature implements IFeature {
         this.type = type;
     }
 
+    @JsonIgnore
     public Feature getCopy() {
         return new Feature(type);
     }
