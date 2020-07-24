@@ -19,7 +19,7 @@ public interface IClient {
     @NotNull Answer getAnswer(final @NotNull PlayerQuestion question) throws CoinsException;
 
     /**
-     * Взять ответ на вопрос
+     * Прочитать сообщение от сервера
      * @param message - сообщение
      * @throws CoinsException в случае неизвестного типа сообщения
      */

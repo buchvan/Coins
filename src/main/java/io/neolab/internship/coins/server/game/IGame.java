@@ -56,7 +56,8 @@ public interface IGame {
     @NotNull Map<Player, List<Cell>> getOwnToCells();
 
     /**
-     * @return отображение игроков в списки их транзитных клеток
+     * @return отображение игроков в списки их транзитных клеток (клеток, которые контролирует игрок,
+     * но которые не приносят ему монет
      */
     @NotNull Map<Player, List<Cell>> getPlayerToTransitCells();
 
