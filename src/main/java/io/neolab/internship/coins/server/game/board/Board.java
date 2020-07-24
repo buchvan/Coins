@@ -3,23 +3,18 @@ package io.neolab.internship.coins.server.game.board;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.serialization.deserialize.CellKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.deserialize.PositionKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.deserialize.PositionToCellBidiMapDeserializer;
+import io.neolab.internship.coins.common.serialization.serialize.CellSerializer;
 import io.neolab.internship.coins.common.serialization.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Board implements IBoard, Serializable {
-    @JsonProperty
-    private final int sizeX;
-
-    @JsonProperty
-    private final int sizeY;
 
     @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
@@ -29,8 +24,19 @@ public class Board implements IBoard, Serializable {
     @JsonProperty
     private final List<Cell> edgeCells;
 
-    private static List<Cell> getEdgeCells(final int sizeX, final int sizeY,
-                                           final BidiMap<Position, Cell> positionToCellMap) {
+    @JsonProperty
+    @JsonSerialize(keyUsing = CellSerializer.class)
+    @JsonDeserialize(keyUsing = CellKeyDeserializer.class)
+    private final Map<Cell, List<Cell>> cellToNeighboringCells;
+
+    /**
+     * @param sizeX             - число строк
+     * @param sizeY             - число столбцов
+     * @param positionToCellMap - позиция в клетку
+     * @return список крайних клеток
+     */
+    private static List<Cell> findEdgeCells(final int sizeX, final int sizeY,
+                                            final BidiMap<Position, Cell> positionToCellMap) {
         final List<Cell> edgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -39,18 +45,18 @@ public class Board implements IBoard, Serializable {
             colIndex++;
         }
         strIndex = 1;
-        colIndex--; // colIndex = BOARD_SIZE_Y;
+        colIndex--; // colIndex = sizeY;
         while (strIndex < sizeX) { // обход по правой границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             strIndex++;
         }
-        strIndex--; // strIndex = BOARD_SIZE_X;
-        colIndex--; // colIndex = BOARD_SIZE_Y - 1;
+        strIndex--; // strIndex = sizeX;
+        colIndex--; // colIndex = sizeY - 1;
         while (colIndex >= 0) { // обход по нижней границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
             colIndex--;
         }
-        strIndex--; // strIndex = BOARD_SIZE_X - 1;
+        strIndex--; // strIndex = sizeX - 1;
         colIndex++; // strIndex = 0;
         while (strIndex > 0) { // обход по левой границе борды
             edgeCells.add(positionToCellMap.get(new Position(strIndex, colIndex)));
@@ -60,22 +66,19 @@ public class Board implements IBoard, Serializable {
     }
 
     public Board(final int sizeX, final int sizeY, final BidiMap<Position, Cell> positionToCellMap) {
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
         this.positionToCellMap = new DualHashBidiMap<>();
         positionToCellMap.forEach(this.positionToCellMap::put);
-        edgeCells = getEdgeCells(sizeX, sizeY, positionToCellMap);
+        edgeCells = findEdgeCells(sizeX, sizeY, positionToCellMap);
+        this.cellToNeighboringCells = new HashMap<>();
     }
 
     @JsonCreator
-    public Board(@JsonProperty("sizeX") final int sizeX,
-                 @JsonProperty("sizeY") final int sizeY,
-                 @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
-                 @JsonProperty("edgeCells") final List<Cell> edgeCells) {
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
+    public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+                 @JsonProperty("edgeCells") final List<Cell> edgeCells,
+                 @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
         this.positionToCellMap = positionToCellMap;
         this.edgeCells = edgeCells;
+        this.cellToNeighboringCells = cellToNeighboringCells;
     }
 
     public Board() {
@@ -86,18 +89,19 @@ public class Board implements IBoard, Serializable {
     public IBoard getCopy() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
         this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position.getCopy(), cell.getCopy()));
-        return new Board(this.sizeX, this.sizeY, positionToCellMap,
-                getEdgeCells(this.sizeX, this.sizeY, positionToCellMap));
-    }
 
-    @Override
-    public int getSizeX() {
-        return sizeX;
-    }
+        final List<Cell> edgeCells = new LinkedList<>();
+        this.edgeCells.forEach(cell -> edgeCells.add(positionToCellMap.get(getPositionByCell(cell))));
 
-    @Override
-    public int getSizeY() {
-        return sizeY;
+        final Map<Cell, List<Cell>> cellToNeighboringCells = new HashMap<>(this.cellToNeighboringCells.size());
+        this.cellToNeighboringCells.forEach((cell, cells) -> {
+            final List<Cell> neighboringCells = new LinkedList<>();
+            cells.forEach(cell1 ->
+                    neighboringCells.add(positionToCellMap.get(getPositionByCell(cell1))));
+            cellToNeighboringCells.put(positionToCellMap.get(getPositionByCell(cell)), neighboringCells);
+        });
+
+        return new Board(positionToCellMap, edgeCells, cellToNeighboringCells);
     }
 
     @Override
@@ -108,6 +112,16 @@ public class Board implements IBoard, Serializable {
     @Override
     public List<Cell> getEdgeCells() {
         return edgeCells;
+    }
+
+    @Override
+    public List<Cell> getNeighboringCells(final Cell cell) {
+        return cellToNeighboringCells.get(cell);
+    }
+
+    @Override
+    public void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells) {
+        cellToNeighboringCells.put(cell, neighboringCells);
     }
 
     @Override

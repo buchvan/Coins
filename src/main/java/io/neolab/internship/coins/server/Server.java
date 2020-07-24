@@ -8,8 +8,7 @@ import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.service.*;
-import io.neolab.internship.coins.server.service.GameAnswerProcessor;
+import io.neolab.internship.coins.server.service.*;
 import io.neolab.internship.coins.utils.LogCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.updateAchievableCells;
 
 public class Server implements IServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
@@ -285,7 +282,8 @@ public class Server implements IServer {
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        GameLoopProcessor.updateAchievableCells(
+                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         while (true) {
             try {
                 PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,

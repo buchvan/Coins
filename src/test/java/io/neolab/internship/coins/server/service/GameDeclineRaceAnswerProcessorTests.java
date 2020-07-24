@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static io.neolab.internship.coins.server.game.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
 import static io.neolab.internship.coins.server.service.TestUtils.getSomeBoardPosition;
 import static io.neolab.internship.coins.server.service.TestUtils.getSomePlayer;
 import static org.junit.Assert.*;

@@ -8,7 +8,7 @@ import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
-import io.neolab.internship.coins.server.game.service.GameLogger;
+import io.neolab.internship.coins.server.service.GameLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +16,8 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import static io.neolab.internship.coins.common.question.ServerMessageType.*;
 
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
@@ -55,51 +57,40 @@ public class Client implements IClient {
     }
 
     @Override
-    public Answer getAnswer(final ServerMessage serverMessage) throws CoinsException, IOException {
-        switch (serverMessage.getServerMessageType()) {
-            case NICKNAME: {
-                LOGGER.info("Nickname question: {}", serverMessage);
-                return new NicknameAnswer(nickname);
+    public Answer getAnswer(final PlayerQuestion playerQuestion) throws CoinsException {
+        switch (playerQuestion.getPlayerQuestionType()) {
+            case CATCH_CELL: {
+                LOGGER.info("Catch cell question: {} ", playerQuestion);
+                return new CatchCellAnswer(
+                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case NICKNAME_DUPLICATE:
-                LOGGER.info("Duplicate nickname question: {}", serverMessage);
-                tryAgainEnterNickname();
-                return new NicknameAnswer(nickname);
-            case CONFIRMATION_OF_READINESS:
-                LOGGER.info("Ready question: {}", serverMessage);
-                return new Answer(ClientMessageType.GAME_READY);
-            case GAME_QUESTION: {
-                final PlayerQuestion playerQuestion = (PlayerQuestion) serverMessage;
-                switch (playerQuestion.getPlayerQuestionType()) {
-                    case CATCH_CELL: {
-                        LOGGER.info("Catch cell question: {} ", playerQuestion);
-                        return new CatchCellAnswer(
-                                simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DISTRIBUTION_UNITS: {
-                        LOGGER.info("Distribution units question: {} ", playerQuestion);
-                        return new DistributionUnitsAnswer(
-                                simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case DECLINE_RACE: {
-                        LOGGER.info("Decline race question: {} ", playerQuestion);
-                        return new DeclineRaceAnswer(
-                                simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                    case CHANGE_RACE: {
-                        LOGGER.info("Change race question: {} ", playerQuestion);
-                        return new ChangeRaceAnswer(
-                                simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
-                    }
-                }
+            case DISTRIBUTION_UNITS: {
+                LOGGER.info("Distribution units question: {} ", playerQuestion);
+                return new DistributionUnitsAnswer(
+                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
-            case GAME_OVER: {
-                LOGGER.info("Game over question: {} ", serverMessage);
-                final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
-                GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                downService();
-                System.exit(0);
+            case DECLINE_RACE: {
+                LOGGER.info("Decline race question: {} ", playerQuestion);
+                return new DeclineRaceAnswer(
+                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
+            case CHANGE_RACE: {
+                LOGGER.info("Change race question: {} ", playerQuestion);
+                return new ChangeRaceAnswer(
+                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+            }
+        }
+        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+    }
+
+    @Override
+    public void readMessage(final ServerMessage serverMessage) throws CoinsException {
+        if (serverMessage.getServerMessageType() == GAME_OVER) {
+            LOGGER.info("Game over question: {} ", serverMessage);
+            final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
+            GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
+            downService();
+            System.exit(0);
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
@@ -130,9 +121,25 @@ public class Client implements IClient {
                 final ServerMessage serverMessage =
                         Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
                 LOGGER.info("Input question: {} ", serverMessage);
-                final Answer answer = getAnswer(serverMessage);
-                LOGGER.info("Output answer: {} ", answer);
-                sendMessage(Communication.serializeClientMessage(answer));
+                if (serverMessage.getServerMessageType() == GAME_QUESTION) {
+                    final Answer answer = getAnswer((PlayerQuestion) serverMessage);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME) {
+                    LOGGER.info("Nickname question: {}", serverMessage);
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
+                    LOGGER.info("Nickname duplicate question: {}", serverMessage);
+                    tryAgainEnterNickname();
+                    final Answer answer = new NicknameAnswer(nickname);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                } else if (serverMessage.getServerMessageType() == GAME_OVER) {
+                    readMessage(serverMessage);
+                }
+                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         } catch (final IOException | CoinsException e) {
             LOGGER.error("Error", e);

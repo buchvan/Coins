@@ -16,5 +16,8 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = ICoefficientlyFeature.class, name = "ICoefficientlyFeature"),
 })
 public interface IFeature extends Serializable {
+    /**
+     * @return тип особенности
+     */
     FeatureType getType();
 }

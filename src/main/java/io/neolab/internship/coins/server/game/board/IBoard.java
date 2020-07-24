@@ -15,10 +15,9 @@ import java.util.List;
 public interface IBoard {
     IBoard getCopy();
 
-    int getSizeX();
-
-    int getSizeY();
-
+    /**
+     * @return отображение позиций в клетки
+     */
     BidiMap<Position, Cell> getPositionToCellMap();
 
     /**
@@ -46,6 +45,20 @@ public interface IBoard {
      */
     Position getPositionByCell(final Cell cell);
 
-    /* Метод взятия всех крайних клеток борды */
+    /**
+     * @return список крайних клеток борды
+     */
     List<Cell> getEdgeCells();
+
+    /**
+     * @param cell - клетка
+     * @return список соседних с cell клеток
+     */
+    List<Cell> getNeighboringCells(final Cell cell);
+
+    /**
+     * @param cell - клетка
+     * @param neighboringCells - список соседних с cell клеток
+     */
+    void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells);
 }

@@ -13,14 +13,21 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Player implements Serializable {
+    @JsonProperty
     private final int id;
+
+    @JsonProperty
     private String nickname;
+
+    @JsonProperty
     private Race race;
 
+    @JsonProperty
     @JsonSerialize(keyUsing = AvailabilityTypeSerializer.class)
     @JsonDeserialize(keyUsing = AvailabilityTypeKeyDeserializer.class)
     private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
 
+    @JsonProperty
     private int coins = 0;
 
     public Player() {
