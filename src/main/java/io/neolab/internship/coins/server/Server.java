@@ -8,9 +8,9 @@ import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.service.*;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import io.neolab.internship.coins.utils.LoggerFile;
+import io.neolab.internship.coins.server.service.*;
 import io.neolab.internship.coins.utils.LogCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static io.neolab.internship.coins.server.game.service.GameLoopProcessor.updateAchievableCells;
 
 public class Server implements IServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
@@ -49,10 +47,10 @@ public class Server implements IServer {
         /**
          * Для общения с клиентом необходим сокет (адресные данные)
          *
-         * @param serverList - список уже подключённых к игре клиентов
+         * @param clients - список уже подключённых к игре клиентов
          * @param socket     - сокет
          */
-        private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> serverList, final Socket socket)
+        private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> clients, final Socket socket)
                 throws IOException {
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию исключения, оно пробросится дальше
@@ -65,7 +63,7 @@ public class Server implements IServer {
             String nickname;
             boolean isDuplicate = false;
             nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
-            for (final ServerSomething serverSomething : serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
             }
             while (isDuplicate) {
@@ -74,7 +72,7 @@ public class Server implements IServer {
                 out.flush();
                 nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
                 isDuplicate = false;
-                for (final ServerSomething serverSomething : serverList) {
+                for (final ServerSomething serverSomething : clients) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
             }
@@ -144,23 +142,23 @@ public class Server implements IServer {
      * @param gameId - id игры
      */
     private void startGame(final int gameId) {
-        final ConcurrentLinkedQueue<ServerSomething> serverList = new ConcurrentLinkedQueue<>();
-        serverSomethings.put(gameId, serverList);
+        final ConcurrentLinkedQueue<ServerSomething> clients = new ConcurrentLinkedQueue<>();
+        serverSomethings.put(gameId, clients);
         try (final LoggerFile ignored = new LoggerFile("game_" + gameId)) {
-            connectClients(serverList);
+            connectClients(clients);
             final List<Player> playerList = new LinkedList<>();
-            serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
+            clients.forEach(serverSomething -> playerList.add(serverSomething.player));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
             GameLogger.printGameCreatedLog(game);
 
             GameLogger.printStartGameChoiceLog();
-            for (final ServerSomething serverSomething : serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 chooseRace(serverSomething, game);
             }
             while (game.getCurrentRound() < Game.ROUNDS_COUNT) {
                 game.incrementCurrentRound();
                 GameLogger.printRoundBeginLog(game.getCurrentRound());
-                for (final ServerSomething serverSomething : serverList) {
+                for (final ServerSomething serverSomething : clients) {
                     GameLogger.printNextPlayerLog(serverSomething.player);
                     playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
                 }
@@ -179,13 +177,13 @@ public class Server implements IServer {
             final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
             final GameOverMessage gameOverMessage =
                     new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
-            for (final ServerSomething serverSomething : serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
                 serverSomething.downService();
             }
         } catch (final CoinsException | ClassCastException | IOException exception) {
             LOGGER.error("Error!!!", exception);
-            serverList.forEach(ServerSomething::downService);
+            clients.forEach(ServerSomething::downService);
             serverSomethings.remove(gameId);
         }
     }
@@ -193,17 +191,17 @@ public class Server implements IServer {
     /**
      * Подключает клиентов к серверу
      *
-     * @param serverList - очередь клиентов игры
+     * @param clients - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException, CoinsException {
+    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
                 final Socket socket = serverSocket.accept();
                 try {
                     LOGGER.info("Client {} connects", currentClientsCount);
-                    serverList.add(new ServerSomething(serverList, socket));
+                    clients.add(new ServerSomething(clients, socket));
                     LOGGER.info("Client {} connected", currentClientsCount);
                     currentClientsCount++;
                 } catch (final IOException exception) {
@@ -211,7 +209,7 @@ public class Server implements IServer {
                     socket.close();
                 }
             }
-            handShake(serverList);
+            handShake(clients);
         } catch (final BindException exception) {
             LOGGER.error("Error!", exception);
         }
@@ -220,13 +218,13 @@ public class Server implements IServer {
     /**
      * HandShake
      *
-     * @param serverList - очередь клиентов игры
+     * @param clients - очередь клиентов игры
      * @throws IOException    при ошибке общения с клиентом
      * @throws CoinsException если клиент ответил "не готов"
      */
-    private void handShake(final ConcurrentLinkedQueue<ServerSomething> serverList) throws IOException, CoinsException {
+    private void handShake(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
         final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
-        for (final ServerSomething serverSomething : serverList) {
+        for (final ServerSomething serverSomething : clients) {
             serverSomething.send(Communication.serializeServerMessage(question));
             final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
             if (answer.getMessageType() != ClientMessageType.GAME_READY) {
@@ -314,7 +312,8 @@ public class Server implements IServer {
     private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        GameLoopProcessor.updateAchievableCells(
+                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         while (true) {
             try {
                 PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,

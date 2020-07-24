@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
@@ -21,13 +21,11 @@ import java.util.*;
 public class GameInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
-
     public static IGame gameInit(final int boardSizeX, final int boardSizeY, final List<Player> playerList)
             throws CoinsException {
         LOGGER.debug("Init...");
 
-        //мок доски
-        //final Board board = initBoard(boardSizeX, boardSizeY);
+        // final IBoard board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
@@ -49,8 +47,7 @@ public class GameInitializer {
             throws CoinsException {
         LOGGER.debug("Init...");
 
-        //мок доски
-        //final Board board = initBoard(boardSizeX, boardSizeY);
+        // final IBoard board = initBoard(boardSizeX, boardSizeY);
         final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
 
         final List<Player> playerList = initTestPlayers(playersCount);
@@ -99,39 +96,6 @@ public class GameInitializer {
 
         return new Board(boardSizeX, boardSizeY, positionToCellMap);
     }
-
-//    /**
-//     * Инициализация и создание борды
-//     *
-//     * @return инициализированную борду
-//     */
-//    private static Board initBoard(final int boardSizeX, final int boardSizeY) {
-//        final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-//
-//        /* Доска из самой первой консультации по проекту */
-//
-//        positionToCellMap.put(new Position(0, 0), new Cell(CellType.MUSHROOM));
-//        positionToCellMap.put(new Position(0, 1), new Cell(CellType.LAND));
-//        positionToCellMap.put(new Position(0, 2), new Cell(CellType.WATER));
-//        positionToCellMap.put(new Position(0, 3), new Cell(CellType.MOUNTAIN));
-//
-//        positionToCellMap.put(new Position(1, 0), new Cell(CellType.MOUNTAIN));
-//        positionToCellMap.put(new Position(1, 1), new Cell(CellType.WATER));
-//        positionToCellMap.put(new Position(1, 2), new Cell(CellType.LAND));
-//        positionToCellMap.put(new Position(1, 3), new Cell(CellType.MUSHROOM));
-//
-//        positionToCellMap.put(new Position(2, 0), new Cell(CellType.LAND));
-//        positionToCellMap.put(new Position(2, 1), new Cell(CellType.WATER));
-//        positionToCellMap.put(new Position(2, 2), new Cell(CellType.MUSHROOM));
-//        positionToCellMap.put(new Position(2, 3), new Cell(CellType.MOUNTAIN));
-//
-//        /* --- */
-//
-//        final Board board = new Board(boardSizeX, boardSizeY, positionToCellMap);
-//
-//        LOGGER.debug("Board is created: {} ", board);
-//        return board;
-//    }
 
     /**
      * Инициализация тестовых игроков

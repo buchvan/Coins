@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.*;
 import java.util.Objects;
 
 /**
- * Особенность пары раса-тип_клетки (Race-CellType)
+ * Особенность пары (раса, тип_клетки) (Race, CellType)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)

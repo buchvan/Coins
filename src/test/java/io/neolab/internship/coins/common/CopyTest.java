@@ -5,7 +5,7 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.service.GameInitializer;
+import io.neolab.internship.coins.server.service.GameInitializer;
 import io.neolab.internship.coins.server.service.TestUtils;
 import org.junit.Test;
 

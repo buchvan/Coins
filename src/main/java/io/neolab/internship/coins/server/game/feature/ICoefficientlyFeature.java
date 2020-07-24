@@ -13,5 +13,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = CoefficientlyFeature.class, name = "CoefficientlyFeature"),
 })
 public interface ICoefficientlyFeature extends IFeature {
+    /**
+     * @return целочисленный коэффициент
+     */
     int getCoefficient();
 }

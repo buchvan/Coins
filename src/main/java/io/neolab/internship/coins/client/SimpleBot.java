@@ -7,7 +7,7 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
-import io.neolab.internship.coins.server.game.service.GameLoopProcessor;
+import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
@@ -18,11 +18,11 @@ import java.util.*;
 
 public class SimpleBot implements IBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public boolean declineRaceChoose(final Player player, final IGame game) {
-        final boolean choice = random.nextInt(2) == 1;
+        final boolean choice = RandomGenerator.isYes();
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
     }
@@ -36,7 +36,7 @@ public class SimpleBot implements IBot {
 
     @Override
     public Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game) {
-        if (random.nextInt(2) == 1) {
+        if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -44,10 +44,10 @@ public class SimpleBot implements IBot {
             GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
-            /* Оставляем только те клетки, через которые можно добраться до catchingCell */
+            /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
             final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
             catchingCellNeighboringCells.add(catchingCell);
-            catchingCellNeighboringCells.addAll(GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
+            catchingCellNeighboringCells.addAll(board.getNeighboringCells(catchingCell));
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
@@ -94,7 +94,7 @@ public class SimpleBot implements IBot {
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         List<Unit> units = new LinkedList<>();
-        while (availableUnits.size() > 0 && random.nextInt(2) == 1) {
+        while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
             final Cell protectedCell = RandomGenerator.chooseItemFromList(
                     game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
             units.addAll(availableUnits.subList(units.size(), RandomGenerator.chooseNumber(

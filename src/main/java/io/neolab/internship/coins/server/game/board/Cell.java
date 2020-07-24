@@ -24,7 +24,7 @@ public class Cell implements Serializable {
     private final List<Unit> units = new LinkedList<>();
 
     @JsonProperty
-    private Player feudal = null;
+    private Player feudal = null; // игрок, который получает монеты с данной клетки
 
     @JsonProperty
     private Race race;

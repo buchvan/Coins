@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.neolab.internship.coins.server.game.service.GameInitializer.gameInit;
+import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
 import static io.neolab.internship.coins.server.service.TestUtils.*;
 import static org.junit.Assert.*;
 

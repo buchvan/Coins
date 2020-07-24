@@ -21,7 +21,6 @@ public enum ErrorCode {
 
     private final String message;
 
-
     ErrorCode(final String message) {
         this.message = message;
     }
