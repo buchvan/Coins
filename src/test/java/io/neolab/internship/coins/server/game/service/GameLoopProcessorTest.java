@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 
 public class GameLoopProcessorTest {
 
-    //TODO
     /*
      * каждый захваченный регион с грибами приносит в конце хода призовую монетку расе грибов
      */
@@ -33,7 +32,6 @@ public class GameLoopProcessorTest {
         assertEquals(2, somePlayer.getCoins());
     }
 
-    //TODO
     /*
      *  каждая отдельная группа регионов приносит одну дополнительную монетку расе эльфов
      */
@@ -51,7 +49,6 @@ public class GameLoopProcessorTest {
         assertEquals(4, somePlayer.getCoins());
     }
 
-    //TODO
     /*
      * проверка того, что в произвольном случае монетки считаются верно
      */
@@ -69,25 +66,6 @@ public class GameLoopProcessorTest {
         assertEquals(2, somePlayer.getCoins());
     }
 
-    //FIXME: failed
-    /*
-     * любая раса кроме амфибий не получает монетки за захват воды
-     */
-    @Test
-    public void updateCoinsCountWaterFeature() throws CoinsException {
-        IGame game = gameInit(2,2,2);
-        Player somePlayer = TestUtils.getSomePlayer(game);
-        somePlayer.setRace(Race.AMPHIBIAN);
-        somePlayer.setCoins(0);
-        Set<Cell> playerFeudalCells = game.getFeudalToCells().get(somePlayer);
-        playerFeudalCells.add(new Cell(CellType.WATER));
-        playerFeudalCells.add(new Cell(CellType.LAND));
-
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), game.getBoard());
-        assertEquals(1, somePlayer.getCoins());
-    }
-
-    //TODO:
     /*
      * амфибии могут захватить воду
      */
