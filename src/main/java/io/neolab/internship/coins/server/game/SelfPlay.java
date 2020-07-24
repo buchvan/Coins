@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.service.*;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
+import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.*;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -35,7 +36,7 @@ public class SelfPlay {
      * - Финализатор (результат работы)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+        try (final LoggerFile ignored = new LoggerFile("self_play")) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
