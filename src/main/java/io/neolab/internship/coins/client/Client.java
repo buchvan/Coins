@@ -126,19 +126,29 @@ public class Client implements IClient {
                     final Answer answer = getAnswer((PlayerQuestion) serverMessage);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
+                } else if (serverMessage.getServerMessageType() == CONFIRMATION_OF_READINESS) {
+                    LOGGER.info("Nickname question: {}", serverMessage);
+                    final Answer answer = new Answer(ClientMessageType.GAME_READY);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == NICKNAME) {
                     LOGGER.info("Nickname question: {}", serverMessage);
                     final Answer answer = new NicknameAnswer(nickname);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
                     LOGGER.info("Nickname duplicate question: {}", serverMessage);
                     tryAgainEnterNickname();
                     final Answer answer = new NicknameAnswer(nickname);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == GAME_OVER) {
                     readMessage(serverMessage);
+                    continue;
                 }
                 throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
