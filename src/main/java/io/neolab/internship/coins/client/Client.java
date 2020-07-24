@@ -9,6 +9,7 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
+import io.neolab.internship.coins.utils.LoggerFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,20 +90,19 @@ public class Client implements IClient {
             LOGGER.info("Game over question: {} ", serverMessage);
             final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
             GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-            downService();
-            System.exit(0);
+            throw new CoinsException(ErrorCode.GAME_OVER);
         }
         throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     private void startClient() {
-        try {
-            socket = new Socket(this.ipAddress, this.port);
-        } catch (final IOException e) {
-            LOGGER.error("Socket failed");
-            return;
-        }
-        try {
+        try (final LoggerFile ignored = new LoggerFile("client")) {
+            try {
+                socket = new Socket(this.ipAddress, this.port);
+            } catch (final IOException e) {
+                LOGGER.error("Socket failed");
+                return;
+            }
             keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -110,6 +110,7 @@ public class Client implements IClient {
             enterNickname();
             play();
         } catch (final IOException e) {
+            LOGGER.error("Error", e);
             downService();
         }
     }
@@ -125,24 +126,36 @@ public class Client implements IClient {
                     final Answer answer = getAnswer((PlayerQuestion) serverMessage);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
+                } else if (serverMessage.getServerMessageType() == CONFIRMATION_OF_READINESS) {
+                    LOGGER.info("Nickname question: {}", serverMessage);
+                    final Answer answer = new Answer(ClientMessageType.GAME_READY);
+                    LOGGER.info("Output answer: {} ", answer);
+                    sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == NICKNAME) {
                     LOGGER.info("Nickname question: {}", serverMessage);
                     final Answer answer = new NicknameAnswer(nickname);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
                     LOGGER.info("Nickname duplicate question: {}", serverMessage);
                     tryAgainEnterNickname();
                     final Answer answer = new NicknameAnswer(nickname);
                     LOGGER.info("Output answer: {} ", answer);
                     sendMessage(Communication.serializeClientMessage(answer));
+                    continue;
                 } else if (serverMessage.getServerMessageType() == GAME_OVER) {
                     readMessage(serverMessage);
+                    continue;
                 }
                 throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         } catch (final IOException | CoinsException e) {
-            LOGGER.error("Error", e);
+            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != ErrorCode.GAME_OVER) {
+                LOGGER.error("Error", e);
+            }
             sendDisconnectMessage();
             downService();
         }
