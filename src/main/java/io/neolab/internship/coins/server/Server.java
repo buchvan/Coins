@@ -22,21 +22,23 @@ import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
+    private static final int GAMES_COUNT = 2;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
-    private final @NotNull ConcurrentLinkedQueue<ServerSomething> serverList = new ConcurrentLinkedQueue<>();
+    private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
     private static class ServerSomething {
 
@@ -48,10 +50,11 @@ public class Server implements IServer {
         /**
          * Для общения с клиентом необходим сокет (адресные данные)
          *
-         * @param server - сервер
-         * @param socket - сокет
+         * @param clients - список уже подключённых к игре клиентов
+         * @param socket     - сокет
          */
-        private ServerSomething(final @NotNull Server server, final @NotNull Socket socket) throws IOException {
+        private ServerSomething(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients, final @NotNull Socket socket)
+                throws IOException {
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию исключения, оно пробросится дальше
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -63,7 +66,7 @@ public class Server implements IServer {
             String nickname;
             boolean isDuplicate = false;
             nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
-            for (final ServerSomething serverSomething : server.serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
             }
             while (isDuplicate) {
@@ -72,7 +75,7 @@ public class Server implements IServer {
                 out.flush();
                 nickname = ((NicknameAnswer) Communication.deserializeClientMessage(in.readLine())).getNickname();
                 isDuplicate = false;
-                for (final ServerSomething serverSomething : server.serverList) {
+                for (final ServerSomething serverSomething : clients) {
                     isDuplicate = isDuplicate || nickname.equals(serverSomething.player.getNickname());
                 }
             }
@@ -122,20 +125,43 @@ public class Server implements IServer {
             LogCleaner.clean();
 
             LOGGER.info("Server started, port: {}", PORT);
-            connectClients();
+            final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
+            for (int i = 0; i < GAMES_COUNT; i++) {
+                final int gameId = i;
+                threadPool.execute(() -> startGame(gameId));
+            }
+            threadPool.shutdown();
+            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (final IOException | InterruptedException exception) {
+            LOGGER.error("Error!!!", exception);
+            serverSomethings.values()
+                    .forEach(serverSomethingsList -> serverSomethingsList
+                            .forEach(ServerSomething::downService));
+            serverSomethings.clear();
+        }
+    }
+
+    /**
+     * @param gameId - id игры
+     */
+    private void startGame(final int gameId) {
+        final ConcurrentLinkedQueue<ServerSomething> clients = new ConcurrentLinkedQueue<>();
+        serverSomethings.put(gameId, clients);
+        try {
+            connectClients(clients);
             final List<Player> playerList = new LinkedList<>();
-            serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
+            clients.forEach(serverSomething -> playerList.add(serverSomething.player));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
             GameLogger.printGameCreatedLog(game);
 
             GameLogger.printStartGameChoiceLog();
-            for (final ServerSomething serverSomething : serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 chooseRace(serverSomething, game);
             }
             while (game.getCurrentRound() < Game.ROUNDS_COUNT) {
                 game.incrementCurrentRound();
                 GameLogger.printRoundBeginLog(game.getCurrentRound());
-                for (final ServerSomething serverSomething : serverList) {
+                for (final ServerSomething serverSomething : clients) {
                     GameLogger.printNextPlayerLog(serverSomething.player);
                     playerRound(serverSomething, game); // раунд игрока. Все свои решения он принимает здесь
                 }
@@ -153,30 +179,31 @@ public class Server implements IServer {
             final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
             final GameOverMessage gameOverMessage =
                     new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
-            for (final ServerSomething serverSomething : serverList) {
+            for (final ServerSomething serverSomething : clients) {
                 serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
                 serverSomething.downService();
             }
         } catch (final CoinsException | ClassCastException | IOException exception) {
             LOGGER.error("Error!!!", exception);
-            serverList.forEach(ServerSomething::downService);
-            serverList.clear();
+            clients.forEach(ServerSomething::downService);
+            serverSomethings.remove(gameId);
         }
     }
 
     /**
      * Подключает клиентов к серверу
      *
+     * @param clients - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private void connectClients() throws IOException, CoinsException {
+    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
                 final Socket socket = serverSocket.accept();
                 try {
                     LOGGER.info("Client {} connects", currentClientsCount);
-                    serverList.add(new ServerSomething(this, socket));
+                    clients.add(new ServerSomething(clients, socket));
                     LOGGER.info("Client {} connected", currentClientsCount);
                     currentClientsCount++;
                 } catch (final IOException exception) {
@@ -184,7 +211,7 @@ public class Server implements IServer {
                     socket.close();
                 }
             }
-            handShake();
+            handShake(clients);
         } catch (final BindException exception) {
             LOGGER.error("Error!", exception);
         }
@@ -193,12 +220,13 @@ public class Server implements IServer {
     /**
      * HandShake
      *
+     * @param clients - очередь клиентов игры
      * @throws IOException    при ошибке общения с клиентом
      * @throws CoinsException если клиент ответил "не готов"
      */
-    private void handShake() throws IOException, CoinsException {
+    private void handShake(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
         final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
-        for (final ServerSomething serverSomething : serverList) {
+        for (final ServerSomething serverSomething : clients) {
             serverSomething.send(Communication.serializeServerMessage(question));
             final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
             if (answer.getMessageType() != ClientMessageType.GAME_READY) {

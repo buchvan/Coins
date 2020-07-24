@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Unit implements Serializable {
+    @JsonProperty
     private final int id;
 
     public Unit() {
@@ -18,19 +19,18 @@ public class Unit implements Serializable {
     }
 
     @Contract(pure = true)
-    public Unit(final @NotNull Unit unit) {
+    @JsonCreator
+    public Unit(@NotNull @JsonProperty("id") final int id) {
+        this.id = id;
+    }
+
+    public Unit(final Unit unit) {
         this.id = unit.id;
     }
 
     @JsonIgnore
     public @NotNull Unit getCopy() {
         return new Unit(this.id);
-    }
-
-    @Contract(pure = true)
-    @JsonCreator
-    public Unit(@JsonProperty("id") final int id) {
-        this.id = id;
     }
 
     public int getId() {

@@ -21,7 +21,7 @@ public class Player implements Serializable {
     private final int id;
 
     @JsonProperty
-    private @NotNull String nickname;
+    private final @NotNull String nickname;
 
     @JsonProperty
     private @Nullable Race race;
@@ -80,10 +80,6 @@ public class Player implements Serializable {
 
     public @NotNull String getNickname() {
         return nickname;
-    }
-
-    public void setNickname(final @NotNull String nickname) {
-        this.nickname = nickname;
     }
 
     public @Nullable Race getRace() {
