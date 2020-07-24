@@ -10,6 +10,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.service.*;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
+import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.LogCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 2;
+    private static final int GAMES_COUNT = 1;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -119,12 +120,12 @@ public class Server implements IServer {
 
     @Override
     public void startServer() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+        try (final LoggerFile ignored = new LoggerFile("server")) {
             LogCleaner.clean();
 
             LOGGER.info("Server started, port: {}", PORT);
             final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
-            for (int i = 0; i < GAMES_COUNT; i++) {
+            for (int i = 1; i <= GAMES_COUNT; i++) {
                 final int gameId = i;
                 threadPool.execute(() -> startGame(gameId));
             }
@@ -145,7 +146,7 @@ public class Server implements IServer {
     private void startGame(final int gameId) {
         final ConcurrentLinkedQueue<ServerSomething> serverList = new ConcurrentLinkedQueue<>();
         serverSomethings.put(gameId, serverList);
-        try {
+        try (final LoggerFile ignored = new LoggerFile("game_" + gameId)) {
             connectClients(serverList);
             final List<Player> playerList = new LinkedList<>();
             serverList.forEach(serverSomething -> playerList.add(serverSomething.player));
