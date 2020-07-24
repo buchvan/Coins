@@ -1,16 +1,17 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.utils;
 
+import io.neolab.internship.coins.server.game.service.GameLogger;
 import org.slf4j.MDC;
 
 import java.util.Date;
 
-public class GameLoggerFile implements AutoCloseable {
+public class LoggerFile implements AutoCloseable {
     private final String logFileName;
 
-    public GameLoggerFile() {
+    public LoggerFile(final String prefix) {
 
         /* генерируем имя файла-лога (self-play__HH-mm-ss) */
-        logFileName = "self-play__" +
+        logFileName = prefix + "__" +
                 new Date().toString()
                         .split(" ")[3]
                         .replaceAll(":", "-");
