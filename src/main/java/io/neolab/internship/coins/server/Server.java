@@ -206,24 +206,17 @@ public class Server implements IServer {
         while (currentClientsCount <= CLIENTS_COUNT) {
             final int currentClientId = currentClientsCount;
             connectClient.execute(() -> {
-                Socket socket;
+                Socket socket = null;
                 while (true) {
                     try {
                         socket = getSocket();
-                    } catch (final IOException exception) {
-                        LOGGER.error("Error!", exception);
-                        continue;
-                    }
-                    try {
                         LOGGER.info("Client {} connects", currentClientId);
                         clients.add(new ServerSomething(clients, socket));
                         LOGGER.info("Client {} connected", currentClientId);
                     } catch (final IOException exception) {
                         LOGGER.error("Error!", exception);
-                        try {
-                            socket.close();
-                        } catch (final IOException e) {
-                            LOGGER.error("Error!", e);
+                        if (socket != null) {
+                            closeSocket(socket);
                         }
                         continue;
                     }
@@ -238,6 +231,19 @@ public class Server implements IServer {
             handShake(clients);
         } catch (final InterruptedException exception) {
             LOGGER.error("Error!", exception);
+        }
+    }
+
+    /**
+     * Закрыть сокет
+     *
+     * @param socket - сокет, который необходимо закрыть
+     */
+    private synchronized void closeSocket(final Socket socket) {
+        try {
+            socket.close();
+        } catch (final IOException e) {
+            LOGGER.error("Error!", e);
         }
     }
 
