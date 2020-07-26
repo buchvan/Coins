@@ -105,6 +105,7 @@ public class Game implements IGame, Serializable {
         this.players = players;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     @Override
     public @NotNull Game getCopy() {

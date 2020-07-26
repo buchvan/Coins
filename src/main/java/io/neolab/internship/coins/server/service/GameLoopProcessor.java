@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
@@ -227,7 +228,7 @@ public class GameLoopProcessor {
                           final @NotNull GameFeatures gameFeatures,
                           final @NotNull Map<Player, List<Cell>> ownToCells,
                           final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                          final @NotNull List<Cell> transitCells) {
+                          final @NotNull List<Cell> transitCells) throws UtilsException {
         withdrawUnits(neighboringCells, tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
         depriveCellFeudalAndOwner(catchingCell, defendingPlayer, ownToCells.get(defendingPlayer),
@@ -293,7 +294,7 @@ public class GameLoopProcessor {
      * @return true - если feature не CATCH_CELL_IMPOSSIBLE, false - иначе
      */
     private static boolean catchCellCheckFeature(final @Nullable Player cellOwner,
-                                                 final @NotNull Feature feature) {
+                                                 final @NotNull Feature feature) throws UtilsException {
         final boolean isHasOpponent = isAlivePlayer(cellOwner);
         if (isHasOpponent && feature.getType() == FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL) {
             int deadUnitsCount = ((CoefficientlyFeature) feature).getCoefficient();
@@ -360,7 +361,7 @@ public class GameLoopProcessor {
      * @param deadUnitsCount - кол-во, которое необходимо убить
      * @param player         - игрок, чьих юнитов необходимо убить
      */
-    private static void killUnits(final int deadUnitsCount, final @NotNull Player player) {
+    private static void killUnits(final int deadUnitsCount, final @NotNull Player player) throws UtilsException {
         ListProcessor.removeFirstN(deadUnitsCount, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         GameLogger.printCatchCellUnitsDiedLog(player, deadUnitsCount);
     }

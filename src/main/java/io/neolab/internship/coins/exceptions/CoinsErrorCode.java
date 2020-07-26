@@ -2,7 +2,7 @@ package io.neolab.internship.coins.exceptions;
 
 import org.jetbrains.annotations.NotNull;
 
-public enum ErrorCode {
+public enum CoinsErrorCode {
     CLIENT_CREATION_FAILED("Client creation failed"),
     CLIENT_DISCONNECTION("Client disconnection"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
@@ -23,7 +23,7 @@ public enum ErrorCode {
 
     private final @NotNull String message;
 
-    ErrorCode(final @NotNull String message) {
+    CoinsErrorCode(final @NotNull String message) {
         this.message = message;
     }
 

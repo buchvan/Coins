@@ -20,7 +20,7 @@ public class Unit implements Serializable {
 
     @Contract(pure = true)
     @JsonCreator
-    public Unit(@NotNull @JsonProperty("id") final int id) {
+    public Unit(@JsonProperty("id") final int id) {
         this.id = id;
     }
 
@@ -28,6 +28,7 @@ public class Unit implements Serializable {
         this.id = unit.id;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     public @NotNull Unit getCopy() {
         return new Unit(this.id);

@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.IBot;
 import io.neolab.internship.coins.client.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.*;
@@ -61,8 +62,12 @@ class SelfPlay {
             GameLogger.printRoundBeginLog(game.getCurrentRound());
             simpleBotToPlayer.forEach(pair -> {
                 GameLogger.printNextPlayerLog(pair.getSecond());
-                playerRoundProcess(pair.getSecond(), pair.getFirst(),
-                        game); // Раунд игрока. Все свои решения он принимает здесь
+                try {
+                    playerRoundProcess(pair.getSecond(), pair.getFirst(),
+                            game); // Раунд игрока. Все свои решения он принимает здесь
+                } catch (final UtilsException exception) {
+                    GameLogger.printErrorLog(exception);
+                }
             });
             simpleBotToPlayer.forEach(pair -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
@@ -81,7 +86,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws UtilsException {
         GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
         if (simpleBot.declineRaceChoose(player, game)) { // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRaceProcess(player, simpleBot, game); // Уход в упадок
@@ -113,7 +118,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws UtilsException {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -166,7 +171,7 @@ class SelfPlay {
                                                      final @NotNull GameFeatures gameFeatures,
                                                      final @NotNull Map<Player, List<Cell>> ownToCells,
                                                      final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                                                     final @NotNull List<Cell> transitCells) {
+                                                     final @NotNull List<Cell> transitCells) throws UtilsException {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(catchingCell);
         if (isControlled) {

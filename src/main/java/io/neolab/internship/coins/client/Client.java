@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.ServerMessage;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +54,7 @@ public class Client implements IClient {
             this.port = port;
             this.simpleBot = new SimpleBot();
         } catch (final UnknownHostException exception) {
-            throw new CoinsException(ErrorCode.CLIENT_CREATION_FAILED);
+            throw new CoinsException(CoinsErrorCode.CLIENT_CREATION_FAILED);
         }
     }
 
@@ -82,7 +82,7 @@ public class Client implements IClient {
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
         }
-        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+        throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     @Override
@@ -91,9 +91,9 @@ public class Client implements IClient {
             LOGGER.info("Game over question: {} ", serverMessage);
             final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
             GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-            throw new CoinsException(ErrorCode.GAME_OVER);
+            throw new CoinsException(CoinsErrorCode.GAME_OVER);
         }
-        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+        throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     private void startClient() {
@@ -151,10 +151,10 @@ public class Client implements IClient {
                     readMessage(serverMessage);
                     continue;
                 }
-                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+                throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         } catch (final IOException | CoinsException e) {
-            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != ErrorCode.GAME_OVER) {
+            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != CoinsErrorCode.GAME_OVER) {
                 LOGGER.error("Error", e);
             }
             sendDisconnectMessage();

@@ -63,6 +63,7 @@ public class Player implements Serializable {
         this.coins = coins;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     public @NotNull Player getCopy() {
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());

@@ -6,7 +6,8 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
+import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -36,7 +37,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer();
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
     }
 
     @Test
@@ -60,7 +61,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
     }
 
     @Test
@@ -75,11 +76,11 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer(resolution);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
     }
 
     @Test
-    public void distributionUnitsRightUnitsInsertionsToCellTest() throws CoinsException {
+    public void distributionUnitsRightUnitsInsertionsToCellTest() throws CoinsException, UtilsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
@@ -105,7 +106,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
     }
 
     @Test
-    public void distributionUnitsNewUnitsBecomeNotUnavailable() throws CoinsException {
+    public void distributionUnitsNewUnitsBecomeNotUnavailable() throws CoinsException, UtilsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);

@@ -8,6 +8,7 @@ import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -41,7 +42,7 @@ public class GameAnswerProcessor {
      * @throws CoinsException в случае невалидности ответа
      */
     public static void process(final @NotNull PlayerQuestion playerQuestion, final @Nullable Answer answer)
-            throws CoinsException {
+            throws CoinsException, UtilsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
         if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DECLINE_RACE) {
@@ -60,8 +61,7 @@ public class GameAnswerProcessor {
             return;
         }
         if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DISTRIBUTION_UNITS) {
-            distributionUnitsProcess(answer, player, currentGame.getBoard(),
-                    currentGame.getOwnToCells().get(player), currentGame.getPlayerToTransitCells().get(player));
+            distributionUnitsProcess(answer, player, currentGame.getBoard(), currentGame.getOwnToCells().get(player));
         }
     }
 
@@ -173,7 +173,9 @@ public class GameAnswerProcessor {
                                            final @NotNull Map<Player, List<Cell>> ownToCells,
                                            final @NotNull Map<Player, Set<Cell>> feudalToCells,
                                            final @NotNull List<Cell> transitCells,
-                                           final @NotNull Set<Cell> achievableCells) throws CoinsException {
+                                           final @NotNull Set<Cell> achievableCells)
+            throws CoinsException, UtilsException {
+
         final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
         LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
         final List<Cell> controlledCells = ownToCells.get(player); //список подконтрольных клеток для игрока
@@ -210,7 +212,7 @@ public class GameAnswerProcessor {
                                       final @NotNull Map<Player, List<Cell>> ownToCells,
                                       final @NotNull Map<Player, Set<Cell>> feudalToCells,
                                       final @NotNull List<Cell> transitCells,
-                                      final @NotNull Set<Cell> achievableCells) {
+                                      final @NotNull Set<Cell> achievableCells) throws UtilsException {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
@@ -240,13 +242,11 @@ public class GameAnswerProcessor {
      * @param player          - игрок
      * @param board           - борда
      * @param controlledCells - список подконтрольных игроку клеток
-     * @param transitCells    - список транизтных клеток игрока
      * @throws CoinsException в случае если ответ невалиден
      */
     private static void distributionUnitsProcess(final @Nullable Answer answer, final @NotNull Player player,
                                                  final @NotNull IBoard board,
-                                                 final @NotNull List<Cell> controlledCells,
-                                                 final @NotNull List<Cell> transitCells)
+                                                 final @NotNull List<Cell> controlledCells)
             throws CoinsException {
         final DistributionUnitsAnswer distributionUnitsAnswer = (DistributionUnitsAnswer) answer;
         LOGGER.debug("Distribution units answer: {} ", distributionUnitsAnswer);
@@ -256,8 +256,7 @@ public class GameAnswerProcessor {
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
         distributionUnits(player,
-                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()),
-                transitCells, controlledCells, board);
+                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board);
     }
 
 
@@ -267,15 +266,10 @@ public class GameAnswerProcessor {
      * @param player          - игрок, делающий выбор
      * @param resolutions     - мапа: клетка, в которую игрок хочет распределить войска
      *                        -> юниты, которые игрок хочет распределить в клетку
-     * @param transitCells    - транзитные клетки игрока
-     *                        (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
-     * @param controlledCells - принадлежащие игроку клетки
      * @param board           - борда
      */
     private static void distributionUnits(final @NotNull Player player,
                                          final @NotNull Map<Position, List<Unit>> resolutions,
-                                         final @NotNull List<Cell> transitCells,
-                                         final @NotNull List<Cell> controlledCells,
                                          final @NotNull IBoard board) {
         GameLogger.printBeginUnitsDistributionLog(player);
         makeAllUnitsSomeState(player,

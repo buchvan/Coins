@@ -6,7 +6,8 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
+import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -40,11 +41,11 @@ public class GameDeclineRaceAnswerProcessorTests {
                 PlayerQuestionType.DECLINE_RACE, game, player);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(PlayerQuestion, null));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER, exception.getErrorCode());
     }
 
     @Test
-    public void declineRaceTrueRightControlledCellsTest() throws CoinsException {
+    public void declineRaceTrueRightControlledCellsTest() throws CoinsException, UtilsException {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
@@ -59,7 +60,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueRightFeudalCellsOwnersTest() throws CoinsException {
+    public void declineRaceTrueRightFeudalCellsOwnersTest() throws CoinsException, UtilsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -78,7 +79,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueFeudalCellsTest() throws CoinsException {
+    public void declineRaceTrueFeudalCellsTest() throws CoinsException, UtilsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -99,7 +100,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightControlledCellsTest() throws CoinsException {
+    public void declineRaceFalseRightControlledCellsTest() throws CoinsException, UtilsException {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
@@ -114,7 +115,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightFeudalCellsOwnersTest() throws CoinsException {
+    public void declineRaceFalseRightFeudalCellsOwnersTest() throws CoinsException, UtilsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -133,7 +134,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseFeudalCellsTest() throws CoinsException {
+    public void declineRaceFalseFeudalCellsTest() throws CoinsException, UtilsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -154,7 +155,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException {
+    public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException, UtilsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());

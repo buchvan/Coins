@@ -10,6 +10,7 @@ import io.neolab.internship.coins.common.serialization.deserialize.PairRaceCellT
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
@@ -33,6 +34,7 @@ public class GameFeatures implements Serializable {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     public @NotNull GameFeatures getCopy() {
         final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures =

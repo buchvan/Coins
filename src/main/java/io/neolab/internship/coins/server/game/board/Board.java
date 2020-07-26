@@ -88,6 +88,7 @@ public class Board implements IBoard, Serializable {
         this(3, 4, new DualHashBidiMap<>());
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     @Override
     public @NotNull IBoard getCopy() {

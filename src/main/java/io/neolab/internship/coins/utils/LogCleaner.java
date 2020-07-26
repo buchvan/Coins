@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.Arrays;
 
 public class LogCleaner {
-    private static final @NotNull String logback = "src/main/resources/logback.xml";
+    private static final @NotNull String logback = "./src/main/resources/logback.xml";
     private static final @NotNull String propertyName = "LOG_DIRECTORY";
     private static final int LOGS_MAX_COUNT = 10;
 
@@ -32,6 +32,7 @@ public class LogCleaner {
      *
      * @throws IOException при ошибке чтения из файла logback
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void clean() throws IOException {
         final String LOG_DIRECTORY = loadLogDirectory();
         final File logDir = new File(LOG_DIRECTORY);

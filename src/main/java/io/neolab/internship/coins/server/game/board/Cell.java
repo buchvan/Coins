@@ -55,6 +55,7 @@ public class Cell implements Serializable {
         this.race = race;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     public @NotNull  Cell getCopy() {
         final List<Unit> units = new LinkedList<>();

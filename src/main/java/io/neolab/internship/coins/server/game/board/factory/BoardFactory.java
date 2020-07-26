@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.game.board.factory;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.board.*;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -31,7 +31,7 @@ public class BoardFactory implements IBoardFactory {
         LOGGER.debug("Start generating board with width {} and height {}", boardSizeY, boardSizeX);
         if (boardSizeX < 2 || boardSizeY < 2) {
             LOGGER.error("Board generation with width {} and height {} failed", boardSizeY, boardSizeX);
-            throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
+            throw new CoinsException(CoinsErrorCode.WRONG_BOARD_SIZES);
         }
         final int cellAmount = boardSizeX * boardSizeY;
         final List<CellType> cellTypes = loadCellTypePool();

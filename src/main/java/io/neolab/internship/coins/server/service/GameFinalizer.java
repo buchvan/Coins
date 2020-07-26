@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.player.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ public class GameFinalizer {
     @Contract("null -> fail")
     public static int getMaxCoinsCount(final @Nullable List<Player> playerList) throws CoinsException {
         if (playerList == null) {
-            throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
+            throw new CoinsException(CoinsErrorCode.PLAYERS_LIST_IS_NULL);
         }
         return playerList.stream()
                 .map(Player::getCoins)
@@ -49,7 +49,7 @@ public class GameFinalizer {
     public static @NotNull List<Player> getWinners(final int maxCoinsCount,
                                                    final @Nullable List<Player> playerList) throws CoinsException {
         if (playerList == null) {
-            throw new CoinsException(ErrorCode.PLAYERS_LIST_IS_NULL);
+            throw new CoinsException(CoinsErrorCode.PLAYERS_LIST_IS_NULL);
         }
         final List<Player> winners = new LinkedList<>();
         playerList.forEach(player -> {

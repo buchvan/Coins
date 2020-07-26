@@ -3,13 +3,13 @@ package io.neolab.internship.coins.exceptions;
 import org.jetbrains.annotations.NotNull;
 
 public class CoinsException extends Exception {
-    private final @NotNull ErrorCode errorCode;
+    private final @NotNull CoinsErrorCode errorCode;
 
-    public CoinsException(final @NotNull ErrorCode errorCode) {
+    public CoinsException(final @NotNull CoinsErrorCode errorCode) {
         this.errorCode = errorCode;
     }
 
-    public @NotNull ErrorCode getErrorCode() {
+    public @NotNull CoinsErrorCode getErrorCode() {
         return errorCode;
     }
 }
