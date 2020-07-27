@@ -455,7 +455,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 2);
+        setPlayerUnits(player, 2, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
@@ -482,7 +482,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 3);
+        setPlayerUnits(player, 3, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
