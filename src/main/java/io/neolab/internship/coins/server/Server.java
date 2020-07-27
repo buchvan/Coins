@@ -6,8 +6,6 @@ import io.neolab.internship.coins.common.message.server.GameOverMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.message.server.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
@@ -23,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;

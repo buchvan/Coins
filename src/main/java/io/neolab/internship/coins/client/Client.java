@@ -122,10 +122,9 @@ public class Client implements IClient {
                 throw new CoinsException(CoinsErrorCode.GAME_OVER);
             }
             default: {
-                throw new CoinsException(ErrorCode.MESSAGE_TYPE_NOT_FOUND);
+                throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
             }
         }
-        throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     /**

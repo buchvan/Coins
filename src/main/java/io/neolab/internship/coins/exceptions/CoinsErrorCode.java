@@ -16,6 +16,7 @@ public enum CoinsErrorCode {
     ANSWER_VALIDATION_NOT_ENOUGH_UNITS("No enough units for distribution"),
     PLAYERS_LIST_IS_NULL("List of players is null"),
     QUESTION_TYPE_NOT_FOUND("Type of question not found"),
+    MESSAGE_TYPE_NOT_FOUND("Type of message not found"),
     ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE("Impossible enter to cell"),
     ANSWER_VALIDATION_UNREACHABLE_CELL("Cell is unreachable for capture"),
     GAME_OVER("Game over"),
