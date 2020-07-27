@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.game.service;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.player.Player;

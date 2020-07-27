@@ -29,7 +29,7 @@ public class TestUtils {
         return game.getPlayers().get(0);
     }
 
-    static Set<Cell> setAchievableCell(final Cell cell) {
+    static Set<Cell> getAchievableCellSet(final Cell cell) {
         final Set<Cell> set = new HashSet<>();
         set.add(cell);
         return set;
@@ -49,10 +49,16 @@ public class TestUtils {
         return positionCellBidiMap.getKey(cells.get(0));
     }
 
-    static Answer createCatchCellAnswer(final Position position, final int resolutionUnitsAmount) {
+    static Answer createCatchCellAnswer(final Position position, final Player player,
+                                               final int resolutionUnitsAmount) {
         final List<Unit> units = new ArrayList<>();
-        for (int i = 0; i < resolutionUnitsAmount; i++) {
-            units.add(new Unit());
+        int i = 0;
+        for (final Unit unit : player.getUnitsByState(AvailabilityType.AVAILABLE)) {
+            if (i >= resolutionUnitsAmount) {
+                break;
+            }
+            units.add(unit);
+            i++;
         }
         return new CatchCellAnswer(new Pair<>(position, units));
     }
