@@ -17,25 +17,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TestUtils {
-    public static void setPlayerUnits(final Player player, final int unitsAmount) {
+    static void setPlayerUnits(final Player player, final int unitsAmount, AvailabilityType type) {
         final List<Unit> playerUnits = new ArrayList<>();
         for (int i = 0; i < unitsAmount; i++) {
             playerUnits.add(new Unit());
         }
-        player.getUnitStateToUnits().put(AvailabilityType.AVAILABLE, playerUnits);
+        player.getUnitStateToUnits().put(type, playerUnits);
     }
 
     public static Player getSomePlayer(final IGame game) {
         return game.getPlayers().get(0);
     }
 
-    public static Set<Cell> getAchievableCellSet(final Cell cell) {
+    static Set<Cell> getAchievableCellSet(final Cell cell) {
         final Set<Cell> set = new HashSet<>();
         set.add(cell);
         return set;
     }
 
-    public static Cell getCellFromBoardByCellType(final CellType cellType, final IBoard board) {
+    static Cell getCellFromBoardByCellType(final CellType cellType, final IBoard board) {
         return board.getPositionToCellMap()
                 .values()
                 .stream()
@@ -44,12 +44,12 @@ public class TestUtils {
                 .get(0);
     }
 
-    public static Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
+    static Position getSomeBoardPosition(final BidiMap<Position, Cell> positionCellBidiMap) {
         final List<Cell> cells = new ArrayList<>(positionCellBidiMap.values());
         return positionCellBidiMap.getKey(cells.get(0));
     }
 
-    public static Answer createCatchCellAnswer(final Position position, final Player player,
+    static Answer createCatchCellAnswer(final Position position, final Player player,
                                                final int resolutionUnitsAmount) {
         final List<Unit> units = new ArrayList<>();
         int i = 0;
@@ -63,13 +63,13 @@ public class TestUtils {
         return new CatchCellAnswer(new Pair<>(position, units));
     }
 
-    public static void setCellAsControlled(final Cell cell, final IGame game, final Player player) {
+    static void setCellAsControlled(final Cell cell, final IGame game, final Player player) {
         final Map<Player, List<Cell>> ownToCells = game.getOwnToCells();
         final List<Cell> controlledCells = ownToCells.get(player);
         controlledCells.add(cell);
     }
 
-    public static void setUnitToCell(final Cell cell, final int unitsAmount) {
+    static void setUnitToCell(final Cell cell, final int unitsAmount) {
         final List<Unit> cellUnits = new ArrayList<>();
         for (int i = 0; i < unitsAmount; i++) {
             cellUnits.add(new Unit());

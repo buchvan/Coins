@@ -43,7 +43,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.NOT_AVAILABLE);
         setControlledPlayerCells(game, player);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());
@@ -82,7 +82,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.NOT_AVAILABLE);
         setControlledPlayerCells(game, player);
 
         final BidiMap<Position, Cell> positionCellBidiMap = game.getBoard().getPositionToCellMap();
@@ -108,7 +108,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.NOT_AVAILABLE);
         setControlledPlayerCells(game, player);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());

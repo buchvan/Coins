@@ -82,7 +82,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, game.getBoard());
@@ -105,7 +105,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell mushroomCell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -128,7 +128,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell mountainCell = getCellFromBoardByCellType(CellType.MOUNTAIN, board);
@@ -151,7 +151,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.AMPHIBIAN);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell waterCell = getCellFromBoardByCellType(CellType.WATER, board);
@@ -174,7 +174,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 2);
+        setPlayerUnits(player, 2, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
@@ -196,7 +196,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 3);
+        setPlayerUnits(player, 3, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MOUNTAIN, board);
@@ -218,7 +218,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 3);
+        setPlayerUnits(player, 3, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -240,7 +240,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.AMPHIBIAN);
-        setPlayerUnits(player, 1);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.WATER, board);
@@ -262,7 +262,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.ORC);
-        setPlayerUnits(player, 3);
+        setPlayerUnits(player, 3, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.WATER, board);
@@ -285,7 +285,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.ORC);
-        setPlayerUnits(player, 3);
+        setPlayerUnits(player, 3, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -306,7 +306,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 5);
+        setPlayerUnits(player, 5, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -332,7 +332,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
-        setPlayerUnits(player, 6);
+        setPlayerUnits(player, 6, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -358,7 +358,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
-        setPlayerUnits(player, 6);
+        setPlayerUnits(player, 6, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -385,7 +385,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
-        setPlayerUnits(player, 6);
+        setPlayerUnits(player, 6, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
@@ -397,14 +397,14 @@ public class GameCatchCellAnswerProcessorTests {
         setCellAsControlled(cell, game, otherPlayer);
         cell.setRace(Race.GNOME);
         cell.setFeudal(otherPlayer);
-        setPlayerUnits(otherPlayer, 2);
+        setPlayerUnits(otherPlayer, 2, AvailabilityType.NOT_AVAILABLE);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
                 createCatchCellAnswer(board.getPositionByCell(cell), player, 6));
         assertEquals(player, cell.getFeudal());
-        assertTrue(otherPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).isEmpty());
+        assertEquals(1, otherPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
     }
 
     @Test
@@ -412,7 +412,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 5);
+        setPlayerUnits(player, 5, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
@@ -435,7 +435,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(3, 3, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 2);
+        setPlayerUnits(player, 2, AvailabilityType.NOT_AVAILABLE);
 
         final Position from = new Position(0, 0);
         final Cell cell = game.getBoard().getCellByPosition(from);
