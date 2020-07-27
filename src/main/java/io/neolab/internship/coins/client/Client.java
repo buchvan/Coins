@@ -40,14 +40,13 @@ public class Client implements IClient {
 
     private @NotNull String nickname = "";
 
-
     private final @NotNull IBot simpleBot;
 
     /**
      * Для создания необходимо принять адрес и номер порта
      *
-     * @param ip   ip адрес клиента
-     * @param port порт соединения
+     * @param ip   - ip адрес клиента
+     * @param port - порт соединения
      */
     private Client(final @NotNull String ip, final int port) throws CoinsException {
         try {
@@ -197,7 +196,7 @@ public class Client implements IClient {
      * @param json - строка (json), которую нужно отправить
      * @throws IOException при ошибке отправки сообщения
      */
-    private void sendMessage(final@NotNull String json) throws IOException {
+    private void sendMessage(final @NotNull String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
@@ -226,6 +225,7 @@ public class Client implements IClient {
 
     /**
      * Определение никнэйма
+     *
      * @throws IOException при ошибке ввода никнэйма
      */
     private void enterNickname() throws IOException {
@@ -239,6 +239,7 @@ public class Client implements IClient {
 
     /**
      * Попытка заново ввести никнэйм
+     *
      * @throws IOException при ошибке ввода никнэйма
      */
     private void tryAgainEnterNickname() throws IOException {
