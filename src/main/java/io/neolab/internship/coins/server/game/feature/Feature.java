@@ -1,6 +1,8 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -14,23 +16,26 @@ import java.util.Objects;
 })
 public class Feature implements IFeature {
     @JsonProperty
-    private final FeatureType type;
+    private final @NotNull FeatureType type;
 
+    @Contract(pure = true)
     @JsonCreator
-    public Feature(@JsonProperty("type") final FeatureType type) {
+    public Feature(@NotNull @JsonProperty("type") final FeatureType type) {
         this.type = type;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
-    public Feature getCopy() {
+    public @NotNull Feature getCopy() {
         return new Feature(type);
     }
 
     @Override
-    public FeatureType getType() {
+    public @NotNull FeatureType getType() {
         return type;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

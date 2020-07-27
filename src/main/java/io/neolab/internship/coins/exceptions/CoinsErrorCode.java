@@ -1,6 +1,8 @@
 package io.neolab.internship.coins.exceptions;
 
-public enum ErrorCode {
+import org.jetbrains.annotations.NotNull;
+
+public enum CoinsErrorCode {
     CLIENT_CREATION_FAILED("Client creation failed"),
     CLIENT_DISCONNECTION("Client disconnection"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
@@ -19,13 +21,13 @@ public enum ErrorCode {
     GAME_OVER("Game over"),
     ;
 
-    private final String message;
+    private final @NotNull String message;
 
-    ErrorCode(final String message) {
+    CoinsErrorCode(final @NotNull String message) {
         this.message = message;
     }
 
-    public String getMessage() {
+    public @NotNull String getMessage() {
         return message;
     }
 }

@@ -2,9 +2,11 @@ package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.serialization.Communication;
+import io.neolab.internship.coins.common.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -12,6 +14,7 @@ import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.server.service.*;
 import io.neolab.internship.coins.utils.LogCleaner;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class Server implements IServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
@@ -35,14 +38,14 @@ public class Server implements IServer {
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
-    private final Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
+    private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
     private static class ServerSomething {
 
-        private final Socket socket;
-        private final BufferedReader in; // поток чтения из сокета
-        private final BufferedWriter out; // поток записи в сокет
-        private final Player player;
+        private final @NotNull Socket socket;
+        private final @NotNull BufferedReader in; // поток чтения из сокета
+        private final @NotNull BufferedWriter out; // поток записи в сокет
+        private final @NotNull Player player;
 
         /**
          * Для общения с клиентом необходим сокет (адресные данные)
@@ -50,7 +53,7 @@ public class Server implements IServer {
          * @param clients - список уже подключённых к игре клиентов
          * @param socket  - сокет
          */
-        private ServerSomething(final ConcurrentLinkedQueue<ServerSomething> clients, final Socket socket)
+        private ServerSomething(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients, final @NotNull Socket socket)
                 throws IOException {
             this.socket = socket;
             // если потоку ввода/вывода приведут к генерированию исключения, оно пробросится дальше
@@ -86,7 +89,7 @@ public class Server implements IServer {
          * @param message - сообщение
          * @throws IOException в случае ошибки отправки сообщения
          */
-        private void send(final String message) throws IOException {
+        private void send(final @NotNull String message) throws IOException {
             out.write(message + "\n");
             out.flush();
         }
@@ -173,7 +176,6 @@ public class Server implements IServer {
                 GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(), game.getOwnToCells(),
                         game.getFeudalToCells());
             }
-
             final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
             final GameOverMessage gameOverMessage =
                     new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
@@ -260,7 +262,7 @@ public class Server implements IServer {
             serverSomething.send(Communication.serializeServerMessage(question));
             final Answer answer = (Answer) Communication.deserializeClientMessage(serverSomething.read());
             if (answer.getMessageType() != ClientMessageType.GAME_READY) {
-                throw new CoinsException(ErrorCode.CLIENT_DISCONNECTION);
+                throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
             }
         }
     }
@@ -273,7 +275,7 @@ public class Server implements IServer {
      * @throws IOException    при ошибке соединения
      * @throws CoinsException из GameAnswerProcessor
      */
-    private void chooseRace(final ServerSomething serverSomething, final IGame game)
+    private void chooseRace(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException, CoinsException {
 
         final PlayerQuestion playerQuestion
@@ -290,7 +292,7 @@ public class Server implements IServer {
      * @param serverSomething - клиент игрока
      * @param game            - объект, хранящий всю метаинформацию об игре
      */
-    private void playerRound(final ServerSomething serverSomething, final IGame game)
+    private void playerRound(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException {
 
         /* Активация данных игрока в начале раунда */
@@ -311,7 +313,8 @@ public class Server implements IServer {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @throws IOException в случае ошибки общения с клиентом
      */
-    private void beginRoundChoice(final ServerSomething serverSomething, final IGame game) throws IOException {
+    private void beginRoundChoice(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
+            throws IOException {
         while (true) {
             try {
                 final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -341,7 +344,8 @@ public class Server implements IServer {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @throws IOException в случае ошибки общения с клиентом
      */
-    private void captureCell(final ServerSomething serverSomething, final IGame game) throws IOException {
+    private void captureCell(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
+            throws IOException {
         final Player player = serverSomething.player;
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
@@ -374,7 +378,7 @@ public class Server implements IServer {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @throws IOException в случае ошибки общения с клиентом
      */
-    private void distributionUnits(final ServerSomething serverSomething, final IGame game)
+    private void distributionUnits(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException {
 
         final Player player = serverSomething.player;

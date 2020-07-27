@@ -1,10 +1,11 @@
 package io.neolab.internship.coins.server.game.board.factory;
 
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.board.*;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +14,8 @@ import java.util.List;
 import java.util.Random;
 
 public class BoardFactory implements IBoardFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
-    private final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(BoardFactory.class);
+    private final @NotNull BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
 
     /**
      * При создании доски соблюдается принцип сбалансированности территории:
@@ -26,11 +27,11 @@ public class BoardFactory implements IBoardFactory {
      * @return new Board
      */
     @Override
-    public IBoard generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
+    public @NotNull IBoard generateBoard(final int boardSizeX, final int boardSizeY) throws CoinsException {
         LOGGER.debug("Start generating board with width {} and height {}", boardSizeY, boardSizeX);
         if (boardSizeX < 2 || boardSizeY < 2) {
             LOGGER.error("Board generation with width {} and height {} failed", boardSizeY, boardSizeX);
-            throw new CoinsException(ErrorCode.WRONG_BOARD_SIZES);
+            throw new CoinsException(CoinsErrorCode.WRONG_BOARD_SIZES);
         }
         final int cellAmount = boardSizeX * boardSizeY;
         final List<CellType> cellTypes = loadCellTypePool();
@@ -45,9 +46,9 @@ public class BoardFactory implements IBoardFactory {
             logBoardString.append("\n");
         }
         /*
-        * Вывод лога о результате генерации игровой доски
-        * Обозначение: m - грибы, M - горы, L - земля, W - вода
-        */
+         * Вывод лога о результате генерации игровой доски
+         * Обозначение: m - грибы, M - горы, L - земля, W - вода
+         */
         LOGGER.info(logBoardString.toString());
         return new Board(boardSizeX, boardSizeY, positionToCellMap);
     }
@@ -62,7 +63,7 @@ public class BoardFactory implements IBoardFactory {
      * @param cellTypes  лист с доступными типами клеток
      * @return допустимый индекс, по которому в листе можно взять тип клетки
      */
-    private int getAllowedCellTypeIndex(final List<CellType> cellTypes, final int cellAmount) {
+    private int getAllowedCellTypeIndex(final @NotNull List<CellType> cellTypes, final int cellAmount) {
         final Random random = new Random();
         final int cellTypesAmount = cellTypes.size();
         /*Взятие остатка для случая нечетного количества клеток*/
@@ -81,7 +82,7 @@ public class BoardFactory implements IBoardFactory {
         return randomCellTypeIndex;
     }
 
-    private List<CellType> loadCellTypePool() {
+    private @NotNull List<CellType> loadCellTypePool() {
         final List<CellType> cellTypes = new ArrayList<>(CellType.values().length);
         cellTypes.add(CellType.LAND);
         cellTypes.add(CellType.MOUNTAIN);

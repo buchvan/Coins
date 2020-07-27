@@ -10,6 +10,9 @@ import io.neolab.internship.coins.common.serialization.serialize.CellSerializer;
 import io.neolab.internship.coins.common.serialization.serialize.PositionSerializer;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -19,15 +22,15 @@ public class Board implements IBoard, Serializable {
     @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionKeyDeserializer.class, using = PositionToCellBidiMapDeserializer.class)
-    private final BidiMap<Position, Cell> positionToCellMap;
+    private final @NotNull BidiMap<Position, Cell> positionToCellMap;
 
     @JsonProperty
-    private final List<Cell> edgeCells;
+    private final @NotNull List<Cell> edgeCells;
 
     @JsonProperty
     @JsonSerialize(keyUsing = CellSerializer.class)
     @JsonDeserialize(keyUsing = CellKeyDeserializer.class)
-    private final Map<Cell, List<Cell>> cellToNeighboringCells;
+    private final @NotNull Map<Cell, List<Cell>> cellToNeighboringCells;
 
     /**
      * @param sizeX             - число строк
@@ -36,7 +39,7 @@ public class Board implements IBoard, Serializable {
      * @return список крайних клеток
      */
     private static List<Cell> findEdgeCells(final int sizeX, final int sizeY,
-                                            final BidiMap<Position, Cell> positionToCellMap) {
+                                            final @NotNull BidiMap<Position, Cell> positionToCellMap) {
         final List<Cell> edgeCells = new LinkedList<>();
         int strIndex;
         int colIndex = 0;
@@ -73,9 +76,9 @@ public class Board implements IBoard, Serializable {
     }
 
     @JsonCreator
-    public Board(@JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
-                 @JsonProperty("edgeCells") final List<Cell> edgeCells,
-                 @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
+    public Board(@NotNull @JsonProperty("positionToCellMap") final BidiMap<Position, Cell> positionToCellMap,
+                 @NotNull @JsonProperty("edgeCells") final List<Cell> edgeCells,
+                 @NotNull @JsonProperty("cellToNeighboringCells") final Map<Cell, List<Cell>> cellToNeighboringCells) {
         this.positionToCellMap = positionToCellMap;
         this.edgeCells = edgeCells;
         this.cellToNeighboringCells = cellToNeighboringCells;
@@ -85,9 +88,10 @@ public class Board implements IBoard, Serializable {
         this(3, 4, new DualHashBidiMap<>());
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     @Override
-    public IBoard getCopy() {
+    public @NotNull IBoard getCopy() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
         this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position.getCopy(), cell.getCopy()));
 
@@ -106,40 +110,41 @@ public class Board implements IBoard, Serializable {
     }
 
     @Override
-    public BidiMap<Position, Cell> getPositionToCellMap() {
+    public @NotNull BidiMap<Position, Cell> getPositionToCellMap() {
         return positionToCellMap;
     }
 
     @Override
-    public List<Cell> getEdgeCells() {
+    public @NotNull List<Cell> getEdgeCells() {
         return edgeCells;
     }
 
     @Override
-    public List<Cell> getNeighboringCells(final Cell cell) {
+    public @Nullable List<Cell> getNeighboringCells(final @NotNull Cell cell) {
         return cellToNeighboringCells.get(cell);
     }
 
     @Override
-    public void putNeighboringCells(final Cell cell, final List<Cell> neighboringCells) {
+    public void putNeighboringCells(final @NotNull Cell cell, final @NotNull List<Cell> neighboringCells) {
         cellToNeighboringCells.put(cell, neighboringCells);
     }
 
     @Override
-    public Cell getCellByPosition(final Position position) {
+    public @Nullable Cell getCellByPosition(final @NotNull Position position) {
         return getPositionToCellMap().get(position);
     }
 
     @Override
-    public Cell getCellByPosition(final int x, final int y) {
+    public @Nullable Cell getCellByPosition(final int x, final int y) {
         return getCellByPosition(new Position(x, y));
     }
 
     @Override
-    public Position getPositionByCell(final Cell cell) {
+    public @NotNull Position getPositionByCell(final @NotNull Cell cell) {
         return getPositionToCellMap().getKey(cell);
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

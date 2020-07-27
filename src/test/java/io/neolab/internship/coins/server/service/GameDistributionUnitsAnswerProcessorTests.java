@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -15,6 +15,7 @@ import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.apache.commons.collections4.BidiMap;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
@@ -35,7 +36,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer();
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
     }
 
     @Test
@@ -59,7 +60,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS, exception.getErrorCode());
     }
 
     @Test
@@ -74,7 +75,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         final Answer answer = new DistributionUnitsAnswer(resolution);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_WRONG_POSITION, exception.getErrorCode());
     }
 
     @Test
@@ -127,11 +128,11 @@ public class GameDistributionUnitsAnswerProcessorTests {
         assertTrue(player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
     }
 
-    private Player getSomePlayer(final IGame game) {
+    private @NotNull Player getSomePlayer(final @NotNull IGame game) {
         return game.getPlayers().get(0);
     }
 
-    private void setControlledPlayerCells(final IGame game, final Player player) {
+    private void setControlledPlayerCells(final @NotNull IGame game, final @NotNull Player player) {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));

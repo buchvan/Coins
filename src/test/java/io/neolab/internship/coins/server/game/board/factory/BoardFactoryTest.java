@@ -3,6 +3,7 @@ package io.neolab.internship.coins.server.game.board.factory;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -64,12 +65,12 @@ public class BoardFactoryTest {
         generateBoard(1, 1);
     }
 
-    private IBoard generateBoard(final int wight, final int height) throws CoinsException {
+    private @NotNull IBoard generateBoard(final int wight, final int height) throws CoinsException {
         final BoardFactory boardFactory = new BoardFactory();
         return boardFactory.generateBoard(wight, height);
     }
 
-    private List<CellType> fillCellTypes() {
+    private @NotNull List<CellType> fillCellTypes() {
         final List<CellType> cellTypes = new ArrayList<>();
         cellTypes.add(CellType.WATER);
         cellTypes.add(CellType.LAND);

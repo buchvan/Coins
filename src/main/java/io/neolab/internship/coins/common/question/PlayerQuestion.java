@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -12,27 +14,27 @@ public class PlayerQuestion extends ServerMessage {
     private final PlayerQuestionType playerQuestionType;
 
     @JsonProperty
-    private final IGame game;
+    private final @NotNull IGame game;
 
     @JsonProperty
-    private final Player player;
+    private final @NotNull Player player;
 
     @JsonCreator
-    public PlayerQuestion(@JsonProperty("serverMessageType") final ServerMessageType serverMessageType,
-                          @JsonProperty("playerQuestionType") final PlayerQuestionType playerQuestionType,
-                          @JsonProperty("game") final IGame game,
-                          @JsonProperty("player") final Player player) {
+    public PlayerQuestion(@NotNull @JsonProperty("serverMessageType") final ServerMessageType serverMessageType,
+                          @NotNull @JsonProperty("playerQuestionType") final PlayerQuestionType playerQuestionType,
+                          @NotNull @JsonProperty("game") final IGame game,
+                          @NotNull @JsonProperty("player") final Player player) {
         super(serverMessageType);
         this.playerQuestionType = playerQuestionType;
         this.game = game;
         this.player = player;
     }
 
-    public IGame getGame() {
+    public @NotNull IGame getGame() {
         return game;
     }
 
-    public Player getPlayer() {
+    public @NotNull Player getPlayer() {
         return player;
     }
 
@@ -40,6 +42,7 @@ public class PlayerQuestion extends ServerMessage {
         return playerQuestionType;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
