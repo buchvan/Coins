@@ -1,6 +1,8 @@
-package io.neolab.internship.coins.common.answer;
+package io.neolab.internship.coins.common.message.client.answer;
 
 import com.fasterxml.jackson.annotation.*;
+import io.neolab.internship.coins.common.message.client.ClientMessage;
+import io.neolab.internship.coins.common.message.client.ClientMessageType;
 
 /**
  * Абстрактный класс ответа. Класс-родитель для всех различных ответов клиента

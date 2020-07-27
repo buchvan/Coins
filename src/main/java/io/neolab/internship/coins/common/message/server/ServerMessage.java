@@ -1,6 +1,7 @@
-package io.neolab.internship.coins.common.question;
+package io.neolab.internship.coins.common.message.server;
 
 import com.fasterxml.jackson.annotation.*;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 
 import java.util.Objects;
 

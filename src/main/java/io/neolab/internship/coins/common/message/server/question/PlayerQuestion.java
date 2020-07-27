@@ -1,7 +1,9 @@
-package io.neolab.internship.coins.common.question;
+package io.neolab.internship.coins.common.message.server.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neolab.internship.coins.common.message.server.ServerMessage;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 

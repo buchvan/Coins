@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.question;
+package io.neolab.internship.coins.common.message.server.question;
 
 public enum PlayerQuestionType {
 

@@ -1,9 +1,11 @@
 package io.neolab.internship.coins.client;
 
-import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.GameOverMessage;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.ServerMessage;
+import io.neolab.internship.coins.common.message.client.answer.*;
+import io.neolab.internship.coins.common.message.client.ClientMessage;
+import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import io.neolab.internship.coins.common.message.server.GameOverMessage;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
@@ -18,7 +20,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import static io.neolab.internship.coins.common.question.ServerMessageType.*;
+import static io.neolab.internship.coins.common.message.server.ServerMessageType.*;
 
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);

@@ -1,8 +1,12 @@
 package io.neolab.internship.coins.server;
 
-import io.neolab.internship.coins.common.answer.*;
+import io.neolab.internship.coins.common.message.client.answer.*;
+import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import io.neolab.internship.coins.common.message.server.GameOverMessage;
+import io.neolab.internship.coins.common.message.server.ServerMessage;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.common.question.*;
+import io.neolab.internship.coins.common.message.server.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.ErrorCode;
 import io.neolab.internship.coins.server.game.*;

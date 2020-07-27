@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TestUtils {
-    static void setPlayerUnits(final Player player, final int unitsAmount, AvailabilityType type) {
+    static void setPlayerUnits(final Player player, final int unitsAmount, final AvailabilityType type) {
         final List<Unit> playerUnits = new ArrayList<>();
         for (int i = 0; i < unitsAmount; i++) {
             playerUnits.add(new Unit());

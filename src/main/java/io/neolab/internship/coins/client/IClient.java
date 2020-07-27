@@ -1,9 +1,8 @@
 package io.neolab.internship.coins.client;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.answer.ClientMessage;
-import io.neolab.internship.coins.common.question.ServerMessage;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.exceptions.CoinsException;
 
 import java.io.IOException;
