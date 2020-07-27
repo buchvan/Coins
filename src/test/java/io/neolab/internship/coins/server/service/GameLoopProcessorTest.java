@@ -4,10 +4,9 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
-import io.neolab.internship.coins.server.service.GameLoopProcessor;
-import io.neolab.internship.coins.server.service.TestUtils;
 import org.junit.Test;
 
 import java.util.Set;
@@ -28,9 +27,10 @@ public class GameLoopProcessorTest {
         somePlayer.setRace(Race.MUSHROOM);
         somePlayer.setCoins(0);
         final Set<Cell> playerFeudalCells = game.getFeudalToCells().get(somePlayer);
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, game.getBoard()));
+        IBoard board = game.getBoard();
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), game.getBoard());
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
         assertEquals(2, somePlayer.getCoins());
     }
 
@@ -44,10 +44,11 @@ public class GameLoopProcessorTest {
         somePlayer.setRace(Race.ELF);
         somePlayer.setCoins(0);
         final Set<Cell> playerFeudalCells = game.getFeudalToCells().get(somePlayer);
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, game.getBoard()));
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, game.getBoard()));
+        IBoard board = game.getBoard();
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), game.getBoard());
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
         assertEquals(4, somePlayer.getCoins());
     }
 
@@ -61,10 +62,11 @@ public class GameLoopProcessorTest {
         somePlayer.setRace(Race.UNDEAD);
         somePlayer.setCoins(0);
         final Set<Cell> playerFeudalCells = game.getFeudalToCells().get(somePlayer);
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, game.getBoard()));
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, game.getBoard()));
+        IBoard board = game.getBoard();
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), game.getBoard());
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
         assertEquals(2, somePlayer.getCoins());
     }
 
@@ -78,10 +80,11 @@ public class GameLoopProcessorTest {
         somePlayer.setRace(Race.AMPHIBIAN);
         somePlayer.setCoins(0);
         final Set<Cell> playerFeudalCells = game.getFeudalToCells().get(somePlayer);
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.WATER, game.getBoard()));
-        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, game.getBoard()));
+        IBoard board = game.getBoard();
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.WATER, board));
+        playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), game.getBoard());
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
         assertEquals(2, somePlayer.getCoins());
     }
 
