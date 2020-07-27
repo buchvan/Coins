@@ -5,6 +5,7 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.answer.ClientMessage;
 import io.neolab.internship.coins.common.question.ServerMessage;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -15,12 +16,12 @@ public interface IClient {
      * @return ответ на вопрос
      * @throws CoinsException в случае неизвестного типа вопроса
      */
-    Answer getAnswer(final PlayerQuestion question) throws CoinsException;
+    @NotNull Answer getAnswer(final @NotNull PlayerQuestion question) throws CoinsException;
 
     /**
      * Прочитать сообщение от сервера
      * @param message - сообщение
      * @throws CoinsException в случае неизвестного типа сообщения
      */
-    void readMessage(final ServerMessage message) throws CoinsException, IOException;
+    void readMessage(final @NotNull ServerMessage message) throws CoinsException, IOException;
 }

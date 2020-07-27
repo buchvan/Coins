@@ -3,23 +3,26 @@ package io.neolab.internship.coins.common.answer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.server.game.player.Race;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
 public class ChangeRaceAnswer extends Answer {
     @JsonProperty
-    private final Race newRace;
+    private final @NotNull Race newRace;
 
     @JsonCreator
-    public ChangeRaceAnswer(@JsonProperty("newRace") final Race newRace) {
+    public ChangeRaceAnswer(@NotNull @JsonProperty("newRace") final Race newRace) {
         super(ClientMessageType.GAME_ANSWER);
         this.newRace = newRace;
     }
 
-    public Race getNewRace() {
+    public @NotNull Race getNewRace() {
         return newRace;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

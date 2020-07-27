@@ -11,31 +11,35 @@ import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class SimpleBot implements IBot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    private final Random random = new Random();
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
+    private final @NotNull Random random = new Random();
 
     @Override
-    public boolean declineRaceChoose(final Player player, final IGame game) {
+    public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         final boolean choice = RandomGenerator.isYes();
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
     }
 
     @Override
-    public Race chooseRace(final Player player, final IGame game) {
+    public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
         final Race race = RandomGenerator.chooseItemFromList(game.getRacesPool());
         LOGGER.debug("Simple bot choice race: {} ", race);
         return race;
     }
 
     @Override
-    public Pair<Position, List<Unit>> chooseCatchingCell(final Player player, final IGame game) {
+    public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
+                                                                   final @NotNull IGame game) {
         if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
@@ -47,7 +51,9 @@ public class SimpleBot implements IBot {
             /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
             final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
             catchingCellNeighboringCells.add(catchingCell);
-            catchingCellNeighboringCells.addAll(board.getNeighboringCells(catchingCell));
+            catchingCellNeighboringCells.addAll(
+                    Objects.requireNonNull(board.getNeighboringCells(
+                            Objects.requireNonNull(catchingCell))));
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
@@ -89,7 +95,7 @@ public class SimpleBot implements IBot {
     }
 
     @Override
-    public Map<Position, List<Unit>> distributionUnits(final Player player, final IGame game) {
+    public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) {
         LOGGER.debug("Simple bot distributes units");
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
@@ -105,5 +111,26 @@ public class SimpleBot implements IBot {
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
+    }
+
+    @Contract(value = "null -> false", pure = true)
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final SimpleBot simpleBot = (SimpleBot) o;
+        return random.equals(simpleBot.random);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(random);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleBot{" +
+                "random=" + random +
+                '}';
     }
 }

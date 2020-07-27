@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -30,7 +30,7 @@ public class GameChangeRaceAnswerProcessorTests {
         final Answer answer = new ChangeRaceAnswer(Race.ELF);
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
-        assertEquals(ErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE, exception.getErrorCode());
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE, exception.getErrorCode());
     }
 
     @Test

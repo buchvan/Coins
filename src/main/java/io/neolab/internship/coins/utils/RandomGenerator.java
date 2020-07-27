@@ -1,11 +1,13 @@
 package io.neolab.internship.coins.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 public class RandomGenerator {
-    private static final Random random = new Random();
+    private static final @NotNull Random random = new Random();
 
     /**
      * Выбрать элемент из списка (подбросить монетку)
@@ -13,7 +15,7 @@ public class RandomGenerator {
      * @param list - список доступных на выбор клеток
      * @return выбранный элемент
      */
-    public static <T> T chooseItemFromList(final List<T> list) {
+    public static <T> T chooseItemFromList(final @NotNull List<T> list) {
         final int numberOfCell = chooseNumber(list.size()); // номер выбранной клетки из списка
         return list.get(numberOfCell);
     }
@@ -24,7 +26,7 @@ public class RandomGenerator {
      * @param set - множество доступных на выбор клеток
      * @return выбранный элемент
      */
-    public static <T> T chooseItemFromSet(final Set<T> set) {
+    public static <T> T chooseItemFromSet(final @NotNull Set<T> set) {
         final int numberOfCell = chooseNumber(set.size()); // номер выбранной клетки из множества
         int i = 0;
         for (final T t : set) {

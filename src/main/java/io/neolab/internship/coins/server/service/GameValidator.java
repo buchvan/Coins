@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -14,9 +14,13 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
@@ -32,9 +36,10 @@ class GameValidator {
      * @param answer - ответ, который нужно проверить
      * @throws CoinsException в случае пустого ответа выбрасывается исключение с кодом ошибки EMPTY_ANSWER
      */
-    private static void checkIfAnswerEmpty(final Answer answer) throws CoinsException {
+    @Contract("null -> fail")
+    private static void checkIfAnswerEmpty(final @Nullable Answer answer) throws CoinsException {
         if (answer == null) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_ERROR_EMPTY_ANSWER);
         }
     }
 
@@ -46,12 +51,12 @@ class GameValidator {
      * @throws CoinsException при совпадении новых и текущей расы - SAME_RACES, расы нет в пуле - UNAVAILABLE_NEW_RACE,
      *                        пустой ответ - EMPTY_ANSWER
      */
-    static void validateChangeRaceAnswer(final ChangeRaceAnswer answer,
-                                         final List<Race> racesPool) throws CoinsException {
+    static void validateChangeRaceAnswer(final @Nullable ChangeRaceAnswer answer,
+                                         final @NotNull List<Race> racesPool) throws CoinsException {
         checkIfAnswerEmpty(answer);
         final Race newRace = answer.getNewRace();
         if (!racesPool.contains(newRace)) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_UNAVAILABLE_NEW_RACE);
         }
     }
 
@@ -61,7 +66,8 @@ class GameValidator {
      * @param answer - ответ, который нужно проверить
      * @throws CoinsException пустой ответ - EMPTY_ANSWER
      */
-    static void validateDeclineRaceAnswer(final DeclineRaceAnswer answer) throws CoinsException {
+    @Contract("null -> fail")
+    static void validateDeclineRaceAnswer(final @Nullable DeclineRaceAnswer answer) throws CoinsException {
         checkIfAnswerEmpty(answer);
     }
 
@@ -75,40 +81,42 @@ class GameValidator {
      *                        нет доступных юнитов - NO_AVAILABLE_UNITS,
      *                        недостаточно юнитов для захвата - CELL_CAPTURE_IMPOSSIBLE
      */
-    static void validateCatchCellAnswer(final CatchCellAnswer answer,
-                                        final List<Cell> controlledCells,
-                                        final IBoard currentBoard,
-                                        final Set<Cell> achievableCells,
-                                        final List<Unit> availableUnits,
-                                        final GameFeatures gameFeatures,
-                                        final Player player) throws CoinsException {
+    static void validateCatchCellAnswer(final @Nullable CatchCellAnswer answer,
+                                        final @NotNull List<Cell> controlledCells,
+                                        final @NotNull IBoard currentBoard,
+                                        final @NotNull Set<Cell> achievableCells,
+                                        final @NotNull List<Unit> availableUnits,
+                                        final @NotNull GameFeatures gameFeatures,
+                                        final @NotNull Player player) throws CoinsException {
         checkIfAnswerEmpty(answer);
-        final Cell cellForAttempt = currentBoard.getCellByPosition(answer.getResolution().getFirst());
+        final Cell cellForAttempt =
+                currentBoard.getCellByPosition(Objects.requireNonNull(answer.getResolution()).getFirst());
         //есть ли клетка, соответствующая позиции
         if (checkIfCellDoesntExists(answer.getResolution().getFirst(), currentBoard)) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
         }
         //клетка достижима
         if (!achievableCells.contains(cellForAttempt)) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL);
         }
         //есть ли войска для захвата
         if (availableUnits.isEmpty()) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NO_AVAILABLE_UNITS);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_NO_AVAILABLE_UNITS);
         }
         final List<Unit> units = answer.getResolution().getSecond();
         if (controlledCells.contains(cellForAttempt)) {
-            if (units.size() < cellForAttempt.getType().getCatchDifficulty()) {
-                throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
+            if (units.size() < Objects.requireNonNull(cellForAttempt).getType().getCatchDifficulty()) {
+                throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
             }
             return;
         }
         //достаточно ли юнитов для захвата клетки
-        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
+        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures,
+                Objects.requireNonNull(cellForAttempt));
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);
         }
     }
 
@@ -121,27 +129,27 @@ class GameValidator {
      *                        несуществующая позиция - WRONG_POSITION,
      *                        число выбранных для распределения юнитов больше, чем число доступных - NOT_ENOUGH_UNITS,
      */
-    static void validateDistributionUnitsAnswer(final DistributionUnitsAnswer answer,
-                                                final IBoard currentBoard,
-                                                final List<Cell> controlledCells,
+    static void validateDistributionUnitsAnswer(final @Nullable DistributionUnitsAnswer answer,
+                                                final @NotNull IBoard currentBoard,
+                                                final @NotNull List<Cell> controlledCells,
                                                 final int playerUnitsAmount) throws CoinsException {
         checkIfAnswerEmpty(answer);
         //Некуда распределять войска
         if (controlledCells.isEmpty()) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION);
         }
         int answerUnitsAmount = 0;
-        for (final Map.Entry<Position, List<Unit>> entry : answer.getResolutions().entrySet()) {
+        for (final Map.Entry<Position, List<Unit>> entry : Objects.requireNonNull(answer.getResolutions()).entrySet()) {
             final Position position = entry.getKey();
             final List<Unit> units = entry.getValue();
             answerUnitsAmount += units.size();
             if (checkIfCellDoesntExists(position, currentBoard)) {
-                throw new CoinsException(ErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
+                throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
             }
         }
         //игрок хочет распределить больше юнитов чем у него есть
         if (answerUnitsAmount > playerUnitsAmount) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS);
+            throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_NOT_ENOUGH_UNITS);
         }
     }
 
@@ -150,17 +158,20 @@ class GameValidator {
      * @param necessaryAttackPower - необходимая для захвата сила атаки
      * @return true, если клетка захватываема, false - иначе
      */
+    @Contract(pure = true)
     private static boolean isCellCapturePossible(final int attackPower, final int necessaryAttackPower) {
         return attackPower >= necessaryAttackPower;
     }
 
     /**
+     * Есть ли клетка, соответствующая позиции
+     *
      * @param position     - позиция
      * @param currentBoard - борда
      * @return true, если на борде существует клетка с такой позицией
      */
-    private static boolean checkIfCellDoesntExists(final Position position, final IBoard currentBoard) {
-        //есть ли клетка, соответствующая позиции
+    private static boolean checkIfCellDoesntExists(final @NotNull Position position,
+                                                   final @NotNull IBoard currentBoard) {
         return currentBoard.getCellByPosition(position) == null;
     }
 }

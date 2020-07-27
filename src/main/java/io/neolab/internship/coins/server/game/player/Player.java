@@ -9,6 +9,9 @@ import io.neolab.internship.coins.common.serialization.deserialize.AvailabilityT
 import io.neolab.internship.coins.common.serialization.serialize.AvailabilityTypeSerializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.IdGenerator;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -18,24 +21,20 @@ public class Player implements Serializable {
     private final int id;
 
     @JsonProperty
-    private final String nickname;
+    private final @NotNull String nickname;
 
     @JsonProperty
-    private Race race;
+    private @Nullable Race race;
 
     @JsonProperty
     @JsonSerialize(keyUsing = AvailabilityTypeSerializer.class)
     @JsonDeserialize(keyUsing = AvailabilityTypeKeyDeserializer.class)
-    private final Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
+    private final @NotNull Map<AvailabilityType, List<Unit>> unitStateToUnits; // тип доступности -> список юнитов с этим типом
 
     @JsonProperty
     private int coins = 0;
 
-    public Player() {
-        this(null);
-    }
-
-    public Player(final String nickname) {
+    public Player(final @NotNull String nickname) {
         this.id = IdGenerator.getCurrentId();
         this.nickname = nickname;
         this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
@@ -46,9 +45,9 @@ public class Player implements Serializable {
 
     @JsonCreator
     public Player(@JsonProperty("id") final int id,
-                  @JsonProperty("nickname") final String nickname,
-                  @JsonProperty("race") final Race race,
-                  @JsonProperty("unitStateToUnits") final Map<AvailabilityType, List<Unit>> unitStateToUnits,
+                  @NotNull @JsonProperty("nickname") final String nickname,
+                  @Nullable @JsonProperty("race") final Race race,
+                  @NotNull @JsonProperty("unitStateToUnits") final Map<AvailabilityType, List<Unit>> unitStateToUnits,
                   @JsonProperty("coins") final int coins) {
         this.id = id;
         this.nickname = nickname;
@@ -64,8 +63,9 @@ public class Player implements Serializable {
         this.coins = coins;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
-    public Player getCopy() {
+    public @NotNull Player getCopy() {
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
         this.unitStateToUnits.forEach((availabilityType, units) -> {
             final List<Unit> unitList = new LinkedList<>();
@@ -79,23 +79,23 @@ public class Player implements Serializable {
         return id;
     }
 
-    public String getNickname() {
+    public @NotNull String getNickname() {
         return nickname;
     }
 
-    public Race getRace() {
+    public @Nullable Race getRace() {
         return race;
     }
 
-    public void setRace(final Race race) {
+    public void setRace(final @NotNull Race race) {
         this.race = race;
     }
 
-    public Map<AvailabilityType, List<Unit>> getUnitStateToUnits() {
+    public @NotNull Map<AvailabilityType, List<Unit>> getUnitStateToUnits() {
         return unitStateToUnits;
     }
 
-    public List<Unit> getUnitsByState(final AvailabilityType availabilityType) {
+    public List<Unit> getUnitsByState(final @NotNull AvailabilityType availabilityType) {
         return unitStateToUnits.get(availabilityType);
     }
 
@@ -111,6 +111,7 @@ public class Player implements Serializable {
         this.coins += number;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

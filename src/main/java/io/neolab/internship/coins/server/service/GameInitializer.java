@@ -11,18 +11,19 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class GameInitializer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(GameInitializer.class);
 
-    public static IGame gameInit(final int boardSizeX, final int boardSizeY, final List<Player> playerList)
-            throws CoinsException {
+    @Contract("_, _, _ -> new")
+    public static @NotNull IGame gameInit(final int boardSizeX, final int boardSizeY,
+                                          final @NotNull List<Player> playerList) throws CoinsException {
         LOGGER.debug("Init...");
 
         // final IBoard board = initBoard(boardSizeX, boardSizeY);
@@ -43,58 +44,11 @@ public class GameInitializer {
                 gameFeatures, racesPool, playerList);
     }
 
-    public static IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
+    @Contract("_, _, _ -> new")
+    public static @NotNull IGame gameInit(final int boardSizeX, final int boardSizeY, final int playersCount)
             throws CoinsException {
-        LOGGER.debug("Init...");
-
-        // final IBoard board = initBoard(boardSizeX, boardSizeY);
-        final IBoard board = new BoardFactory().generateBoard(boardSizeX, boardSizeY);
-
         final List<Player> playerList = initTestPlayers(playersCount);
-
-        final Map<Player, Set<Cell>> feudalToCells = initMapWithPlayerKeySetValue(playerList, "feudalToCells");
-        final Map<Player, List<Cell>> ownToCells =
-                initMapWithPlayerKeyListValue(playerList, "ownToCells");
-        final Map<Player, List<Cell>> playerToTransitCells =
-                initMapWithPlayerKeyListValue(playerList, "playerToTransitCells");
-        final Map<Player, Set<Cell>> playerAchievableCells =
-                initMapWithPlayerKeySetValue(playerList, "playerAchievableCells");
-
-        final GameFeatures gameFeatures = initGameFeatures();
-        final List<Race> racesPool = createRacesPool();
-
-        return new Game(board, feudalToCells, ownToCells, playerToTransitCells, playerAchievableCells,
-                gameFeatures, racesPool, playerList);
-    }
-
-    /**
-     * Инициализация и создание борды
-     *
-     * @return инициализированную борду
-     */
-    private static IBoard initBoard(final int boardSizeX, final int boardSizeY) {
-        final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-
-        /* Доска из самой первой консультации по проекту */
-
-        positionToCellMap.put(new Position(0, 0), new Cell(CellType.MUSHROOM));
-        positionToCellMap.put(new Position(0, 1), new Cell(CellType.LAND));
-        positionToCellMap.put(new Position(0, 2), new Cell(CellType.WATER));
-        positionToCellMap.put(new Position(0, 3), new Cell(CellType.MOUNTAIN));
-
-        positionToCellMap.put(new Position(1, 0), new Cell(CellType.MOUNTAIN));
-        positionToCellMap.put(new Position(1, 1), new Cell(CellType.WATER));
-        positionToCellMap.put(new Position(1, 2), new Cell(CellType.LAND));
-        positionToCellMap.put(new Position(1, 3), new Cell(CellType.MUSHROOM));
-
-        positionToCellMap.put(new Position(2, 0), new Cell(CellType.LAND));
-        positionToCellMap.put(new Position(2, 1), new Cell(CellType.WATER));
-        positionToCellMap.put(new Position(2, 2), new Cell(CellType.MUSHROOM));
-        positionToCellMap.put(new Position(2, 3), new Cell(CellType.MOUNTAIN));
-
-        /* --- */
-
-        return new Board(boardSizeX, boardSizeY, positionToCellMap);
+        return gameInit(boardSizeX, boardSizeY, playerList);
     }
 
     /**
@@ -102,7 +56,7 @@ public class GameInitializer {
      *
      * @return список тестовых игроков
      */
-    private static List<Player> initTestPlayers(final int playersCount) {
+    private static @NotNull List<Player> initTestPlayers(final int playersCount) {
         int i = 0;
         final List<Player> playerList = new LinkedList<>();
         while (i < playersCount) {
@@ -119,8 +73,8 @@ public class GameInitializer {
      * @param playerList - список игроков
      * @return инициализированную мапу
      */
-    private static Map<Player, Set<Cell>> initMapWithPlayerKeySetValue(final List<Player> playerList,
-                                                                       final String log) {
+    private static @NotNull Map<Player, Set<Cell>> initMapWithPlayerKeySetValue(final @NotNull List<Player> playerList,
+                                                                                final @NotNull String log) {
         final Map<Player, Set<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
         playerList.forEach(player -> mapWithPlayerKey.put(player, new HashSet<>()));
         LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
@@ -133,8 +87,8 @@ public class GameInitializer {
      * @param playerList - список игроков
      * @return инициализированную мапу
      */
-    private static Map<Player, List<Cell>> initMapWithPlayerKeyListValue(final List<Player> playerList,
-                                                                         final String log) {
+    private static @NotNull Map<Player, List<Cell>> initMapWithPlayerKeyListValue(final @NotNull List<Player> playerList,
+                                                                                  final @NotNull String log) {
         final Map<Player, List<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
         playerList.forEach(player -> mapWithPlayerKey.put(player, new ArrayList<>()));
         LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
@@ -147,7 +101,8 @@ public class GameInitializer {
      *
      * @return raceCellTypeFeatures
      */
-    private static GameFeatures initGameFeatures() {
+    @Contract(" -> new")
+    private static @NotNull GameFeatures initGameFeatures() {
         final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = new HashMap<>();
         final List<Feature> impossibleCatchCellFeature = new ArrayList<>();
         impossibleCatchCellFeature.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
@@ -174,7 +129,7 @@ public class GameInitializer {
     private static void addRaceCellTypeFeaturesByRace(final Race race,
                                                       final Map<Pair<Race, CellType>, List<Feature>>
                                                               raceCellTypeFeatures,
-                                                      final List<Feature> impossibleCatchCellFeature) {
+                                                      final @NotNull List<Feature> impossibleCatchCellFeature) {
 
         if (race == Race.MUSHROOM) { // Грибы
             addRaceCellTypeFeaturesByRaceMushroom(raceCellTypeFeatures, impossibleCatchCellFeature);
@@ -207,9 +162,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceMushroom(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceMushroom(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                       raceCellTypeFeatures,
-                                                              final List<Feature> impossibleCatchCellFeature) {
+                                                              final @NotNull List<Feature> impossibleCatchCellFeature) {
         final List<Feature> mushroomFeatures = new ArrayList<>(2);
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
         mushroomFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -235,7 +190,7 @@ public class GameInitializer {
      *
      * @param raceCellTypeFeatures - мапа, которую нужно обновить
      */
-    private static void addRaceCellTypeFeaturesByRaceAmphibian(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceAmphibian(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                        raceCellTypeFeatures) {
         final List<Feature> amphibianFeatures = new ArrayList<>(1);
         amphibianFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -253,9 +208,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceElf(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceElf(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                  raceCellTypeFeatures,
-                                                         final List<Feature> impossibleCatchCellFeature) {
+                                                         final @NotNull List<Feature> impossibleCatchCellFeature) {
         final List<Feature> elfFeatures = new ArrayList<>(2);
         elfFeatures.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
         elfFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -278,9 +233,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceOrc(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceOrc(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                  raceCellTypeFeatures,
-                                                         final List<Feature> impossibleCatchCellFeature) {
+                                                         final @NotNull List<Feature> impossibleCatchCellFeature) {
         final List<Feature> orcFeatures = new ArrayList<>(2);
         orcFeatures.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, 1));
         orcFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -303,9 +258,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceGnome(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceGnome(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                    raceCellTypeFeatures,
-                                                           final List<Feature> impossibleCatchCellFeature) {
+                                                           final @NotNull List<Feature> impossibleCatchCellFeature) {
         final List<Feature> gnomeFeatures = new ArrayList<>(2);
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, 1));
         gnomeFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -328,9 +283,9 @@ public class GameInitializer {
      * @param raceCellTypeFeatures       - мапа, которую нужно обновить
      * @param impossibleCatchCellFeature - список из одного свойства невозможности захвата клетки
      */
-    private static void addRaceCellTypeFeaturesByRaceUndead(final Map<Pair<Race, CellType>, List<Feature>>
+    private static void addRaceCellTypeFeaturesByRaceUndead(final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                                                     raceCellTypeFeatures,
-                                                            final List<Feature> impossibleCatchCellFeature) {
+                                                            final @NotNull List<Feature> impossibleCatchCellFeature) {
 
         final List<Feature> undeadFeatures = new ArrayList<>(1);
         undeadFeatures.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
@@ -353,7 +308,7 @@ public class GameInitializer {
      *
      * @return пул рас
      */
-    private static List<Race> createRacesPool() {
+    private static @NotNull List<Race> createRacesPool() {
         final List<Race> racesPool = new ArrayList<>(Arrays.asList(Race.values()));
         LOGGER.debug("Pool of races created: {} ", racesPool);
         return racesPool;

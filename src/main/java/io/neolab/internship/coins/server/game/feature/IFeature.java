@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 
 /**
@@ -19,5 +21,5 @@ public interface IFeature extends Serializable {
     /**
      * @return тип особенности
      */
-    FeatureType getType();
+    @NotNull FeatureType getType();
 }

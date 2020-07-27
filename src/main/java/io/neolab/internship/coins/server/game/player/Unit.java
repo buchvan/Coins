@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neolab.internship.coins.utils.IdGenerator;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,6 +18,7 @@ public class Unit implements Serializable {
         this.id = IdGenerator.getCurrentId();
     }
 
+    @Contract(pure = true)
     @JsonCreator
     public Unit(@JsonProperty("id") final int id) {
         this.id = id;
@@ -25,8 +28,9 @@ public class Unit implements Serializable {
         this.id = unit.id;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
-    public Unit getCopy() {
+    public @NotNull Unit getCopy() {
         return new Unit(this.id);
     }
 
@@ -34,6 +38,7 @@ public class Unit implements Serializable {
         return id;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

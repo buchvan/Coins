@@ -13,6 +13,8 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.server.game.player.Unit;
 
 import java.io.Serializable;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 public class Game implements IGame, Serializable {
 
     @JsonProperty
-    private IBoard board;
+    private @NotNull IBoard board;
 
     @JsonProperty
     private int currentRound;
@@ -32,18 +34,18 @@ public class Game implements IGame, Serializable {
     @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
+    private final @NotNull Map<Player, Set<Cell>> feudalToCells; // игрок > множество клеток, приносящих ему монет
 
     @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
+    private final @NotNull Map<Player, List<Cell>> ownToCells; // игрок -> список клеток, которые он контролирует
 
     @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток, которые он контролирует,
-    // но которые не приносят ему монет
+    private final @NotNull Map<Player, List<Cell>> playerToTransitCells; // игрок -> список клеток,
+    // которые он контролирует, но которые не приносят ему монет
 
     /* Так можно найти список транзитных клетки одного игрока: */
 //        final List<Cell> transitCells = new LinkedList<>(ownToCells.get(player));
@@ -52,41 +54,46 @@ public class Game implements IGame, Serializable {
     @JsonProperty
     @JsonSerialize(keyUsing = PlayerSerializer.class)
     @JsonDeserialize(keyUsing = PlayerKeyDeserializer.class)
-    private final Map<Player, Set<Cell>> playerToAchievableCells; // игрок -> множество достижимых клеток за один ход
+    private final @NotNull Map<Player, Set<Cell>> playerToAchievableCells; // игрок -> множество достижимых за один ход
+    // клеток
 
     @JsonProperty
-    private final GameFeatures gameFeatures;
+    private final @NotNull GameFeatures gameFeatures;
 
     @JsonProperty
-    private final List<Race> racesPool;
+    private final @NotNull List<Race> racesPool;
 
     @JsonProperty
-    private final List<Player> players;
+    private final @NotNull List<Player> players;
 
     public Game() {
         this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
                 new LinkedList<>(), new LinkedList<>());
     }
 
-    public Game(final IBoard board, final Map<Player, Set<Cell>> feudalToCells,
-                final Map<Player, List<Cell>> ownToCells, final Map<Player, List<Cell>> playerToTransitCells,
-                final Map<Player, Set<Cell>> playerToAchievableCells,
-                final GameFeatures gameFeatures, final List<Race> racesPool, final List<Player> players) {
+    @Contract(pure = true)
+    public Game(final @NotNull IBoard board, final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                final @NotNull Map<Player, List<Cell>> ownToCells,
+                final @NotNull Map<Player, List<Cell>> playerToTransitCells,
+                final @NotNull Map<Player, Set<Cell>> playerToAchievableCells,
+                final @NotNull GameFeatures gameFeatures, final @NotNull List<Race> racesPool,
+                final @NotNull List<Player> players) {
 
         this(board, 0, feudalToCells, ownToCells, playerToTransitCells, playerToAchievableCells,
                 gameFeatures, racesPool, players);
     }
 
+    @Contract(pure = true)
     @JsonCreator
-    public Game(@JsonProperty("board") final IBoard board,
+    public Game(@NotNull @JsonProperty("board") final IBoard board,
                 @JsonProperty("currentRound") final int currentRound,
-                @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
-                @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
-                @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
-                @JsonProperty("playerToAchievableCells") final Map<Player, Set<Cell>> playerToAchievableCells,
-                @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
-                @JsonProperty("racesPool") final List<Race> racesPool,
-                @JsonProperty("players") final List<Player> players) {
+                @NotNull @JsonProperty("feudalToCells") final Map<Player, Set<Cell>> feudalToCells,
+                @NotNull @JsonProperty("ownToCells") final Map<Player, List<Cell>> ownToCells,
+                @NotNull @JsonProperty("playerToTransitCells") final Map<Player, List<Cell>> playerToTransitCells,
+                @NotNull @JsonProperty("playerToAchievableCells") final Map<Player, Set<Cell>> playerToAchievableCells,
+                @NotNull @JsonProperty("gameFeatures") final GameFeatures gameFeatures,
+                @NotNull @JsonProperty("racesPool") final List<Race> racesPool,
+                @NotNull @JsonProperty("players") final List<Player> players) {
         this.board = board;
         this.currentRound = currentRound;
         this.feudalToCells = feudalToCells;
@@ -98,9 +105,10 @@ public class Game implements IGame, Serializable {
         this.players = players;
     }
 
+    @Contract(pure = true)
     @JsonIgnore
     @Override
-    public Game getCopy() {
+    public @NotNull Game getCopy() {
         final IBoard board = this.board.getCopy();
         final List<Player> players = new LinkedList<>();
         this.players.forEach(player -> players.add(player.getCopy()));
@@ -202,12 +210,12 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
-    public IBoard getBoard() {
+    public @NotNull IBoard getBoard() {
         return board;
     }
 
     @Override
-    public void setBoard(final Board board) {
+    public void setBoard(final @NotNull IBoard board) {
         this.board = board;
     }
 
@@ -217,40 +225,41 @@ public class Game implements IGame, Serializable {
     }
 
     @Override
-    public Map<Player, Set<Cell>> getFeudalToCells() {
+    public @NotNull Map<Player, Set<Cell>> getFeudalToCells() {
         return feudalToCells;
     }
 
     @Override
-    public Map<Player, List<Cell>> getOwnToCells() {
+    public @NotNull  Map<Player, List<Cell>> getOwnToCells() {
         return ownToCells;
     }
 
     @Override
-    public Map<Player, List<Cell>> getPlayerToTransitCells() {
+    public @NotNull Map<Player, List<Cell>> getPlayerToTransitCells() {
         return playerToTransitCells;
     }
 
     @Override
-    public Map<Player, Set<Cell>> getPlayerToAchievableCells() {
+    public @NotNull Map<Player, Set<Cell>> getPlayerToAchievableCells() {
         return playerToAchievableCells;
     }
 
     @Override
-    public GameFeatures getGameFeatures() {
+    public @NotNull GameFeatures getGameFeatures() {
         return gameFeatures;
     }
 
     @Override
-    public List<Race> getRacesPool() {
+    public @NotNull List<Race> getRacesPool() {
         return racesPool;
     }
 
     @Override
-    public List<Player> getPlayers() {
+    public @NotNull List<Player> getPlayers() {
         return players;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
