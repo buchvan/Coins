@@ -147,11 +147,18 @@ public class Server implements IServer {
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (final IOException | InterruptedException exception) {
             LOGGER.error("Error!!!", exception);
-            serverSomethings.values()
-                    .forEach(serverSomethingsList -> serverSomethingsList
-                            .forEach(ServerSomething::downService));
-            serverSomethings.clear();
+            disconnectAllClients();
         }
+    }
+
+    /**
+     * Отключить всех клиентов
+     */
+    private void disconnectAllClients() {
+        serverSomethings.values()
+                .forEach(serverSomethingsList -> serverSomethingsList
+                        .forEach(ServerSomething::downService));
+        serverSomethings.clear();
     }
 
     /**
@@ -161,32 +168,45 @@ public class Server implements IServer {
         final ConcurrentLinkedQueue<ServerSomething> clients = new ConcurrentLinkedQueue<>();
         serverSomethings.put(gameId, clients);
         try (final LoggerFile ignored = new LoggerFile("game_" + gameId)) {
-            /* Инициализация */
-            connectClients(clients);
-            final List<Player> playerList = new LinkedList<>();
-            clients.forEach(serverSomething -> playerList.add(serverSomething.player));
-            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
-            GameLogger.printGameCreatedLog(game);
-
+            final IGame game = gameInit(clients);
             GameLogger.printStartGameChoiceLog();
             for (final ServerSomething serverSomething : clients) {
                 chooseRace(serverSomething, game);
             }
             gameLoop(game, clients);
-
-            /* Финализация */
-            final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
-            final GameOverMessage gameOverMessage =
-                    new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
-            for (final ServerSomething serverSomething : clients) {
-                serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
-                serverSomething.downService();
-            }
+            gameFinalization(game, clients);
         } catch (final CoinsException | ClassCastException | IOException exception) {
             LOGGER.error("Error!!!", exception);
-            clients.forEach(ServerSomething::downService);
-            serverSomethings.remove(gameId);
+            disconnectGameClients(gameId);
         }
+    }
+
+    /**
+     * Отключить всех клиентов игры
+     *
+     * @param gameId - id игры
+     */
+    private void disconnectGameClients(final int gameId) {
+        serverSomethings.get(gameId).forEach(ServerSomething::downService);
+        serverSomethings.remove(gameId);
+    }
+
+    /**
+     * Инициализация игры
+     *
+     * @param clients - клиенты игры
+     * @return инициализированную игру
+     * @throws IOException    при ошибке общения с каким-либо клиентом
+     * @throws CoinsException при ошибке инициализации игры
+     */
+    private IGame gameInit(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
+            throws IOException, CoinsException {
+        connectClients(clients);
+        final List<Player> playerList = new LinkedList<>();
+        clients.forEach(serverSomething -> playerList.add(serverSomething.player));
+        final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
+        GameLogger.printGameCreatedLog(game);
+        return game;
     }
 
     /**
@@ -215,6 +235,23 @@ public class Server implements IServer {
 
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(), game.getOwnToCells(),
                     game.getFeudalToCells());
+        }
+    }
+
+    /**
+     * Финализация игры
+     *
+     * @param game    - игра
+     * @param clients - клиенты игры
+     */
+    private void gameFinalization(final @NotNull IGame game, final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
+            throws CoinsException, IOException {
+        final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
+        final GameOverMessage gameOverMessage =
+                new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
+        for (final ServerSomething serverSomething : clients) {
+            serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
+            serverSomething.downService();
         }
     }
 
