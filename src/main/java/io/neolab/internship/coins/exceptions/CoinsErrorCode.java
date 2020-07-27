@@ -1,6 +1,8 @@
 package io.neolab.internship.coins.exceptions;
 
-public enum ErrorCode {
+import org.jetbrains.annotations.NotNull;
+
+public enum CoinsErrorCode {
     CLIENT_CREATION_FAILED("Client creation failed"),
     CLIENT_DISCONNECTION("Client disconnection"),
     WRONG_BOARD_SIZES("Wrong board sizes"),
@@ -13,20 +15,19 @@ public enum ErrorCode {
     ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION("No place for distribution"),
     ANSWER_VALIDATION_NOT_ENOUGH_UNITS("No enough units for distribution"),
     PLAYERS_LIST_IS_NULL("List of players is null"),
-    MESSAGE_TYPE_NOT_FOUND("Type of message not found"),
     QUESTION_TYPE_NOT_FOUND("Type of question not found"),
     ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE("Impossible enter to cell"),
     ANSWER_VALIDATION_UNREACHABLE_CELL("Cell is unreachable for capture"),
     GAME_OVER("Game over"),
     ;
 
-    private final String message;
+    private final @NotNull String message;
 
-    ErrorCode(final String message) {
+    CoinsErrorCode(final @NotNull String message) {
         this.message = message;
     }
 
-    public String getMessage() {
+    public @NotNull String getMessage() {
         return message;
     }
 }

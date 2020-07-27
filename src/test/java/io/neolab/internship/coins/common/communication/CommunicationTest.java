@@ -22,6 +22,7 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameInitializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -98,7 +99,7 @@ public class CommunicationTest {
         assertEquals(expected, actual);
     }
 
-    private PlayerQuestion getTestPlayerQuestion() throws CoinsException {
+    private @NotNull PlayerQuestion getTestPlayerQuestion() throws CoinsException {
         final IGame game = GameInitializer.gameInit(3, 4, 2);
 
         game.getPlayerToTransitCells().forEach((player, cells) -> cells.add(new Cell(CellType.MUSHROOM)));

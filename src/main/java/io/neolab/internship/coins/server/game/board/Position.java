@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +29,7 @@ public class Position implements Serializable {
      * @param position - позиция, чьих соседей мы хотим узнать
      * @return список соседних с position позиций
      */
-    public static List<Position> getAllNeighboringPositions(final Position position) {
+    public static @NotNull List<Position> getAllNeighboringPositions(final @NotNull Position position) {
         final List<Position> neighboringPositions = new LinkedList<>();
         int strIndex = -1;
         int colIndex;
@@ -47,11 +50,13 @@ public class Position implements Serializable {
         return neighboringPositions;
     }
 
+    @Contract(pure = true)
     public Position() {
         this(0, 0);
     }
 
     @JsonCreator
+    @Contract(pure = true)
     public Position(@JsonProperty("x") final int x,
                     @JsonProperty("y") final int y) {
         this.x = x;
@@ -59,7 +64,7 @@ public class Position implements Serializable {
     }
 
     @JsonIgnore
-    public Position getCopy() {
+    public @NotNull Position getCopy() {
         return new Position(this.x, this.y);
     }
 
@@ -71,6 +76,7 @@ public class Position implements Serializable {
         return y;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

@@ -1,11 +1,13 @@
 package io.neolab.internship.coins.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.Arrays;
 
 public class LogCleaner {
-    private static final String logback = "src/main/resources/logback.xml";
-    private static final String propertyName = "LOG_DIRECTORY";
+    private static final @NotNull String logback = "./src/main/resources/logback.xml";
+    private static final @NotNull String propertyName = "LOG_DIRECTORY";
     private static final int LOGS_MAX_COUNT = 10;
 
     /**
@@ -14,7 +16,7 @@ public class LogCleaner {
      * @return значение свойства propertyName
      * @throws IOException при ошибке чтения из файла logback
      */
-    private static String loadLogDirectory() throws IOException {
+    private static @NotNull String loadLogDirectory() throws IOException {
         final String searchingLine = "    <property name=\"" + propertyName + "\" ";
         String line;
         try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(logback))) {
@@ -30,6 +32,7 @@ public class LogCleaner {
      *
      * @throws IOException при ошибке чтения из файла logback
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void clean() throws IOException {
         final String LOG_DIRECTORY = loadLogDirectory();
         final File logDir = new File(LOG_DIRECTORY);

@@ -69,6 +69,7 @@ public class TestUtils {
             cellUnits.add(new Unit());
         }
 
-        cell.setUnits(cellUnits);
+        cell.getUnits().clear();
+        cell.getUnits().addAll(cellUnits);
     }
 }

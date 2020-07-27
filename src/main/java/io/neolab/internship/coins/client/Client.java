@@ -8,9 +8,10 @@ import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.ErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
+import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.utils.LoggerFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +22,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client implements IClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final String IP = "localhost";
+    private static final @NotNull String IP = "localhost";
     private static final int PORT = Server.PORT;
 
-    private final String ip; // ip адрес клиента
-    private final InetAddress ipAddress;
+    private final @NotNull String ip; // ip адрес клиента
+    private final @NotNull InetAddress ipAddress;
     private final int port; // порт соединения
 
     private Socket socket = null;
@@ -35,10 +36,10 @@ public class Client implements IClient {
     private BufferedReader in = null; // поток чтения из сокета
     private BufferedWriter out = null; // поток записи в сокет
 
-    private String nickname = "";
+    private @NotNull String nickname = "";
 
 
-    private final IBot simpleBot;
+    private final @NotNull IBot simpleBot;
 
     /**
      * Для создания необходимо принять адрес и номер порта
@@ -46,19 +47,19 @@ public class Client implements IClient {
      * @param ip   ip адрес клиента
      * @param port порт соединения
      */
-    private Client(final String ip, final int port) throws CoinsException {
+    private Client(final @NotNull String ip, final int port) throws CoinsException {
         try {
             this.ip = ip;
             this.ipAddress = InetAddress.getByName(ip);
             this.port = port;
             this.simpleBot = new SimpleBot();
         } catch (final UnknownHostException exception) {
-            throw new CoinsException(ErrorCode.CLIENT_CREATION_FAILED);
+            throw new CoinsException(CoinsErrorCode.CLIENT_CREATION_FAILED);
         }
     }
 
     @Override
-    public Answer getAnswer(final PlayerQuestion playerQuestion) throws CoinsException {
+    public @NotNull Answer getAnswer(final @NotNull PlayerQuestion playerQuestion) throws CoinsException {
         switch (playerQuestion.getPlayerQuestionType()) {
             case CATCH_CELL: {
                 LOGGER.info("Catch cell question: {} ", playerQuestion);
@@ -81,13 +82,13 @@ public class Client implements IClient {
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             default: {
-                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+                throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
             }
         }
     }
 
     @Override
-    public void processMessage(final ServerMessage serverMessage) throws CoinsException, IOException {
+    public void processMessage(final @NotNull ServerMessage serverMessage) throws CoinsException, IOException {
         LOGGER.info("Input message: {} ", serverMessage);
         switch (serverMessage.getServerMessageType()) {
             case NICKNAME: {
@@ -118,12 +119,13 @@ public class Client implements IClient {
             case GAME_OVER: {
                 final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
                 GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                throw new CoinsException(ErrorCode.GAME_OVER);
+                throw new CoinsException(CoinsErrorCode.GAME_OVER);
             }
             default: {
                 throw new CoinsException(ErrorCode.MESSAGE_TYPE_NOT_FOUND);
             }
         }
+        throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     /**
@@ -168,7 +170,7 @@ public class Client implements IClient {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
         } catch (final IOException | CoinsException e) {
-            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != ErrorCode.GAME_OVER) {
+            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != CoinsErrorCode.GAME_OVER) {
                 LOGGER.error("Error", e);
             }
             sendDisconnectMessage();
@@ -193,7 +195,7 @@ public class Client implements IClient {
      * @param json - строка (json), которую нужно отправить
      * @throws IOException при ошибке отправки сообщения
      */
-    private void sendMessage(final String json) throws IOException {
+    private void sendMessage(final@NotNull String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
