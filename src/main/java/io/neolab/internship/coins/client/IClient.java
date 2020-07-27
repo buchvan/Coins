@@ -10,6 +10,7 @@ import java.io.IOException;
 public interface IClient {
     /**
      * Взять ответ на вопрос
+     *
      * @param question - вопрос
      * @return ответ на вопрос
      * @throws CoinsException в случае неизвестного типа вопроса
@@ -17,9 +18,11 @@ public interface IClient {
     Answer getAnswer(final PlayerQuestion question) throws CoinsException;
 
     /**
-     * Прочитать сообщение от сервера
-     * @param message - сообщение
+     * Обработать сообщение от сервера
+     *
+     * @param message - сообщение от сервера
      * @throws CoinsException в случае неизвестного типа сообщения
+     * @throws IOException    при ошибке отправки ответа серверу
      */
-    void readMessage(final ServerMessage message) throws CoinsException, IOException;
+    void processMessage(final ServerMessage message) throws CoinsException, IOException;
 }

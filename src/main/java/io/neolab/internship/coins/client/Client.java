@@ -20,8 +20,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import static io.neolab.internship.coins.common.message.server.ServerMessageType.*;
-
 public class Client implements IClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
@@ -43,7 +41,7 @@ public class Client implements IClient {
     private final IBot simpleBot;
 
     /**
-     * для создания необходимо принять адрес и номер порта
+     * Для создания необходимо принять адрес и номер порта
      *
      * @param ip   ip адрес клиента
      * @param port порт соединения
@@ -82,21 +80,55 @@ public class Client implements IClient {
                 return new ChangeRaceAnswer(
                         simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
+            default: {
+                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+            }
         }
-        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
     @Override
-    public void readMessage(final ServerMessage serverMessage) throws CoinsException {
-        if (serverMessage.getServerMessageType() == GAME_OVER) {
-            LOGGER.info("Game over question: {} ", serverMessage);
-            final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
-            GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-            throw new CoinsException(ErrorCode.GAME_OVER);
+    public void processMessage(final ServerMessage serverMessage) throws CoinsException, IOException {
+        LOGGER.info("Input message: {} ", serverMessage);
+        switch (serverMessage.getServerMessageType()) {
+            case NICKNAME: {
+                final Answer answer = new NicknameAnswer(nickname);
+                LOGGER.info("Output answer: {} ", answer);
+                sendMessage(Communication.serializeClientMessage(answer));
+                break;
+            }
+            case NICKNAME_DUPLICATE: {
+                tryAgainEnterNickname();
+                final Answer answer = new NicknameAnswer(nickname);
+                LOGGER.info("Output answer: {} ", answer);
+                sendMessage(Communication.serializeClientMessage(answer));
+                break;
+            }
+            case CONFIRMATION_OF_READINESS: {
+                final Answer answer = new Answer(ClientMessageType.GAME_READY);
+                LOGGER.info("Output answer: {} ", answer);
+                sendMessage(Communication.serializeClientMessage(answer));
+                break;
+            }
+            case GAME_QUESTION: {
+                final Answer answer = getAnswer((PlayerQuestion) serverMessage);
+                LOGGER.info("Output answer: {} ", answer);
+                sendMessage(Communication.serializeClientMessage(answer));
+                break;
+            }
+            case GAME_OVER: {
+                final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
+                GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
+                throw new CoinsException(ErrorCode.GAME_OVER);
+            }
+            default: {
+                throw new CoinsException(ErrorCode.MESSAGE_TYPE_NOT_FOUND);
+            }
         }
-        throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
     }
 
+    /**
+     * Запуск клиента
+     */
     private void startClient() {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
@@ -105,9 +137,7 @@ public class Client implements IClient {
                 LOGGER.error("Socket failed");
                 return;
             }
-            keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            initIO();
             LOGGER.info("Client started, ip: {}, port: {}", ip, port);
             enterNickname();
             play();
@@ -117,42 +147,25 @@ public class Client implements IClient {
         }
     }
 
+    /**
+     * Инициализация средств ввода-вывода
+     *
+     * @throws IOException при ошибке инициализации
+     */
+    private void initIO() throws IOException {
+        keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+    }
+
+    /**
+     * Основной game loop
+     */
     @SuppressWarnings("InfiniteLoopStatement")
     private void play() {
         try {
             while (true) {
-                final ServerMessage serverMessage =
-                        Communication.deserializeServerMessage(in.readLine()); // ждем сообщения с сервера
-                LOGGER.info("Input question: {} ", serverMessage);
-                if (serverMessage.getServerMessageType() == GAME_QUESTION) {
-                    final Answer answer = getAnswer((PlayerQuestion) serverMessage);
-                    LOGGER.info("Output answer: {} ", answer);
-                    sendMessage(Communication.serializeClientMessage(answer));
-                    continue;
-                } else if (serverMessage.getServerMessageType() == CONFIRMATION_OF_READINESS) {
-                    LOGGER.info("Nickname question: {}", serverMessage);
-                    final Answer answer = new Answer(ClientMessageType.GAME_READY);
-                    LOGGER.info("Output answer: {} ", answer);
-                    sendMessage(Communication.serializeClientMessage(answer));
-                    continue;
-                } else if (serverMessage.getServerMessageType() == NICKNAME) {
-                    LOGGER.info("Nickname question: {}", serverMessage);
-                    final Answer answer = new NicknameAnswer(nickname);
-                    LOGGER.info("Output answer: {} ", answer);
-                    sendMessage(Communication.serializeClientMessage(answer));
-                    continue;
-                } else if (serverMessage.getServerMessageType() == NICKNAME_DUPLICATE) {
-                    LOGGER.info("Nickname duplicate question: {}", serverMessage);
-                    tryAgainEnterNickname();
-                    final Answer answer = new NicknameAnswer(nickname);
-                    LOGGER.info("Output answer: {} ", answer);
-                    sendMessage(Communication.serializeClientMessage(answer));
-                    continue;
-                } else if (serverMessage.getServerMessageType() == GAME_OVER) {
-                    readMessage(serverMessage);
-                    continue;
-                }
-                throw new CoinsException(ErrorCode.QUESTION_TYPE_NOT_FOUND);
+                processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
         } catch (final IOException | CoinsException e) {
             if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != ErrorCode.GAME_OVER) {
@@ -163,6 +176,9 @@ public class Client implements IClient {
         }
     }
 
+    /**
+     * Уведомить сервер об отключении
+     */
     private void sendDisconnectMessage() {
         try {
             sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
@@ -171,13 +187,19 @@ public class Client implements IClient {
         }
     }
 
+    /**
+     * Отправить сообщение серверу
+     *
+     * @param json - строка (json), которую нужно отправить
+     * @throws IOException при ошибке отправки сообщения
+     */
     private void sendMessage(final String json) throws IOException {
         out.write(json + "\n");
         out.flush();
     }
 
     /**
-     * закрытие сокета
+     * Закрытие сокета
      */
     private void downService() {
         try {
@@ -198,6 +220,10 @@ public class Client implements IClient {
         }
     }
 
+    /**
+     * Определение никнэйма
+     * @throws IOException при ошибке ввода никнэйма
+     */
     private void enterNickname() throws IOException {
         System.out.println("Welcome to the game!");
         while (nickname.isEmpty()) {
@@ -207,6 +233,10 @@ public class Client implements IClient {
         }
     }
 
+    /**
+     * Попытка заново ввести никнэйм
+     * @throws IOException при ошибке ввода никнэйма
+     */
     private void tryAgainEnterNickname() throws IOException {
         String nickname;
         do {
