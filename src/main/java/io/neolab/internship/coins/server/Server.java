@@ -198,7 +198,9 @@ public class Server implements IServer {
      * @param clients - очередь клиентов игры
      * @throws IOException при ошибке подключения
      */
-    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients) throws IOException, CoinsException {
+    private synchronized void connectClients(final ConcurrentLinkedQueue<ServerSomething> clients)
+            throws IOException, CoinsException {
+
         try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
             int currentClientsCount = 1;
             while (currentClientsCount <= CLIENTS_COUNT) {
