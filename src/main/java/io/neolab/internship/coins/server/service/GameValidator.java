@@ -97,8 +97,11 @@ class GameValidator {
             throw new CoinsException(ErrorCode.ANSWER_VALIDATION_NO_AVAILABLE_UNITS);
         }
         final List<Unit> units = answer.getResolution().getSecond();
-        if (controlledCells.contains(cellForAttempt) && units.size() < cellForAttempt.getType().getCatchDifficulty()) {
-            throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
+        if (controlledCells.contains(cellForAttempt)) {
+            if (units.size() < cellForAttempt.getType().getCatchDifficulty()) {
+                throw new CoinsException(ErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
+            }
+            return;
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, cellForAttempt);
