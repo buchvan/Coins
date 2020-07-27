@@ -144,6 +144,7 @@ public class Client implements IClient {
             play();
         } catch (final IOException e) {
             LOGGER.error("Error", e);
+            sendDisconnectMessage();
             downService();
         }
     }
