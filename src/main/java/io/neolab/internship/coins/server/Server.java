@@ -372,15 +372,28 @@ public class Server implements IServer {
                 if (answer.isDeclineRace()) {
                     final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                             PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
-                    serverSomething.send(Communication.serializeServerMessage(changeRaceQuestion));
-                    GameAnswerProcessor.process(changeRaceQuestion,
-                            (Answer) Communication.deserializeClientMessage(serverSomething.read()));
+                    processChangeRace(changeRaceQuestion, serverSomething);
                 }
                 break;
             } catch (final CoinsException ignored) {
                 // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
+    }
+
+    /**
+     * Обработка смены расы игроком клиента
+     *
+     * @param changeRaceQuestion - вопрос клиенту о смене расы
+     * @param serverSomething    - клиент
+     * @throws IOException    в случае ошибки общения с клиентом
+     * @throws CoinsException при невалидном ответе от клиента
+     */
+    private void processChangeRace(final @NotNull PlayerQuestion changeRaceQuestion,
+                                   final @NotNull ServerSomething serverSomething) throws IOException, CoinsException {
+        serverSomething.send(Communication.serializeServerMessage(changeRaceQuestion));
+        GameAnswerProcessor.process(changeRaceQuestion,
+                (Answer) Communication.deserializeClientMessage(serverSomething.read()));
     }
 
     /**
@@ -396,25 +409,49 @@ public class Server implements IServer {
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
                 player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        processCaptureCell(player, serverSomething, game);
+    }
+
+    /**
+     * Процесс взаимодействия с клиентом при захвате клеток
+     *
+     * @param player          - текущий игрок
+     * @param serverSomething - клиент текущего игрока
+     * @param game            - игра
+     * @throws IOException в случае ошибки общения с клиентом
+     */
+    private void processCaptureCell(final @NotNull Player player, final @NotNull ServerSomething serverSomething,
+                                    final @NotNull IGame game) throws IOException {
         while (true) {
             try {
                 PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                         PlayerQuestionType.CATCH_CELL, game, player);
-                serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-                CatchCellAnswer catchCellAnswer =
-                        (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
+                CatchCellAnswer catchCellAnswer = getCatchCellAnswer(catchCellQuestion, serverSomething);
                 while (catchCellAnswer.getResolution() != null) {
                     GameAnswerProcessor.process(catchCellQuestion, catchCellAnswer);
                     catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                             PlayerQuestionType.CATCH_CELL, game, player);
-                    serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
-                    catchCellAnswer = (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
+                    catchCellAnswer = getCatchCellAnswer(catchCellQuestion, serverSomething);
                 }
                 break;
             } catch (final CoinsException ignored) {
                 // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
+    }
+
+    /**
+     * Взять ответ от клиента на вопрос захвата клетки
+     *
+     * @param catchCellQuestion - вопрос о захвате клетки
+     * @param serverSomething   - клиент
+     * @return ответ от клиента на вопрос захвата клетки
+     * @throws IOException при ошибке соединения с клиентом
+     */
+    private CatchCellAnswer getCatchCellAnswer(final @NotNull PlayerQuestion catchCellQuestion,
+                                               final @NotNull ServerSomething serverSomething) throws IOException {
+        serverSomething.send(Communication.serializeServerMessage(catchCellQuestion));
+        return (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
     }
 
     /**
@@ -430,18 +467,30 @@ public class Server implements IServer {
         final Player player = serverSomething.player;
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
                 game.getOwnToCells().get(player));
-        if (!game.getOwnToCells().get(player).isEmpty()) {
-            while (true) {
-                try {
-                    final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                            PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
-                    serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
-                    GameAnswerProcessor.process(distributionQuestion,
-                            (Answer) Communication.deserializeClientMessage(serverSomething.read()));
-                    break;
-                } catch (final CoinsException ignored) {
-                    // TODO: сообщение клиенту, что он что-то сделал неправильно
-                }
+        if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
+            processDistributionUnits(serverSomething, game);
+        }
+    }
+
+    /**
+     * Процесс взаимодействия с клиентом при распределении войск
+     *
+     * @param serverSomething - клиент текущего игрока
+     * @param game            - игра
+     * @throws IOException в случае ошибки общения с клиентом
+     */
+    private void processDistributionUnits(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
+            throws IOException {
+        while (true) {
+            try {
+                final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                        PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
+                serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
+                GameAnswerProcessor.process(distributionQuestion,
+                        (Answer) Communication.deserializeClientMessage(serverSomething.read()));
+                break;
+            } catch (final CoinsException ignored) {
+                // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
     }
