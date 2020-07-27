@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.utils;
 
-import io.neolab.internship.coins.server.service.GameLogger;
+import io.neolab.internship.coins.server.service.logger.GameLogger;
 import org.slf4j.MDC;
 
 import java.util.Date;

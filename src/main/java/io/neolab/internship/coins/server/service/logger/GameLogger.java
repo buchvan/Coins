@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.service;
+package io.neolab.internship.coins.server.service.logger;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;

@@ -10,6 +10,7 @@ import io.neolab.internship.coins.server.game.feature.FeatureType;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.service.logger.GameLogger;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.ListProcessor;
 import org.jetbrains.annotations.Contract;

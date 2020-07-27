@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.service;
+package io.neolab.internship.coins.server.service.logger;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
