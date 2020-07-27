@@ -7,7 +7,6 @@ import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -172,7 +171,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchLandCellSucceedTest() throws CoinsException, UtilsException {
+    public void catchLandCellSucceedTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
@@ -194,7 +193,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchMountainCellSucceedTest() throws CoinsException, UtilsException {
+    public void catchMountainCellSucceedTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
@@ -216,7 +215,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchMushroomCellSucceedTest() throws CoinsException, UtilsException {
+    public void catchMushroomCellSucceedTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
@@ -238,7 +237,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchWaterCellByAmphibianSucceedTest() throws CoinsException, UtilsException {
+    public void catchWaterCellByAmphibianSucceedTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.AMPHIBIAN);
@@ -260,7 +259,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchWaterCellNotByAmphibianTest() throws CoinsException, UtilsException {
+    public void catchWaterCellNotByAmphibianTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.ORC);
@@ -283,7 +282,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchCellByOrc() throws CoinsException, UtilsException {
+    public void catchCellByOrc() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.ORC);
@@ -304,7 +303,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchOtherPlayerCell() throws CoinsException, UtilsException {
+    public void catchOtherPlayerCell() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.UNDEAD);
@@ -330,7 +329,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchGnomeCellByGnome() throws CoinsException, UtilsException {
+    public void catchGnomeCellByGnome() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
@@ -356,7 +355,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchGnomeCellByGnomeOwnersTest() throws CoinsException, UtilsException {
+    public void catchGnomeCellByGnomeOwnersTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
@@ -383,7 +382,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchCellCheckOpponentUnitsDeadTest() throws CoinsException, UtilsException {
+    public void catchCellCheckOpponentUnitsDeadTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = game.getPlayers().get(0);
         player.setRace(Race.GNOME);
@@ -410,7 +409,7 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
-    public void catchNeutralCellSucceedTest() throws CoinsException, UtilsException {
+    public void catchNeutralCellSucceedTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);

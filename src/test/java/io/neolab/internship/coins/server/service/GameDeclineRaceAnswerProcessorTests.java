@@ -7,7 +7,6 @@ import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -45,7 +44,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueRightControlledCellsTest() throws CoinsException, UtilsException {
+    public void declineRaceTrueRightControlledCellsTest() throws CoinsException {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
@@ -60,7 +59,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueRightFeudalCellsOwnersTest() throws CoinsException, UtilsException {
+    public void declineRaceTrueRightFeudalCellsOwnersTest() throws CoinsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -79,7 +78,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueFeudalCellsTest() throws CoinsException, UtilsException {
+    public void declineRaceTrueFeudalCellsTest() throws CoinsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -100,7 +99,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightControlledCellsTest() throws CoinsException, UtilsException {
+    public void declineRaceFalseRightControlledCellsTest() throws CoinsException {
         final List<Cell> controlledCells = new LinkedList<>();
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
@@ -115,7 +114,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseRightFeudalCellsOwnersTest() throws CoinsException, UtilsException {
+    public void declineRaceFalseRightFeudalCellsOwnersTest() throws CoinsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -134,7 +133,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceFalseFeudalCellsTest() throws CoinsException, UtilsException {
+    public void declineRaceFalseFeudalCellsTest() throws CoinsException {
         final List<Cell> feudalCells = new LinkedList<>();
         final Cell feudalCell = new Cell(CellType.MOUNTAIN);
         final Cell feudalCell1 = new Cell(CellType.MUSHROOM);
@@ -155,7 +154,7 @@ public class GameDeclineRaceAnswerProcessorTests {
     }
 
     @Test
-    public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException, UtilsException {
+    public void declineRaceTrueSavedUnitsCellsTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Position somePosition = getSomeBoardPosition(game.getBoard().getPositionToCellMap());

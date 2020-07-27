@@ -7,7 +7,6 @@ import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.question.*;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -184,7 +183,7 @@ public class Server implements IServer {
                 serverSomething.send(Communication.serializeServerMessage(gameOverMessage));
                 serverSomething.downService();
             }
-        } catch (final CoinsException | ClassCastException | IOException | UtilsException exception) {
+        } catch (final CoinsException | ClassCastException | IOException exception) {
             LOGGER.error("Error!!!", exception);
             clients.forEach(ServerSomething::downService);
             serverSomethings.remove(gameId);
@@ -245,7 +244,7 @@ public class Server implements IServer {
      * @throws CoinsException из GameAnswerProcessor
      */
     private void chooseRace(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
-            throws IOException, CoinsException, UtilsException {
+            throws IOException, CoinsException {
 
         final PlayerQuestion playerQuestion
                 = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -300,7 +299,7 @@ public class Server implements IServer {
                             (Answer) Communication.deserializeClientMessage(serverSomething.read()));
                 }
                 break;
-            } catch (final CoinsException | UtilsException ignored) {
+            } catch (final CoinsException ignored) {
                 // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
@@ -334,7 +333,7 @@ public class Server implements IServer {
                     catchCellAnswer = (CatchCellAnswer) Communication.deserializeClientMessage(serverSomething.read());
                 }
                 break;
-            } catch (final CoinsException | UtilsException ignored) {
+            } catch (final CoinsException ignored) {
                 // TODO: сообщение клиенту, что он что-то сделал неправильно
             }
         }
@@ -362,7 +361,7 @@ public class Server implements IServer {
                     GameAnswerProcessor.process(distributionQuestion,
                             (Answer) Communication.deserializeClientMessage(serverSomething.read()));
                     break;
-                } catch (final CoinsException | UtilsException ignored) {
+                } catch (final CoinsException ignored) {
                     // TODO: сообщение клиенту, что он что-то сделал неправильно
                 }
             }

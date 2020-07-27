@@ -8,7 +8,6 @@ import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.question.PlayerQuestion;
 import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -42,7 +41,7 @@ public class GameAnswerProcessor {
      * @throws CoinsException в случае невалидности ответа
      */
     public static void process(final @NotNull PlayerQuestion playerQuestion, final @Nullable Answer answer)
-            throws CoinsException, UtilsException {
+            throws CoinsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
         if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DECLINE_RACE) {
@@ -174,7 +173,7 @@ public class GameAnswerProcessor {
                                            final @NotNull Map<Player, Set<Cell>> feudalToCells,
                                            final @NotNull List<Cell> transitCells,
                                            final @NotNull Set<Cell> achievableCells)
-            throws CoinsException, UtilsException {
+            throws CoinsException {
 
         final CatchCellAnswer catchCellAnswer = (CatchCellAnswer) answer;
         LOGGER.debug("Catch cell answer: {} ", catchCellAnswer);
@@ -212,7 +211,7 @@ public class GameAnswerProcessor {
                                       final @NotNull Map<Player, List<Cell>> ownToCells,
                                       final @NotNull Map<Player, Set<Cell>> feudalToCells,
                                       final @NotNull List<Cell> transitCells,
-                                      final @NotNull Set<Cell> achievableCells) throws UtilsException {
+                                      final @NotNull Set<Cell> achievableCells) {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {

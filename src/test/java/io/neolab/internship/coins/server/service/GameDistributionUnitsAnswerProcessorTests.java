@@ -7,7 +7,6 @@ import io.neolab.internship.coins.common.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.question.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.exceptions.UtilsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
@@ -80,7 +79,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
     }
 
     @Test
-    public void distributionUnitsRightUnitsInsertionsToCellTest() throws CoinsException, UtilsException {
+    public void distributionUnitsRightUnitsInsertionsToCellTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
@@ -106,7 +105,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
     }
 
     @Test
-    public void distributionUnitsNewUnitsBecomeNotUnavailable() throws CoinsException, UtilsException {
+    public void distributionUnitsNewUnitsBecomeNotUnavailable() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
 
         final Player player = getSomePlayer(game);
