@@ -13,7 +13,7 @@ import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameAnswerProcessor;
-import io.neolab.internship.coins.server.service.logger.GameLogger;
+import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.server.service.*;
 import io.neolab.internship.coins.utils.LogCleaner;
@@ -247,7 +247,7 @@ public class Server implements IServer {
      */
     private void gameFinalization(final @NotNull IGame game, final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
             throws CoinsException, IOException {
-        final List<Player> winners = GameFinalizer.finalize(game.getPlayers());
+        final List<Player> winners = GameFinalizer.finalization(game.getPlayers());
         final GameOverMessage gameOverMessage =
                 new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
         for (final ServerSomething serverSomething : clients) {

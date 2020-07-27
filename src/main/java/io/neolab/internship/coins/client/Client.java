@@ -12,7 +12,7 @@ import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.Server;
-import io.neolab.internship.coins.server.service.logger.GameLogger;
+import io.neolab.internship.coins.server.service.GameLogger;
 import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.utils.LoggerFile;
 import org.slf4j.Logger;

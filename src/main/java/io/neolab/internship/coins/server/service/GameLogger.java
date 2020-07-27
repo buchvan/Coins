@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.server.service.logger;
+package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Класс, содержащий основные функции вывода логов
+ */
 public class GameLogger {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(GameLogger.class);
 

@@ -8,8 +8,6 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.*;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.service.logger.GameLogger;
-import io.neolab.internship.coins.server.service.logger.GameLoggerFile;
 import io.neolab.internship.coins.utils.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,13 +33,13 @@ class SelfPlay {
      * - Финализатор (результат игры)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+        try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
-            GameFinalizer.finalize(game.getPlayers());
+            GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
