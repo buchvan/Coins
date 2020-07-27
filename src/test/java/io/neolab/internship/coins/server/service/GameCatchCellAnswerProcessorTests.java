@@ -66,7 +66,7 @@ public class GameCatchCellAnswerProcessorTests {
         final Position somePosition = getSomeBoardPosition(board.getPositionToCellMap());
         final Cell someCell = board.getCellByPosition(somePosition);
         someCell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(someCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(someCell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
@@ -87,7 +87,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, game.getBoard());
         landCell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
         setCellAsControlled(landCell, game, player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -110,7 +110,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell mushroomCell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
         mushroomCell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(mushroomCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(mushroomCell));
         setCellAsControlled(mushroomCell, game, player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -133,7 +133,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell mountainCell = getCellFromBoardByCellType(CellType.MOUNTAIN, board);
         mountainCell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(mountainCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(mountainCell));
         setCellAsControlled(mountainCell, game, player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -155,7 +155,7 @@ public class GameCatchCellAnswerProcessorTests {
 
         final IBoard board = game.getBoard();
         final Cell waterCell = getCellFromBoardByCellType(CellType.WATER, board);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(waterCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(waterCell));
         waterCell.setFeudal(player);
         setCellAsControlled(waterCell, game, player);
 
@@ -179,12 +179,12 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
         landCell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), 2));
+                createCatchCellAnswer(board.getPositionByCell(landCell), player, 2));
         assertEquals(player, landCell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(landCell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
@@ -201,12 +201,12 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MOUNTAIN, board);
         cell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 3));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 3));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -222,13 +222,13 @@ public class GameCatchCellAnswerProcessorTests {
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
         cell.setFeudal(player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 2));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 2));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -245,12 +245,12 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.WATER, board);
         cell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 2));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 2));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -267,12 +267,12 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.WATER, board);
         cell.setFeudal(player);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 2));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 2));
         assertNull(cell.getFeudal());
         assertFalse(game.getFeudalToCells().get(player).contains(cell));
         assertTrue(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -289,12 +289,12 @@ public class GameCatchCellAnswerProcessorTests {
 
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 1));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 1));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -315,12 +315,12 @@ public class GameCatchCellAnswerProcessorTests {
         setCellAsControlled(cell, game, otherPlayer);
         cell.setFeudal(otherPlayer);
         setUnitToCell(cell, 2);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 5));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 5));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -337,7 +337,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
         setUnitToCell(cell, 2);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final Player otherPlayer = game.getPlayers().get(1);
         otherPlayer.setRace(Race.GNOME);
@@ -346,7 +346,7 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 6));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 6));
         assertEquals(player, cell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(cell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(cell));
@@ -363,7 +363,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
         setUnitToCell(cell, 2);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final Player otherPlayer = game.getPlayers().get(1);
         otherPlayer.setRace(Race.GNOME);
@@ -376,7 +376,7 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 6));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 6));
         assertTrue(controlledCells.isEmpty());
     }
 
@@ -390,7 +390,7 @@ public class GameCatchCellAnswerProcessorTests {
         final IBoard board = game.getBoard();
         final Cell cell = getCellFromBoardByCellType(CellType.MUSHROOM, board);
         setUnitToCell(cell, 2);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(cell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(cell));
 
         final Player otherPlayer = game.getPlayers().get(1);
         otherPlayer.setRace(Race.GNOME);
@@ -402,7 +402,7 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(cell), 6));
+                createCatchCellAnswer(board.getPositionByCell(cell), player, 6));
         assertEquals(player, cell.getFeudal());
         assertTrue(otherPlayer.getUnitsByState(AvailabilityType.NOT_AVAILABLE).isEmpty());
     }
@@ -412,18 +412,18 @@ public class GameCatchCellAnswerProcessorTests {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
         player.setRace(Race.UNDEAD);
-        setPlayerUnits(player, 2);
+        setPlayerUnits(player, 5);
 
         final IBoard board = game.getBoard();
         final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
         setUnitToCell(landCell, 2);
-        game.getPlayerToAchievableCells().put(player, setAchievableCell(landCell));
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
         landCell.setRace(Race.MUSHROOM);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), 5));
+                createCatchCellAnswer(board.getPositionByCell(landCell), player, 5));
         assertEquals(player, landCell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(landCell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
@@ -446,7 +446,62 @@ public class GameCatchCellAnswerProcessorTests {
                 PlayerQuestionType.CATCH_CELL, game, player);
         final CoinsException coinsException = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question,
-                        createCatchCellAnswer(new Position(2, 2), 1)));
+                        createCatchCellAnswer(new Position(2, 2), player, 1)));
         assertEquals(ErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL, coinsException.getErrorCode());
+    }
+
+    @Test
+    public void enterToCellTest() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 2);
+
+        final IBoard board = game.getBoard();
+        final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
+        landCell.setFeudal(player);
+
+        game.getOwnToCells().get(player).add(landCell);
+        game.getFeudalToCells().get(player).add(landCell);
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
+        GameAnswerProcessor.process(question,
+                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
+        assertEquals(player, landCell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
+        assertTrue(game.getOwnToCells().get(player).contains(landCell));
+        assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
+        assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
+    }
+
+    @Test
+    public void enterToCellWithUnitsTest() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 3);
+
+        final IBoard board = game.getBoard();
+        final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
+        landCell.setFeudal(player);
+        landCell.getUnits().add(player.getUnitsByState(AvailabilityType.AVAILABLE).get(0));
+
+        game.getOwnToCells().get(player).add(landCell);
+        game.getFeudalToCells().get(player).add(landCell);
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
+        GameAnswerProcessor.process(question,
+                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
+        assertEquals(player, landCell.getFeudal());
+        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
+        assertTrue(game.getOwnToCells().get(player).contains(landCell));
+        assertEquals(1, player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+        assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
     }
 }
