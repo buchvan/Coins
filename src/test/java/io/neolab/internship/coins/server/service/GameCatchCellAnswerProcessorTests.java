@@ -469,11 +469,11 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
-        assertEquals(player, landCell.getFeudal());
-        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+                createCatchCellAnswer(board.getPositionByCell(landCell), player,3));
+        assertNull(landCell.getFeudal());
+        assertFalse(game.getFeudalToCells().get(player).contains(landCell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
-        assertTrue(game.getOwnToCells().get(player).contains(landCell));
+        assertFalse(game.getOwnToCells().get(player).contains(landCell));
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
         assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
     }
@@ -497,7 +497,7 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
+                createCatchCellAnswer(board.getPositionByCell(landCell), player,3));
         assertEquals(player, landCell.getFeudal());
         assertTrue(game.getFeudalToCells().get(player).contains(landCell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));

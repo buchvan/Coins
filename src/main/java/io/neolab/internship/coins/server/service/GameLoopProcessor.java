@@ -127,8 +127,26 @@ public class GameLoopProcessor {
         final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
         withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
+        if (achievableUnits.size() > 0) {
+            returnCellToPlayer(player, targetCell, controlledCells, feudalCells);
+        }
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
         GameLogger.printAfterCellEnteringLog(player, targetCell);
+    }
+
+    /**
+     * Вернуть клетку игроку
+     *
+     * @param player          - игрок
+     * @param cell            - клетка, в которую игрок пытается войти
+     * @param controlledCells - подконтрольные игроку клетки
+     * @param feudalCells     - клетки, приносящие монеты игроку
+     */
+    private static void returnCellToPlayer(final @NotNull Player player, final @NotNull Cell cell,
+                                           final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
+        cell.setFeudal(player);
+        controlledCells.add(cell);
+        feudalCells.add(cell);
     }
 
     /**
