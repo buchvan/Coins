@@ -115,17 +115,20 @@ public class GameLoopProcessor {
      *
      * @param player          - игрок
      * @param targetCell      - клетка, в которую игрок пытается войти
+     * @param controlledCells - подконтрольные игроку клетки
+     * @param feudalCells     - клетки, приносящие монеты игроку
      * @param units           - список юнитов, которых игрок послал в клетку
      * @param tiredUnitsCount - число уставших юнитов
      * @param board           - борда
      */
     static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
+                            final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
                             final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board) {
         final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, targetCell);
         neighboringCells.add(targetCell);
         final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
         final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
-        withdrawUnits(neighboringCells, tiredUnits, achievableUnits);
+        withdrawUnits(neighboringCells, controlledCells, feudalCells, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
         if (achievableUnits.size() > 0) {
             returnCellToPlayer(player, targetCell, controlledCells, feudalCells);
@@ -245,7 +248,7 @@ public class GameLoopProcessor {
                           final @NotNull Map<Player, List<Cell>> ownToCells,
                           final @NotNull Map<Player, Set<Cell>> feudalToCells,
                           final @NotNull List<Cell> transitCells) {
-        withdrawUnits(neighboringCells, tiredUnits, units);
+        withdrawUnits(neighboringCells, ownToCells.get(player), feudalToCells.get(player), tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
         depriveCellFeudalAndOwner(catchingCell, defendingPlayer, ownToCells.get(defendingPlayer),
                 feudalToCells.get(defendingPlayer));
@@ -267,15 +270,41 @@ public class GameLoopProcessor {
     /**
      * Вывести юнитов с клеток
      *
-     * @param cells - клетки, с которых необходимо вывести юнитов
-     * @param units - юниты, которых необходимо вывести с клеток
+     * @param cells           - клетки, с которых необходимо вывести юнитов
+     * @param controlledCells - подконтрольные клетки игрока
+     * @param feudalCells     - клетки, приносящие монеты игроку
+     * @param units           - юниты, которых необходимо вывести с клеток
      */
     @SafeVarargs
-    private static void withdrawUnits(final @NotNull List<Cell> cells, final @NotNull List<Unit>... units) {
+    private static void withdrawUnits(final @NotNull List<Cell> cells, final @NotNull List<Cell> controlledCells,
+                                      final @NotNull Set<Cell> feudalCells, final @NotNull List<Unit>... units) {
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
+        loseCells(cells, controlledCells, feudalCells);
         GameLogger.printAfterWithdrawCellsLog(cells);
+    }
+
+    /**
+     * Потерять клетки, на которых нет юнитов игрока
+     *
+     * @param cells       - клетки, которые необходимо проверить на то, потеряны ли они
+     * @param feudalCells - клетки, приносящие монеты игроку
+     */
+    static void loseCells(final @NotNull List<Cell> cells,
+                          final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
+        final Iterator<Cell> iterator = cells.iterator();
+        final List<Cell> lostCells = new LinkedList<>();
+        while (iterator.hasNext()) {
+            final Cell cell = iterator.next();
+            if (cell.getUnits().isEmpty()) {
+                lostCells.add(cell);
+                cell.setFeudal(null);
+                iterator.remove();
+            }
+        }
+        feudalCells.removeAll(lostCells);
+        controlledCells.removeAll(lostCells);
     }
 
     /**

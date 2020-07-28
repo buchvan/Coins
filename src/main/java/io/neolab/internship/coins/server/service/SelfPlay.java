@@ -170,7 +170,8 @@ class SelfPlay {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(catchingCell);
         if (isControlled) {
-            return isTryEnterToCellSucceed(player, catchingCell, units, board);
+            return isTryEnterToCellSucceed(player, catchingCell, ownToCells.get(player), feudalToCells.get(player),
+                    units, board);
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
@@ -195,13 +196,17 @@ class SelfPlay {
     /**
      * Попытка входа игрока в свою клетку
      *
-     * @param player     - игрок
-     * @param targetCell - клетка, в которую игрок пытается войти
-     * @param units      - список юнитов, которых игрок послал в клетку
-     * @param board      - борда
+     * @param player          - игрок
+     * @param targetCell      - клетка, в которую игрок пытается войти
+     * @param controlledCells - подконтрольные игроку клетки
+     * @param feudalCells     - клетки, приносящие игроку монетки
+     * @param units           - список юнитов, которых игрок послал в клетку
+     * @param board           - борда
      * @return true - если попытка удачная, false - иначе
      */
     private static boolean isTryEnterToCellSucceed(final @NotNull Player player, final @NotNull Cell targetCell,
+                                                   final @NotNull List<Cell> controlledCells,
+                                                   final @NotNull Set<Cell> feudalCells,
                                                    final @NotNull List<Unit> units, final @NotNull IBoard board) {
         GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
         GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
@@ -210,7 +215,7 @@ class SelfPlay {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
-        GameLoopProcessor.enterToCell(player, targetCell, units, tiredUnitsCount, board);
+        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board);
         return true;
     }
 
