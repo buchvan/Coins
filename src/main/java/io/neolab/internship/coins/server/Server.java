@@ -19,7 +19,6 @@ import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.server.service.*;
 import io.neolab.internship.coins.utils.LogCleaner;
-import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +61,8 @@ public class Server implements IServer {
         private ServerSomething(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients,
                                 final @NotNull Socket socket) throws IOException {
             this.socket = socket;
-            final Pair<BufferedReader, BufferedWriter> ioPair = ClientServerProcessor.initReaderWriterBySocket(socket);
-            in = ioPair.getFirst();
-            out = ioPair.getSecond();
+            in = ClientServerProcessor.initReaderBySocket(socket);
+            out = ClientServerProcessor.initWriterBySocket(socket);
 
             String nickname;
             boolean isDuplicate = false;

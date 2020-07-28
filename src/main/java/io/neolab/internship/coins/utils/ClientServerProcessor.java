@@ -8,18 +8,27 @@ import java.net.Socket;
 public class ClientServerProcessor {
 
     /**
-     * Инициализация потоков ввода-вывода по сокету
+     * Инициализация потока ввода по сокету
      *
-     * @param socket - сокет, для которого нужно открыть потоки ввода-вывода
-     * @return пару (BufferedReader, BufferedWriter)
-     * @throws IOException при ошибке открытия потоков ввода-вывода
+     * @param socket - сокет, для которого нужно открыть поток ввода
+     * @return поток ввода
+     * @throws IOException при ошибке открытия потока ввода
      */
-    public static @NotNull Pair<BufferedReader, BufferedWriter> initReaderWriterBySocket(final @NotNull Socket socket)
+    public static @NotNull BufferedReader initReaderBySocket(final @NotNull Socket socket)
             throws IOException {
-        return new Pair<>(
-                new BufferedReader(new InputStreamReader(socket.getInputStream())),
-                new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
-        );
+        return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    }
+
+    /**
+     * Инициализация потока вывода по сокету
+     *
+     * @param socket - сокет, для которого нужно открыть поток вывода
+     * @return поток вывода
+     * @throws IOException при ошибке открытия потока вывода
+     */
+    public static @NotNull BufferedWriter initWriterBySocket(final @NotNull Socket socket)
+            throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
 
     /**
