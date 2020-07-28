@@ -39,6 +39,7 @@ public class Server implements IServer {
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
     private static final int GAMES_COUNT = 2;
+    private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -132,6 +133,15 @@ public class Server implements IServer {
         }
 
         /**
+         * Пришло сообщение от клиента?
+         *
+         * @return true, если да, false - иначе
+         */
+        private boolean isCameClientMessage() throws IOException {
+            return in.ready();
+        }
+
+        /**
          * закрытие сервера, удаление себя из списка нитей
          */
         private void downService() {
@@ -161,7 +171,9 @@ public class Server implements IServer {
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (final IOException | InterruptedException exception) {
             LOGGER.error("Error!!!", exception);
+        } finally {
             disconnectAllClients();
+            LOGGER.info("Server finished");
         }
     }
 
@@ -208,21 +220,36 @@ public class Server implements IServer {
      * @param gameId - id игры
      */
     private void disconnectGameClients(final int gameId) {
-        serverSomethings.get(gameId).forEach(serverSomething -> {
-            try {
-                serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
-                ClientMessage clientMessage;
-                do {
-                    clientMessage = serverSomething.readClientMessage();
-                } while (clientMessage.getMessageType() != ClientMessageType.DISCONNECTED);
-            } catch (final IOException exception) {
-                LOGGER.error("Error!!!", exception);
-            }
-            serverSomething.downService();
-            LOGGER.info("Client {} disconnected", serverSomething.player.getNickname());
-        });
-        serverSomethings.remove(gameId);
-        LOGGER.info("Clients of game {} disconnected", gameId);
+        final ConcurrentLinkedQueue<ServerSomething> gameClients = serverSomethings.get(gameId);
+        if (gameClients != null) {
+            gameClients.forEach(this::disconnectClient);
+            serverSomethings.remove(gameId);
+            LOGGER.info("Clients of game {} disconnected", gameId);
+        }
+    }
+
+    /**
+     * Отключить клиента
+     *
+     * @param serverSomething - клиент, которого необходимо отключить
+     */
+    private void disconnectClient(final @NotNull ServerSomething serverSomething) {
+        try {
+            serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
+            int i = 0;
+            do {
+                if (serverSomething.isCameClientMessage() &&
+                        serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
+                    break;
+                }
+                Thread.sleep(100);
+                i++;
+            } while (i < CLIENT_DISCONNECT_ATTEMPTS);
+        } catch (final IOException | InterruptedException exception) {
+            LOGGER.error("Error!!!", exception);
+        }
+        serverSomething.downService();
+        LOGGER.info("Client {} disconnected", serverSomething.player.getNickname());
     }
 
     /**
@@ -295,15 +322,15 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         int currentClientsCount = 1;
-        final ExecutorService connectClient = Executors.newFixedThreadPool(CLIENTS_COUNT);
+        final ExecutorService clientConnectors = Executors.newFixedThreadPool(CLIENTS_COUNT);
         while (currentClientsCount <= CLIENTS_COUNT) {
             final int currentClientId = currentClientsCount;
-            connectClient.execute(() -> connectClient(currentClientId, clients));
+            clientConnectors.execute(() -> connectClient(currentClientId, clients));
             currentClientsCount++;
         }
         try {
-            connectClient.shutdown();
-            connectClient.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            clientConnectors.shutdown();
+            clientConnectors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             handShake(clients);
         } catch (final InterruptedException exception) {
             LOGGER.error("Error!", exception);
