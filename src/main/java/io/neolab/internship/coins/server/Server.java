@@ -37,13 +37,110 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 2;
+    private static final int GAME_LOBBIES_COUNT = 2;
+    private static final int GAMES_COUNT = 1;
     private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
 
-    private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
+    private final @NotNull List<GameLobby> gameLobbies = new LinkedList<>();
+
+    private class GameLobby {
+        private final int gameId;
+        private final @NotNull ConcurrentLinkedQueue<ServerSomething> gameClients = new ConcurrentLinkedQueue<>();
+        private final int clientsCount;
+        private final int gamesCount;
+
+        public GameLobby(final int gameId, final int clientsCount, final int gamesCount) {
+            this.gameId = gameId;
+            this.clientsCount = clientsCount;
+            this.gamesCount = gamesCount;
+        }
+
+        /**
+         * Подключить клиентов к лобби
+         *
+         * @throws IOException при ошибке подключения
+         */
+        private void connectClients()
+                throws IOException, CoinsException {
+
+            int currentClientsCount = 1;
+            final ExecutorService clientConnectors = Executors.newFixedThreadPool(clientsCount);
+            while (currentClientsCount <= clientsCount) {
+                final int currentClientId = currentClientsCount;
+                clientConnectors.execute(() -> connectClient(currentClientId, gameClients));
+                currentClientsCount++;
+            }
+            try {
+                clientConnectors.shutdown();
+                clientConnectors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                handShake(gameClients);
+            } catch (final InterruptedException exception) {
+                LOGGER.error("Error!", exception);
+            }
+        }
+
+        /**
+         * Подключить клиента
+         *
+         * @param currentClientId - текущий id клиента
+         * @param clients         - очередь клиентов
+         */
+        private void connectClient(final int currentClientId,
+                                   final @NotNull ConcurrentLinkedQueue<ServerSomething> clients) {
+            Socket socket = null;
+            while (true) {
+                try {
+                    socket = getSocket();
+                    LOGGER.info("Client {} connects", currentClientId);
+                    clients.add(new ServerSomething(clients, socket));
+                    LOGGER.info("Client {} connected", currentClientId);
+                } catch (final IOException exception) {
+                    LOGGER.error("Error!", exception);
+                    if (socket != null) {
+                        closeSocket(socket);
+                    }
+                    continue;
+                }
+                break;
+            }
+        }
+
+        /**
+         * Отключить всех клиентов игры
+         */
+        private void disconnectGameClients() {
+            gameClients.forEach(this::disconnectClient);
+            gameLobbies.remove(this);
+            LOGGER.info("Clients of game {} disconnected", gameId);
+        }
+
+        /**
+         * Отключить клиента
+         *
+         * @param serverSomething - клиент, которого необходимо отключить
+         */
+        private void disconnectClient(final @NotNull ServerSomething serverSomething) {
+            try {
+                serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
+                int i = 0;
+                do {
+                    if (serverSomething.isCameClientMessage() &&
+                            serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
+                        break;
+                    }
+                    Thread.sleep(100);
+                    i++;
+                } while (i < CLIENT_DISCONNECT_ATTEMPTS);
+            } catch (final IOException | InterruptedException exception) {
+                LOGGER.error("Error!!!", exception);
+            }
+            serverSomething.downService();
+            LOGGER.info("Client {} disconnected", serverSomething.player.getNickname());
+        }
+    }
 
     private static class ServerSomething {
 
@@ -160,10 +257,10 @@ public class Server implements IServer {
         try (final LoggerFile ignored = new LoggerFile("server")) {
             LogCleaner.clean();
             LOGGER.info("Server started, port: {}", PORT);
-            final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
-            for (int i = 1; i <= GAMES_COUNT; i++) {
+            final ExecutorService threadPool = Executors.newFixedThreadPool(GAME_LOBBIES_COUNT);
+            for (int i = 1; i <= GAME_LOBBIES_COUNT; i++) {
                 final int gameId = i;
-                threadPool.execute(() -> startGame(gameId));
+                threadPool.execute(() -> startLobby(gameId));
             }
             threadPool.shutdown();
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -179,75 +276,64 @@ public class Server implements IServer {
      * Отключить всех клиентов
      */
     private void disconnectAllClients() {
-        serverSomethings.forEach((key, value) -> disconnectGameClients(key));
-        serverSomethings.clear();
+        gameLobbies.forEach(GameLobby::disconnectGameClients);
+        gameLobbies.clear();
         LOGGER.info("All clients disconnected");
     }
 
     /**
      * @param gameId - id игры
      */
-    private void startGame(final int gameId) {
-        final ConcurrentLinkedQueue<ServerSomething> clients = new ConcurrentLinkedQueue<>();
-        serverSomethings.put(gameId, clients);
+    private void startLobby(final int gameId) {
+        final GameLobby gameLobby = new GameLobby(gameId, CLIENTS_COUNT, GAMES_COUNT);
         try (final LoggerFile ignored = new LoggerFile("game_" + gameId)) {
-            final IGame game = gameInit(clients);
-            GameLogger.printStartGameChoiceLog();
-            for (final ServerSomething serverSomething : clients) {
-                chooseRace(serverSomething, game);
+            synchronized (GameLobby.class) {
+                gameLobby.connectClients();
             }
-            gameLoop(game, clients);
-            finalizeGame(gameId, game, clients);
-        } catch (final CoinsException exception) {
-            if (exception.getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
-                LOGGER.error("Error!!!", exception);
-            } else {
-                LOGGER.info("Client disconnection");
-                LOGGER.debug("", exception);
+            int currentGame = 1;
+            while (currentGame <= gameLobby.gamesCount) {
+                startGame(gameLobby);
+                currentGame++;
             }
-            disconnectGameClients(gameId);
-        } catch (final ClassCastException | IOException exception) {
-            LOGGER.error("Error!!!", exception);
-            disconnectGameClients(gameId);
-        }
-    }
-
-    /**
-     * Отключить всех клиентов игры
-     *
-     * @param gameId - id игры
-     */
-    private void disconnectGameClients(final int gameId) {
-        final ConcurrentLinkedQueue<ServerSomething> gameClients = serverSomethings.get(gameId);
-        if (gameClients != null) {
-            gameClients.forEach(this::disconnectClient);
-            serverSomethings.remove(gameId);
-            LOGGER.info("Clients of game {} disconnected", gameId);
-        }
-    }
-
-    /**
-     * Отключить клиента
-     *
-     * @param serverSomething - клиент, которого необходимо отключить
-     */
-    private void disconnectClient(final @NotNull ServerSomething serverSomething) {
-        try {
-            serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
-            int i = 0;
-            do {
-                if (serverSomething.isCameClientMessage() &&
-                        serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
-                    break;
+        } catch (final CoinsException | ClassCastException | IOException exception) {
+            if (exception instanceof CoinsException) {
+                if (((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
+                    LOGGER.error("Error!!!", exception);
+                } else {
+                    LOGGER.info("Client disconnection");
+                    LOGGER.debug("", exception);
                 }
-                Thread.sleep(100);
-                i++;
-            } while (i < CLIENT_DISCONNECT_ATTEMPTS);
-        } catch (final IOException | InterruptedException exception) {
-            LOGGER.error("Error!!!", exception);
+            }
+        } finally {
+            gameLobby.disconnectGameClients();
         }
-        serverSomething.downService();
-        LOGGER.info("Client {} disconnected", serverSomething.player.getNickname());
+    }
+
+    /**
+     * Взять (accept) сокет
+     *
+     * @return взятый сокет
+     * @throws IOException при ошибке взятия сокета
+     */
+    private synchronized @NotNull Socket getSocket() throws IOException {
+        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+            return serverSocket.accept();
+        }
+    }
+
+    /**
+     * @param gameLobby - лобби игры
+     * @throws CoinsException при внутренней ошибке игры
+     * @throws IOException    при ошибке общения с каким-либо клиентом
+     */
+    private void startGame(final @NotNull GameLobby gameLobby) throws CoinsException, IOException {
+        final IGame game = gameInit(gameLobby.gameClients);
+        GameLogger.printStartGameChoiceLog();
+        for (final ServerSomething serverSomething : gameLobby.gameClients) {
+            chooseRace(serverSomething, game);
+        }
+        gameLoop(game, gameLobby.gameClients);
+        finalizeGame(game, gameLobby);
     }
 
     /**
@@ -255,12 +341,9 @@ public class Server implements IServer {
      *
      * @param clients - клиенты игры
      * @return инициализированную игру
-     * @throws IOException    при ошибке общения с каким-либо клиентом
      * @throws CoinsException при ошибке инициализации игры
      */
-    private IGame gameInit(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
-            throws IOException, CoinsException {
-        connectClients(clients);
+    private IGame gameInit(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients) throws CoinsException {
         final List<Player> playerList = new LinkedList<>();
         clients.forEach(serverSomething -> playerList.add(serverSomething.player));
         final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
@@ -294,82 +377,17 @@ public class Server implements IServer {
     /**
      * Финализация игры
      *
-     * @param gameId  - id игры
-     * @param game    - игра
-     * @param clients - клиенты игры
+     * @param game      - игра
+     * @param gameLobby - игровое лобби
      */
-    private void finalizeGame(final int gameId, final @NotNull IGame game,
-                              final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
+    private void finalizeGame(final @NotNull IGame game,
+                              final @NotNull GameLobby gameLobby)
             throws CoinsException, IOException {
         final List<Player> winners = GameFinalizer.finalization(game.getPlayers());
         final GameOverMessage gameOverMessage =
                 new GameOverMessage(ServerMessageType.GAME_OVER, winners, game.getPlayers());
-        for (final ServerSomething serverSomething : clients) {
+        for (final ServerSomething serverSomething : gameLobby.gameClients) {
             serverSomething.sendServerMessage(gameOverMessage);
-        }
-        disconnectGameClients(gameId);
-    }
-
-    /**
-     * Подключить клиентов к серверу
-     *
-     * @param clients - очередь клиентов игры
-     * @throws IOException при ошибке подключения
-     */
-    private void connectClients(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
-            throws IOException, CoinsException {
-
-        int currentClientsCount = 1;
-        final ExecutorService clientConnectors = Executors.newFixedThreadPool(CLIENTS_COUNT);
-        while (currentClientsCount <= CLIENTS_COUNT) {
-            final int currentClientId = currentClientsCount;
-            clientConnectors.execute(() -> connectClient(currentClientId, clients));
-            currentClientsCount++;
-        }
-        try {
-            clientConnectors.shutdown();
-            clientConnectors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            handShake(clients);
-        } catch (final InterruptedException exception) {
-            LOGGER.error("Error!", exception);
-        }
-    }
-
-    /**
-     * Подключить клиента
-     *
-     * @param currentClientId - текущий id клиента
-     * @param clients         - очередь клиентов
-     */
-    private void connectClient(final int currentClientId,
-                               final @NotNull ConcurrentLinkedQueue<ServerSomething> clients) {
-        Socket socket = null;
-        while (true) {
-            try {
-                socket = getSocket();
-                LOGGER.info("Client {} connects", currentClientId);
-                clients.add(new ServerSomething(clients, socket));
-                LOGGER.info("Client {} connected", currentClientId);
-            } catch (final IOException exception) {
-                LOGGER.error("Error!", exception);
-                if (socket != null) {
-                    closeSocket(socket);
-                }
-                continue;
-            }
-            break;
-        }
-    }
-
-    /**
-     * Взять (accept) сокет
-     *
-     * @return взятый сокет
-     * @throws IOException при ошибке взятия сокета
-     */
-    private synchronized @NotNull Socket getSocket() throws IOException {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
-            return serverSocket.accept();
         }
     }
 
