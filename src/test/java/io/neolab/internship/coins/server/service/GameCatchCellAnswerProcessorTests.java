@@ -496,13 +496,9 @@ public class GameCatchCellAnswerProcessorTests {
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
-        GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), player,3));
-        assertEquals(player, landCell.getFeudal());
-        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
-        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
-        assertTrue(game.getOwnToCells().get(player).contains(landCell));
-        assertEquals(1, player.getUnitsByState(AvailabilityType.AVAILABLE).size());
-        assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
+        final CoinsException exception = assertThrows(CoinsException.class,
+                () -> GameAnswerProcessor.process(question,
+                        createCatchCellAnswer(board.getPositionByCell(landCell), player,3)));
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_ENTER_CELL_INVALID_UNITS, exception.getErrorCode());
     }
 }

@@ -254,6 +254,7 @@ class SelfPlay {
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты

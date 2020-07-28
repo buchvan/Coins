@@ -89,12 +89,12 @@ class GameValidator {
                                         final @NotNull GameFeatures gameFeatures,
                                         final @NotNull Player player) throws CoinsException {
         checkIfAnswerEmpty(answer);
-        final Cell cellForAttempt =
-                currentBoard.getCellByPosition(Objects.requireNonNull(answer.getResolution()).getFirst());
         //есть ли клетка, соответствующая позиции
-        if (checkIfCellDoesntExists(answer.getResolution().getFirst(), currentBoard)) {
+        if (checkIfCellDoesntExists(Objects.requireNonNull(answer.getResolution()).getFirst(), currentBoard)) {
             throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_WRONG_POSITION);
         }
+        final Cell cellForAttempt = Objects.requireNonNull(
+                currentBoard.getCellByPosition(Objects.requireNonNull(answer.getResolution()).getFirst()));
         //клетка достижима
         if (!achievableCells.contains(cellForAttempt)) {
             throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_UNREACHABLE_CELL);
@@ -105,7 +105,10 @@ class GameValidator {
         }
         final List<Unit> units = answer.getResolution().getSecond();
         if (controlledCells.contains(cellForAttempt)) {
-            if (units.size() < Objects.requireNonNull(cellForAttempt).getType().getCatchDifficulty()) {
+            if (cellForAttempt.getUnits().stream().anyMatch(units::contains)) {
+                throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_ENTER_CELL_INVALID_UNITS);
+            }
+            if (units.size() < cellForAttempt.getType().getCatchDifficulty()) {
                 throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE);
             }
             return;
