@@ -163,7 +163,7 @@ public class GameLoopProcessor {
      * @param catchingCell - захватываемая клетка
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
-    static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
+    public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
                                               final @NotNull Cell catchingCell) {
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         final Player defendingPlayer = catchingCell.getFeudal();
