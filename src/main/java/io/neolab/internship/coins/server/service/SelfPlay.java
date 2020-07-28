@@ -32,7 +32,7 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    private static void selfPlay() {
+    public static void selfPlay() {
         try (final GameLoggerFile ignored = new GameLoggerFile()) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
@@ -46,15 +46,37 @@ class SelfPlay {
     }
 
     /**
+     * Игра сама с собой (self play)
+     * - Создание борды
+     * - Добавление метаинформации о игре(борда, игроки, юниты)
+     * - Игровой цикл
+     * - Финализатор (результат игры)
+     */
+    public static List<Player> selfPlayByPlayers(final List<Player> players) {
+        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+            LogCleaner.clean();
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
+            GameLogger.printGameCreatedLog(game);
+            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
+            gameLoop(game);
+            return GameFinalizer.finalize(game.getPlayers());
+        } catch (final CoinsException | IOException exception) {
+            GameLogger.printErrorLog(exception);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Игровой цикл, вся игровая логика начинается отсюда
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
      */
-    private static void gameLoop(final @NotNull IGame game) {
+    public static void gameLoop(final @NotNull IGame game) {
         GameLogger.printStartGameChoiceLog();
         simpleBotToPlayer.forEach(pair ->
-                GameAnswerProcessor.chooseRace(pair.getSecond(), game.getRacesPool(),
-                        pair.getFirst().chooseRace(pair.getSecond(), game)));
+                GameAnswerProcessor.changeRace(pair.getSecond(),
+                        pair.getFirst().chooseRace(pair.getSecond(), game),
+                game.getRacesPool()));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
