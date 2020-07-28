@@ -13,6 +13,8 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
+import io.neolab.internship.coins.utils.ClientServerProcessor;
+import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.utils.LoggerFile;
 import org.slf4j.Logger;
@@ -93,28 +95,20 @@ public class Client implements IClient {
         LOGGER.info("Input message: {} ", serverMessage);
         switch (serverMessage.getServerMessageType()) {
             case NICKNAME: {
-                final Answer answer = new NicknameAnswer(nickname);
-                LOGGER.info("Output answer: {} ", answer);
-                sendMessage(Communication.serializeClientMessage(answer));
+                sendMessage(new NicknameAnswer(nickname));
                 break;
             }
             case NICKNAME_DUPLICATE: {
                 tryAgainEnterNickname();
-                final Answer answer = new NicknameAnswer(nickname);
-                LOGGER.info("Output answer: {} ", answer);
-                sendMessage(Communication.serializeClientMessage(answer));
+                sendMessage(new NicknameAnswer(nickname));
                 break;
             }
             case CONFIRMATION_OF_READINESS: {
-                final Answer answer = new Answer(ClientMessageType.GAME_READY);
-                LOGGER.info("Output answer: {} ", answer);
-                sendMessage(Communication.serializeClientMessage(answer));
+                sendMessage(new ClientMessage(ClientMessageType.GAME_READY));
                 break;
             }
             case GAME_QUESTION: {
-                final Answer answer = getAnswer((PlayerQuestion) serverMessage);
-                LOGGER.info("Output answer: {} ", answer);
-                sendMessage(Communication.serializeClientMessage(answer));
+                sendMessage(getAnswer((PlayerQuestion) serverMessage));
                 break;
             }
             case GAME_OVER: {
@@ -126,6 +120,17 @@ public class Client implements IClient {
                 throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
             }
         }
+    }
+
+    /**
+     * Отправить сообщение серверу
+     *
+     * @param message - сообщение
+     * @throws IOException при ошибке отправки сообщения
+     */
+    private void sendMessage(final @NotNull ClientMessage message) throws IOException {
+        LOGGER.info("Output message: {} ", message);
+        ClientServerProcessor.sendMessage(out, Communication.serializeClientMessage(message));
     }
 
     /**
@@ -142,7 +147,7 @@ public class Client implements IClient {
             initIO();
             LOGGER.info("Client started, ip: {}, port: {}", ip, port);
             enterNickname();
-            play();
+            serverInteract();
         } catch (final IOException e) {
             LOGGER.error("Error", e);
             sendDisconnectMessage();
@@ -157,23 +162,28 @@ public class Client implements IClient {
      */
     private void initIO() throws IOException {
         keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        final Pair<BufferedReader, BufferedWriter> ioPair = ClientServerProcessor.initReaderWriterBySocket(socket);
+        in = ioPair.getFirst();
+        out = ioPair.getSecond();
     }
 
     /**
-     * Основной game loop
+     * Метод всего взаимодействия с сервером
      */
     @SuppressWarnings("InfiniteLoopStatement")
-    private void play() {
+    private void serverInteract() {
         try {
             while (true) {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
-        } catch (final IOException | CoinsException e) {
-            if (!(e instanceof CoinsException) || ((CoinsException) e).getErrorCode() != CoinsErrorCode.GAME_OVER) {
-                LOGGER.error("Error", e);
+        } catch (final CoinsException exception) {
+            if (exception.getErrorCode() != CoinsErrorCode.GAME_OVER) {
+                LOGGER.error("Error", exception);
             }
+            sendDisconnectMessage();
+            downService();
+        } catch (final IOException exception) {
+            LOGGER.error("Error", exception);
             sendDisconnectMessage();
             downService();
         }
@@ -184,21 +194,11 @@ public class Client implements IClient {
      */
     private void sendDisconnectMessage() {
         try {
-            sendMessage(Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+            ClientServerProcessor.sendMessage(out,
+                    Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
         } catch (final IOException exception) {
             LOGGER.error("Error", exception);
         }
-    }
-
-    /**
-     * Отправить сообщение серверу
-     *
-     * @param json - строка (json), которую нужно отправить
-     * @throws IOException при ошибке отправки сообщения
-     */
-    private void sendMessage(final @NotNull String json) throws IOException {
-        out.write(json + "\n");
-        out.flush();
     }
 
     /**

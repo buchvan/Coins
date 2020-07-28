@@ -6,24 +6,27 @@ import io.neolab.internship.coins.common.message.client.ClientMessageType;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
 
 public class CatchCellAnswer extends Answer {
     @JsonProperty
-    private final Pair<Position, List<Unit>> resolution;
+    private final @Nullable Pair<Position, List<Unit>> resolution;
 
     @JsonCreator
-    public CatchCellAnswer(@JsonProperty("resolution") final Pair<Position, List<Unit>> resolution) {
+    public CatchCellAnswer(@Nullable @JsonProperty("resolution") final Pair<Position, List<Unit>> resolution) {
         super(ClientMessageType.GAME_ANSWER);
         this.resolution = resolution;
     }
 
-    public Pair<Position, List<Unit>> getResolution() {
+    public @Nullable Pair<Position, List<Unit>> getResolution() {
         return resolution;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

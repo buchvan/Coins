@@ -3,6 +3,7 @@ package io.neolab.internship.coins.common.message.client.answer;
 import com.fasterxml.jackson.annotation.*;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Абстрактный класс ответа. Класс-родитель для всех различных ответов клиента
@@ -18,7 +19,7 @@ import io.neolab.internship.coins.common.message.client.ClientMessageType;
 })
 public class Answer extends ClientMessage {
     @JsonCreator
-    public Answer(@JsonProperty("type") final ClientMessageType type) {
+    public Answer(@NotNull @JsonProperty("type") final ClientMessageType type) {
         super(type);
     }
 }
