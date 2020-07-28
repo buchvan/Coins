@@ -33,7 +33,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
-        final Answer answer = new DistributionUnitsAnswer();
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
         assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
