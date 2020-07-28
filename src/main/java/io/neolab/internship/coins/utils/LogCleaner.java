@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class LogCleaner {
     private static final @NotNull String logback = "./src/main/resources/logback.xml";
     private static final @NotNull String propertyName = "LOG_DIRECTORY";
-    private static final int LOGS_MAX_COUNT = 10;
+    private static final int LOGS_BORDER = 20;
 
     /**
      * Загружает название директории с логами из logback
@@ -38,7 +38,7 @@ public class LogCleaner {
         final File logDir = new File(LOG_DIRECTORY);
         if (logDir.exists()) {
             final File[] logs = logDir.listFiles();
-            if (logs != null && logs.length > LOGS_MAX_COUNT) {
+            if (logs != null && logs.length > LOGS_BORDER) {
                 Arrays.stream(logs).forEach(File::delete);
             }
         }
