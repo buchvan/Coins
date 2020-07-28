@@ -273,8 +273,8 @@ public class GameLoopProcessor {
      * @param cells       - клетки, которые необходимо проверить на то, потеряны ли они
      * @param feudalCells - клетки, приносящие монеты игроку
      */
-    static void loseCells(final @NotNull List<Cell> cells,
-                          final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
+    public static void loseCells(final @NotNull List<Cell> cells,
+                                 final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
         final Iterator<Cell> iterator = cells.iterator();
         final List<Cell> lostCells = new LinkedList<>();
         while (iterator.hasNext()) {

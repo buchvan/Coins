@@ -383,6 +383,8 @@ public class Server implements IServer {
         final Player player = serverSomething.player;
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
                 game.getOwnToCells().get(player));
+        GameLoopProcessor.loseCells(game.getOwnToCells().get(player), game.getOwnToCells().get(player),
+                game.getFeudalToCells().get(player));
         if (!game.getOwnToCells().get(player).isEmpty()) {
             while (true) {
                 try {
