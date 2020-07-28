@@ -37,8 +37,8 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAME_LOBBIES_COUNT = 2;
-    private static final int GAMES_COUNT = 1;
+    private static final int GAME_LOBBIES_COUNT = 1;
+    private static final int GAMES_COUNT = 3;
     private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
 
     private static final int BOARD_SIZE_X = 3;
@@ -47,13 +47,13 @@ public class Server implements IServer {
     private final @NotNull List<GameLobby> gameLobbies = new LinkedList<>();
 
     private class GameLobby {
-        private final int gameId;
+        private final int lobbyId;
         private final @NotNull ConcurrentLinkedQueue<ServerSomething> gameClients = new ConcurrentLinkedQueue<>();
         private final int clientsCount;
         private final int gamesCount;
 
-        public GameLobby(final int gameId, final int clientsCount, final int gamesCount) {
-            this.gameId = gameId;
+        public GameLobby(final int lobbyId, final int clientsCount, final int gamesCount) {
+            this.lobbyId = lobbyId;
             this.clientsCount = clientsCount;
             this.gamesCount = gamesCount;
         }
@@ -73,10 +73,11 @@ public class Server implements IServer {
                 clientConnectors.execute(() -> connectClient(currentClientId, gameClients));
                 currentClientsCount++;
             }
-            try {
+            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_connecting")) {
                 clientConnectors.shutdown();
                 clientConnectors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                handShake(gameClients);
+                LOGGER.info("All clients of lobby {} is connected", lobbyId);
+                handShake();
             } catch (final InterruptedException exception) {
                 LOGGER.error("Error!", exception);
             }
@@ -90,31 +91,54 @@ public class Server implements IServer {
          */
         private void connectClient(final int currentClientId,
                                    final @NotNull ConcurrentLinkedQueue<ServerSomething> clients) {
-            Socket socket = null;
-            while (true) {
-                try {
-                    socket = getSocket();
-                    LOGGER.info("Client {} connects", currentClientId);
-                    clients.add(new ServerSomething(clients, socket));
-                    LOGGER.info("Client {} connected", currentClientId);
-                } catch (final IOException exception) {
-                    LOGGER.error("Error!", exception);
-                    if (socket != null) {
-                        closeSocket(socket);
+            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_connecting")) {
+                Socket socket = null;
+                while (true) {
+                    try {
+                        socket = getSocket();
+                        LOGGER.info("Client {} connects", currentClientId);
+                        clients.add(new ServerSomething(clients, socket));
+                        LOGGER.info("Client {} connected", currentClientId);
+                    } catch (final IOException exception) {
+                        LOGGER.error("Error!", exception);
+                        if (socket != null) {
+                            closeSocket(socket);
+                        }
+                        continue;
                     }
-                    continue;
+                    break;
                 }
-                break;
             }
+        }
+
+        /**
+         * HandShake: спросить клиентов о готовности к игре
+         *
+         * @throws IOException    при ошибке общения с клиентом
+         * @throws CoinsException если клиент ответил "не готов"
+         */
+        private void handShake()
+                throws IOException, CoinsException {
+            final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
+            for (final ServerSomething serverSomething : gameClients) {
+                serverSomething.sendServerMessage(question);
+                final ClientMessage clientMessage = serverSomething.readClientMessage();
+                if (clientMessage.getMessageType() != ClientMessageType.GAME_READY) {
+                    throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
+                }
+            }
+            LOGGER.info("All clients of lobby {} is ready", lobbyId);
         }
 
         /**
          * Отключить всех клиентов игры
          */
-        private void disconnectGameClients() {
-            gameClients.forEach(this::disconnectClient);
-            gameLobbies.remove(this);
-            LOGGER.info("Clients of game {} disconnected", gameId);
+        private void disconnectLobbyClients() {
+            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_disconnecting")) {
+                gameClients.forEach(this::disconnectClient);
+                gameLobbies.remove(this);
+                LOGGER.info("All clients of lobby {} disconnected", lobbyId);
+            }
         }
 
         /**
@@ -255,20 +279,22 @@ public class Server implements IServer {
     @Override
     public void startServer() {
         try (final LoggerFile ignored = new LoggerFile("server")) {
-            LogCleaner.clean();
-            LOGGER.info("Server started, port: {}", PORT);
-            final ExecutorService threadPool = Executors.newFixedThreadPool(GAME_LOBBIES_COUNT);
-            for (int i = 1; i <= GAME_LOBBIES_COUNT; i++) {
-                final int gameId = i;
-                threadPool.execute(() -> startLobby(gameId));
+            try {
+                LogCleaner.clean();
+                LOGGER.info("Server started, port: {}", PORT);
+                final ExecutorService threadPool = Executors.newFixedThreadPool(GAME_LOBBIES_COUNT);
+                for (int i = 1; i <= GAME_LOBBIES_COUNT; i++) {
+                    final int lobbyId = i;
+                    threadPool.execute(() -> startLobby(lobbyId));
+                }
+                threadPool.shutdown();
+                threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (final IOException | InterruptedException exception) {
+                LOGGER.error("Error!!!", exception);
+            } finally {
+                disconnectAllClients();
+                LOGGER.info("Server finished");
             }
-            threadPool.shutdown();
-            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (final IOException | InterruptedException exception) {
-            LOGGER.error("Error!!!", exception);
-        } finally {
-            disconnectAllClients();
-            LOGGER.info("Server finished");
         }
     }
 
@@ -276,23 +302,23 @@ public class Server implements IServer {
      * Отключить всех клиентов
      */
     private void disconnectAllClients() {
-        gameLobbies.forEach(GameLobby::disconnectGameClients);
+        gameLobbies.forEach(GameLobby::disconnectLobbyClients);
         gameLobbies.clear();
         LOGGER.info("All clients disconnected");
     }
 
     /**
-     * @param gameId - id игры
+     * @param lobbyId - id лобби
      */
-    private void startLobby(final int gameId) {
-        final GameLobby gameLobby = new GameLobby(gameId, CLIENTS_COUNT, GAMES_COUNT);
-        try (final LoggerFile ignored = new LoggerFile("game_" + gameId)) {
-            synchronized (GameLobby.class) {
+    private void startLobby(final int lobbyId) {
+        final GameLobby gameLobby = new GameLobby(lobbyId, CLIENTS_COUNT, GAMES_COUNT);
+        try {
+            synchronized (GameLobby.class) { // чтобы лобби пополнялись по ходу подключений клиентов
                 gameLobby.connectClients();
             }
             int currentGame = 1;
             while (currentGame <= gameLobby.gamesCount) {
-                startGame(gameLobby);
+                startGame(currentGame, gameLobby);
                 currentGame++;
             }
         } catch (final CoinsException | ClassCastException | IOException exception) {
@@ -305,7 +331,7 @@ public class Server implements IServer {
                 }
             }
         } finally {
-            gameLobby.disconnectGameClients();
+            gameLobby.disconnectLobbyClients();
         }
     }
 
@@ -322,18 +348,21 @@ public class Server implements IServer {
     }
 
     /**
+     * @param gameId    - id игры
      * @param gameLobby - лобби игры
      * @throws CoinsException при внутренней ошибке игры
      * @throws IOException    при ошибке общения с каким-либо клиентом
      */
-    private void startGame(final @NotNull GameLobby gameLobby) throws CoinsException, IOException {
-        final IGame game = gameInit(gameLobby.gameClients);
-        GameLogger.printStartGameChoiceLog();
-        for (final ServerSomething serverSomething : gameLobby.gameClients) {
-            chooseRace(serverSomething, game);
+    private void startGame(final int gameId, final @NotNull GameLobby gameLobby) throws CoinsException, IOException {
+        try (final LoggerFile ignored = new LoggerFile("lobby-" + gameLobby.lobbyId + "_game-" + gameId)) {
+            final IGame game = gameInit(gameLobby.gameClients);
+            GameLogger.printStartGameChoiceLog();
+            for (final ServerSomething serverSomething : gameLobby.gameClients) {
+                chooseRace(serverSomething, game);
+            }
+            gameLoop(game, gameLobby.gameClients);
+            finalizeGame(game, gameLobby);
         }
-        gameLoop(game, gameLobby.gameClients);
-        finalizeGame(game, gameLobby);
     }
 
     /**
@@ -401,25 +430,6 @@ public class Server implements IServer {
             socket.close();
         } catch (final IOException e) {
             LOGGER.error("Error!", e);
-        }
-    }
-
-    /**
-     * HandShake: спросить клиентов о готовности к игре
-     *
-     * @param clients - очередь клиентов игры
-     * @throws IOException    при ошибке общения с клиентом
-     * @throws CoinsException если клиент ответил "не готов"
-     */
-    private void handShake(final @NotNull ConcurrentLinkedQueue<ServerSomething> clients)
-            throws IOException, CoinsException {
-        final ServerMessage question = new ServerMessage(ServerMessageType.CONFIRMATION_OF_READINESS);
-        for (final ServerSomething serverSomething : clients) {
-            serverSomething.sendServerMessage(question);
-            final ClientMessage clientMessage = serverSomething.readClientMessage();
-            if (clientMessage.getMessageType() != ClientMessageType.GAME_READY) {
-                throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
-            }
         }
     }
 
