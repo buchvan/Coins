@@ -211,11 +211,15 @@ public class Server implements IServer {
         serverSomethings.get(gameId).forEach(serverSomething -> {
             try {
                 serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
-                serverSomething.readClientMessage();
+                ClientMessage clientMessage;
+                do {
+                    clientMessage = serverSomething.readClientMessage();
+                } while (clientMessage.getMessageType() != ClientMessageType.DISCONNECTED);
             } catch (final IOException exception) {
                 LOGGER.error("Error!!!", exception);
             }
             serverSomething.downService();
+            LOGGER.info("Client {} disconnected", serverSomething.player.getNickname());
         });
         serverSomethings.remove(gameId);
         LOGGER.info("Clients of game {} disconnected", gameId);
@@ -265,7 +269,7 @@ public class Server implements IServer {
     /**
      * Финализация игры
      *
-     * @param gameId - id игры
+     * @param gameId  - id игры
      * @param game    - игра
      * @param clients - клиенты игры
      */

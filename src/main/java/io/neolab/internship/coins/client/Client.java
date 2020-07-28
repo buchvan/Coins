@@ -114,10 +114,10 @@ public class Client implements IClient {
             case GAME_OVER: {
                 final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
                 GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                throw new CoinsException(CoinsErrorCode.GAME_OVER);
+                break;
             }
             case DISCONNECTED: {
-                throw new CoinsException(CoinsErrorCode.GAME_OVER);
+                throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
             }
             default: {
                 throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
@@ -180,7 +180,7 @@ public class Client implements IClient {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
         } catch (final CoinsException exception) {
-            if (exception.getErrorCode() != CoinsErrorCode.GAME_OVER) {
+            if (exception.getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
                 LOGGER.error("Error", exception);
             }
             sendDisconnectMessage();
