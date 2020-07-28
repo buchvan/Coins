@@ -6,7 +6,7 @@ import io.neolab.internship.coins.common.message.client.answer.ChangeRaceAnswer;
 import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer;
 import io.neolab.internship.coins.common.message.client.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
-import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
@@ -44,23 +44,30 @@ public class GameAnswerProcessor {
             throws CoinsException {
         final IGame currentGame = playerQuestion.getGame();
         final Player player = playerQuestion.getPlayer();
-        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DECLINE_RACE) {
-            declineRaceProcess(answer, player, currentGame.getOwnToCells().get(player));
-            return;
-        }
-        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CHANGE_RACE) {
-            changeRaceProcess(answer, player, currentGame.getRacesPool());
-            return;
-        }
-        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.CATCH_CELL) {
-            captureCellProcess(answer, player, currentGame.getBoard(), currentGame.getGameFeatures(),
-                    currentGame.getOwnToCells(), currentGame.getFeudalToCells(),
-                    currentGame.getPlayerToTransitCells().get(player),
-                    currentGame.getPlayerToAchievableCells().get(player));
-            return;
-        }
-        if (playerQuestion.getPlayerQuestionType() == PlayerQuestionType.DISTRIBUTION_UNITS) {
-            distributionUnitsProcess(answer, player, currentGame.getBoard(), currentGame.getOwnToCells().get(player));
+        switch (playerQuestion.getPlayerQuestionType()) {
+            case DECLINE_RACE: {
+                declineRaceProcess(answer, player, currentGame.getOwnToCells().get(player));
+                break;
+            }
+            case CHANGE_RACE: {
+                changeRaceProcess(answer, player, currentGame.getRacesPool());
+                break;
+            }
+            case CATCH_CELL: {
+                captureCellProcess(answer, player, currentGame.getBoard(), currentGame.getGameFeatures(),
+                        currentGame.getOwnToCells(), currentGame.getFeudalToCells(),
+                        currentGame.getPlayerToTransitCells().get(player),
+                        currentGame.getPlayerToAchievableCells().get(player));
+                break;
+            }
+            case DISTRIBUTION_UNITS: {
+                distributionUnitsProcess(answer, player, currentGame.getBoard(),
+                        currentGame.getOwnToCells().get(player));
+                break;
+            }
+            default: {
+                throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
+            }
         }
     }
 
