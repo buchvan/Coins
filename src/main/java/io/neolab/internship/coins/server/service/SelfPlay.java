@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.client.IBot;
-import io.neolab.internship.coins.client.SimpleBot;
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
+
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.loseCells;
 
 class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
@@ -266,6 +268,7 @@ class SelfPlay {
                 GameLoopProcessor.protectCell(player,
                         Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
             });
+            loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         }
         GameLogger.printAfterDistributedUnitsLog(player);
     }

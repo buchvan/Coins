@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.client;
 
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.common.answer.*;
 import io.neolab.internship.coins.common.question.GameOverMessage;
 import io.neolab.internship.coins.common.question.PlayerQuestion;

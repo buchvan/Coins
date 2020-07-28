@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
