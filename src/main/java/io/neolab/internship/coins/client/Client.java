@@ -162,9 +162,8 @@ public class Client implements IClient {
      */
     private void initIO() throws IOException {
         keyboardReader = new BufferedReader(new InputStreamReader(System.in, "CP866"));
-        final Pair<BufferedReader, BufferedWriter> ioPair = ClientServerProcessor.initReaderWriterBySocket(socket);
-        in = ioPair.getFirst();
-        out = ioPair.getSecond();
+        in = ClientServerProcessor.initReaderBySocket(socket);
+        out = ClientServerProcessor.initWriterBySocket(socket);
     }
 
     /**
@@ -176,14 +175,11 @@ public class Client implements IClient {
             while (true) {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
-        } catch (final CoinsException exception) {
-            if (exception.getErrorCode() != CoinsErrorCode.GAME_OVER) {
+        } catch (final CoinsException | IOException exception) {
+            if (!(exception instanceof CoinsException) ||
+                    ((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
                 LOGGER.error("Error", exception);
             }
-            sendDisconnectMessage();
-            downService();
-        } catch (final IOException exception) {
-            LOGGER.error("Error", exception);
             sendDisconnectMessage();
             downService();
         }
