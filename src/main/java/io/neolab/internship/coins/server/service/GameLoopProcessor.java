@@ -127,11 +127,11 @@ public class GameLoopProcessor {
     static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
                             final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
                             final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board) {
-        final List<Cell> neighboringCells = GameLoopProcessor.getAllNeighboringCells(board, targetCell);
-        neighboringCells.add(targetCell);
+        final List<Cell> achievableCells = new LinkedList<>(GameLoopProcessor.getAllNeighboringCells(board, targetCell));
+        achievableCells.add(targetCell);
         final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
         final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
-        withdrawUnits(neighboringCells, controlledCells, feudalCells, tiredUnits, achievableUnits);
+        withdrawUnits(achievableCells, controlledCells, feudalCells, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
         GameLogger.printAfterCellEnteringLog(player, targetCell);
