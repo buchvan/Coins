@@ -29,13 +29,15 @@ public class RandomGenerator {
     public static <T> T chooseItemFromSet(final @NotNull Set<T> set) {
         final int numberOfCell = chooseNumber(set.size()); // номер выбранной клетки из множества
         int i = 0;
+        T result = null;
         for (final T t : set) {
             if (i == numberOfCell) {
-                return t;
+                result = t;
+                break;
             }
             i++;
         }
-        return null;
+        return result;
     }
 
     /**
