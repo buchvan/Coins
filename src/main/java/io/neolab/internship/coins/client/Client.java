@@ -14,7 +14,6 @@ import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.ClientServerProcessor;
-import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.utils.LoggerFile;
 import org.slf4j.Logger;
@@ -114,7 +113,7 @@ public class Client implements IClient {
             case GAME_OVER: {
                 final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
                 GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
-                throw new CoinsException(CoinsErrorCode.GAME_OVER);
+                throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
             }
             default: {
                 throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
