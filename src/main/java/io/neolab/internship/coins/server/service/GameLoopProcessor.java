@@ -274,6 +274,7 @@ public class GameLoopProcessor {
      * Потерять клетки, на которых нет юнитов игрока
      *
      * @param cells       - клетки, которые необходимо проверить на то, потеряны ли они
+     * @param controlledCells - подконтрольные клетки игрока
      * @param feudalCells - клетки, приносящие монеты игроку
      */
     public static void loseCells(final @NotNull List<Cell> cells,
