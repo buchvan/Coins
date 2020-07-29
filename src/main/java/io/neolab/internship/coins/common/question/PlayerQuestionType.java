@@ -21,5 +21,8 @@ public enum PlayerQuestionType {
      * Сменить расу
      */
     CHANGE_RACE,
+
+    /* Неверный тип вопроса. Используется только для тестирования обработки всех корректных типов */
+    WRONG_QUESTION_TYPE,
     ;
 }
