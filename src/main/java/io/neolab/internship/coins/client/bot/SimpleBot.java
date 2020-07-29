@@ -120,15 +120,16 @@ public class SimpleBot implements IBot {
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) {
         LOGGER.debug("Simple bot distributes units");
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
-        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+        final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
         List<Unit> units = new LinkedList<>();
         while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
             final Cell protectedCell = RandomGenerator.chooseItemFromList(
                     game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
-            units.addAll(availableUnits.subList(units.size(), RandomGenerator.chooseNumber(
-                    availableUnits.size() - units.size()) + units.size()
+            units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
+                    availableUnits.size())
             )); // список юнитов, которое игрок хочет распределить в эту клетку
             distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
+            availableUnits.removeAll(units);
             units = new LinkedList<>();
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
