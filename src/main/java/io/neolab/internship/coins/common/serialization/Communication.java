@@ -2,8 +2,8 @@ package io.neolab.internship.coins.common.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neolab.internship.coins.common.answer.*;
-import io.neolab.internship.coins.common.question.ServerMessage;
+import io.neolab.internship.coins.common.message.client.ClientMessage;
+import io.neolab.internship.coins.common.message.server.ServerMessage;
 
 public class Communication {
     private static final ObjectMapper mapper = new ObjectMapper();

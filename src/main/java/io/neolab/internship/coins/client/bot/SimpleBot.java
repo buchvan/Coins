@@ -11,7 +11,6 @@ import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import java.util.*;
 
 public class SimpleBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    private final @NotNull Random random = new Random();
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
@@ -133,26 +131,5 @@ public class SimpleBot implements IBot {
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
-    }
-
-    @Contract(value = "null -> false", pure = true)
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final SimpleBot simpleBot = (SimpleBot) o;
-        return random.equals(simpleBot.random);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(random);
-    }
-
-    @Override
-    public String toString() {
-        return "SimpleBot{" +
-                "random=" + random +
-                '}';
     }
 }

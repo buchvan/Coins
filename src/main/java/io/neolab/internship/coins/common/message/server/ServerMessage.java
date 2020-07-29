@@ -1,6 +1,9 @@
-package io.neolab.internship.coins.common.question;
+package io.neolab.internship.coins.common.message.server;
 
 import com.fasterxml.jackson.annotation.*;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -12,17 +15,19 @@ import java.util.Objects;
 })
 public class ServerMessage {
     @JsonProperty
-    private final ServerMessageType serverMessageType;
+    private final @NotNull ServerMessageType serverMessageType;
 
+    @Contract(pure = true)
     @JsonCreator
-    public ServerMessage(@JsonProperty("serverMessageType") final ServerMessageType serverMessageType) {
+    public ServerMessage(@NotNull @JsonProperty("serverMessageType") final ServerMessageType serverMessageType) {
         this.serverMessageType = serverMessageType;
     }
 
-    public ServerMessageType getServerMessageType() {
+    public @NotNull ServerMessageType getServerMessageType() {
         return serverMessageType;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

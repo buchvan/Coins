@@ -18,6 +18,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * Процессор, содержащий все основные функции, обновляющие игровые сущности (с выводами логов)
+ */
 public class GameLoopProcessor {
 
     /**
