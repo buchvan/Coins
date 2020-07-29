@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.PlayerQuestionType;
-import io.neolab.internship.coins.common.question.ServerMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.DistributionUnitsAnswer;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -33,7 +33,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
-        final Answer answer = new DistributionUnitsAnswer();
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
         assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());

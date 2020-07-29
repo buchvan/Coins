@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.client.IBot;
-import io.neolab.internship.coins.client.SimpleBot;
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
@@ -33,13 +33,13 @@ class SelfPlay {
      * - Финализатор (результат игры)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+        try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
-            GameFinalizer.finalize(game.getPlayers());
+            GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }

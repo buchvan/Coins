@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -11,7 +11,6 @@ import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import java.util.*;
 
 public class SimpleBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    private final @NotNull Random random = new Random();
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
@@ -57,41 +55,66 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            final List<Cell> boardEdgeCells = board.getEdgeCells();
-            final Iterator<Unit> iterator = units.iterator();
-            while (iterator.hasNext()) {
-                boolean unitAvailableForCapture = false;
-                final Unit unit = iterator.next();
-                for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                    if (neighboringCell.getUnits().contains(unit)) {
-                        unitAvailableForCapture = true;
-                        break;
-                    }
-                }
-                if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                    unitAvailableForCapture = true;
-                    for (final Cell controlledCell : controlledCells) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)
-                                && controlledCell.getUnits().contains(unit)) {
-                            unitAvailableForCapture = false;
-                            break;
-                        }
-                    }
-                }
-                if (!unitAvailableForCapture) {
-                    iterator.remove();
-                }
-            }
-            final Pair<Position, List<Unit>> resolution = new Pair<>(board.getPositionByCell(catchingCell),
-                    units.size() > 0
-                            ? units.subList(0, RandomGenerator.chooseNumber(units.size()))
-                            : new LinkedList<>()
-            );
+            removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+                    catchingCell, controlledCells);
+            final int unitsCountNeededToCatchCell =
+                    controlledCells.contains(catchingCell)
+                            ? catchingCell.getType().getCatchDifficulty()
+                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
+            final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
+            final Pair<Position, List<Unit>> resolution =
+                    remainingUnitsCount >= 0
+                            ? new Pair<>(board.getPositionByCell(catchingCell),
+                            units.subList(0,
+                                    unitsCountNeededToCatchCell + RandomGenerator.chooseNumber(
+                                            units.size() - unitsCountNeededToCatchCell + 1)))
+                            : null;
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
             return resolution;
         } // else
         LOGGER.debug("Simple bot will not capture of cells");
         return null;
+    }
+
+    /**
+     * Найти и удалить недоступные для захвата клетки юнитов
+     *
+     * @param board                        - борда
+     * @param units                        - список юнитов
+     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
+     * @param catchingCell                 - захватываемая клетка
+     * @param controlledCells              - контролируемые игроком клетки
+     */
+    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
+                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
+                                                   final @NotNull Cell catchingCell,
+                                                   final @NotNull List<Cell> controlledCells) {
+        final List<Cell> boardEdgeCells = board.getEdgeCells();
+        final Iterator<Unit> iterator = units.iterator();
+        while (iterator.hasNext()) {
+            boolean unitAvailableForCapture = false;
+            final Unit unit = iterator.next();
+            for (final Cell neighboringCell : catchingCellNeighboringCells) {
+                if (neighboringCell.getUnits().contains(unit)) {
+                    unitAvailableForCapture = true;
+                    break;
+                }
+            }
+            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                unitAvailableForCapture = true;
+                for (final Cell controlledCell : controlledCells) {
+                    if (controlledCell.getUnits().contains(unit)) {
+                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
+                            unitAvailableForCapture = false;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!unitAvailableForCapture) {
+                iterator.remove();
+            }
+        }
     }
 
     @Override
@@ -111,26 +134,5 @@ public class SimpleBot implements IBot {
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
-    }
-
-    @Contract(value = "null -> false", pure = true)
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final SimpleBot simpleBot = (SimpleBot) o;
-        return random.equals(simpleBot.random);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(random);
-    }
-
-    @Override
-    public String toString() {
-        return "SimpleBot{" +
-                "random=" + random +
-                '}';
     }
 }

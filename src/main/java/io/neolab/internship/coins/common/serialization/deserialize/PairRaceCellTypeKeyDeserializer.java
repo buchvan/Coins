@@ -10,6 +10,7 @@ import io.neolab.internship.coins.utils.Pair;
 import java.io.IOException;
 
 public class PairRaceCellTypeKeyDeserializer extends KeyDeserializer {
+    @SuppressWarnings("unchecked")
     @Override
     public Object deserializeKey(final String s, final DeserializationContext deserializationContext)
             throws IOException {

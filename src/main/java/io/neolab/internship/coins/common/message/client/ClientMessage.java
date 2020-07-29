@@ -1,6 +1,9 @@
-package io.neolab.internship.coins.common.answer;
+package io.neolab.internship.coins.common.message.client;
 
 import com.fasterxml.jackson.annotation.*;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -11,17 +14,19 @@ import java.util.Objects;
 })
 public class ClientMessage {
     @JsonProperty
-    private final ClientMessageType messageType;
+    private final @NotNull ClientMessageType messageType;
 
+    @Contract(pure = true)
     @JsonCreator
-    public ClientMessage(@JsonProperty("messageType") final ClientMessageType messageType) {
+    public ClientMessage(@NotNull @JsonProperty("messageType") final ClientMessageType messageType) {
         this.messageType = messageType;
     }
 
-    public ClientMessageType getMessageType() {
+    public @NotNull ClientMessageType getMessageType() {
         return messageType;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

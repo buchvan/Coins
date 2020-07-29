@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.ChangeRaceAnswer;
-import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
-import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.client.answer.ChangeRaceAnswer;
+import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.message.client.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
