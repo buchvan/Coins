@@ -21,17 +21,18 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByPlaye
 public class GameStatistic {
 
     private static Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 10;
+    private static final int GAME_AMOUNT = 100;
     private static final int PLAYERS_AMOUNT = 2;
     private static final String STATISTIC_BASE_FILE_NAME = "game-statistic-";
     private static final String DELIMITER = "\n";
 
 
-    public static void play() {
+    private static void play() {
         final List<Player> players = initPlayers();
         initStatisticMap(players);
         for (int i = 0; i < GAME_AMOUNT; i++) {
             final List<Player> winners;
+            System.out.println("COINS BEFORE GAME PLAYER F1: " + players.get(0).getCoins());
             winners = selfPlayByPlayers(players);
             for (final Player winner : winners) {
                 int currentWinAmount = playersStatistic.get(winner);
