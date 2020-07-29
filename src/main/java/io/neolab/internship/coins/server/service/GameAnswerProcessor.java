@@ -129,14 +129,10 @@ public class GameAnswerProcessor {
      */
     static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
                            final @NotNull List<Race> racesPool) {
-        final Race oldRace = player.getRace();
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
         chooseRace(player, racesPool, newRace);
-        if (oldRace != null) {
-            racesPool.add(oldRace); // Возвращаем бывшую расу игрока в пул рас
-        }
     }
 
     /**
@@ -145,10 +141,14 @@ public class GameAnswerProcessor {
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
      */
-    static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
+    private static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
                                   final @NotNull Race newRace) {
+        final Race oldRace = player.getRace();
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
+        if(oldRace != null) {
+            racesPool.add(oldRace);
+        }
 
         /* Добавляем юнитов выбранной расы */
         int i = 0;
