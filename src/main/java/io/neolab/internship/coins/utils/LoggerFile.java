@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.utils;
 
 import io.neolab.internship.coins.server.service.GameLogger;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.util.Date;
@@ -8,9 +9,9 @@ import java.util.Date;
 public class LoggerFile implements AutoCloseable {
     private final String logFileName;
 
-    public LoggerFile(final String prefix) {
+    public LoggerFile(final @NotNull String prefix) {
 
-        /* генерируем имя файла-лога (self-play__HH-mm-ss) */
+        /* генерируем имя файла-лога (${prefix}__HH-mm-ss) */
         logFileName = prefix + "__" +
                 new Date().toString()
                         .split(" ")[3]
