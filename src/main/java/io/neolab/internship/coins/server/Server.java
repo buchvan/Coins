@@ -37,7 +37,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 1;
+    private static final int GAMES_COUNT = 3;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -380,16 +380,17 @@ public class Server implements IServer {
      */
     private void playerRound(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException, CoinsException {
+        final Player player = serverSomething.player;
 
         /* Активация данных игрока в начале раунда */
-        GameLoopProcessor.playerRoundBeginUpdate(serverSomething.player);
+        GameLoopProcessor.playerRoundBeginUpdate(player);
 
         beginRoundChoice(serverSomething, game);
         captureCell(serverSomething, game);
         distributionUnits(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
-        GameLoopProcessor.playerRoundEndUpdate(serverSomething.player);
+        GameLoopProcessor.playerRoundEndUpdate(player);
     }
 
     /**
@@ -401,15 +402,16 @@ public class Server implements IServer {
      */
     private void beginRoundChoice(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException, CoinsException {
+        final Player player = serverSomething.player;
         final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                PlayerQuestionType.DECLINE_RACE, game, serverSomething.player);
+                PlayerQuestionType.DECLINE_RACE, game, player);
         serverSomething.sendServerMessage(declineRaceQuestion);
         final DeclineRaceAnswer answer =
                 (DeclineRaceAnswer) Communication.deserializeClientMessage(serverSomething.read());
         GameAnswerProcessor.process(declineRaceQuestion, answer);
         if (answer.isDeclineRace()) {
             final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                    PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
+                    PlayerQuestionType.CHANGE_RACE, game, player);
             processChangeRace(changeRaceQuestion, serverSomething);
         }
     }
@@ -442,19 +444,19 @@ public class Server implements IServer {
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
                 player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
-        processCaptureCell(player, serverSomething, game);
+        processCaptureCell(serverSomething, game);
     }
 
     /**
      * Процесс взаимодействия с клиентом при захвате клеток
      *
-     * @param player          - текущий игрок
      * @param serverSomething - клиент текущего игрока
      * @param game            - игра
      * @throws IOException в случае ошибки общения с клиентом
      */
-    private void processCaptureCell(final @NotNull Player player, final @NotNull ServerSomething serverSomething,
+    private void processCaptureCell(final @NotNull ServerSomething serverSomething,
                                     final @NotNull IGame game) throws IOException, CoinsException {
+        final Player player = serverSomething.player;
         PlayerQuestion catchCellQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         CatchCellAnswer catchCellAnswer = getCatchCellAnswer(catchCellQuestion, serverSomething);
