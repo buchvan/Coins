@@ -18,6 +18,7 @@ public enum CoinsErrorCode {
     QUESTION_TYPE_NOT_FOUND("Type of question not found"),
     MESSAGE_TYPE_NOT_FOUND("Type of message not found"),
     ANSWER_VALIDATION_ENTER_CELL_IMPOSSIBLE("Impossible enter to cell"),
+    ANSWER_VALIDATION_ENTER_CELL_INVALID_UNITS("Invalid units in entering to cell"),
     ANSWER_VALIDATION_UNREACHABLE_CELL("Cell is unreachable for capture"),
     GAME_OVER("Game over"),
     ;

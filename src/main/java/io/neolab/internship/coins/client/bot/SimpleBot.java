@@ -47,11 +47,10 @@ public class SimpleBot implements IBot {
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
             /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
-            final List<Cell> catchingCellNeighboringCells = new LinkedList<>();
-            catchingCellNeighboringCells.add(catchingCell);
-            catchingCellNeighboringCells.addAll(
-                    Objects.requireNonNull(board.getNeighboringCells(
-                            Objects.requireNonNull(catchingCell))));
+            final List<Cell> catchingCellNeighboringCells =
+                    new LinkedList<>(
+                            Objects.requireNonNull(board.getNeighboringCells(
+                                    Objects.requireNonNull(catchingCell))));
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
