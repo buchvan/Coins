@@ -6,9 +6,15 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.factory.BoardFactory;
+import io.neolab.internship.coins.server.game.feature.CoefficientlyFeature;
+import io.neolab.internship.coins.server.game.feature.Feature;
+import io.neolab.internship.coins.server.game.feature.FeatureType;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.Pair;
 import org.junit.Test;
 
 import java.util.*;
@@ -115,6 +121,96 @@ public class GameLoopProcessorTests extends TestUtils {
         GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
         assertTrue(achievableCells.containsAll(board.getEdgeCells()));
         assertEquals(board.getEdgeCells().size(), achievableCells.size());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetUnitsNeededToCatchNull1() {
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(null, new Cell(CellType.LAND));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetUnitsNeededToCatchNull2() {
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(new GameFeatures(), null);
+    }
+
+    @Test
+    public void testGetUnitsNeededToCatch() {
+        final int bonusDefense = 3;
+        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = new HashMap<>(2);
+        List<Feature> features = new LinkedList<>();
+        features.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, 2));
+        features.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, bonusDefense));
+        features.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        features.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
+        features.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
+        features.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
+        raceCellTypeFeatures.put(new Pair<>(Race.ORC, CellType.LAND), features);
+        features = new LinkedList<>();
+        features.add(new CoefficientlyFeature(FeatureType.CATCH_CELL_CHANGING_UNITS_NUMBER, 2));
+        features.add(new CoefficientlyFeature(FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER, 3));
+        features.add(new CoefficientlyFeature(FeatureType.DEAD_UNITS_NUMBER_AFTER_CATCH_CELL, 1));
+        features.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL, 1));
+        features.add(new CoefficientlyFeature(FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP, 1));
+        features.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
+        raceCellTypeFeatures.put(new Pair<>(Race.ELF, CellType.LAND), features);
+        final GameFeatures gameFeatures = new GameFeatures(raceCellTypeFeatures);
+        final Cell cell = new Cell(CellType.LAND);
+        cell.setRace(Race.ORC);
+        cell.getUnits().add(new Unit());
+        final int actual = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, cell);
+
+        assertEquals(cell.getType().getCatchDifficulty() + 3 + 1 + 1, actual);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoseCellsNull1() {
+        GameLoopProcessor.loseCells(null, new LinkedList<>(), new HashSet<>());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoseCellsNull2() {
+        GameLoopProcessor.loseCells(new LinkedList<>(), null, new HashSet<>());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoseCellsNull3() {
+        GameLoopProcessor.loseCells(new LinkedList<>(), new LinkedList<>(), null);
+    }
+
+    @Test
+    public void testLoseCells() {
+        final Cell cell1 = new Cell(CellType.LAND);
+        final Cell cell2 = new Cell(CellType.WATER);
+        cell2.getUnits().add(new Unit());
+        final Cell cell3 = new Cell(CellType.MOUNTAIN);
+        cell3.getUnits().add(new Unit());
+
+        final List<Cell> cells = new LinkedList<>();
+        cells.add(cell1);
+        cells.add(cell2);
+        final List<Cell> controlledCells = new LinkedList<>();
+        controlledCells.add(cell1);
+        controlledCells.add(cell2);
+        final Set<Cell> feudalCells = new HashSet<>();
+        feudalCells.add(cell1);
+        feudalCells.add(cell2);
+        feudalCells.add(cell3);
+
+        GameLoopProcessor.loseCells(cells, controlledCells, feudalCells);
+
+        final List<Cell> expected1 = new LinkedList<>();
+        expected1.add(cell2);
+        assertEquals(expected1, controlledCells);
+
+        final Set<Cell> expected2 = new HashSet<>();
+        expected2.add(cell2);
+        expected2.add(cell3);
+        assertEquals(expected2, feudalCells);
     }
 
     @SuppressWarnings("ConstantConditions")
