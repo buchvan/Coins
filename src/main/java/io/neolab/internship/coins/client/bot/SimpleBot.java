@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -56,41 +56,64 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            final List<Cell> boardEdgeCells = board.getEdgeCells();
-            final Iterator<Unit> iterator = units.iterator();
-            while (iterator.hasNext()) {
-                boolean unitAvailableForCapture = false;
-                final Unit unit = iterator.next();
-                for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                    if (neighboringCell.getUnits().contains(unit)) {
-                        unitAvailableForCapture = true;
-                        break;
-                    }
-                }
-                if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                    unitAvailableForCapture = true;
-                    for (final Cell controlledCell : controlledCells) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)
-                                && controlledCell.getUnits().contains(unit)) {
-                            unitAvailableForCapture = false;
-                            break;
-                        }
-                    }
-                }
-                if (!unitAvailableForCapture) {
-                    iterator.remove();
-                }
-            }
-            final Pair<Position, List<Unit>> resolution = new Pair<>(board.getPositionByCell(catchingCell),
-                    units.size() > 0
-                            ? units.subList(0, RandomGenerator.chooseNumber(units.size()))
-                            : new LinkedList<>()
-            );
+            removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+                    catchingCell, controlledCells);
+            final int unitsCountNeededToCatchCell =
+                    GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
+            final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
+            final Pair<Position, List<Unit>> resolution =
+                    remainingUnitsCount >= 0
+                            ? new Pair<>(board.getPositionByCell(catchingCell),
+                            units.subList(0,
+                                    unitsCountNeededToCatchCell + RandomGenerator.chooseNumber(
+                                            units.size() - unitsCountNeededToCatchCell + 1)))
+                            : null;
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
             return resolution;
         } // else
         LOGGER.debug("Simple bot will not capture of cells");
         return null;
+    }
+
+    /**
+     * Найти и удалить недоступные для захвата клетки юнитов
+     *
+     * @param board                        - борда
+     * @param units                        - список юнитов
+     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
+     * @param catchingCell                 - захватываемая клетка
+     * @param controlledCells              - контролируемые игроком клетки
+     */
+    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
+                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
+                                                   final @NotNull Cell catchingCell,
+                                                   final @NotNull List<Cell> controlledCells) {
+        final List<Cell> boardEdgeCells = board.getEdgeCells();
+        final Iterator<Unit> iterator = units.iterator();
+        while (iterator.hasNext()) {
+            boolean unitAvailableForCapture = false;
+            final Unit unit = iterator.next();
+            for (final Cell neighboringCell : catchingCellNeighboringCells) {
+                if (neighboringCell.getUnits().contains(unit)) {
+                    unitAvailableForCapture = true;
+                    break;
+                }
+            }
+            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                unitAvailableForCapture = true;
+                for (final Cell controlledCell : controlledCells) {
+                    if (controlledCell.getUnits().contains(unit)) {
+                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
+                            unitAvailableForCapture = false;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!unitAvailableForCapture) {
+                iterator.remove();
+            }
+        }
     }
 
     @Override
