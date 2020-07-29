@@ -32,7 +32,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 1;
+    private static final int GAMES_COUNT = 3;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -389,7 +389,7 @@ public class Server implements IServer {
             while (true) {
                 try {
                     final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                            PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
+                            PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
                     serverSomething.send(Communication.serializeServerMessage(distributionQuestion));
                     GameAnswerProcessor.process(distributionQuestion,
                             (Answer) Communication.deserializeClientMessage(serverSomething.read()));
