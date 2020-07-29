@@ -5,6 +5,7 @@ import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,8 +20,8 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
  */
 public class GameStatistic {
 
-    private static final Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
+    private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
+    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
@@ -56,7 +57,7 @@ public class GameStatistic {
     /**
      * Иннициализация тестовых игроков
      */
-    private static List<Player> initPlayers() {
+    private static @NotNull List<Player> initPlayers() {
         return initTestPlayers(PLAYERS_AMOUNT);
     }
 
@@ -67,7 +68,7 @@ public class GameStatistic {
     /**
      * Заполнение мапы со статистикой
      */
-    private static void initStatisticMap(final List<Player> players) {
+    private static void initStatisticMap(final @NotNull  List<Player> players) {
         for (final Player player : players) {
             playersStatistic.put(player, 0);
         }

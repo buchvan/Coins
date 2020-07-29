@@ -23,7 +23,7 @@ public class GameStatisticLogger {
     /**
      * Запись в лог информации об игроке
      */
-    public static void printPlayerLog(final Player player) {
+    public static void printPlayerLog(final @NotNull Player player) {
         LOGGER.info("PLAYER: " + player.getNickname());
     }
 
@@ -44,7 +44,7 @@ public class GameStatisticLogger {
     /**
      * Запись в лог полной статистики об игроке
      */
-    public static void printPlayerStatisticLog(final Player player, final int winAmount, final double percent) {
+    public static void printPlayerStatisticLog(final @NotNull Player player, final int winAmount, final double percent) {
         printPlayerLog(player);
         printPlayerWinAmountLog(winAmount);
         printPLayerWinPercentLog(percent);

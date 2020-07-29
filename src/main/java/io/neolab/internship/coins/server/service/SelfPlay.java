@@ -3,12 +3,17 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.board.*;
+import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.utils.*;
+import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.LogCleaner;
+import io.neolab.internship.coins.utils.LoggerFile;
+import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -23,7 +28,7 @@ class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
+    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
 
 
@@ -54,12 +59,16 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    static List<Player> selfPlayByBotToPlayers(final List<Pair<IBot, Player>> botPlayerPairs) {
+    static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
-            final List<Player> players = new ArrayList<>();
-            botPlayerPairs.forEach(botPlayerPair -> players.add(botPlayerPair.getSecond()));
-            simpleBotToPlayer = botPlayerPairs;
+            final List<Player> players = new LinkedList<>();
+            botPlayerPairs.forEach(botPlayerPair -> {
+                        simpleBotToPlayer.add(botPlayerPair);
+                        players.add(botPlayerPair.getSecond());
+                    }
+            );
+
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
@@ -80,7 +89,7 @@ class SelfPlay {
         simpleBotToPlayer.forEach(pair ->
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
-                game.getRacesPool()));
+                        game.getRacesPool()));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
