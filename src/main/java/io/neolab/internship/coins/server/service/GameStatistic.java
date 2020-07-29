@@ -21,10 +21,11 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByPlaye
 public class GameStatistic {
 
     private static Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 100;
+    private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
     private static final String STATISTIC_BASE_FILE_NAME = "game-statistic-";
     private static final String DELIMITER = "\n";
+    private static int winCounter = 0;
 
 
     private static void play() {
@@ -35,6 +36,7 @@ public class GameStatistic {
             System.out.println("COINS BEFORE GAME PLAYER F1: " + players.get(0).getCoins());
             winners = selfPlayByPlayers(players);
             for (final Player winner : winners) {
+                winCounter++;
                 int currentWinAmount = playersStatistic.get(winner);
                 playersStatistic.put(winner, ++currentWinAmount);
             }
@@ -126,10 +128,10 @@ public class GameStatistic {
         play();
         final String fileName = generateStatisticFileName();
         try (final FileWriter file = new FileWriter(new File(fileName))) {
-            playersStatistic.forEach(((player, winAmount) -> {
+            playersStatistic.forEach(((player, playerWinAmount) -> {
                 final String playerStr = getPlayerString(player);
-                final String winStr = getPlayerWinString(winAmount);
-                final String percentStr = getPlayerWinPercentStr((double) winAmount * 100 / GAME_AMOUNT);
+                final String winStr = getPlayerWinString(playerWinAmount);
+                final String percentStr = getPlayerWinPercentStr((double) playerWinAmount * 100 / winCounter);
                 writeStatisticToConsole(playerStr, winStr, percentStr);
                 try {
                     writeStatisticIntoFile(file, playerStr, winStr, percentStr);
