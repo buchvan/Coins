@@ -16,10 +16,9 @@ import org.junit.Test;
 import java.util.List;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
-import static io.neolab.internship.coins.server.service.TestUtils.getSomePlayer;
 import static org.junit.Assert.*;
 
-public class GameChangeRaceAnswerProcessorTests {
+public class GameChangeRaceAnswerProcessorTests extends GameAnswerProcessorTests {
 
     @Test
     public void changeRaceUnavailableNewRaceTest() throws CoinsException {

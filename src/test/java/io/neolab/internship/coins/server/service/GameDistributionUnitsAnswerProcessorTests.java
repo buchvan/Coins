@@ -21,10 +21,9 @@ import org.junit.Test;
 import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
-import static io.neolab.internship.coins.server.service.TestUtils.*;
 import static org.junit.Assert.*;
 
-public class GameDistributionUnitsAnswerProcessorTests {
+public class GameDistributionUnitsAnswerProcessorTests extends GameAnswerProcessorTests {
 
     @Test
     public void distributionUnitsNoAvailableUnitsTest() throws CoinsException {
@@ -163,10 +162,6 @@ public class GameDistributionUnitsAnswerProcessorTests {
 
         assertTrue(game.getOwnToCells().get(player).isEmpty());
         assertTrue(game.getFeudalToCells().get(player).isEmpty());
-    }
-
-    private @NotNull Player getSomePlayer(final @NotNull IGame game) {
-        return game.getPlayers().get(0);
     }
 
     private void setControlledPlayerCells(final @NotNull IGame game, final @NotNull Player player) {

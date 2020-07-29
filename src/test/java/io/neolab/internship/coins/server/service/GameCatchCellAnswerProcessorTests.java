@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
-import static io.neolab.internship.coins.server.service.TestUtils.*;
 import static org.junit.Assert.*;
 
-public class GameCatchCellAnswerProcessorTests {
+public class GameCatchCellAnswerProcessorTests extends GameAnswerProcessorTests {
     @Test
     public void catchCellWrongPositionTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
@@ -79,6 +78,27 @@ public class GameCatchCellAnswerProcessorTests {
     }
 
     @Test
+    public void catchCellCaptureImpossibleTest() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+        final Player player = getSomePlayer(game);
+        player.setRace(Race.UNDEAD);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
+
+        final IBoard board = game.getBoard();
+        final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
+        game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.CATCH_CELL, game, player);
+        final Answer catchCellAnswer = new CatchCellAnswer(new Pair<>(board.getPositionByCell(landCell),
+                player.getUnitsByState(AvailabilityType.AVAILABLE)));
+
+        final CoinsException exception = assertThrows(CoinsException.class,
+                () -> GameAnswerProcessor.process(question, catchCellAnswer));
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE, exception.getErrorCode());
+    }
+
+    @Test
     public void catchControlledCellLandNotEnoughUnitsTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);
         final Player player = getSomePlayer(game);
@@ -86,7 +106,7 @@ public class GameCatchCellAnswerProcessorTests {
         setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
 
         final IBoard board = game.getBoard();
-        final Cell landCell = getCellFromBoardByCellType(CellType.LAND, game.getBoard());
+        final Cell landCell = getCellFromBoardByCellType(CellType.LAND, board);
         landCell.setFeudal(player);
         game.getPlayerToAchievableCells().put(player, getAchievableCellSet(landCell));
         setCellAsControlled(landCell, game, player);
@@ -439,9 +459,9 @@ public class GameCatchCellAnswerProcessorTests {
         setPlayerUnits(player, 2, AvailabilityType.NOT_AVAILABLE);
 
         final Position from = new Position(0, 0);
-        final Cell cell = game.getBoard().getCellByPosition(from);
+        final Cell cell = Objects.requireNonNull(game.getBoard().getCellByPosition(from));
         setUnitToCell(cell, 2);
-        Objects.requireNonNull(cell).setFeudal(player);
+        cell.setFeudal(player);
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);

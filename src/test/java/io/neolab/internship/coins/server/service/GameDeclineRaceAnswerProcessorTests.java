@@ -21,11 +21,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
-import static io.neolab.internship.coins.server.service.TestUtils.getSomeBoardPosition;
-import static io.neolab.internship.coins.server.service.TestUtils.getSomePlayer;
 import static org.junit.Assert.*;
 
-public class GameDeclineRaceAnswerProcessorTests {
+public class GameDeclineRaceAnswerProcessorTests extends GameAnswerProcessorTests {
 
     @Test
     public void emptyAnswerTest() throws CoinsException {
