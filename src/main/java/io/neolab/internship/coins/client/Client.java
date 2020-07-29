@@ -32,7 +32,7 @@ public class Client implements IClient {
 
     private final @NotNull String ip; // ip адрес клиента
     private final @NotNull InetAddress ipAddress;
-    private  int port; // порт соединения
+    private  static int port; // порт соединения
 
     private Socket socket = null;
     private BufferedReader keyboardReader = null; // поток чтения с консоли
@@ -251,7 +251,8 @@ public class Client implements IClient {
     public static void main(final String[] args) {
         try {
             final ClientConfigResource clientConfig = new ClientConfigResource();
-            final Client client = new Client(clientConfig.getHost(), Server.port);
+            System.out.println("PORT: " + port);
+            final Client client = new Client(clientConfig.getHost(), port);
             client.startClient();
         } catch (final CoinsException exception) {
             LOGGER.error("Error!", exception);

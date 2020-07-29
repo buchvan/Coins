@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class ServerConfigResource {
-    private static final String CONFIG_PATH = "src/main/resources/client.properties";
+    private static final String CONFIG_PATH = "src/main/resources/server.properties";
     private int port;
     private int clientsCount;
     private int gamesCount;

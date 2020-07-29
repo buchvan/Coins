@@ -36,11 +36,11 @@ public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     public static int port;
-    private static int clientsCount;
-    private static int gamesCount;
+    private int clientsCount;
+    private int gamesCount;
 
-    private static int boardSizeX;
-    private static int boardSizeY;
+    private int boardSizeX;
+    private int boardSizeY;
 
     private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
@@ -145,10 +145,15 @@ public class Server implements IServer {
     private void loadConfig() throws CoinsException {
         final ServerConfigResource serverConfigResource = new ServerConfigResource();
         port = serverConfigResource.getPort();
+        System.out.println(port);
         clientsCount = serverConfigResource.getClientsCount();
+        System.out.println(clientsCount);
         gamesCount = serverConfigResource.getGamesCount();
+        System.out.println(gamesCount);
         boardSizeX = serverConfigResource.getBoardSizeX();
+        System.out.println(boardSizeX);
         boardSizeY = serverConfigResource.getBoardSizeY();
+        System.out.println(boardSizeY);
     }
 
     @Override
