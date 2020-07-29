@@ -58,6 +58,7 @@ class SelfPlay {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final List<Player> players = new ArrayList<>();
+            botPlayerPairs.forEach(botPlayerPair -> players.add(botPlayerPair.getSecond()));
             simpleBotToPlayer = botPlayerPairs;
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
             GameLogger.printGameCreatedLog(game);

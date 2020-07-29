@@ -17,7 +17,6 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 /**
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
  */
-//FIXME: на большом количество итераций в конце игры у игроков слишком много монет(несколько тысяч)
 public class GameStatistic {
 
     private static Map<Player, Integer> playersStatistic = new HashMap<>();
