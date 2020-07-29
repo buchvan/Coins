@@ -77,7 +77,6 @@ public class GameStatistic {
     public static void main(final String[] args) {
         play();
         try (final LoggerFile ignored = new LoggerFile("game-statistic")) {
-            GameStatisticLogger.printLogStatisticFileLog(ignored.toString());
             playersStatistic
                     .forEach(((player, playerWinAmount)
                             -> GameStatisticLogger.printPlayerStatisticLog(player, playerWinAmount,

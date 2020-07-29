@@ -12,39 +12,30 @@ public class GameStatisticLogger {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(GameStatisticLogger.class);
 
     /**
-     * Вывод лога о файле, куда ведётся логгирование
-     *
-     * @param logFileName - имя файла-лога
-     */
-    public static void printLogStatisticFileLog(final @NotNull String logFileName) {
-        LOGGER.debug("* Logging in file {} *", logFileName);
-    }
-
-    /**
      * Запись в лог информации об игроке
      */
-    public static void printPlayerLog(final @NotNull Player player) {
+    private static void printPlayerLog(final @NotNull Player player) {
         LOGGER.info("PLAYER: " + player.getNickname());
     }
 
     /**
      * Запись в лог информации о количестве побед
      */
-    public static void printPlayerWinAmountLog(final int winAmount) {
+    private static void printPlayerWinAmountLog(final int winAmount) {
         LOGGER.info("WIN: " + winAmount);
     }
 
     /**
      * Запись в лог информации о проценте побед игрока
      */
-    public static void printPLayerWinPercentLog(final double percent) {
+    private static void printPLayerWinPercentLog(final double percent) {
         LOGGER.info("WIN: " + percent);
     }
 
     /**
      * Запись в лог полной статистики об игроке
      */
-    public static void printPlayerStatisticLog(final @NotNull Player player, final int winAmount, final double percent) {
+    static void printPlayerStatisticLog(final @NotNull Player player, final int winAmount, final double percent) {
         printPlayerLog(player);
         printPlayerWinAmountLog(winAmount);
         printPLayerWinPercentLog(percent);
