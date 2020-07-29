@@ -57,7 +57,9 @@ public class SimpleBot implements IBot {
             removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
                     catchingCell, controlledCells);
             final int unitsCountNeededToCatchCell =
-                    GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
+                    controlledCells.contains(catchingCell)
+                            ? catchingCell.getType().getCatchDifficulty()
+                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
             final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
             final Pair<Position, List<Unit>> resolution =
                     remainingUnitsCount >= 0
