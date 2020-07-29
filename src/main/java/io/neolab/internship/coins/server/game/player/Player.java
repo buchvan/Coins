@@ -117,11 +117,7 @@ public class Player implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Player player = (Player) o;
-        return id == player.id &&
-                coins == player.coins &&
-                Objects.equals(nickname, player.nickname) &&
-                race == player.race &&
-                Objects.equals(unitStateToUnits, player.unitStateToUnits);
+        return id == player.id;
     }
 
     @Override
