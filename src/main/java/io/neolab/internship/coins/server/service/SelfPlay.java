@@ -35,7 +35,7 @@ class SelfPlay {
      * - Финализатор (результат игры)
      */
     private static void selfPlay() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+        try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
