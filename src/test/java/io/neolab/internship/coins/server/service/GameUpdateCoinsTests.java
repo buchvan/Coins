@@ -15,7 +15,7 @@ import static io.neolab.internship.coins.server.service.GameInitializer.gameInit
 import static io.neolab.internship.coins.server.service.TestUtils.getCellFromBoardByCellType;
 import static org.junit.Assert.assertEquals;
 
-public class GameLoopProcessorTest {
+public class GameUpdateCoinsTests {
 
     /*
      * каждый захваченный регион с грибами приносит в конце хода призовую монетку расе грибов

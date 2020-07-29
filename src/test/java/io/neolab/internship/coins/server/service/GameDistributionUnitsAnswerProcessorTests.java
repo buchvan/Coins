@@ -128,6 +128,43 @@ public class GameDistributionUnitsAnswerProcessorTests {
         assertTrue(player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
     }
 
+    @Test
+    public void testDistributionUnitsCellEmptyNotOwn() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+
+        final Player player = getSomePlayer(game);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
+        setControlledPlayerCells(game, player);
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
+
+        GameAnswerProcessor.process(question, answer);
+
+        assertTrue(game.getOwnToCells().get(player).isEmpty());
+        assertTrue(game.getFeudalToCells().get(player).isEmpty());
+    }
+
+    @Test
+    public void testDistributionUnitsCellEmptyNotFeudal() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+
+        final Player player = getSomePlayer(game);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
+        setControlledPlayerCells(game, player);
+        setFeudalPlayerCells(game, player, game.getOwnToCells().get(player));
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
+
+        GameAnswerProcessor.process(question, answer);
+
+        assertTrue(game.getOwnToCells().get(player).isEmpty());
+        assertTrue(game.getFeudalToCells().get(player).isEmpty());
+    }
+
     private @NotNull Player getSomePlayer(final @NotNull IGame game) {
         return game.getPlayers().get(0);
     }
@@ -137,5 +174,11 @@ public class GameDistributionUnitsAnswerProcessorTests {
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         game.getOwnToCells().get(player).addAll(controlledCells);
+    }
+
+    private void setFeudalPlayerCells(final @NotNull IGame game, final @NotNull Player player,
+                                      final List<Cell> controlledCells) {
+        controlledCells.forEach(cell -> cell.setFeudal(player));
+        game.getFeudalToCells().get(player).addAll(controlledCells);
     }
 }
