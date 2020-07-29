@@ -35,12 +35,12 @@ import java.util.concurrent.TimeUnit;
 public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
-    public static final int PORT = 8081;
-    private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 3;
+    public static int port;
+    private static int clientsCount;
+    private static int gamesCount;
 
-    private static final int BOARD_SIZE_X = 3;
-    private static final int BOARD_SIZE_Y = 4;
+    private static int boardSizeX;
+    private static int boardSizeY;
 
     private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
@@ -142,19 +142,29 @@ public class Server implements IServer {
 
     }
 
+    private void loadConfig() throws CoinsException {
+        final ServerConfigResource serverConfigResource = new ServerConfigResource();
+        port = serverConfigResource.getPort();
+        clientsCount = serverConfigResource.getClientsCount();
+        gamesCount = serverConfigResource.getGamesCount();
+        boardSizeX = serverConfigResource.getBoardSizeX();
+        boardSizeY = serverConfigResource.getBoardSizeY();
+    }
+
     @Override
     public void startServer() {
         try (final LoggerFile ignored = new LoggerFile("server")) {
             LogCleaner.clean();
-            LOGGER.info("Server started, port: {}", PORT);
-            final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
-            for (int i = 1; i <= GAMES_COUNT; i++) {
+            loadConfig();
+            LOGGER.info("Server started, port: {}", port);
+            final ExecutorService threadPool = Executors.newFixedThreadPool(gamesCount);
+            for (int i = 1; i <= gamesCount; i++) {
                 final int gameId = i;
                 threadPool.execute(() -> startGame(gameId));
             }
             threadPool.shutdown();
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (final IOException | InterruptedException exception) {
+        } catch (final IOException | InterruptedException | CoinsException exception) {
             LOGGER.error("Error!!!", exception);
             disconnectAllClients();
         }
@@ -213,7 +223,7 @@ public class Server implements IServer {
         connectClients(clients);
         final List<Player> playerList = new LinkedList<>();
         clients.forEach(serverSomething -> playerList.add(serverSomething.player));
-        final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
+        final IGame game = GameInitializer.gameInit(boardSizeX, boardSizeY, playerList);
         GameLogger.printGameCreatedLog(game);
         return game;
     }
@@ -268,8 +278,8 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         int currentClientsCount = 1;
-        final ExecutorService connectClient = Executors.newFixedThreadPool(CLIENTS_COUNT);
-        while (currentClientsCount <= CLIENTS_COUNT) {
+        final ExecutorService connectClient = Executors.newFixedThreadPool(clientsCount);
+        while (currentClientsCount <= clientsCount) {
             final int currentClientId = currentClientsCount;
             connectClient.execute(() -> connectClient(currentClientId, clients));
             currentClientsCount++;
@@ -316,7 +326,7 @@ public class Server implements IServer {
      * @throws IOException при ошибке взятия сокета
      */
     private synchronized @NotNull Socket getSocket() throws IOException {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+        try (final ServerSocket serverSocket = new ServerSocket(port)) {
             return serverSocket.accept();
         }
     }
