@@ -510,7 +510,7 @@ public class Server implements IServer {
     private void processDistributionUnits(final @NotNull ServerSomething serverSomething, final @NotNull IGame game)
             throws IOException, CoinsException {
         final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
-                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
         serverSomething.sendServerMessage(distributionQuestion);
         GameAnswerProcessor.process(distributionQuestion,
                 (Answer) Communication.deserializeClientMessage(serverSomething.read()));

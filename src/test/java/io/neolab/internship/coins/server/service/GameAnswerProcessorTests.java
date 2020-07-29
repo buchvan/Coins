@@ -1,11 +1,11 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.answer.DeclineRaceAnswer;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.PlayerQuestionType;
-import io.neolab.internship.coins.common.question.ServerMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.IGame;
@@ -14,7 +14,6 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.TestUtils;
-import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
