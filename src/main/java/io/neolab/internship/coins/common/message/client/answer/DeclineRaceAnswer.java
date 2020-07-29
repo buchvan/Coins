@@ -1,7 +1,8 @@
-package io.neolab.internship.coins.common.answer;
+package io.neolab.internship.coins.common.message.client.answer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neolab.internship.coins.common.message.client.ClientMessageType;
 import org.jetbrains.annotations.Contract;
 
 import java.util.Objects;

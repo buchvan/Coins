@@ -1,16 +1,16 @@
-package io.neolab.internship.coins.common.answer;
+package io.neolab.internship.coins.common.message.client.answer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neolab.internship.coins.common.message.client.ClientMessageType;
 import io.neolab.internship.coins.common.serialization.deserialize.PositionKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.serialize.PositionSerializer;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -19,19 +19,15 @@ public class DistributionUnitsAnswer extends Answer {
     @JsonProperty
     @JsonSerialize(keyUsing = PositionSerializer.class)
     @JsonDeserialize(keyUsing = PositionKeyDeserializer.class)
-    private final @Nullable Map<Position, List<Unit>> resolutions;
-
-    public DistributionUnitsAnswer() {
-        this(null);
-    }
+    private final @NotNull Map<Position, List<Unit>> resolutions;
 
     @JsonCreator
-    public DistributionUnitsAnswer(@Nullable @JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
+    public DistributionUnitsAnswer(@NotNull @JsonProperty("resolutions") final Map<Position, List<Unit>> resolutions) {
         super(ClientMessageType.GAME_ANSWER);
         this.resolutions = resolutions;
     }
 
-    public @Nullable Map<Position, List<Unit>> getResolutions() {
+    public @NotNull Map<Position, List<Unit>> getResolutions() {
         return resolutions;
     }
 

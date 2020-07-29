@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Класс, содержащий основные функции вывода логов
+ */
 public class GameLogger {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(GameLogger.class);
 

@@ -13,12 +13,12 @@ import java.util.List;
 public class GameFinalizer {
 
     /**
-     * Финализатор игры. Выводит победителей в лог.
+     * Финализация игры. Выводит победителей в лог.
      *
      * @param playerList - список игроков.
      * @return список победителей
      */
-    public static @NotNull List<Player> finalize(final @Nullable List<Player> playerList) throws CoinsException {
+    public static @NotNull List<Player> finalization(final @Nullable List<Player> playerList) throws CoinsException {
         final int maxCoinsCount = getMaxCoinsCount(playerList);
         final List<Player> winners = getWinners(maxCoinsCount, playerList);
         GameLogger.printResultsInGameEnd(winners, playerList);
