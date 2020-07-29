@@ -37,7 +37,7 @@ public class Server implements IServer {
 
     public static final int PORT = 8081;
     private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 2;
+    private static final int GAMES_COUNT = 1;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -493,6 +493,8 @@ public class Server implements IServer {
         final Player player = serverSomething.player;
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
                 game.getOwnToCells().get(player));
+        GameLoopProcessor.loseCells(game.getOwnToCells().get(player), game.getOwnToCells().get(player),
+                game.getFeudalToCells().get(player));
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
             processDistributionUnits(serverSomething, game);
         }
