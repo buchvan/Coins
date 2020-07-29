@@ -17,12 +17,12 @@ public class GameFinalizerTest {
         final List<Player> playerList = new LinkedList<>();
         playerList.add(new Player("kvs"));
         playerList.add(new Player("bim"));
-        GameFinalizer.finalize(playerList);
+        GameFinalizer.finalization(playerList);
     }
 
     @Test(expected = CoinsException.class)
     public void testFinalizeFail() throws CoinsException {
-        GameFinalizer.finalize(null);
+        GameFinalizer.finalization(null);
     }
 
     @Test

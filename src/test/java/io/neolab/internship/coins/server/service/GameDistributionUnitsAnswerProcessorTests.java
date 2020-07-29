@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.DistributionUnitsAnswer;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.PlayerQuestionType;
-import io.neolab.internship.coins.common.question.ServerMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.DistributionUnitsAnswer;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -33,7 +33,7 @@ public class GameDistributionUnitsAnswerProcessorTests {
         game.getOwnToCells().get(player).addAll(Collections.emptyList());
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
-        final Answer answer = new DistributionUnitsAnswer();
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
         final CoinsException exception = assertThrows(CoinsException.class,
                 () -> GameAnswerProcessor.process(question, answer));
         assertEquals(CoinsErrorCode.ANSWER_VALIDATION_NO_PLACE_FOR_DISTRIBUTION, exception.getErrorCode());
@@ -128,6 +128,43 @@ public class GameDistributionUnitsAnswerProcessorTests {
         assertTrue(player.getUnitStateToUnits().get(AvailabilityType.NOT_AVAILABLE).contains(someUnit));
     }
 
+    @Test
+    public void testDistributionUnitsCellEmptyNotOwn() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+
+        final Player player = getSomePlayer(game);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
+        setControlledPlayerCells(game, player);
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
+
+        GameAnswerProcessor.process(question, answer);
+
+        assertTrue(game.getOwnToCells().get(player).isEmpty());
+        assertTrue(game.getFeudalToCells().get(player).isEmpty());
+    }
+
+    @Test
+    public void testDistributionUnitsCellEmptyNotFeudal() throws CoinsException {
+        final IGame game = gameInit(2, 2, 2);
+
+        final Player player = getSomePlayer(game);
+        setPlayerUnits(player, 1, AvailabilityType.AVAILABLE);
+        setControlledPlayerCells(game, player);
+        setFeudalPlayerCells(game, player, game.getOwnToCells().get(player));
+
+        final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
+                PlayerQuestionType.DISTRIBUTION_UNITS, game, player);
+        final Answer answer = new DistributionUnitsAnswer(new HashMap<>());
+
+        GameAnswerProcessor.process(question, answer);
+
+        assertTrue(game.getOwnToCells().get(player).isEmpty());
+        assertTrue(game.getFeudalToCells().get(player).isEmpty());
+    }
+
     private @NotNull Player getSomePlayer(final @NotNull IGame game) {
         return game.getPlayers().get(0);
     }
@@ -137,5 +174,11 @@ public class GameDistributionUnitsAnswerProcessorTests {
         controlledCells.add(new Cell(CellType.LAND));
         controlledCells.add(new Cell(CellType.WATER));
         game.getOwnToCells().get(player).addAll(controlledCells);
+    }
+
+    private void setFeudalPlayerCells(final @NotNull IGame game, final @NotNull Player player,
+                                      final List<Cell> controlledCells) {
+        controlledCells.forEach(cell -> cell.setFeudal(player));
+        game.getFeudalToCells().get(player).addAll(controlledCells);
     }
 }

@@ -1,10 +1,10 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.common.answer.Answer;
-import io.neolab.internship.coins.common.answer.CatchCellAnswer;
-import io.neolab.internship.coins.common.question.PlayerQuestion;
-import io.neolab.internship.coins.common.question.PlayerQuestionType;
-import io.neolab.internship.coins.common.question.ServerMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
+import io.neolab.internship.coins.common.message.server.ServerMessageType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
@@ -469,11 +469,11 @@ public class GameCatchCellAnswerProcessorTests {
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
         GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
-        assertEquals(player, landCell.getFeudal());
-        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
+                createCatchCellAnswer(board.getPositionByCell(landCell), player,3));
+        assertNull(landCell.getFeudal());
+        assertFalse(game.getFeudalToCells().get(player).contains(landCell));
         assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
-        assertTrue(game.getOwnToCells().get(player).contains(landCell));
+        assertFalse(game.getOwnToCells().get(player).contains(landCell));
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
         assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
     }
@@ -496,13 +496,9 @@ public class GameCatchCellAnswerProcessorTests {
 
         final PlayerQuestion question = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.CATCH_CELL, game, player);
-        GameAnswerProcessor.process(question,
-                createCatchCellAnswer(board.getPositionByCell(landCell), player,2));
-        assertEquals(player, landCell.getFeudal());
-        assertTrue(game.getFeudalToCells().get(player).contains(landCell));
-        assertFalse(game.getPlayerToTransitCells().get(player).contains(landCell));
-        assertTrue(game.getOwnToCells().get(player).contains(landCell));
-        assertEquals(1, player.getUnitsByState(AvailabilityType.AVAILABLE).size());
-        assertEquals(2, player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).size());
+        final CoinsException exception = assertThrows(CoinsException.class,
+                () -> GameAnswerProcessor.process(question,
+                        createCatchCellAnswer(board.getPositionByCell(landCell), player,3)));
+        assertEquals(CoinsErrorCode.ANSWER_VALIDATION_ENTER_CELL_INVALID_UNITS, exception.getErrorCode());
     }
 }

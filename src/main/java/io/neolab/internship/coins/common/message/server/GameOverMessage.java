@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.common.question;
+package io.neolab.internship.coins.common.message.server;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,15 +9,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Objects;
 
-public class GameOverQuestion extends ServerMessage {
+public class GameOverMessage extends ServerMessage {
     private final @NotNull List<Player> winners;
     private final @NotNull List<Player> playerList;
 
     @JsonCreator
-    public GameOverQuestion(@NotNull @JsonProperty("questionType") final ServerMessageType questionType,
-                            @NotNull @JsonProperty("winners") final List<Player> winners,
-                            @NotNull @JsonProperty("playerList") final List<Player> playerList) {
-        super(questionType);
+    public GameOverMessage(@NotNull @JsonProperty("serverMessageType") final ServerMessageType serverMessageType,
+                           @NotNull @JsonProperty("winners") final List<Player> winners,
+                           @NotNull @JsonProperty("playerList") final List<Player> playerList) {
+        super(serverMessageType);
         this.winners = winners;
         this.playerList = playerList;
     }
@@ -36,7 +36,7 @@ public class GameOverQuestion extends ServerMessage {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        final GameOverQuestion that = (GameOverQuestion) o;
+        final GameOverMessage that = (GameOverMessage) o;
         return Objects.equals(winners, that.winners) &&
                 Objects.equals(playerList, that.playerList);
     }

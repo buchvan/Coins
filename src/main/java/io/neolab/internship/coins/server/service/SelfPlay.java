@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.client.IBot;
-import io.neolab.internship.coins.client.SimpleBot;
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
+
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.loseCells;
 
 class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
@@ -32,14 +34,14 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    public static void selfPlay() {
-        try (final GameLoggerFile ignored = new GameLoggerFile()) {
+    private static void selfPlay() {
+        try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
-            GameFinalizer.finalize(game.getPlayers());
+            GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
@@ -192,7 +194,8 @@ class SelfPlay {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(catchingCell);
         if (isControlled) {
-            return isTryEnterToCellSucceed(player, catchingCell, units, board);
+            return isTryEnterToCellSucceed(player, catchingCell, ownToCells.get(player), feudalToCells.get(player),
+                    units, board);
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
@@ -217,13 +220,17 @@ class SelfPlay {
     /**
      * Попытка входа игрока в свою клетку
      *
-     * @param player     - игрок
-     * @param targetCell - клетка, в которую игрок пытается войти
-     * @param units      - список юнитов, которых игрок послал в клетку
-     * @param board      - борда
+     * @param player          - игрок
+     * @param targetCell      - клетка, в которую игрок пытается войти
+     * @param controlledCells - подконтрольные игроку клетки
+     * @param feudalCells     - клетки, приносящие игроку монетки
+     * @param units           - список юнитов, которых игрок послал в клетку
+     * @param board           - борда
      * @return true - если попытка удачная, false - иначе
      */
     private static boolean isTryEnterToCellSucceed(final @NotNull Player player, final @NotNull Cell targetCell,
+                                                   final @NotNull List<Cell> controlledCells,
+                                                   final @NotNull Set<Cell> feudalCells,
                                                    final @NotNull List<Unit> units, final @NotNull IBoard board) {
         GameLogger.printCellTryEnterLog(player, board.getPositionByCell(targetCell));
         GameLogger.printCellTryEnterUnitsQuantityLog(player, units.size());
@@ -232,7 +239,7 @@ class SelfPlay {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
-        GameLoopProcessor.enterToCell(player, targetCell, units, tiredUnitsCount, board);
+        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board);
         return true;
     }
 
@@ -271,6 +278,7 @@ class SelfPlay {
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
@@ -282,6 +290,7 @@ class SelfPlay {
                 GameLoopProcessor.protectCell(player,
                         Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
             });
+            loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         }
         GameLogger.printAfterDistributedUnitsLog(player);
     }
