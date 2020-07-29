@@ -2,8 +2,10 @@ package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.server.game.player.Player;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +18,11 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByPlaye
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
  */
 //FIXME: на большом количество итераций в конце игры у игроков слишком много монет(несколько тысяч)
-//TODO: use file path
 public class GameStatistic {
 
     private static Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 2;
+    private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
-    private static final String STATISTIC_FILE_PATH = "./src/statistic/";
     private static final String STATISTIC_BASE_FILE_NAME = "game-statistic-";
     private static final String DELIMITER = "\n";
 
@@ -70,13 +70,6 @@ public class GameStatistic {
     }
 
     /**
-     * Генерация имени файла
-     */
-    private static String generateStatisticFileName() {
-        return STATISTIC_BASE_FILE_NAME + new Date().toString();
-    }
-
-    /**
      * Вывести статистику на консоль
      */
     private static void writeStatisticToConsole(final String playerStr, final String winStr, final String percentStr) {
@@ -117,11 +110,21 @@ public class GameStatistic {
     }
 
     /**
+     * Сгенерировать имя файла для записи статистики
+     */
+    private static String generateStatisticFileName() {
+        final SimpleDateFormat formatForDateNow = new SimpleDateFormat("E-yyyy-MM-dd-hh-mm-ss");
+        return STATISTIC_BASE_FILE_NAME + formatForDateNow.format(new Date())
+                .replaceAll(" ", "-");
+    }
+
+    /**
      * Запись результатов в консоль
      */
     public static void main(final String[] args) {
         play();
-        try (final FileWriter file = new FileWriter("test")) {
+        final String fileName = generateStatisticFileName();
+        try (final FileWriter file = new FileWriter(new File(fileName))) {
             playersStatistic.forEach(((player, winAmount) -> {
                 final String playerStr = getPlayerString(player);
                 final String winStr = getPlayerWinString(winAmount);
@@ -136,6 +139,5 @@ public class GameStatistic {
         } catch (final IOException exception) {
             System.out.println("Statistic file failed");
         }
-
     }
 }
