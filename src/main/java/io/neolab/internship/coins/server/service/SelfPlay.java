@@ -23,7 +23,7 @@ class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
+    private static @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
 
 
@@ -54,12 +54,13 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    public static List<Player> selfPlayByPlayers(final List<Player> players) {
+    public static List<Player> selfPlayByBotToPlayers(final List<Pair<IBot, Player>> botPlayerPairs) {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
+            final List<Player> players = new ArrayList<>();
+            simpleBotToPlayer = botPlayerPairs;
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
             GameLogger.printGameCreatedLog(game);
-            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
             return GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {

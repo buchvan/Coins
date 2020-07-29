@@ -1,14 +1,18 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.LoggerFile;
+import io.neolab.internship.coins.utils.Pair;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.initTestPlayers;
-import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByPlayers;
+import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
 /**
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
@@ -17,18 +21,19 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByPlaye
 public class GameStatistic {
 
     private static Map<Player, Integer> playersStatistic = new HashMap<>();
+    private static List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
-    private static final String DELIMITER = "\n";
     private static int winCounter = 0;
 
 
     private static void play() {
         final List<Player> players = initPlayers();
+        initBotPlayerPair(players);
         initStatisticMap(players);
         for (int i = 0; i < GAME_AMOUNT; i++) {
             final List<Player> winners;
-            winners = selfPlayByPlayers(players);
+            winners = selfPlayByBotToPlayers(simpleBotToPlayer);
             for (final Player winner : winners) {
                 winCounter++;
                 int currentWinAmount = playersStatistic.get(winner);
@@ -54,7 +59,10 @@ public class GameStatistic {
      */
     private static List<Player> initPlayers() {
         return initTestPlayers(PLAYERS_AMOUNT);
+    }
 
+    private static void initBotPlayerPair(final List<Player> players) {
+        players.forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
     }
 
     /**
