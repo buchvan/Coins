@@ -56,7 +56,7 @@ public class GameInitializer {
      *
      * @return список тестовых игроков
      */
-    public static @NotNull List<Player> initTestPlayers(final int playersCount) {
+    static @NotNull List<Player> initTestPlayers(final int playersCount) {
         int i = 0;
         final List<Player> playerList = new LinkedList<>();
         while (i < playersCount) {

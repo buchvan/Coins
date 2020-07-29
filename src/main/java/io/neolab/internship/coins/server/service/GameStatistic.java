@@ -19,7 +19,7 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
  */
 public class GameStatistic {
 
-    private static Map<Player, Integer> playersStatistic = new HashMap<>();
+    private static final Map<Player, Integer> playersStatistic = new HashMap<>();
     private static List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;

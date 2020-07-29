@@ -143,7 +143,6 @@ public class GameAnswerProcessor {
      */
     private static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
                                   final @NotNull Race newRace) {
-        racesPool.forEach(System.out::println);
         final Race oldRace = player.getRace();
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);

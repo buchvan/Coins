@@ -54,7 +54,7 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    public static List<Player> selfPlayByBotToPlayers(final List<Pair<IBot, Player>> botPlayerPairs) {
+    static List<Player> selfPlayByBotToPlayers(final List<Pair<IBot, Player>> botPlayerPairs) {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final List<Player> players = new ArrayList<>();
@@ -75,7 +75,7 @@ class SelfPlay {
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
      */
-    public static void gameLoop(final @NotNull IGame game) {
+    private static void gameLoop(final @NotNull IGame game) {
         GameLogger.printStartGameChoiceLog();
         simpleBotToPlayer.forEach(pair ->
                 GameAnswerProcessor.changeRace(pair.getSecond(),
