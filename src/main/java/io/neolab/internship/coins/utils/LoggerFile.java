@@ -4,17 +4,18 @@ import io.neolab.internship.coins.server.service.GameLogger;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LoggerFile implements AutoCloseable {
     private final String logFileName;
 
     public LoggerFile(final @NotNull String prefix) {
+        final SimpleDateFormat formatForDateNow = new SimpleDateFormat("E-yyyy-MM-dd-hh-mm-ss-S");
 
-        /* генерируем имя файла-лога (${prefix}__HH-mm-ss) */
+        /* генерируем имя файла-лога (prefix__E-yyyy-MM-dd-hh-mm-ss-S) */
         logFileName = prefix + "__" +
-                new Date().toString()
-                        .split(" ")[3]
+                formatForDateNow.format(new Date())
                         .replaceAll(":", "-");
         MDC.put("logFileName", logFileName); // в logback.xml по этому ключу берётся имя файла для лога
         GameLogger.printLogFileLog(logFileName);

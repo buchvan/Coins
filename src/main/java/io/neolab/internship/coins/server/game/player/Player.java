@@ -87,7 +87,7 @@ public class Player implements Serializable {
         return race;
     }
 
-    public void setRace(final @NotNull Race race) {
+    public void setRace(final @Nullable Race race) {
         this.race = race;
     }
 
