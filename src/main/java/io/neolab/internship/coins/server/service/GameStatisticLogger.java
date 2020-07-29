@@ -29,7 +29,7 @@ public class GameStatisticLogger {
      * Запись в лог информации о проценте побед игрока
      */
     private static void printPLayerWinPercentLog(final double percent) {
-        LOGGER.info("WIN: " + percent);
+        LOGGER.info("% : " + percent);
     }
 
     /**
