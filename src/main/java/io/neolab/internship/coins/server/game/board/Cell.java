@@ -95,11 +95,9 @@ public class Cell implements Serializable {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cell)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         final Cell cell = (Cell) o;
-        return getType() == cell.getType() &&
-                Objects.equals(getUnits(), cell.getUnits()) &&
-                getRace() == cell.getRace();
+        return id == cell.id;
     }
 
     @Override
