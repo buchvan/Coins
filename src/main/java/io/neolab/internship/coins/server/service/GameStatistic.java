@@ -28,9 +28,11 @@ public class GameStatistic {
 
 
     private static void play() {
-        final List<Player> players = initPlayers();
-        initBotPlayerPair(players);
-        initStatisticMap(players);
+        try (final LoggerFile ignored = new LoggerFile("game-statistic")) {
+            final List<Player> players = initPlayers();
+            initBotPlayerPair(players);
+            initStatisticMap(players);
+        }
         for (int i = 0; i < GAME_AMOUNT; i++) {
             final List<Player> winners;
             winners = selfPlayByBotToPlayers(simpleBotToPlayer);
@@ -68,19 +70,26 @@ public class GameStatistic {
     /**
      * Заполнение мапы со статистикой
      */
-    private static void initStatisticMap(final @NotNull  List<Player> players) {
+    private static void initStatisticMap(final @NotNull List<Player> players) {
         for (final Player player : players) {
             playersStatistic.put(player, 0);
         }
     }
 
-    public static void main(final String[] args) {
-        play();
+    /**
+     * Сбор статистики и её вывод в лог
+     */
+    private static void collectStatistic() {
         try (final LoggerFile ignored = new LoggerFile("game-statistic")) {
             playersStatistic
                     .forEach(((player, playerWinAmount)
                             -> GameStatisticLogger.printPlayerStatisticLog(player, playerWinAmount,
                             (double) playerWinAmount * 100 / winCounter)));
         }
+    }
+
+    public static void main(final String[] args) {
+        play();
+        collectStatistic();
     }
 }
