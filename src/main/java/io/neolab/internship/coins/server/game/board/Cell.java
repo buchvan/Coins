@@ -91,7 +91,6 @@ public class Cell implements Serializable {
         this.race = race;
     }
 
-    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

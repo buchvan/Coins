@@ -126,8 +126,7 @@ public class SimpleBot implements IBot {
             final Cell protectedCell = RandomGenerator.chooseItemFromList(
                     game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
             units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
-                    availableUnits.size())
-            )); // список юнитов, которое игрок хочет распределить в эту клетку
+                    availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
             distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
             availableUnits.removeAll(units);
             units = new LinkedList<>();

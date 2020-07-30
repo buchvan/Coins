@@ -286,7 +286,6 @@ public class GameLoopProcessor {
             if (cell.getUnits().isEmpty()) {
                 lostCells.add(cell);
                 cell.setFeudal(null);
-                iterator.remove();
             }
         }
         feudalCells.removeAll(lostCells);

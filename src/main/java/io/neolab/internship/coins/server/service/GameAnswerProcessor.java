@@ -7,7 +7,6 @@ import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer
 import io.neolab.internship.coins.common.message.client.answer.DistributionUnitsAnswer;
 import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.board.Cell;
