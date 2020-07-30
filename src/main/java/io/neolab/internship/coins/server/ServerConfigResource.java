@@ -12,14 +12,14 @@ import java.util.Properties;
  */
 public class ServerConfigResource {
     public static final String CONFIG_PATH = "src/main/resources/server.properties";
-    private int port;
-    private int clientsCount;
-    private int gamesCount;
-    private int timeoutMillis;
-    private int clientDisconnectAttempts;
+    private final int port;
+    private final int clientsCount;
+    private final int gamesCount;
+    private final int timeoutMillis;
+    private final int clientDisconnectAttempts;
 
-    private int boardSizeX;
-    private int boardSizeY;
+    private final int boardSizeX;
+    private final int boardSizeY;
 
     ServerConfigResource() throws CoinsException {
         try (final FileInputStream serverConfigFis = new FileInputStream(CONFIG_PATH)) {

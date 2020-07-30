@@ -13,8 +13,8 @@ import java.util.Properties;
  */
 class ClientConfigResource {
     private static final String CONFIG_PATH = "src/main/resources/client.properties";
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
 
     ClientConfigResource() throws CoinsException {
         try (final FileInputStream clientConfigFis = new FileInputStream(CONFIG_PATH);
