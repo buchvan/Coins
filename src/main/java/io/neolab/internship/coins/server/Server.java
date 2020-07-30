@@ -161,6 +161,9 @@ public class Server implements IServer {
 
     }
 
+    /**
+     * Загружает настройки сервера из конфигурационного файла
+     */
     private void loadConfig() throws CoinsException {
         final ServerConfigResource serverConfigResource = new ServerConfigResource();
         port = serverConfigResource.getPort();

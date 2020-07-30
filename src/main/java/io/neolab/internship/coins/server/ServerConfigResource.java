@@ -7,8 +7,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Класс для загрузки информации для конфигурации клиента
+ */
 public class ServerConfigResource {
-    private static final String CONFIG_PATH = "src/main/resources/server.properties";
+    public static final String CONFIG_PATH = "src/main/resources/server.properties";
     private int port;
     private int clientsCount;
     private int gamesCount;

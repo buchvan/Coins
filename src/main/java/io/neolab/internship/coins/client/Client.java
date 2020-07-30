@@ -30,7 +30,6 @@ import java.net.UnknownHostException;
 public class Client implements IClient {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final int PORT = Server.port;
     private final @NotNull String ip; // ip адрес клиента
     private final @NotNull InetAddress ipAddress;
     private  final int port; // порт соединения
@@ -254,8 +253,7 @@ public class Client implements IClient {
     public static void main(final String[] args) {
         try {
             final ClientConfigResource clientConfig = new ClientConfigResource();
-            System.out.println("PORT: " + PORT);
-            final Client client = new Client(clientConfig.getHost(), PORT);
+            final Client client = new Client(clientConfig.getHost(), clientConfig.getPort());
             client.startClient();
         } catch (final CoinsException exception) {
             LOGGER.error("Error!", exception);
