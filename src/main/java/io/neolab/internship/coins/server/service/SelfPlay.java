@@ -72,6 +72,7 @@ class SelfPlay {
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
             GameLogger.printGameCreatedLog(game);
             gameLoop(game);
+            simpleBotToPlayer.clear();
             return GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
