@@ -15,6 +15,8 @@ public class ServerConfigResource {
     private int port;
     private int clientsCount;
     private int gamesCount;
+    private int timeoutMillis;
+    private int clientDisconnectAttempts;
 
     private int boardSizeX;
     private int boardSizeY;
@@ -28,6 +30,8 @@ public class ServerConfigResource {
             gamesCount = Integer.parseInt(property.getProperty("games.count"));
             boardSizeX = Integer.parseInt(property.getProperty("board.size_x"));
             boardSizeY = Integer.parseInt(property.getProperty("board.size_y"));
+            timeoutMillis = Integer.parseInt(property.getProperty("timeout.millis"));
+            clientDisconnectAttempts = Integer.parseInt(property.getProperty("client.disconnect_attempts"));
 
         } catch (final IOException e) {
             throw new CoinsException(CoinsErrorCode.SERVER_CONFIG_LOADING_FAILED);
@@ -52,5 +56,13 @@ public class ServerConfigResource {
 
     int getBoardSizeY() {
         return boardSizeY;
+    }
+
+    int getTimeoutMillis() {
+        return timeoutMillis;
+    }
+
+    int getClientDisconnectAttempts() {
+        return clientDisconnectAttempts;
     }
 }

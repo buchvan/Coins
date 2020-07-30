@@ -39,12 +39,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
-    private static final int TIMEOUT_IN_MILLIS = 1000;
-    private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
 
     public static int port;
     private int clientsCount;
     private int gamesCount;
+    private int timeoutMillis;
+    private int clientDisconnectAttempts;
 
     private int boardSizeX;
     private int boardSizeY;
@@ -171,6 +171,8 @@ public class Server implements IServer {
         gamesCount = serverConfigResource.getGamesCount();
         boardSizeX = serverConfigResource.getBoardSizeX();
         boardSizeY = serverConfigResource.getBoardSizeY();
+        timeoutMillis = serverConfigResource.getTimeoutMillis();
+        clientDisconnectAttempts = serverConfigResource.getClientDisconnectAttempts();
     }
 
     @Override
@@ -259,9 +261,9 @@ public class Server implements IServer {
                         serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
                     break;
                 }
-                Thread.sleep(TIMEOUT_IN_MILLIS);
+                Thread.sleep(timeoutMillis);
                 i++;
-            } while (i < CLIENT_DISCONNECT_ATTEMPTS);
+            } while (i < clientDisconnectAttempts);
         } catch (final IOException | InterruptedException exception) {
             LOGGER.error("Error!!!", exception);
         }
