@@ -145,15 +145,10 @@ public class Server implements IServer {
     private void loadConfig() throws CoinsException {
         final ServerConfigResource serverConfigResource = new ServerConfigResource();
         port = serverConfigResource.getPort();
-        System.out.println(port);
         clientsCount = serverConfigResource.getClientsCount();
-        System.out.println(clientsCount);
         gamesCount = serverConfigResource.getGamesCount();
-        System.out.println(gamesCount);
         boardSizeX = serverConfigResource.getBoardSizeX();
-        System.out.println(boardSizeX);
         boardSizeY = serverConfigResource.getBoardSizeY();
-        System.out.println(boardSizeY);
     }
 
     @Override
