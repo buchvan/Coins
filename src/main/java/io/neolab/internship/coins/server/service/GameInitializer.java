@@ -90,7 +90,7 @@ public class GameInitializer {
     private static @NotNull Map<Player, List<Cell>> initMapWithPlayerKeyListValue(final @NotNull List<Player> playerList,
                                                                                   final @NotNull String log) {
         final Map<Player, List<Cell>> mapWithPlayerKey = new HashMap<>(playerList.size());
-        playerList.forEach(player -> mapWithPlayerKey.put(player, new ArrayList<>()));
+        playerList.forEach(player -> mapWithPlayerKey.put(player, new LinkedList<>()));
         LOGGER.debug("{} init: {} ", log, mapWithPlayerKey);
         return mapWithPlayerKey;
     }
@@ -104,7 +104,7 @@ public class GameInitializer {
     @Contract(" -> new")
     private static @NotNull GameFeatures initGameFeatures() {
         final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures = new HashMap<>();
-        final List<Feature> impossibleCatchCellFeature = new ArrayList<>();
+        final List<Feature> impossibleCatchCellFeature = new ArrayList<>(1);
         impossibleCatchCellFeature.add(new Feature(FeatureType.CATCH_CELL_IMPOSSIBLE));
 
         /* Добавление особенностей по расам */

@@ -6,13 +6,13 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameInitializer;
-import io.neolab.internship.coins.server.service.TestUtils;
+import io.neolab.internship.coins.TestUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class CopyTest {
+public class CopyTest extends TestUtils {
     @Test
     public void testGameGetCopyEquals() throws CoinsException {
         final IGame expected = GameInitializer.gameInit(3, 4, 2);
@@ -151,7 +151,7 @@ public class CopyTest {
 
     @Test
     public void testPlayerGetCopyEquals() throws CoinsException {
-        final Player expected = TestUtils.getSomePlayer(GameInitializer.gameInit(3, 4, 2));
+        final Player expected = getSomePlayer(GameInitializer.gameInit(3, 4, 2));
         final Player actual = expected.getCopy();
         if (expected == actual) {
             fail();
@@ -161,7 +161,7 @@ public class CopyTest {
 
     @Test
     public void testPlayerGetCopyLinks1() throws CoinsException {
-        final Player expected = TestUtils.getSomePlayer(GameInitializer.gameInit(3, 4, 2));
+        final Player expected = getSomePlayer(GameInitializer.gameInit(3, 4, 2));
         final Player actual = expected.getCopy();
         if (actual.getUnitStateToUnits() == expected.getUnitStateToUnits()) {
             fail();
@@ -170,7 +170,7 @@ public class CopyTest {
 
     @Test
     public void testPlayerGetCopyLinks2() throws CoinsException {
-        final Player expected = TestUtils.getSomePlayer(GameInitializer.gameInit(3, 4, 2));
+        final Player expected = getSomePlayer(GameInitializer.gameInit(3, 4, 2));
         final Player actual = expected.getCopy();
         expected.getUnitStateToUnits().forEach((availabilityType, units) ->
                 actual.getUnitStateToUnits().forEach((availabilityType1, units1) -> {
