@@ -1,29 +1,34 @@
 package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.common.message.client.ClientMessage;
-import io.neolab.internship.coins.common.message.client.answer.*;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.message.client.answer.NicknameAnswer;
 import io.neolab.internship.coins.common.message.server.GameOverMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessageType;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.common.message.server.question.*;
-import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.server.game.*;
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.service.GameAnswerProcessor;
-import io.neolab.internship.coins.server.service.GameLogger;
-import io.neolab.internship.coins.utils.ClientServerProcessor;
-import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.server.service.*;
+import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LogCleaner;
+import io.neolab.internship.coins.utils.LoggerFile;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -34,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private static final int TIMEOUT_IN_MILLIS = 1000;
+    private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
 
     public static int port;
     private int clientsCount;
@@ -176,7 +183,7 @@ public class Server implements IServer {
             }
             threadPool.shutdown();
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (final IOException | InterruptedException exception) {
+        } catch (final IOException | InterruptedException | CoinsException exception) {
             LOGGER.error("Error!!!", exception);
         } finally {
             disconnectAllClients();
@@ -329,7 +336,7 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         int currentClientsCount = 1;
-        final ExecutorService connectClient = Executors.newFixedThreadPool(clientsCount);
+        final ExecutorService clientConnectors = Executors.newFixedThreadPool(clientsCount);
         while (currentClientsCount <= clientsCount) {
             final int currentClientId = currentClientsCount;
             clientConnectors.execute(() -> connectClient(currentClientId, clients));
