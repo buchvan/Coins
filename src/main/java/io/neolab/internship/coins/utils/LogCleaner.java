@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class LogCleaner {
     static final @NotNull String LOGBACK = "./src/main/resources/logback.xml";
     static final @NotNull String PROPERTY_NAME = "LOG_DIRECTORY";
-    public static final int LOGS_BORDER = 20;
+    public static final int LOGS_BORDER = 15;
 
     /**
      * Загружает название директории с логами из logback
