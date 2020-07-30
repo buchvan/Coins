@@ -161,9 +161,9 @@ public class Server implements IServer {
                             serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
                         break;
                     }
-                    Thread.sleep(TIMEOUT_IN_MILLIS);
+                    Thread.sleep(timeoutMillis);
                     i++;
-                } while (i < CLIENT_DISCONNECT_ATTEMPTS);
+                } while (i < clientDisconnectAttempts);
             } catch (final IOException | InterruptedException exception) {
                 LOGGER.error("Error!!!", exception);
             }
@@ -288,7 +288,8 @@ public class Server implements IServer {
     private void loadConfig() throws CoinsException {
         final ServerConfigResource serverConfigResource = new ServerConfigResource();
         port = serverConfigResource.getPort();
-        clientsCount = serverConfigResource.getClientsCount();
+        clientsCountInLobby = serverConfigResource.getClientsCount();
+        gameLobbiesCount = serverConfigResource.getGameLobbiesCount();
         gamesCount = serverConfigResource.getGamesCount();
         boardSizeX = serverConfigResource.getBoardSizeX();
         boardSizeY = serverConfigResource.getBoardSizeY();
@@ -303,8 +304,8 @@ public class Server implements IServer {
                 LogCleaner.clean();
                 loadConfig();
                 LOGGER.info("Server started, port: {}", port);
-                final ExecutorService threadPool = Executors.newFixedThreadPool(GAME_LOBBIES_COUNT);
-                for (int i = 1; i <= gamesCount; i++) {
+                final ExecutorService threadPool = Executors.newFixedThreadPool(gameLobbiesCount);
+                for (int i = 1; i <= gameLobbiesCount; i++) {
                     final int lobbyId = i;
                     threadPool.execute(() -> startLobby(lobbyId));
                 }
@@ -332,7 +333,7 @@ public class Server implements IServer {
      * @param lobbyId - id лобби
      */
     private void startLobby(final int lobbyId) {
-        final GameLobby gameLobby = new GameLobby(lobbyId, CLIENTS_COUNT_IN_LOBBY, GAMES_COUNT);
+        final GameLobby gameLobby = new GameLobby(lobbyId, clientsCountInLobby, gamesCount);
         try {
             synchronized (GameLobby.class) { // чтобы лобби пополнялись по ходу подключений клиентов
                 gameLobby.connectClients();
@@ -363,7 +364,7 @@ public class Server implements IServer {
      * @throws IOException при ошибке взятия сокета
      */
     private synchronized @NotNull Socket getSocket() throws IOException {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+        try (final ServerSocket serverSocket = new ServerSocket(port)) {
             return serverSocket.accept();
         }
     }
