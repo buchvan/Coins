@@ -14,16 +14,15 @@ public class LogCleanerTest {
     @Test
     public void testClean() throws IOException {
         final String logDirectory = "logs";
-        final int logsMaxCount = 10;
         int i = 0;
-        while (i < logsMaxCount) {
+        while (i < LogCleaner.LOGS_BORDER) {
             try (final BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(logDirectory + "/" + i))) {
                 bufferedWriter.write("" + i);
             }
             i++;
         }
         final File dir = new File(logDirectory);
-        assertTrue(dir.listFiles().length > logsMaxCount);
+        assertTrue(dir.listFiles().length > LogCleaner.LOGS_BORDER);
         LogCleaner.clean();
         assertEquals(0, dir.listFiles().length);
     }
