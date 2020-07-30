@@ -32,10 +32,18 @@ public class LogCleaner {
      *
      * @throws IOException при ошибке чтения из файла logback
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void clean() throws IOException {
-        final String LOG_DIRECTORY = loadLogDirectory();
-        final File logDir = new File(LOG_DIRECTORY);
+        clean(loadLogDirectory());
+    }
+
+    /**
+     * Удаляет все логи из директории logDirectory при условии, что их число там больше, чем LOGS_MAX_COUNT
+     *
+     * @param logDirectory - директория, из которой необходимо удалить логи
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void clean(final String logDirectory) {
+        final File logDir = new File(logDirectory);
         if (logDir.exists()) {
             final File[] logs = logDir.listFiles();
             if (logs != null && logs.length > LOGS_BORDER) {
