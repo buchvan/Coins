@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.utils;
 
+
 import org.junit.Test;
 
 import java.io.BufferedWriter;
@@ -15,8 +16,9 @@ public class LogCleanerTest {
     public void testClean() throws IOException {
         final String logDirectory = "logs";
         int i = 0;
-        while (i < LogCleaner.LOGS_BORDER) {
-            try (final BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(logDirectory + "/" + i))) {
+        while (i < LogCleaner.LOGS_BORDER + 1) {
+            try (final BufferedWriter bufferedWriter = new BufferedWriter(
+                    new FileWriter(logDirectory + "/" + i))) {
                 bufferedWriter.write("" + i);
             }
             i++;
