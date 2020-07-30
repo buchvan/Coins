@@ -7,6 +7,7 @@ import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +59,13 @@ public class GameStatistic {
      * Иннициализация тестовых игроков
      */
     private static @NotNull List<Player> initPlayers() {
-        return initTestPlayers(PLAYERS_AMOUNT);
+        int i = 0;
+        final List<Player> playerList = new LinkedList<>();
+        while (i < PLAYERS_AMOUNT) {
+            i++;
+            playerList.add(new Player("F" + i));
+        }
+        return playerList;
     }
 
     private static void initBotPlayerPair(final List<Player> players) {
@@ -68,19 +75,26 @@ public class GameStatistic {
     /**
      * Заполнение мапы со статистикой
      */
-    private static void initStatisticMap(final @NotNull  List<Player> players) {
+    private static void initStatisticMap(final @NotNull List<Player> players) {
         for (final Player player : players) {
             playersStatistic.put(player, 0);
         }
     }
 
-    public static void main(final String[] args) {
-        play();
+    /**
+     * Сбор статистики и её вывод в лог
+     */
+    private static void collectStatistic() {
         try (final LoggerFile ignored = new LoggerFile("game-statistic")) {
             playersStatistic
                     .forEach(((player, playerWinAmount)
                             -> GameStatisticLogger.printPlayerStatisticLog(player, playerWinAmount,
                             (double) playerWinAmount * 100 / winCounter)));
         }
+    }
+
+    public static void main(final String[] args) {
+        play();
+        collectStatistic();
     }
 }
