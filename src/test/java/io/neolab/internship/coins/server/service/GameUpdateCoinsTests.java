@@ -8,11 +8,9 @@ import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
-import io.neolab.internship.coins.utils.LogCleaner;
 import org.junit.*;
 import org.slf4j.MDC;
 
-import java.io.IOException;
 import java.util.Set;
 
 import static io.neolab.internship.coins.server.service.GameInitializer.gameInit;
@@ -23,12 +21,6 @@ public class GameUpdateCoinsTests extends TestUtils {
     @BeforeClass
     public static void before() {
         MDC.put("logFileName", testFileName);
-    }
-
-    @AfterClass
-    public static void after() throws IOException {
-        MDC.remove("logFileName");
-        LogCleaner.cleanBySubName(testFileName);
     }
 
     /*

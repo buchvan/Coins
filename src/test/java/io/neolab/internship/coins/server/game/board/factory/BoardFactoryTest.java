@@ -1,17 +1,24 @@
 package io.neolab.internship.coins.server.game.board.factory;
 
+import io.neolab.internship.coins.TestUtils;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import org.jetbrains.annotations.NotNull;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class BoardFactoryTest {
+public class BoardFactoryTest extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void generateBoardCorrectlySize1Test() throws CoinsException {

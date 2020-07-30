@@ -1,16 +1,23 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.TestUtils;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameFinalizer;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class GameFinalizerTest {
+public class GameFinalizerTest extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void testFinalize() throws CoinsException {

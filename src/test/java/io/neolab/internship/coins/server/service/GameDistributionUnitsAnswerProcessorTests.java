@@ -16,7 +16,9 @@ import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.apache.commons.collections4.BidiMap;
 import org.jetbrains.annotations.NotNull;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.*;
 
@@ -24,6 +26,10 @@ import static io.neolab.internship.coins.server.service.GameInitializer.gameInit
 import static org.junit.Assert.*;
 
 public class GameDistributionUnitsAnswerProcessorTests extends GameAnswerProcessorTests {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void distributionUnitsNoAvailableUnitsTest() throws CoinsException {

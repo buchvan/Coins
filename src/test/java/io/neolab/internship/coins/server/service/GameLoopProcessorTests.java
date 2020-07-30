@@ -16,13 +16,20 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class GameLoopProcessorTests extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
+
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testPlayerRoundBeginUpdateNull() {

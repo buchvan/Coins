@@ -7,7 +7,9 @@ import io.neolab.internship.coins.server.game.board.factory.BoardFactory;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameInitializer;
 import io.neolab.internship.coins.TestUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 
@@ -15,6 +17,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class CopyTest extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void testGameGetCopyEquals() throws CoinsException {
