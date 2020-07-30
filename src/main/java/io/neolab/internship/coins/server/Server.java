@@ -1,29 +1,34 @@
 package io.neolab.internship.coins.server;
 
 import io.neolab.internship.coins.common.message.client.ClientMessage;
-import io.neolab.internship.coins.common.message.client.answer.*;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import io.neolab.internship.coins.common.message.client.answer.Answer;
+import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
+import io.neolab.internship.coins.common.message.client.answer.DeclineRaceAnswer;
+import io.neolab.internship.coins.common.message.client.answer.NicknameAnswer;
 import io.neolab.internship.coins.common.message.server.GameOverMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessage;
 import io.neolab.internship.coins.common.message.server.ServerMessageType;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestionType;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.common.message.server.question.*;
-import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
-import io.neolab.internship.coins.server.game.*;
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.service.GameAnswerProcessor;
-import io.neolab.internship.coins.server.service.GameLogger;
-import io.neolab.internship.coins.utils.ClientServerProcessor;
-import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.server.service.*;
+import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LogCleaner;
+import io.neolab.internship.coins.utils.LoggerFile;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -35,14 +40,14 @@ import java.util.concurrent.TimeUnit;
 public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
-    public static final int PORT = 8081;
-    private static final int CLIENTS_COUNT = 2;
-    private static final int GAMES_COUNT = 3;
-    private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
-    private static final int TIMEOUT_IN_MILLIS = 1000;
+    public static int port;
+    private int clientsCount;
+    private int gamesCount;
+    private int timeoutMillis;
+    private int clientDisconnectAttempts;
 
-    private static final int BOARD_SIZE_X = 3;
-    private static final int BOARD_SIZE_Y = 4;
+    private int boardSizeX;
+    private int boardSizeY;
 
     private final @NotNull Map<Integer, ConcurrentLinkedQueue<ServerSomething>> serverSomethings = new HashMap<>();
 
@@ -156,19 +161,34 @@ public class Server implements IServer {
 
     }
 
+    /**
+     * Загружает настройки сервера из конфигурационного файла
+     */
+    private void loadConfig() throws CoinsException {
+        final ServerConfigResource serverConfigResource = new ServerConfigResource();
+        port = serverConfigResource.getPort();
+        clientsCount = serverConfigResource.getClientsCount();
+        gamesCount = serverConfigResource.getGamesCount();
+        boardSizeX = serverConfigResource.getBoardSizeX();
+        boardSizeY = serverConfigResource.getBoardSizeY();
+        timeoutMillis = serverConfigResource.getTimeoutMillis();
+        clientDisconnectAttempts = serverConfigResource.getClientDisconnectAttempts();
+    }
+
     @Override
     public void startServer() {
         try (final LoggerFile ignored = new LoggerFile("server")) {
             LogCleaner.clean();
-            LOGGER.info("Server started, port: {}", PORT);
-            final ExecutorService threadPool = Executors.newFixedThreadPool(GAMES_COUNT);
-            for (int i = 1; i <= GAMES_COUNT; i++) {
+            loadConfig();
+            LOGGER.info("Server started, port: {}", port);
+            final ExecutorService threadPool = Executors.newFixedThreadPool(gamesCount);
+            for (int i = 1; i <= gamesCount; i++) {
                 final int gameId = i;
                 threadPool.execute(() -> startGame(gameId));
             }
             threadPool.shutdown();
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (final IOException | InterruptedException exception) {
+        } catch (final IOException | InterruptedException | CoinsException exception) {
             LOGGER.error("Error!!!", exception);
         } finally {
             disconnectAllClients();
@@ -241,9 +261,9 @@ public class Server implements IServer {
                         serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
                     break;
                 }
-                Thread.sleep(TIMEOUT_IN_MILLIS);
+                Thread.sleep(timeoutMillis);
                 i++;
-            } while (i < CLIENT_DISCONNECT_ATTEMPTS);
+            } while (i < clientDisconnectAttempts);
         } catch (final IOException | InterruptedException exception) {
             LOGGER.error("Error!!!", exception);
         }
@@ -264,7 +284,7 @@ public class Server implements IServer {
         connectClients(clients);
         final List<Player> playerList = new LinkedList<>();
         clients.forEach(serverSomething -> playerList.add(serverSomething.player));
-        final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, playerList);
+        final IGame game = GameInitializer.gameInit(boardSizeX, boardSizeY, playerList);
         GameLogger.printGameCreatedLog(game);
         return game;
     }
@@ -321,8 +341,8 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         int currentClientsCount = 1;
-        final ExecutorService clientConnectors = Executors.newFixedThreadPool(CLIENTS_COUNT);
-        while (currentClientsCount <= CLIENTS_COUNT) {
+        final ExecutorService clientConnectors = Executors.newFixedThreadPool(clientsCount);
+        while (currentClientsCount <= clientsCount) {
             final int currentClientId = currentClientsCount;
             clientConnectors.execute(() -> connectClient(currentClientId, clients));
             currentClientsCount++;
@@ -369,7 +389,7 @@ public class Server implements IServer {
      * @throws IOException при ошибке взятия сокета
      */
     private synchronized @NotNull Socket getSocket() throws IOException {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+        try (final ServerSocket serverSocket = new ServerSocket(port)) {
             return serverSocket.accept();
         }
     }

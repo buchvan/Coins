@@ -2,24 +2,27 @@ package io.neolab.internship.coins.client;
 
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
-import io.neolab.internship.coins.common.message.client.answer.*;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
+import io.neolab.internship.coins.common.message.client.answer.*;
 import io.neolab.internship.coins.common.message.server.GameOverMessage;
-import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 import io.neolab.internship.coins.common.message.server.ServerMessage;
+import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 import io.neolab.internship.coins.common.serialization.Communication;
-import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.ClientServerProcessor;
-import org.jetbrains.annotations.NotNull;
 import io.neolab.internship.coins.utils.LoggerFile;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -27,12 +30,9 @@ import java.net.UnknownHostException;
 public class Client implements IClient {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private static final @NotNull String IP = "localhost";
-    private static final int PORT = Server.PORT;
-
     private final @NotNull String ip; // ip адрес клиента
     private final @NotNull InetAddress ipAddress;
-    private final int port; // порт соединения
+    private  final int port; // порт соединения
 
     private Socket socket = null;
     private BufferedReader keyboardReader = null; // поток чтения с консоли
@@ -252,7 +252,8 @@ public class Client implements IClient {
 
     public static void main(final String[] args) {
         try {
-            final Client client = new Client(IP, PORT);
+            final ClientConfigResource clientConfig = new ClientConfigResource();
+            final Client client = new Client(clientConfig.getHost(), clientConfig.getPort());
             client.startClient();
         } catch (final CoinsException exception) {
             LOGGER.error("Error!", exception);

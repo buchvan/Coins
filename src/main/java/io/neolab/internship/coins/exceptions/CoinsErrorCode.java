@@ -21,6 +21,8 @@ public enum CoinsErrorCode {
     ANSWER_VALIDATION_ENTER_CELL_INVALID_UNITS("Invalid units in entering to cell"),
     ANSWER_VALIDATION_UNREACHABLE_CELL("Cell is unreachable for capture"),
     GAME_OVER("Game over"),
+    CLIENT_CONFIG_LOADING_FAILED("Client configuration loading failed"),
+    SERVER_CONFIG_LOADING_FAILED("Server configuration loading failed"),
     ;
 
     private final @NotNull String message;
