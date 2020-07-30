@@ -36,7 +36,7 @@ public class Server implements IServer {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     public static final int PORT = 8081;
-    private static final int CLIENTS_COUNT = 2;
+    private static final int CLIENTS_COUNT_IN_LOBBY = 2;
     private static final int GAME_LOBBIES_COUNT = 3;
     private static final int GAMES_COUNT = 3;
     private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
@@ -312,7 +312,7 @@ public class Server implements IServer {
      * @param lobbyId - id лобби
      */
     private void startLobby(final int lobbyId) {
-        final GameLobby gameLobby = new GameLobby(lobbyId, CLIENTS_COUNT, GAMES_COUNT);
+        final GameLobby gameLobby = new GameLobby(lobbyId, CLIENTS_COUNT_IN_LOBBY, GAMES_COUNT);
         try {
             synchronized (GameLobby.class) { // чтобы лобби пополнялись по ходу подключений клиентов
                 gameLobby.connectClients();
