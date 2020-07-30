@@ -79,7 +79,7 @@ public class Server implements IServer {
                 clientConnectors.execute(() -> connectClient(currentClientId, gameClients));
                 currentClientsCount++;
             }
-            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_connecting")) {
+            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_connecting-clients")) {
                 clientConnectors.shutdown();
                 clientConnectors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 LOGGER.info("All clients of lobby {} is connected", lobbyId);
@@ -97,7 +97,8 @@ public class Server implements IServer {
          */
         private void connectClient(final int currentClientId,
                                    final @NotNull ConcurrentLinkedQueue<ServerSomething> clients) {
-            try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_connecting")) {
+            try (final LoggerFile ignored =
+                         new LoggerFile("lobby-" + lobbyId + "_connecting-client-" + currentClientId)) {
                 Socket socket = null;
                 while (true) {
                     try {
