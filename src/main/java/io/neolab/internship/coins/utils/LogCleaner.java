@@ -6,8 +6,8 @@ import java.io.*;
 import java.util.Arrays;
 
 public class LogCleaner {
-    private static final @NotNull String logback = "./src/main/resources/logback.xml";
-    private static final @NotNull String propertyName = "LOG_DIRECTORY";
+    static final @NotNull String LOGBACK = "./src/main/resources/logback.xml";
+    static final @NotNull String PROPERTY_NAME = "LOG_DIRECTORY";
     private static final int LOGS_BORDER = 20;
 
     /**
@@ -16,10 +16,10 @@ public class LogCleaner {
      * @return значение свойства propertyName
      * @throws IOException при ошибке чтения из файла logback
      */
-    private static @NotNull String loadLogDirectory() throws IOException {
-        final String searchingLine = "    <property name=\"" + propertyName + "\" ";
+    static @NotNull String loadLogDirectory() throws IOException {
+        final String searchingLine = "    <property name=\"" + PROPERTY_NAME + "\" ";
         String line;
-        try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(logback))) {
+        try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(LOGBACK))) {
             do {
                 line = bufferedReader.readLine();
             } while (!line.startsWith(searchingLine));
