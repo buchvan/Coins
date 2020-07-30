@@ -11,7 +11,6 @@ import io.neolab.internship.coins.common.message.server.question.PlayerQuestion;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.Server;
 import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LoggerFile;
