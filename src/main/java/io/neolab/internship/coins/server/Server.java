@@ -154,14 +154,18 @@ public class Server implements IServer {
          */
         private void disconnectClient(final @NotNull ServerSomething serverSomething) {
             try {
-                serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
                 int i = 0;
                 do {
+                    serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
                     if (serverSomething.isCameClientMessage() &&
                             serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
                         break;
                     }
                     Thread.sleep(timeoutMillis);
+                    if (serverSomething.isCameClientMessage() &&
+                            serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
+                        break;
+                    }
                     i++;
                 } while (i < clientDisconnectAttempts);
             } catch (final IOException | InterruptedException exception) {
