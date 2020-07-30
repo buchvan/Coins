@@ -16,7 +16,7 @@ public class LogCleaner {
      * @return значение свойства propertyName
      * @throws IOException при ошибке чтения из файла logback
      */
-    static @NotNull String loadLogDirectory() throws IOException {
+    public static @NotNull String loadLogDirectory() throws IOException {
         final String searchingLine = "    <property name=\"" + PROPERTY_NAME + "\" ";
         String line;
         try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(LOGBACK))) {
@@ -47,6 +47,22 @@ public class LogCleaner {
         if (logDir.exists()) {
             final File[] logs = logDir.listFiles();
             if (logs != null && logs.length > LOGS_BORDER) {
+                Arrays.stream(logs).forEach(File::delete);
+            }
+        }
+    }
+
+    /**
+     * Удаляет все логи из директории logDirectory по подстроке имени
+     *
+     * @param subName - подстрока имени
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void cleanBySubName(final String subName) throws IOException {
+        final File logDir = new File(loadLogDirectory());
+        if (logDir.exists()) {
+            final File[] logs = logDir.listFiles(file -> file.getName().contains(subName));
+            if (logs != null) {
                 Arrays.stream(logs).forEach(File::delete);
             }
         }
