@@ -3,12 +3,17 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
-import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.board.*;
+import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.utils.*;
+import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.LogCleaner;
+import io.neolab.internship.coins.utils.LoggerFile;
+import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -48,6 +53,33 @@ class SelfPlay {
     }
 
     /**
+     * Игра сама с собой (self play)
+     * - Создание борды
+     * - Добавление метаинформации о игре(борда, игроки, юниты)
+     * - Игровой цикл
+     * - Финализатор (результат игры)
+     */
+    static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
+        try (final LoggerFile ignored = new LoggerFile("self-play")) {
+            LogCleaner.clean();
+            final List<Player> players = new LinkedList<>();
+            botPlayerPairs.forEach(botPlayerPair -> {
+                        simpleBotToPlayer.add(botPlayerPair);
+                        players.add(botPlayerPair.getSecond());
+                    }
+            );
+
+            final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
+            GameLogger.printGameCreatedLog(game);
+            gameLoop(game);
+            return GameFinalizer.finalization(game.getPlayers());
+        } catch (final CoinsException | IOException exception) {
+            GameLogger.printErrorLog(exception);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Игровой цикл, вся игровая логика начинается отсюда
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
@@ -55,8 +87,9 @@ class SelfPlay {
     private static void gameLoop(final @NotNull IGame game) {
         GameLogger.printStartGameChoiceLog();
         simpleBotToPlayer.forEach(pair ->
-                GameAnswerProcessor.chooseRace(pair.getSecond(), game.getRacesPool(),
-                        pair.getFirst().chooseRace(pair.getSecond(), game)));
+                GameAnswerProcessor.changeRace(pair.getSecond(),
+                        pair.getFirst().chooseRace(pair.getSecond(), game),
+                        game.getRacesPool()));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();

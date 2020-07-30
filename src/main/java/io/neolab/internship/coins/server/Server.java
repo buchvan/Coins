@@ -40,6 +40,7 @@ public class Server implements IServer {
     private static final int GAME_LOBBIES_COUNT = 3;
     private static final int GAMES_COUNT = 3;
     private static final int CLIENT_DISCONNECT_ATTEMPTS = 2;
+    private static final int TIMEOUT_IN_MILLIS = 1000;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
@@ -155,7 +156,7 @@ public class Server implements IServer {
                             serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
                         break;
                     }
-                    Thread.sleep(100);
+                    Thread.sleep(TIMEOUT_IN_MILLIS);
                     i++;
                 } while (i < CLIENT_DISCONNECT_ATTEMPTS);
             } catch (final IOException | InterruptedException exception) {
@@ -448,14 +449,21 @@ public class Server implements IServer {
                 new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                         PlayerQuestionType.CHANGE_RACE, game, serverSomething.player);
         serverSomething.sendServerMessage(playerQuestion);
-        GameAnswerProcessor.process(playerQuestion, castAnswer(serverSomething.readClientMessage()));
+        final ClientMessage clientMessage = serverSomething.readClientMessage();
+        checkOnDisconnect(clientMessage);
+        GameAnswerProcessor.process(playerQuestion, (Answer) clientMessage);
     }
 
-    private @NotNull Answer castAnswer(final @NotNull ClientMessage clientMessage) throws CoinsException {
+    /**
+     * Проверка на сообщение об отключении
+     *
+     * @param clientMessage - сообщение от клиента
+     * @throws CoinsException если клиент сообщил об отключении
+     */
+    private void checkOnDisconnect(final @NotNull ClientMessage clientMessage) throws CoinsException {
         if (clientMessage.getMessageType() == ClientMessageType.DISCONNECTED) {
             throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
         }
-        return (Answer) clientMessage;
     }
 
     /**
@@ -492,7 +500,9 @@ public class Server implements IServer {
         final PlayerQuestion declineRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DECLINE_RACE, game, player);
         serverSomething.sendServerMessage(declineRaceQuestion);
-        final Answer answer = castAnswer(serverSomething.readClientMessage());
+        final ClientMessage clientMessage = serverSomething.readClientMessage();
+        checkOnDisconnect(clientMessage);
+        final Answer answer = (Answer) clientMessage;
         GameAnswerProcessor.process(declineRaceQuestion, answer);
         if (((DeclineRaceAnswer) answer).isDeclineRace()) {
             final PlayerQuestion changeRaceQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
@@ -512,7 +522,9 @@ public class Server implements IServer {
     private void processChangeRace(final @NotNull PlayerQuestion changeRaceQuestion,
                                    final @NotNull ServerSomething serverSomething) throws IOException, CoinsException {
         serverSomething.sendServerMessage(changeRaceQuestion);
-        GameAnswerProcessor.process(changeRaceQuestion, castAnswer(serverSomething.readClientMessage()));
+        final ClientMessage clientMessage = serverSomething.readClientMessage();
+        checkOnDisconnect(clientMessage);
+        GameAnswerProcessor.process(changeRaceQuestion, (Answer) clientMessage);
     }
 
     /**
@@ -564,7 +576,9 @@ public class Server implements IServer {
                                                final @NotNull ServerSomething serverSomething)
             throws IOException, CoinsException {
         serverSomething.sendServerMessage(catchCellQuestion);
-        return (CatchCellAnswer) castAnswer(serverSomething.readClientMessage());
+        final ClientMessage clientMessage = serverSomething.readClientMessage();
+        checkOnDisconnect(clientMessage);
+        return (CatchCellAnswer) clientMessage;
     }
 
     /**
@@ -599,7 +613,9 @@ public class Server implements IServer {
         final PlayerQuestion distributionQuestion = new PlayerQuestion(ServerMessageType.GAME_QUESTION,
                 PlayerQuestionType.DISTRIBUTION_UNITS, game, serverSomething.player);
         serverSomething.sendServerMessage(distributionQuestion);
-        GameAnswerProcessor.process(distributionQuestion, castAnswer(serverSomething.readClientMessage()));
+        final ClientMessage clientMessage = serverSomething.readClientMessage();
+        checkOnDisconnect(clientMessage);
+        GameAnswerProcessor.process(distributionQuestion, (Answer) clientMessage);
     }
 
     /**
