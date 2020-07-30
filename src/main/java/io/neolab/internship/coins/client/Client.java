@@ -113,6 +113,9 @@ public class Client implements IClient {
             case GAME_OVER: {
                 final GameOverMessage gameOverMessage = (GameOverMessage) serverMessage;
                 GameLogger.printResultsInGameEnd(gameOverMessage.getWinners(), gameOverMessage.getPlayerList());
+                break;
+            }
+            case DISCONNECTED: {
                 throw new CoinsException(CoinsErrorCode.CLIENT_DISCONNECTION);
             }
             default: {
@@ -189,8 +192,7 @@ public class Client implements IClient {
      */
     private void sendDisconnectMessage() {
         try {
-            ClientServerProcessor.sendMessage(out,
-                    Communication.serializeClientMessage(new ClientMessage(ClientMessageType.DISCONNECTED)));
+            sendMessage(new ClientMessage(ClientMessageType.DISCONNECTED));
         } catch (final IOException exception) {
             LOGGER.error("Error", exception);
         }

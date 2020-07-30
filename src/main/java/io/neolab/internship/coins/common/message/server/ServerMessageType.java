@@ -6,5 +6,6 @@ public enum ServerMessageType {
     CONFIRMATION_OF_READINESS,
     GAME_QUESTION,
     GAME_OVER,
+    DISCONNECTED,
     ;
 }
