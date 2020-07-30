@@ -58,7 +58,7 @@ public class Server implements IServer {
         private final int clientsCount;
         private final int gamesCount;
 
-        public GameLobby(final int lobbyId, final int clientsCount, final int gamesCount) {
+        private GameLobby(final int lobbyId, final int clientsCount, final int gamesCount) {
             this.lobbyId = lobbyId;
             this.clientsCount = clientsCount;
             this.gamesCount = gamesCount;
@@ -157,10 +157,6 @@ public class Server implements IServer {
                 int i = 0;
                 do {
                     serverSomething.sendServerMessage(new ServerMessage(ServerMessageType.DISCONNECTED));
-                    if (serverSomething.isCameClientMessage() &&
-                            serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
-                        break;
-                    }
                     Thread.sleep(timeoutMillis);
                     if (serverSomething.isCameClientMessage() &&
                             serverSomething.readClientMessage().getMessageType() == ClientMessageType.DISCONNECTED) {
