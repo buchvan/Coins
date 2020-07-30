@@ -1,16 +1,23 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.TestUtils;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.*;
 import io.neolab.internship.coins.server.game.player.Race;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class GameInitializerTest {
+public class GameInitializerTest extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void gameInit() throws CoinsException {

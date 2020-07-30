@@ -12,8 +12,10 @@ import java.util.Properties;
  */
 public class ServerConfigResource {
     public static final String CONFIG_PATH = "src/main/resources/server.properties";
+
     private final int port;
     private final int clientsCount;
+    private final int gameLobbiesCount;
     private final int gamesCount;
     private final int timeoutMillis;
     private final int clientDisconnectAttempts;
@@ -27,6 +29,7 @@ public class ServerConfigResource {
             property.load(serverConfigFis);
             port = Integer.parseInt(property.getProperty("port"));
             clientsCount = Integer.parseInt(property.getProperty("clients.count"));
+            gameLobbiesCount = Integer.parseInt(property.getProperty("game-lobbies.count"));
             gamesCount = Integer.parseInt(property.getProperty("games.count"));
             boardSizeX = Integer.parseInt(property.getProperty("board.size_x"));
             boardSizeY = Integer.parseInt(property.getProperty("board.size_y"));
@@ -44,6 +47,10 @@ public class ServerConfigResource {
 
     int getClientsCount() {
         return clientsCount;
+    }
+
+    public int getGameLobbiesCount() {
+        return gameLobbiesCount;
     }
 
     int getGamesCount() {

@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TestUtils {
+    protected static String testFileName = "test";
+
     protected static void setPlayerUnits(final @NotNull Player player, final int unitsAmount,
                                          final @NotNull AvailabilityType type) {
         final List<Unit> playerUnits = new ArrayList<>();

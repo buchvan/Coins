@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class LogCleaner {
     static final @NotNull String LOGBACK = "./src/main/resources/logback.xml";
     static final @NotNull String PROPERTY_NAME = "LOG_DIRECTORY";
-    private static final int LOGS_MAX_COUNT = 10;
+    public static final int LOGS_BORDER = 20;
 
     /**
      * Загружает название директории с логами из logback
@@ -16,7 +16,7 @@ public class LogCleaner {
      * @return значение свойства propertyName
      * @throws IOException при ошибке чтения из файла logback
      */
-    static @NotNull String loadLogDirectory() throws IOException {
+    public static @NotNull String loadLogDirectory() throws IOException {
         final String searchingLine = "    <property name=\"" + PROPERTY_NAME + "\" ";
         String line;
         try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(LOGBACK))) {
@@ -32,13 +32,37 @@ public class LogCleaner {
      *
      * @throws IOException при ошибке чтения из файла logback
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void clean() throws IOException {
-        final String LOG_DIRECTORY = loadLogDirectory();
-        final File logDir = new File(LOG_DIRECTORY);
+        clean(loadLogDirectory());
+    }
+
+    /**
+     * Удаляет все логи из директории logDirectory при условии, что их число там больше, чем LOGS_MAX_COUNT
+     *
+     * @param logDirectory - директория, из которой необходимо удалить логи
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void clean(final String logDirectory) {
+        final File logDir = new File(logDirectory);
         if (logDir.exists()) {
             final File[] logs = logDir.listFiles();
-            if (logs != null && logs.length > LOGS_MAX_COUNT) {
+            if (logs != null && logs.length > LOGS_BORDER) {
+                Arrays.stream(logs).forEach(File::delete);
+            }
+        }
+    }
+
+    /**
+     * Удаляет все логи из директории logDirectory по подстроке имени
+     *
+     * @param subName - подстрока имени
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void cleanBySubName(final String subName) throws IOException {
+        final File logDir = new File(loadLogDirectory());
+        if (logDir.exists()) {
+            final File[] logs = logDir.listFiles(file -> file.getName().contains(subName));
+            if (logs != null) {
                 Arrays.stream(logs).forEach(File::delete);
             }
         }

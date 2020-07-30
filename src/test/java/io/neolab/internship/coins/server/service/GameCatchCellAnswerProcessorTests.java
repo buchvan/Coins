@@ -16,7 +16,9 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +29,11 @@ import static io.neolab.internship.coins.server.service.GameInitializer.gameInit
 import static org.junit.Assert.*;
 
 public class GameCatchCellAnswerProcessorTests extends GameAnswerProcessorTests {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
+
     @Test
     public void catchCellWrongPositionTest() throws CoinsException {
         final IGame game = gameInit(2, 2, 2);

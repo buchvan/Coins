@@ -13,7 +13,9 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -24,6 +26,10 @@ import static io.neolab.internship.coins.server.service.GameInitializer.gameInit
 import static org.junit.Assert.*;
 
 public class GameDeclineRaceAnswerProcessorTests extends GameAnswerProcessorTests {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void emptyAnswerTest() throws CoinsException {

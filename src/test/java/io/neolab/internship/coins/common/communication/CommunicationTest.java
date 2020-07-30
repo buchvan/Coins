@@ -2,6 +2,7 @@ package io.neolab.internship.coins.common.communication;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neolab.internship.coins.TestUtils;
 import io.neolab.internship.coins.common.serialization.Communication;
 import io.neolab.internship.coins.common.message.client.answer.CatchCellAnswer;
 import io.neolab.internship.coins.common.message.client.answer.ChangeRaceAnswer;
@@ -23,7 +24,9 @@ import io.neolab.internship.coins.server.service.GameInitializer;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -32,7 +35,12 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class CommunicationTest {
+public class CommunicationTest extends TestUtils {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
+
     @Test
     public void testEquivalentDefaultGame() throws CoinsException, JsonProcessingException {
         final IGame expected = GameInitializer.gameInit(3, 4, 2);

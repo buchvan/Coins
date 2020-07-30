@@ -7,13 +7,11 @@ import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static io.neolab.internship.coins.server.service.GameInitializer.initTestPlayers;
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
 /**

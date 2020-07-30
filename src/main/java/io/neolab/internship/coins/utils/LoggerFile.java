@@ -3,7 +3,6 @@ package io.neolab.internship.coins.utils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.text.SimpleDateFormat;
@@ -24,41 +23,6 @@ public class LoggerFile implements AutoCloseable {
         MDC.put("logFileName", logFileName); // в logback.xml по этому ключу берётся имя файла для лога
         printLogFileLog(logFileName);
     }
-
-    /* TODO: если сервер будет писаться в один лог и клиенты тоже, то убрать эти комментарии */
-//
-//    /**
-//     * @param appender - нужно ли записывать логи в уже созданный с таким префиксом файл?
-//     */
-//    public LoggerFile(final @NotNull String prefix, final boolean appender) throws IOException {
-//        if (appender) {
-//            final File file = new File(LogCleaner.loadLogDirectory());
-//            final File[] files = file.listFiles();
-//            final File logFile = Arrays.stream(files)
-//                    .filter(file1 -> file1.getName().startsWith(prefix))
-//                    .findAny()
-//                    .orElse(null);
-//            if (logFile == null) {
-//                final SimpleDateFormat formatForDateNow = new SimpleDateFormat("E-yyyy-MM-dd-hh-mm-ss-S");
-//
-//                /* генерируем имя файла-лога (prefix__E-yyyy-MM-dd-hh-mm-ss-S) */
-//                logFileName = prefix + "__" +
-//                        formatForDateNow.format(new Date())
-//                                .replaceAll(":", "-");
-//            } else {
-//                logFileName = logFile.getName();
-//            }
-//        } else {
-//            final SimpleDateFormat formatForDateNow = new SimpleDateFormat("E-yyyy-MM-dd-hh-mm-ss-S");
-//
-//            /* генерируем имя файла-лога (prefix__E-yyyy-MM-dd-hh-mm-ss-S) */
-//            logFileName = prefix + "__" +
-//                    formatForDateNow.format(new Date())
-//                            .replaceAll(":", "-");
-//        }
-//        MDC.put("logFileName", logFileName); // в logback.xml по этому ключу берётся имя файла для лога
-//        printLogFileLog(logFileName);
-//    }
 
     /**
      * Вывод лога о файле, куда ведётся логгирование

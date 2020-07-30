@@ -11,7 +11,9 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.AvailabilityType;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.util.List;
 
@@ -19,6 +21,10 @@ import static io.neolab.internship.coins.server.service.GameInitializer.gameInit
 import static org.junit.Assert.*;
 
 public class GameChangeRaceAnswerProcessorTests extends GameAnswerProcessorTests {
+    @BeforeClass
+    public static void before() {
+        MDC.put("logFileName", testFileName);
+    }
 
     @Test
     public void changeRaceUnavailableNewRaceTest() throws CoinsException {
