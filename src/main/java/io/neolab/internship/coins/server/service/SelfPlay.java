@@ -61,6 +61,7 @@ class SelfPlay {
      */
     static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
+            LogCleaner.clean();
             final List<Player> players = new LinkedList<>();
             botPlayerPairs.forEach(botPlayerPair -> {
                         simpleBotToPlayer.add(botPlayerPair);
@@ -73,7 +74,7 @@ class SelfPlay {
             gameLoop(game);
             simpleBotToPlayer.clear();
             return GameFinalizer.finalization(game.getPlayers());
-        } catch (final CoinsException exception) {
+        } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
         return Collections.emptyList();

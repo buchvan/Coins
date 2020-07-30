@@ -33,34 +33,20 @@ public class LogCleaner {
      * @throws IOException при ошибке чтения из файла logback
      */
     public static void clean() throws IOException {
-        clean(loadLogDirectory(), false);
+        clean(loadLogDirectory());
     }
 
     /**
-     * Удаляет все логи из директории LOG_DIRECTORY при условии, что их число там больше, чем LOGS_MAX_COUNT
+     * Удаляет все логи из директории logDirectory при условии, что их число там больше, чем LOGS_MAX_COUNT
      *
      * @param logDirectory - директория, из которой необходимо удалить логи
-     */
-    public static void clean(final String logDirectory) {
-        clean(logDirectory, false);
-    }
-
-    public static void cleanAll() throws IOException {
-        clean(loadLogDirectory(), true);
-    }
-
-    /**
-     * Удаляет все логи из директории logDirectory при условии, что их число там больше, чем LOGS_MAX_COUNT, либо все
-     *
-     * @param logDirectory - директория, из которой необходимо удалить логи
-     * @param isAll - удалить все логи?
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void clean(final String logDirectory, final boolean isAll) {
+    public static void clean(final String logDirectory) {
         final File logDir = new File(logDirectory);
         if (logDir.exists()) {
             final File[] logs = logDir.listFiles();
-            if (logs != null && (isAll || logs.length > LOGS_BORDER)) {
+            if (logs != null && logs.length > LOGS_BORDER) {
                 Arrays.stream(logs).forEach(File::delete);
             }
         }

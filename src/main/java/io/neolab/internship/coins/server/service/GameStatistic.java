@@ -3,12 +3,10 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,8 +91,7 @@ public class GameStatistic {
         }
     }
 
-    public static void main(final String[] args) throws IOException {
-        LogCleaner.cleanAll();
+    public static void main(final String[] args) {
         play();
         collectStatistic();
     }
