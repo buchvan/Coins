@@ -45,9 +45,4 @@ public class RandomGeneratorTest {
         cellSet.add(new Cell(CellType.LAND));
         assertTrue(cellSet.contains(RandomGenerator.chooseItemFromSet(cellSet)));
     }
-
-    @Test
-    public void testIsYes() {
-        RandomGenerator.isYes();
-    }
 }

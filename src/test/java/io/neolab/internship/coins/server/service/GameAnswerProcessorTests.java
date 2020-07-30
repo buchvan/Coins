@@ -66,12 +66,9 @@ public class GameAnswerProcessorTests extends TestUtils {
 
     @SuppressWarnings("SameParameterValue")
     protected static void setUnitToCell(final @NotNull Cell cell, final int unitsAmount) {
-        final List<Unit> cellUnits = new ArrayList<>();
-        for (int i = 0; i < unitsAmount; i++) {
-            cellUnits.add(new Unit());
-        }
-
         cell.getUnits().clear();
-        cell.getUnits().addAll(cellUnits);
+        for (int i = 0; i < unitsAmount; i++) {
+            cell.getUnits().add(new Unit());
+        }
     }
 }

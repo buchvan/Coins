@@ -3,14 +3,26 @@ package io.neolab.internship.coins.utils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IdGeneratorTest {
     @Test
     public void testGetCurrentId() {
-        assertEquals(0, IdGenerator.getCurrentId());
-        assertEquals(1, IdGenerator.getCurrentId());
-        assertEquals(2, IdGenerator.getCurrentId());
-        assertEquals(3, IdGenerator.getCurrentId());
-        assertEquals(4, IdGenerator.getCurrentId());
+        int currentId1 = IdGenerator.getCurrentId();
+        int currentId2 = IdGenerator.getCurrentId();
+        assertTrue(currentId1 > 0);
+        assertTrue(currentId2 > currentId1);
+        currentId1 = IdGenerator.getCurrentId();
+        currentId2 = IdGenerator.getCurrentId();
+        assertTrue(currentId2 > currentId1);
+        currentId1 = IdGenerator.getCurrentId();
+        currentId2 = IdGenerator.getCurrentId();
+        assertTrue(currentId2 > currentId1);
+        currentId1 = IdGenerator.getCurrentId();
+        currentId2 = IdGenerator.getCurrentId();
+        assertTrue(currentId2 > currentId1);
+        currentId1 = IdGenerator.getCurrentId();
+        currentId2 = IdGenerator.getCurrentId();
+        assertTrue(currentId2 > currentId1);
     }
 }
