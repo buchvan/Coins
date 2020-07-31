@@ -288,7 +288,11 @@ public class Server implements IServer {
          * @throws IOException в случае ошибки отправки сообщения
          */
         private void sendServerMessage(final @NotNull ServerMessage message) throws IOException {
-            LOGGER.info("Output message: {} ", message);
+            if (player != null) {
+                LOGGER.info("Output message to player {}: {} ", player.getNickname(), message);
+            } else {
+                LOGGER.info("Output message: {} ", message);
+            }
             ClientServerProcessor.sendMessage(out, Communication.serializeServerMessage(message));
         }
 
@@ -545,7 +549,9 @@ public class Server implements IServer {
         /* Активация данных игрока в начале раунда */
         GameLoopProcessor.playerRoundBeginUpdate(player);
 
-        beginRoundChoice(serverSomething, game);
+        if (game.getRacesPool().size() > 0) {
+            beginRoundChoice(serverSomething, game);
+        }
         captureCell(serverSomething, game);
         distributionUnits(serverSomething, game);
 

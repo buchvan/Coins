@@ -119,7 +119,8 @@ class SelfPlay {
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
                                            final @NotNull IGame game) {
         GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
-        if (simpleBot.declineRaceChoose(player, game)) { // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
+        if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
+            // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRaceProcess(player, simpleBot, game); // Уход в упадок
         }
         cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
