@@ -18,6 +18,10 @@ public class Cell {
     private Player own = null;
     private Race race;
 
+    public Cell() {
+        this(CellType.LAND);
+    }
+
     public Cell(final CellType cellType) {
         this(cellType, null);
     }
