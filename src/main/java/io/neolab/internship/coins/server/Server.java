@@ -179,7 +179,7 @@ public class Server implements IServer {
         private void disconnectLobbyClients() {
             try (final LoggerFile ignored = new LoggerFile("lobby-" + lobbyId + "_disconnecting")) {
                 gameClients.forEach(this::disconnectClient);
-                gameLobbies.remove(this);
+                gameClients.clear();
                 LOGGER.info("All clients of lobby {} disconnected", lobbyId);
             }
         }
@@ -383,26 +383,29 @@ public class Server implements IServer {
     /**
      * @param lobbyId - id лобби
      */
+    @SuppressWarnings("InfiniteLoopStatement")
     private void startLobby(final int lobbyId) {
         final GameLobby gameLobby = new GameLobby(lobbyId, clientsCountInLobby, gamesCount);
-        try {
-            gameLobby.connectClients();
-            int currentGame = 1;
-            while (currentGame <= gameLobby.gamesCount) {
-                startGame(currentGame, gameLobby);
-                currentGame++;
-            }
-        } catch (final CoinsException | ClassCastException | IOException | InterruptedException exception) {
-            if (exception instanceof CoinsException) {
-                if (((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
-                    LOGGER.error("Error!!!", exception);
-                } else {
-                    LOGGER.info("Client disconnection");
-                    LOGGER.debug("", exception);
+        while (true) {
+            try {
+                gameLobby.connectClients();
+                int currentGame = 1;
+                while (currentGame <= gameLobby.gamesCount) {
+                    startGame(currentGame, gameLobby);
+                    currentGame++;
                 }
+            } catch (final CoinsException | ClassCastException | IOException | InterruptedException exception) {
+                if (exception instanceof CoinsException) {
+                    if (((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
+                        LOGGER.error("Error!!!", exception);
+                    } else {
+                        LOGGER.info("Client disconnection");
+                        LOGGER.debug("", exception);
+                    }
+                }
+            } finally {
+                gameLobby.disconnectLobbyClients();
             }
-        } finally {
-            gameLobby.disconnectLobbyClients();
         }
     }
 
