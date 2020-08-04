@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
@@ -270,14 +271,15 @@ public class AIProcessor {
     /**
      * Создать поддерево симуляционного дерева игры
      *
-     * @param game   - игра в текущем состоянии
-     * @param player - игрок
-     * @param action - действие, привёдшее к данному узлу
+     * @param game           - игра в текущем состоянии
+     * @param player         - игрок
+     * @param action         - действие, привёдшее к данному узлу
+     * @param prevCatchCells - предыдущие захваченные клетки
      * @return узел с оценённым данным действием
      */
     private static @NotNull NodeTree createSubtree(final @NotNull IGame game, final @NotNull Player player,
                                                    final @NotNull Action action,
-                                                   final @Nullable Set<Action> prevActions)
+                                                   final @Nullable Set<Cell> prevCatchCells)
             throws CoinsException, InterruptedException {
 
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
@@ -305,7 +307,7 @@ public class AIProcessor {
                     createDistributionUnitsNodes(game, player, edges);
                     break;
                 }
-                createCatchCellsNodes(game, player, edges, Objects.requireNonNull(prevActions));
+                createCatchCellsNodes(game, player, edges, Objects.requireNonNull(prevCatchCells));
                 break;
             case DISTRIBUTION_UNITS:
                 final Player nextPlayer = getNextPlayer(game, player);
@@ -324,19 +326,27 @@ public class AIProcessor {
     /**
      * Создать всевозможные узлы с захватом клеток
      *
-     * @param game   - игра
-     * @param player - игрок
-     * @param edges  - список дуг от общего родителя
+     * @param game           - игра
+     * @param player         - игрок
+     * @param edges          - список дуг от общего родителя
+     * @param prevCatchCells - предыдущие захваченные клетки
      */
     private static void createCatchCellsNodes(final @NotNull IGame game, final @NotNull Player player,
-                                              final @NotNull List<Edge> edges, final @NotNull Set<Action> prevActions)
+                                              final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells)
             throws InterruptedException {
 
+        final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
         final ExecutorService executorService =
-                Executors.newFixedThreadPool(game.getPlayerToAchievableCells().get(player).size() + 1);
+                Executors.newFixedThreadPool(
+                        achievableCells.size() + 1 - prevCatchCells.stream()
+                                .filter(achievableCells::contains)
+                                .collect(Collectors.toSet())
+                                .size());
+
         executorService.execute(() -> createCatchCellEndNode(game, player, edges));
-        for (final Cell cell : game.getPlayerToAchievableCells().get(player)) {
-            executorService.execute(() -> createCatchCellNodes(game, player, cell, edges, prevActions));
+        achievableCells.removeAll(prevCatchCells);
+        for (final Cell cell : achievableCells) {
+            executorService.execute(() -> createCatchCellNodes(game, player, cell, edges, prevCatchCells));
         }
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -365,15 +375,15 @@ public class AIProcessor {
     /**
      * Создание всевозможных узлов с захватом клетки (вариативность по числу юнитов)
      *
-     * @param game        - игра
-     * @param player      - игрок
-     * @param cell        - захватываемая клетка
-     * @param edges       - дуги от родителя
-     * @param prevActions - предыдущие действия
+     * @param game           - игра
+     * @param player         - игрок
+     * @param cell           - захватываемая клетка
+     * @param edges          - дуги от родителя
+     * @param prevCatchCells - предыдущие захваченные клетки
      */
     private static void createCatchCellNodes(final @NotNull IGame game, final @NotNull Player player,
                                              final @NotNull Cell cell, final @NotNull List<Edge> edges,
-                                             final @NotNull Set<Action> prevActions) {
+                                             final @NotNull Set<Cell> prevCatchCells) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> catchingCellNeighboringCells =
                 new LinkedList<>(
@@ -399,7 +409,7 @@ public class AIProcessor {
         for (int i = tiredUnitsCount; i <= units.size(); i++) {
             final int index = i;
             executorService1.execute(() ->
-                    createCatchCellNode(index, game, player, cell, units, edges, prevActions));
+                    createCatchCellNode(index, game, player, cell, units, edges, prevCatchCells));
         }
         executorService1.shutdown();
         try {
@@ -412,18 +422,18 @@ public class AIProcessor {
     /**
      * Создать узел с захватом клетки
      *
-     * @param index       - индекс потока
-     * @param game        - игра
-     * @param player      - игрок
-     * @param cell        - захватываемая клетка
-     * @param units       - список юнитов для захвата
-     * @param edges       - дуги от родителя
-     * @param prevActions - предыдущие действия
+     * @param index          - индекс потока
+     * @param game           - игра
+     * @param player         - игрок
+     * @param cell           - захватываемая клетка
+     * @param units          - список юнитов для захвата
+     * @param edges          - дуги от родителя
+     * @param prevCatchCells - предыдущие захваченные клетки
      */
     private static void createCatchCellNode(final int index,
                                             final @NotNull IGame game, final @NotNull Player player,
                                             final @NotNull Cell cell, final @NotNull List<Unit> units,
-                                            final @NotNull List<Edge> edges, final @NotNull Set<Action> prevActions) {
+                                            final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells) {
         final Pair<Position, List<Unit>> resolution =
                 new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, index));
         final Action newAction = new CatchCellAction(resolution);
@@ -431,11 +441,11 @@ public class AIProcessor {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
             updateGame(gameCopy, playerCopy, newAction);
-            if (!prevActions.add(newAction)) {
+            if (!prevCatchCells.add(cell)) {
                 return;
             }
             final Edge newEdge =
-                    new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction, prevActions));
+                    new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction, prevCatchCells));
             edges.add(newEdge);
         } catch (final CoinsException | InterruptedException exception) {
             exception.printStackTrace();
