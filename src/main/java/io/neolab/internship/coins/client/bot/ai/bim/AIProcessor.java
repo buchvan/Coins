@@ -9,7 +9,6 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -19,6 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
@@ -157,31 +159,85 @@ public class AIProcessor {
                 .orElseThrow();
     }
 
+    private static void declineRaceBranches(final @NotNull IGame game, final @NotNull Player player,
+                                            final @NotNull List<Edge> edges) throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.execute(() -> {
+            final Action newAction = new DeclineRaceAction(true);
+            try {
+                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction, null)));
+            } catch (final CoinsException | InterruptedException exception) {
+                exception.printStackTrace();
+            }
+        });
+        executorService.execute(() -> {
+            final Action newAction = new DeclineRaceAction(false);
+            try {
+                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction, null)));
+            } catch (final CoinsException | InterruptedException exception) {
+                exception.printStackTrace();
+            }
+        });
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+
+    private static void changeRaceBranches(final @NotNull IGame game, final @NotNull Player player,
+                                           final @NotNull List<Edge> edges) throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
+        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+            final Action newAction = new ChangeRaceAction(race);
+            try {
+                edges.add(new Edge(player, newAction, createSubtree(game, player,
+                        newAction, null)));
+            } catch (final CoinsException | InterruptedException exception) {
+                exception.printStackTrace();
+            }
+        }));
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+
+    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player)
+            throws InterruptedException {
+
+        final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
+        declineRaceBranches(game, player, edges);
+        return createNodeTree(game, edges);
+    }
+
+    @Contract("_, _ -> new")
+    private static @NotNull NodeTree createNodeTree(final @NotNull IGame game, final @NotNull List<Edge> edges) {
+        final Map<Player, Integer> winsCount = new HashMap<>();
+        game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
+        int casesCount = 0;
+        for (final Edge edge : edges) {
+            edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
+            casesCount += edge.getTo().getCasesCount();
+        }
+        return new NodeTree(edges, winsCount, casesCount);
+    }
+
     /**
      * @param game   - игра в текущем состоянии
      * @param player - игрок
      * @param action - действие, привёдшее к данному узлу
      * @return узел с оценённым данным действием
      */
-    @Contract("_, _, _ -> new")
-    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player,
-                                               final @Nullable Action action) throws CoinsException {
-        final List<Edge> edges = new LinkedList<>();
+    private static @NotNull NodeTree createSubtree(final @NotNull IGame game, final @NotNull Player player,
+                                                   final @Nullable Action action, final @Nullable Set<Action> prevActions)
+            throws CoinsException, InterruptedException {
+
+        final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         if (action == null) {
-            Action newAction = new DeclineRaceAction(true);
-            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
-            newAction = new DeclineRaceAction(false);
-            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+            declineRaceBranches(game, player, edges);
         } else {
             final IGame gameCopy;
             final Player playerCopy;
             switch (action.getType()) {
                 case DECLINE_RACE:
                     if (((DeclineRaceAction) action).isDeclineRace()) {
-                        for (final Race race : game.getRacesPool()) {
-                            final Action newAction = new ChangeRaceAction(race);
-                            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
-                        }
+                        changeRaceBranches(game, player, edges);
                         break;
                     }
                     gameCopy = game.getCopy();
@@ -189,55 +245,34 @@ public class AIProcessor {
                     GameLoopProcessor.updateAchievableCells(playerCopy, gameCopy.getBoard(),
                             gameCopy.getPlayerToAchievableCells().get(playerCopy),
                             gameCopy.getOwnToCells().get(playerCopy));
-                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    createCatchCellNodes(gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
                     break;
                 case CHANGE_RACE:
                     gameCopy = game.getCopy();
                     playerCopy = getPlayerCopy(gameCopy, player);
                     updateGame(gameCopy, playerCopy, action);
-                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    createCatchCellNodes(gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
                     break;
                 case CATCH_CELL:
                     if (((CatchCellAction) action).getResolution() == null) {
-                        gameCopy = game.getCopy();
-                        playerCopy = getPlayerCopy(gameCopy, player);
-                        GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
-                        createDistributionUnitsNode(gameCopy, playerCopy, edges);
+                        createDistributionUnitsNode(game, player, edges);
                         break;
                     }
-                    gameCopy = game.getCopy();
-                    playerCopy = getPlayerCopy(gameCopy, player);
-                    updateGame(gameCopy, playerCopy, action);
-                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    createCatchCellNodes(game, player, edges, Objects.requireNonNull(prevActions));
                     break;
                 case DISTRIBUTION_UNITS:
-                    gameCopy = game.getCopy();
-                    playerCopy = getPlayerCopy(gameCopy, player);
-                    updateGame(gameCopy, playerCopy, action);
-                    final Player nextPlayer = getNextPlayer(gameCopy, playerCopy);
+                    final Player nextPlayer = getNextPlayer(game, player);
                     if (nextPlayer == null) {
-                        edges.add(new Edge(null, null, createTerminalNode(gameCopy)));
+                        edges.add(new Edge(null, null, createTerminalNode(game)));
                         break;
                     }
-                    Action newAction = new DeclineRaceAction(true);
-                    edges.add(new Edge(player, newAction, createTree(gameCopy, nextPlayer, newAction)));
-                    newAction = new DeclineRaceAction(false);
-                    edges.add(new Edge(player, newAction, createTree(gameCopy, nextPlayer, newAction)));
+                    declineRaceBranches(game, nextPlayer, edges);
                     break;
                 default:
                     throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
             }
         }
-        final Map<Player, Integer> winsCount = new HashMap<>();
-        game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
-        int casesCount = 0;
-        for (final Edge edge : edges) {
-            for (final Map.Entry<Player, Integer> entry : edge.getTo().getWinsCount().entrySet()) {
-                winsCount.replace(entry.getKey(), winsCount.get(entry.getKey()) + entry.getValue());
-            }
-            casesCount += edge.getTo().getCasesCount();
-        }
-        return new NodeTree(edges, winsCount, casesCount);
+        return createNodeTree(game, edges);
     }
 
     /**
@@ -248,42 +283,89 @@ public class AIProcessor {
      * @param edges  - список дуг от общего родителя
      */
     private static void createCatchCellNodes(final @NotNull IGame game, final @NotNull Player player,
-                                             final @NotNull List<Edge> edges) throws CoinsException {
-        final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        boolean wasCreating = false;
+                                             final @NotNull List<Edge> edges, final @NotNull Set<Action> prevActions)
+            throws CoinsException, InterruptedException {
+
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
+            final ExecutorService executorService =
+                    Executors.newFixedThreadPool(game.getPlayerToAchievableCells().get(player).size());
             for (final Cell cell : game.getPlayerToAchievableCells().get(player)) {
-                final List<Cell> catchingCellNeighboringCells =
-                        new LinkedList<>(
-                                Objects.requireNonNull(game.getBoard().getNeighboringCells(
-                                        Objects.requireNonNull(cell))));
-                catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
-                final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-                removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
-                        cell, controlledCells);
-                final int unitsCountNeededToCatchCell =
-                        controlledCells.contains(cell)
-                                ? cell.getType().getCatchDifficulty()
-                                : GameLoopProcessor
-                                .getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell) -
-                                GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), cell);
-                for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
-                    final Pair<Position, List<Unit>> resolution =
-                            new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, i));
-                    final Action newAction = new CatchCellAction(resolution);
-                    edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
-                    wasCreating = true;
-                }
+                executorService.execute(() -> createCatchCellNode(game, player, cell, edges, prevActions));
             }
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         }
-        if (!wasCreating) {
-            final Action newAction = new CatchCellAction(null);
-            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+        final Action newAction = new CatchCellAction(null);
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = getPlayerCopy(gameCopy, player);
+        GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
+        edges.add(new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction, null)));
+    }
+
+    private static void createCatchCellNode(final @NotNull IGame game, final @NotNull Player player,
+                                            final @NotNull Cell cell, final @NotNull List<Edge> edges,
+                                            final @NotNull Set<Action> prevActions) {
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        final List<Cell> catchingCellNeighboringCells =
+                new LinkedList<>(
+                        Objects.requireNonNull(game.getBoard().getNeighboringCells(
+                                Objects.requireNonNull(cell))));
+        catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+        final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+        removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
+                cell, controlledCells);
+        units.removeIf(unit -> cell.getUnits().contains(unit));
+        final int unitsCountNeededToCatchCell =
+                controlledCells.contains(cell)
+                        ? cell.getType().getCatchDifficulty()
+                        : GameLoopProcessor
+                        .getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell) -
+                        GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), cell);
+        if (units.size() <= unitsCountNeededToCatchCell - 1) {
+            return;
+        }
+        final ExecutorService executorService1 =
+                Executors.newFixedThreadPool(units.size() - unitsCountNeededToCatchCell + 1);
+        for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
+            final int index = i;
+            executorService1.execute(() ->
+                    createCatchCellNode(index, game, player, cell, units, edges, prevActions));
+        }
+        executorService1.shutdown();
+        try {
+            executorService1.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void createCatchCellNode(final int index,
+                                            final @NotNull IGame game, final @NotNull Player player,
+                                            final @NotNull Cell cell, final @NotNull List<Unit> units,
+                                            final @NotNull List<Edge> edges, final @NotNull Set<Action> prevActions) {
+        final Pair<Position, List<Unit>> resolution =
+                new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, index));
+        final Action newAction = new CatchCellAction(resolution);
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = getPlayerCopy(gameCopy, player);
+        try {
+            updateGame(gameCopy, playerCopy, newAction);
+            if (!prevActions.add(newAction)) {
+                return;
+            }
+            final Edge newEdge =
+                    new Edge(player, newAction, createSubtree(gameCopy, playerCopy,
+                            newAction, prevActions));
+            edges.add(newEdge);
+        } catch (final CoinsException | InterruptedException exception) {
+            exception.printStackTrace();
         }
     }
 
     private static void createDistributionUnitsNode(final @NotNull IGame game, final @NotNull Player player,
-                                                    final @NotNull List<Edge> edges) throws CoinsException {
+                                                    final @NotNull List<Edge> edges)
+            throws CoinsException, InterruptedException {
+
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
@@ -300,12 +382,18 @@ public class AIProcessor {
                 }
             }
             final Action action = new DistributionUnitsAction(resolution);
-            edges.add(new Edge(player, action, createTree(game, player, action)));
+            final IGame gameCopy = game.getCopy();
+            final Player playerCopy = getPlayerCopy(gameCopy, player);
+            updateGame(gameCopy, playerCopy, action);
+            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
             wasCreating = true;
         }
         if (!wasCreating) {
             final Action action = new DistributionUnitsAction(new HashMap<>());
-            edges.add(new Edge(player, action, createTree(game, player, action)));
+            final IGame gameCopy = game.getCopy();
+            final Player playerCopy = getPlayerCopy(gameCopy, player);
+            updateGame(gameCopy, playerCopy, action);
+            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
         }
     }
 
