@@ -202,7 +202,7 @@ public class AIProcessor {
                         gameCopy = game.getCopy();
                         playerCopy = getPlayerCopy(gameCopy, player);
                         GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
-                        createDistributionUnitsNodes(gameCopy, playerCopy, edges);
+                        createDistributionUnitsNode(gameCopy, playerCopy, edges);
                         break;
                     }
                     gameCopy = game.getCopy();
@@ -248,40 +248,46 @@ public class AIProcessor {
      * @param edges  - список дуг от общего родителя
      */
     private static void createCatchCellNodes(final @NotNull IGame game, final @NotNull Player player,
-                                             final @NotNull List<Edge> edges)
-            throws CoinsException {
-
+                                             final @NotNull List<Edge> edges) throws CoinsException {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        CatchCellAction newAction = new CatchCellAction(null);
-        edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
-        for (final Cell cell : game.getPlayerToAchievableCells().get(player)) {
-            final List<Cell> catchingCellNeighboringCells =
-                    new LinkedList<>(
-                            Objects.requireNonNull(game.getBoard().getNeighboringCells(
-                                    Objects.requireNonNull(cell))));
-            catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
-
-            final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
-                    cell, controlledCells);
-            final int unitsCountNeededToCatchCell =
-                    controlledCells.contains(cell)
-                            ? cell.getType().getCatchDifficulty()
-                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell);
-            for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
-                final Pair<Position, List<Unit>> resolution =
-                        new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, i));
-                newAction = new CatchCellAction(resolution);
-                edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+        boolean wasCreating = false;
+        if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
+            for (final Cell cell : game.getPlayerToAchievableCells().get(player)) {
+                final List<Cell> catchingCellNeighboringCells =
+                        new LinkedList<>(
+                                Objects.requireNonNull(game.getBoard().getNeighboringCells(
+                                        Objects.requireNonNull(cell))));
+                catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+                final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+                removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
+                        cell, controlledCells);
+                final int unitsCountNeededToCatchCell =
+                        controlledCells.contains(cell)
+                                ? cell.getType().getCatchDifficulty()
+                                : GameLoopProcessor
+                                .getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell) -
+                                GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), cell);
+                for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
+                    final Pair<Position, List<Unit>> resolution =
+                            new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, i));
+                    final Action newAction = new CatchCellAction(resolution);
+                    edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+                    wasCreating = true;
+                }
             }
+        }
+        if (!wasCreating) {
+            final Action newAction = new CatchCellAction(null);
+            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
         }
     }
 
-    private static void createDistributionUnitsNodes(final @NotNull IGame game, final @NotNull Player player,
-                                                     final @NotNull List<Edge> edges) throws CoinsException {
+    private static void createDistributionUnitsNode(final @NotNull IGame game, final @NotNull Player player,
+                                                    final @NotNull List<Edge> edges) throws CoinsException {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+        boolean wasCreating = false;
         for (final List<Pair<Cell, Integer>> distribution : distributions) {
             final Map<Position, List<Unit>> resolution = new HashMap<>();
             for (final Pair<Cell, Integer> pair : distribution) {
@@ -295,9 +301,12 @@ public class AIProcessor {
             }
             final Action action = new DistributionUnitsAction(resolution);
             edges.add(new Edge(player, action, createTree(game, player, action)));
+            wasCreating = true;
         }
-        final Action action = new DistributionUnitsAction(new HashMap<>());
-        edges.add(new Edge(player, action, createTree(game, player, action)));
+        if (!wasCreating) {
+            final Action action = new DistributionUnitsAction(new HashMap<>());
+            edges.add(new Edge(player, action, createTree(game, player, action)));
+        }
     }
 
     //FIXME: придумать перебор всех случаев распределения юнитов
