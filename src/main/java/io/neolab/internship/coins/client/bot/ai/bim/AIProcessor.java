@@ -21,7 +21,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
@@ -185,16 +184,15 @@ public class AIProcessor {
      * @param game   - игра
      * @param player - игрок
      * @param edges  - дуги от родителя
-     * @throws InterruptedException при ошибке потока
      */
     private static void createDeclineRaceBranches(final @NotNull IGame game, final @NotNull Player player,
-                                                  final @NotNull List<Edge> edges) throws InterruptedException {
+                                                  final @NotNull List<Edge> edges) {
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
         executorService.execute(() -> {
             final Action newAction = new DeclineRaceAction(true);
             try {
                 edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
-            } catch (final CoinsException | InterruptedException exception) {
+            } catch (final CoinsException exception) {
                 exception.printStackTrace();
             }
         });
@@ -202,12 +200,11 @@ public class AIProcessor {
             final Action newAction = new DeclineRaceAction(false);
             try {
                 edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
-            } catch (final CoinsException | InterruptedException exception) {
+            } catch (final CoinsException exception) {
                 exception.printStackTrace();
             }
         });
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        executeExecutorService(executorService);
     }
 
     /**
@@ -216,21 +213,19 @@ public class AIProcessor {
      * @param game   - игра
      * @param player - игрок
      * @param edges  - дуги от родителя
-     * @throws InterruptedException при ошибке потока
      */
     private static void createChangeRaceBranches(final @NotNull IGame game, final @NotNull Player player,
-                                                 final @NotNull List<Edge> edges) throws InterruptedException {
+                                                 final @NotNull List<Edge> edges) {
         final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
         game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
                 edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
-            } catch (final CoinsException | InterruptedException exception) {
+            } catch (final CoinsException exception) {
                 exception.printStackTrace();
             }
         }));
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        executeExecutorService(executorService);
     }
 
     /**
@@ -239,10 +234,8 @@ public class AIProcessor {
      * @param game   - игра
      * @param player - игрок 1
      * @return корень на созданное дерево
-     * @throws InterruptedException при ошибке потока
      */
-    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player)
-            throws InterruptedException {
+    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player) {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         createDeclineRaceBranches(game, player, edges);
         return createNodeTree(game, edges);
@@ -276,9 +269,7 @@ public class AIProcessor {
      * @return узел с оценённым данным действием
      */
     private static @NotNull NodeTree createSubtree(final @NotNull IGame game, final @NotNull Player player,
-                                                   final @NotNull Action action)
-            throws CoinsException, InterruptedException {
-
+                                                   final @NotNull Action action) throws CoinsException {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         final IGame gameCopy;
         final Player playerCopy;
@@ -327,12 +318,11 @@ public class AIProcessor {
      * @param edges          - список дуг от общего родителя
      * @param prevCatchCells - предыдущие захваченные клетки
      * @return ссылку на корень поддерева
-     * @throws InterruptedException при ошибке потока
      */
     private static NodeTree createCatchCellSubtree(final @NotNull IGame game, final Player player,
-                                                   final List<Edge> edges, final Set<Cell> prevCatchCells)
-            throws InterruptedException {
-        createCatchCellsNodes(game, player, edges, Objects.requireNonNull(prevCatchCells));
+                                                   final @NotNull List<Edge> edges,
+                                                   final @NotNull Set<Cell> prevCatchCells) {
+        createCatchCellsNodes(game, player, edges, prevCatchCells);
         return createNodeTree(game, edges);
     }
 
@@ -345,24 +335,22 @@ public class AIProcessor {
      * @param prevCatchCells - предыдущие захваченные клетки
      */
     private static void createCatchCellsNodes(final @NotNull IGame game, final @NotNull Player player,
-                                              final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells)
-            throws InterruptedException {
-
+                                              final @NotNull List<Edge> edges,
+                                              final @NotNull Set<Cell> prevCatchCells) {
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-        final ExecutorService executorService =
-                Executors.newFixedThreadPool(
-                        achievableCells.size() + 1 - prevCatchCells.stream()
-                                .filter(achievableCells::contains)
-                                .collect(Collectors.toSet())
-                                .size());
-        executorService.execute(() -> createCatchCellEndNode(game, player, edges));
+        final List<ExecutorService> executorServices = new LinkedList<>();
+        final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
+        executorServiceEnd.execute(() -> createCatchCellEndNode(game, player, edges));
+        executorServices.add(executorServiceEnd);
         achievableCells.removeAll(prevCatchCells);
-        for (final Cell cell : achievableCells) {
-            executorService.execute(() -> createCatchCellNodes(game, player, cell, edges,
-                    Collections.synchronizedSet(new HashSet<>(prevCatchCells))));
-        }
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToTiredUnitsCount = new LinkedList<>();
+        achievableCells.forEach(cell -> addPairUnitsToTiredUnits(game, player, cell, prevCatchCells,
+                unitsToTiredUnitsCount));
+        unitsToTiredUnitsCount.forEach(pair ->
+                addExecutorService(game, player, edges, prevCatchCells, pair, executorServices));
+        final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
+        executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
+        executeExecutorService(executorService);
     }
 
     /**
@@ -380,23 +368,24 @@ public class AIProcessor {
         GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
         try {
             edges.add(new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction)));
-        } catch (final CoinsException | InterruptedException exception) {
+        } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
     }
 
     /**
-     * Создание всевозможных узлов с захватом клетки (вариативность по числу юнитов)
+     * Добавить пару (список юнитов, пара(число уставших юнитов, клетка))
      *
-     * @param game           - игра
-     * @param player         - игрок
-     * @param cell           - захватываемая клетка
-     * @param edges          - дуги от родителя
-     * @param prevCatchCells - предыдущие захваченные клетки
+     * @param game                   - игра
+     * @param player                 - игрок
+     * @param cell                   - клетка
+     * @param prevCatchCells         - предыдущие захваченные клетки
+     * @param unitsToTiredUnitsCount - список, в который нужно добавить пару
      */
-    private static void createCatchCellNodes(final @NotNull IGame game, final @NotNull Player player,
-                                             final @NotNull Cell cell, final @NotNull List<Edge> edges,
-                                             final @NotNull Set<Cell> prevCatchCells) {
+    private static void addPairUnitsToTiredUnits(final @NotNull IGame game, final @NotNull Player player,
+                                                 final @NotNull Cell cell, final @NotNull Set<Cell> prevCatchCells,
+                                                 final @NotNull List<Pair<List<Unit>, Pair<Integer, Cell>>>
+                                                         unitsToTiredUnitsCount) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> catchingCellNeighboringCells =
                 new LinkedList<>(
@@ -415,18 +404,48 @@ public class AIProcessor {
                         ? cell.getType().getCatchDifficulty()
                         : unitsCountNeededToCatchCell - bonusAttack;
         if (units.size() <= tiredUnitsCount - 1) {
+            prevCatchCells.add(cell);
             return;
         }
+        unitsToTiredUnitsCount.add(new Pair<>(units, new Pair<>(tiredUnitsCount, cell)));
+    }
+
+    /**
+     * Добавить ExecutorService
+     *
+     * @param game             - игра
+     * @param player           - игрок
+     * @param edges            - дуги от родителя
+     * @param prevCatchCells   - предыдущие захваченные клетки
+     * @param pair             - очередная пара (список юнитов, пара(число уставших юнитов, клетка))
+     * @param executorServices - список, в который нужно добавить новый ExecutorService
+     */
+    private static void addExecutorService(final @NotNull IGame game, final @NotNull Player player,
+                                           final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells,
+                                           final @NotNull Pair<List<Unit>, Pair<Integer, Cell>> pair,
+                                           final @NotNull List<ExecutorService> executorServices) {
+        final List<Unit> units = pair.getFirst();
+        final int tiredUnitsCount = pair.getSecond().getFirst();
+        final Cell cell = pair.getSecond().getSecond();
         final ExecutorService executorService1 =
                 Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
         for (int i = tiredUnitsCount; i <= units.size(); i++) {
             final int index = i;
             executorService1.execute(() ->
-                    createCatchCellNode(index, game, player, cell, units, edges, prevCatchCells));
+                    createCatchCellNode(index, game, player, cell, units, edges,
+                            Collections.synchronizedSet(new HashSet<>(prevCatchCells))));
         }
-        executorService1.shutdown();
+        executorServices.add(executorService1);
+    }
+
+    /**
+     * Выполнить ExecutorService
+     * @param executorService - очевидно, ExecutorService
+     */
+    private static void executeExecutorService(final @NotNull ExecutorService executorService) {
+        executorService.shutdown();
         try {
-            executorService1.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
@@ -454,13 +473,9 @@ public class AIProcessor {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
             updateGame(gameCopy, playerCopy, newAction);
-            if (!prevCatchCells.add(cell)) {
-                return;
-            }
-            final Edge newEdge =
-                    new Edge(player, newAction, createCatchCellSubtree(gameCopy, playerCopy, edges, prevCatchCells));
-            edges.add(newEdge);
-        } catch (final CoinsException | InterruptedException exception) {
+            prevCatchCells.add(cell);
+            edges.add(new Edge(player, newAction, createCatchCellSubtree(gameCopy, playerCopy, edges, prevCatchCells)));
+        } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
     }
@@ -472,12 +487,9 @@ public class AIProcessor {
      * @param player - игрок
      * @param edges  - дуги от родителя
      * @throws CoinsException       при ошибке обновления игры
-     * @throws InterruptedException при ошибке работы потоков
      */
     private static void createDistributionUnitsNodes(final @NotNull IGame game, final @NotNull Player player,
-                                                     final @NotNull List<Edge> edges)
-            throws CoinsException, InterruptedException {
-
+                                                     final @NotNull List<Edge> edges) throws CoinsException {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
@@ -493,8 +505,7 @@ public class AIProcessor {
         for (final List<Pair<Cell, Integer>> distribution : distributions) {
             executorService.execute(() -> createDistributionUnitsNode(game, player, edges, distribution));
         }
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        executeExecutorService(executorService);
     }
 
     /**
@@ -524,7 +535,7 @@ public class AIProcessor {
         try {
             updateGame(gameCopy, playerCopy, action);
             edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action)));
-        } catch (final CoinsException | InterruptedException exception) {
+        } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
     }

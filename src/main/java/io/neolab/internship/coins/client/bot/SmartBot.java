@@ -30,14 +30,8 @@ public class SmartBot implements IBot {
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         final boolean choice;
         if (tree != null || game.getCurrentRound() == Game.ROUNDS_COUNT) {
-            try {
-                if (tree == null) {
-                    tree = AIProcessor.createTree(game, player);
-                }
-            } catch (final InterruptedException exception) {
-                choice = simpleBot.declineRaceChoose(player, game);
-                LOGGER.debug("Smart bot decline race choice: {} ", choice);
-                return choice;
+            if (tree == null) {
+                tree = AIProcessor.createTree(game, player);
             }
             final Action action = AIProcessor.getAction(tree);
             tree = AIProcessor.updateTree(tree, action);
