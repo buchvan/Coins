@@ -3,7 +3,6 @@ package io.neolab.internship.coins.client.bot;
 import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
 import io.neolab.internship.coins.client.bot.ai.bim.NodeTree;
 import io.neolab.internship.coins.client.bot.ai.bim.action.*;
-import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
@@ -33,9 +32,9 @@ public class SmartBot implements IBot {
         if (tree != null || game.getCurrentRound() == Game.ROUNDS_COUNT) {
             try {
                 if (tree == null) {
-                    tree = AIProcessor.createTree(game, player, null);
+                    tree = AIProcessor.createTree(game, player);
                 }
-            } catch (final CoinsException exception) {
+            } catch (final InterruptedException exception) {
                 choice = simpleBot.declineRaceChoose(player, game);
                 LOGGER.debug("Smart bot decline race choice: {} ", choice);
                 return choice;
