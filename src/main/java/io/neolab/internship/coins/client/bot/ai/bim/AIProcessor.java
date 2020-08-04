@@ -1,0 +1,355 @@
+package io.neolab.internship.coins.client.bot.ai.bim;
+
+import io.neolab.internship.coins.client.bot.ai.bim.action.*;
+import io.neolab.internship.coins.exceptions.CoinsErrorCode;
+import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
+import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.service.GameLoopProcessor;
+import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+
+import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
+
+public class AIProcessor {
+
+    public static NodeTree updateTree(final @NotNull NodeTree tree, final @NotNull Action action) {
+        NodeTree newTree = null;
+        for (final Edge edge : Objects.requireNonNull(tree).getEdges()) {
+            if (edge.getAction() == action) {
+                newTree = edge.getTo();
+                break;
+            }
+        }
+        return newTree;
+    }
+
+    /**
+     * Найти и удалить недоступные для захвата клетки юнитов
+     *
+     * @param board                        - борда
+     * @param units                        - список юнитов
+     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
+     * @param catchingCell                 - захватываемая клетка
+     * @param controlledCells              - контролируемые игроком клетки
+     */
+    public static void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
+                                                         final @NotNull List<Cell> catchingCellNeighboringCells,
+                                                         final @NotNull Cell catchingCell,
+                                                         final @NotNull List<Cell> controlledCells) {
+        final List<Cell> boardEdgeCells = board.getEdgeCells();
+        final Iterator<Unit> iterator = units.iterator();
+        while (iterator.hasNext()) {
+            boolean unitAvailableForCapture = false;
+            final Unit unit = iterator.next();
+            for (final Cell neighboringCell : catchingCellNeighboringCells) {
+                if (neighboringCell.getUnits().contains(unit)) {
+                    unitAvailableForCapture = true;
+                    break;
+                }
+            }
+            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                unitAvailableForCapture = true;
+                for (final Cell controlledCell : controlledCells) {
+                    if (controlledCell.getUnits().contains(unit)) {
+                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
+                            unitAvailableForCapture = false;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!unitAvailableForCapture) {
+                iterator.remove();
+            }
+        }
+    }
+
+    /**
+     * Обновить состояние игры исходя из совершённого действия
+     *
+     * @param game   - игра (желательно копия)
+     * @param player - игрок
+     * @param action - совершённое действие
+     * @throws CoinsException при неизвестном типе действия
+     */
+    private static void updateGame(final @NotNull IGame game, final @NotNull Player player,
+                                   final @NotNull Action action) throws CoinsException {
+        switch (action.getType()) {
+            case CHANGE_RACE:
+                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool());
+                GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
+                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player));
+                return;
+            case CATCH_CELL:
+                final CatchCellAction catchCellAction = (CatchCellAction) action;
+                final IBoard board = game.getBoard();
+                final Cell captureCell =
+                        board.getCellByPosition(
+                                Objects.requireNonNull(
+                                        catchCellAction.getResolution()).getFirst());
+                final List<Unit> units = catchCellAction.getResolution().getSecond();
+                pretendToCell(player, Objects.requireNonNull(captureCell), units, board, game.getGameFeatures(),
+                        game.getOwnToCells(), game.getFeudalToCells(),
+                        game.getPlayerToTransitCells().get(player),
+                        game.getPlayerToAchievableCells().get(player));
+                return;
+            case DISTRIBUTION_UNITS:
+                final DistributionUnitsAction distributionUnitsAction = (DistributionUnitsAction) action;
+                distributionUnits(player, game.getOwnToCells().get(player),
+                        game.getFeudalToCells().get(player),
+                        distributionUnitsAction.getResolutions(),
+                        game.getBoard());
+                return;
+            default:
+                throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Взять следующего в очереди игрока
+     *
+     * @param game          - игра
+     * @param currentPlayer - текущий игрок
+     * @return следуюшего в очереди игрока
+     * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
+     */
+    private static @Nullable Player getNextPlayer(final @NotNull IGame game, final @NotNull Player currentPlayer)
+            throws CoinsException {
+        GameLoopProcessor.playerRoundEndUpdate(currentPlayer);
+        boolean wasCurrentPlayer = false;
+        for (final Player player : game.getPlayers()) {
+            if (player.equals(currentPlayer)) {
+                wasCurrentPlayer = true;
+                continue;
+            }
+            if (wasCurrentPlayer) {
+                GameLoopProcessor.playerRoundBeginUpdate(player);
+                return player;
+            }
+        }
+        if (wasCurrentPlayer) {
+            game.incrementCurrentRound();
+            final Player nextPlayer = game.getCurrentRound() <= Game.ROUNDS_COUNT ? game.getPlayers().get(0) : null;
+            if (nextPlayer != null) {
+                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer);
+            }
+            return nextPlayer;
+        }
+        throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    private static @NotNull Player getPlayerCopy(final @NotNull IGame gameCopy, final @NotNull Player player) {
+        return gameCopy.getPlayers().stream()
+                .filter(player1 -> player1.getId() == player.getId())
+                .findFirst()
+                .orElseThrow();
+    }
+
+    /**
+     * @param game   - игра в текущем состоянии
+     * @param player - игрок
+     * @param action - действие, привёдшее к данному узлу
+     * @return узел с оценённым данным действием
+     */
+    @Contract("_, _, _ -> new")
+    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player,
+                                               final @Nullable Action action) throws CoinsException {
+        final List<Edge> edges = new LinkedList<>();
+        if (action == null) {
+            Action newAction = new DeclineRaceAction(true);
+            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+            newAction = new DeclineRaceAction(false);
+            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+        } else {
+            final IGame gameCopy;
+            final Player playerCopy;
+            switch (action.getType()) {
+                case DECLINE_RACE:
+                    if (((DeclineRaceAction) action).isDeclineRace()) {
+                        for (final Race race : game.getRacesPool()) {
+                            final Action newAction = new ChangeRaceAction(race);
+                            edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+                        }
+                        break;
+                    }
+                    gameCopy = game.getCopy();
+                    playerCopy = getPlayerCopy(gameCopy, player);
+                    GameLoopProcessor.updateAchievableCells(playerCopy, gameCopy.getBoard(),
+                            gameCopy.getPlayerToAchievableCells().get(playerCopy),
+                            gameCopy.getOwnToCells().get(playerCopy));
+                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    break;
+                case CHANGE_RACE:
+                    gameCopy = game.getCopy();
+                    playerCopy = getPlayerCopy(gameCopy, player);
+                    updateGame(gameCopy, playerCopy, action);
+                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    break;
+                case CATCH_CELL:
+                    if (((CatchCellAction) action).getResolution() == null) {
+                        gameCopy = game.getCopy();
+                        playerCopy = getPlayerCopy(gameCopy, player);
+                        GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
+                        createDistributionUnitsNodes(gameCopy, playerCopy, edges);
+                        break;
+                    }
+                    gameCopy = game.getCopy();
+                    playerCopy = getPlayerCopy(gameCopy, player);
+                    updateGame(gameCopy, playerCopy, action);
+                    createCatchCellNodes(gameCopy, playerCopy, edges);
+                    break;
+                case DISTRIBUTION_UNITS:
+                    gameCopy = game.getCopy();
+                    playerCopy = getPlayerCopy(gameCopy, player);
+                    updateGame(gameCopy, playerCopy, action);
+                    final Player nextPlayer = getNextPlayer(gameCopy, playerCopy);
+                    if (nextPlayer == null) {
+                        edges.add(new Edge(null, null, createTerminalNode(gameCopy)));
+                        break;
+                    }
+                    Action newAction = new DeclineRaceAction(true);
+                    edges.add(new Edge(player, newAction, createTree(gameCopy, nextPlayer, newAction)));
+                    newAction = new DeclineRaceAction(false);
+                    edges.add(new Edge(player, newAction, createTree(gameCopy, nextPlayer, newAction)));
+                    break;
+                default:
+                    throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
+            }
+        }
+        final Map<Player, Integer> winsCount = new HashMap<>();
+        game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
+        int casesCount = 0;
+        for (final Edge edge : edges) {
+            for (final Map.Entry<Player, Integer> entry : edge.getTo().getWinsCount().entrySet()) {
+                winsCount.replace(entry.getKey(), winsCount.get(entry.getKey()) + entry.getValue());
+            }
+            casesCount += edge.getTo().getCasesCount();
+        }
+        return new NodeTree(edges, winsCount, casesCount);
+    }
+
+    /**
+     * Создать всевозможные узлы с захватом клетки
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @param edges  - список дуг от общего родителя
+     */
+    private static void createCatchCellNodes(final @NotNull IGame game, final @NotNull Player player,
+                                             final @NotNull List<Edge> edges)
+            throws CoinsException {
+
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        CatchCellAction newAction = new CatchCellAction(null);
+        edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+        for (final Cell cell : game.getPlayerToAchievableCells().get(player)) {
+            final List<Cell> catchingCellNeighboringCells =
+                    new LinkedList<>(
+                            Objects.requireNonNull(game.getBoard().getNeighboringCells(
+                                    Objects.requireNonNull(cell))));
+            catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+
+            final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+            removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
+                    cell, controlledCells);
+            final int unitsCountNeededToCatchCell =
+                    controlledCells.contains(cell)
+                            ? cell.getType().getCatchDifficulty()
+                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell);
+            for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
+                final Pair<Position, List<Unit>> resolution =
+                        new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, i));
+                newAction = new CatchCellAction(resolution);
+                edges.add(new Edge(player, newAction, createTree(game, player, newAction)));
+            }
+        }
+    }
+
+    private static void createDistributionUnitsNodes(final @NotNull IGame game, final @NotNull Player player,
+                                                     final @NotNull List<Edge> edges) throws CoinsException {
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
+                player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+        for (final List<Pair<Cell, Integer>> distribution : distributions) {
+            final Map<Position, List<Unit>> resolution = new HashMap<>();
+            for (final Pair<Cell, Integer> pair : distribution) {
+                final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+                final List<Unit> units = new LinkedList<>(availableUnits.subList(
+                        0, pair.getSecond())); // список юнитов, которое игрок хочет распределить в эту клетку
+                if (!units.isEmpty()) {
+                    resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
+                    availableUnits.removeAll(units);
+                }
+            }
+            final Action action = new DistributionUnitsAction(resolution);
+            edges.add(new Edge(player, action, createTree(game, player, action)));
+        }
+        final Action action = new DistributionUnitsAction(new HashMap<>());
+        edges.add(new Edge(player, action, createTree(game, player, action)));
+    }
+
+    //FIXME: придумать перебор всех случаев распределения юнитов
+    @Contract(pure = true)
+    private static @NotNull List<List<Pair<Cell, Integer>>> getDistributions(final @NotNull List<Cell> cells,
+                                                                             final int n) {
+        final List<List<Pair<Cell, Integer>>> distributions = new LinkedList<>();
+        for (int i = 0; i < cells.size(); i++) {
+            final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
+            int j = 0;
+            for (final Cell cell : cells) {
+                distribution.add(new Pair<>(cell, j == i ? n : 0));
+                j++;
+            }
+            distributions.add(distribution);
+        }
+        return distributions;
+    }
+
+    /**
+     * @param game - игра в текущем состоянии
+     * @return терминальный узел с оценённым данным действием
+     */
+    @Contract("_ -> new")
+    private static @NotNull NodeTree createTerminalNode(final @NotNull IGame game) {
+        final List<Player> winners = new LinkedList<>();
+        int maxCoinsCount = 0;
+        for (final Player item : game.getPlayers()) {
+            if (item.getCoins() > maxCoinsCount) {
+                maxCoinsCount = item.getCoins();
+                winners.clear();
+                winners.add(item);
+                continue;
+            }
+            if (item.getCoins() == maxCoinsCount) {
+                winners.add(item);
+            }
+        }
+        final Map<Player, Integer> map = new HashMap<>();
+        game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
+        return new NodeTree(new LinkedList<>(), map, 1);
+    }
+
+    /**
+     * @param nodeTree - узел дерева, в котором мы в данный момент находимся
+     * @return самое выгодное на данном этапе действие
+     */
+    public static @NotNull Action getAction(final @NotNull NodeTree nodeTree) {
+        return Objects.requireNonNull(nodeTree.getEdges().stream()
+                .max(Comparator.comparingDouble(edge ->
+                        (double) edge.getTo().getWinsCount().get(edge.getPlayer()) / edge.getTo().getCasesCount()))
+                .orElseThrow()
+                .getAction());
+    }
+}
