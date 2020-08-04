@@ -2,6 +2,7 @@ package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
+import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
@@ -29,8 +30,10 @@ public class GameStatistic {
     private static void play() {
         final List<Player> players = initPlayers();
         initBotPlayerPair(players);
+        simpleBotToPlayer.get(0).setFirst(new SmartBot());
         initStatisticMap(players);
         for (int i = 0; i < GAME_AMOUNT; i++) {
+            ((SmartBot) simpleBotToPlayer.get(0).getFirst()).clearTree();
             final List<Player> winners;
             winners = selfPlayByBotToPlayers(simpleBotToPlayer);
             for (final Player winner : winners) {
