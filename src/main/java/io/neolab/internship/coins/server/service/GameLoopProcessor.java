@@ -421,7 +421,8 @@ public class GameLoopProcessor {
      * @param player           - игрок, чьих юнитов нужно перевести в одно состояние
      * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
      */
-    static void makeAllUnitsSomeState(final @NotNull Player player, final @NotNull AvailabilityType availabilityType) {
+    public static void makeAllUnitsSomeState(final @NotNull Player player,
+                                             final @NotNull AvailabilityType availabilityType) {
         for (final AvailabilityType item : AvailabilityType.values()) {
             if (item != availabilityType) {
                 player.getUnitStateToUnits().get(availabilityType).addAll(player.getUnitStateToUnits().get(item));
