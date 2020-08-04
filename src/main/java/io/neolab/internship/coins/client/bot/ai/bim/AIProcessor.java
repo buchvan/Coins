@@ -193,7 +193,7 @@ public class AIProcessor {
         executorService.execute(() -> {
             final Action newAction = new DeclineRaceAction(true);
             try {
-                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction, null)));
+                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
             } catch (final CoinsException | InterruptedException exception) {
                 exception.printStackTrace();
             }
@@ -201,7 +201,7 @@ public class AIProcessor {
         executorService.execute(() -> {
             final Action newAction = new DeclineRaceAction(false);
             try {
-                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction, null)));
+                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
             } catch (final CoinsException | InterruptedException exception) {
                 exception.printStackTrace();
             }
@@ -224,8 +224,7 @@ public class AIProcessor {
         game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
-                edges.add(new Edge(player, newAction, createSubtree(game, player,
-                        newAction, null)));
+                edges.add(new Edge(player, newAction, createSubtree(game, player, newAction)));
             } catch (final CoinsException | InterruptedException exception) {
                 exception.printStackTrace();
             }
@@ -271,15 +270,13 @@ public class AIProcessor {
     /**
      * Создать поддерево симуляционного дерева игры
      *
-     * @param game           - игра в текущем состоянии
-     * @param player         - игрок
-     * @param action         - действие, привёдшее к данному узлу
-     * @param prevCatchCells - предыдущие захваченные клетки
+     * @param game   - игра в текущем состоянии
+     * @param player - игрок
+     * @param action - действие, привёдшее к данному узлу
      * @return узел с оценённым данным действием
      */
     private static @NotNull NodeTree createSubtree(final @NotNull IGame game, final @NotNull Player player,
-                                                   final @NotNull Action action,
-                                                   final @Nullable Set<Cell> prevCatchCells)
+                                                   final @NotNull Action action)
             throws CoinsException, InterruptedException {
 
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
@@ -294,20 +291,19 @@ public class AIProcessor {
                 gameCopy = game.getCopy();
                 playerCopy = getPlayerCopy(gameCopy, player);
                 updateGame(gameCopy, playerCopy, action);
-                createCatchCellsNodes(gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
-                break;
+                return createCatchCellSubtree(gameCopy, playerCopy, edges,
+                        Collections.synchronizedSet(new HashSet<>()));
             case CHANGE_RACE:
                 gameCopy = game.getCopy();
                 playerCopy = getPlayerCopy(gameCopy, player);
                 updateGame(gameCopy, playerCopy, action);
-                createCatchCellsNodes(gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
-                break;
+                return createCatchCellSubtree(gameCopy, playerCopy, edges,
+                        Collections.synchronizedSet(new HashSet<>()));
             case CATCH_CELL:
-                if (((CatchCellAction) action).getResolution() == null) {
-                    createDistributionUnitsNodes(game, player, edges);
-                    break;
+                if (((CatchCellAction) action).getResolution() != null) {
+                    throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
                 }
-                createCatchCellsNodes(game, player, edges, Objects.requireNonNull(prevCatchCells));
+                createDistributionUnitsNodes(game, player, edges);
                 break;
             case DISTRIBUTION_UNITS:
                 final Player nextPlayer = getNextPlayer(game, player);
@@ -320,6 +316,23 @@ public class AIProcessor {
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
         }
+        return createNodeTree(game, edges);
+    }
+
+    /**
+     * Создать поддерево с захватом клеток
+     *
+     * @param game           - игра
+     * @param player         - игрок
+     * @param edges          - список дуг от общего родителя
+     * @param prevCatchCells - предыдущие захваченные клетки
+     * @return ссылку на корень поддерева
+     * @throws InterruptedException при ошибке потока
+     */
+    private static NodeTree createCatchCellSubtree(final @NotNull IGame game, final Player player,
+                                                   final List<Edge> edges, final Set<Cell> prevCatchCells)
+            throws InterruptedException {
+        createCatchCellsNodes(game, player, edges, Objects.requireNonNull(prevCatchCells));
         return createNodeTree(game, edges);
     }
 
@@ -342,11 +355,11 @@ public class AIProcessor {
                                 .filter(achievableCells::contains)
                                 .collect(Collectors.toSet())
                                 .size());
-
         executorService.execute(() -> createCatchCellEndNode(game, player, edges));
         achievableCells.removeAll(prevCatchCells);
         for (final Cell cell : achievableCells) {
-            executorService.execute(() -> createCatchCellNodes(game, player, cell, edges, prevCatchCells));
+            executorService.execute(() -> createCatchCellNodes(game, player, cell, edges,
+                    Collections.synchronizedSet(new HashSet<>(prevCatchCells))));
         }
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -366,7 +379,7 @@ public class AIProcessor {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
         try {
-            edges.add(new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction, null)));
+            edges.add(new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction)));
         } catch (final CoinsException | InterruptedException exception) {
             exception.printStackTrace();
         }
@@ -445,7 +458,7 @@ public class AIProcessor {
                 return;
             }
             final Edge newEdge =
-                    new Edge(player, newAction, createSubtree(gameCopy, playerCopy, newAction, prevCatchCells));
+                    new Edge(player, newAction, createCatchCellSubtree(gameCopy, playerCopy, edges, prevCatchCells));
             edges.add(newEdge);
         } catch (final CoinsException | InterruptedException exception) {
             exception.printStackTrace();
@@ -473,7 +486,7 @@ public class AIProcessor {
             final IGame gameCopy = game.getCopy();
             final Player playerCopy = getPlayerCopy(gameCopy, player);
             updateGame(gameCopy, playerCopy, action);
-            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
+            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action)));
             return;
         }
         final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
@@ -510,7 +523,7 @@ public class AIProcessor {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
             updateGame(gameCopy, playerCopy, action);
-            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
+            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action)));
         } catch (final CoinsException | InterruptedException exception) {
             exception.printStackTrace();
         }
