@@ -259,21 +259,20 @@ public class Game implements IGame, Serializable {
         return players;
     }
 
-    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Game game = (Game) o;
         return currentRound == game.currentRound &&
-                Objects.equals(board, game.board) &&
-                Objects.equals(feudalToCells, game.feudalToCells) &&
-                Objects.equals(ownToCells, game.ownToCells) &&
-                Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
-                Objects.equals(playerToAchievableCells, game.playerToAchievableCells) &&
-                Objects.equals(gameFeatures, game.gameFeatures) &&
-                Objects.equals(racesPool, game.racesPool) &&
-                Objects.equals(players, game.players);
+                board.equals(game.board) &&
+                feudalToCells.equals(game.feudalToCells) &&
+                ownToCells.equals(game.ownToCells) &&
+                playerToTransitCells.equals(game.playerToTransitCells) &&
+                playerToAchievableCells.equals(game.playerToAchievableCells) &&
+                gameFeatures.equals(game.gameFeatures) &&
+                racesPool.equals(game.racesPool) &&
+                players.equals(game.players);
     }
 
     @Override
