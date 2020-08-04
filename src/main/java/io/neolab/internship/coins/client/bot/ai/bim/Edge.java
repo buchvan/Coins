@@ -3,25 +3,26 @@ package io.neolab.internship.coins.client.bot.ai.bim;
 import io.neolab.internship.coins.client.bot.ai.bim.action.Action;
 import io.neolab.internship.coins.server.game.player.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 public class Edge {
-    private final @NotNull Player player;
-    private final @NotNull Action action;
+    private final @Nullable Player player;
+    private final @Nullable Action action;
     private final @NotNull NodeTree to;
 
-    public Edge(@NotNull final Player player, @NotNull final Action action, @NotNull final NodeTree to) {
+    public Edge(@Nullable final Player player, @Nullable final Action action, @NotNull final NodeTree to) {
         this.player = player;
         this.action = action;
         this.to = to;
     }
 
-    public @NotNull Player getPlayer() {
+    public @Nullable Player getPlayer() {
         return player;
     }
 
-    public @NotNull Action getAction() {
+    public @Nullable Action getAction() {
         return action;
     }
 
@@ -34,8 +35,8 @@ public class Edge {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Edge edge = (Edge) o;
-        return player.equals(edge.player) &&
-                action.equals(edge.action) &&
+        return Objects.equals(player, edge.player) &&
+                Objects.equals(action, edge.action) &&
                 to.equals(edge.to);
     }
 
