@@ -1,5 +1,10 @@
 package io.neolab.internship.coins.client.bot;
 
+import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
+import io.neolab.internship.coins.client.bot.ai.bim.action.CatchCellAction;
+import io.neolab.internship.coins.client.bot.ai.bim.action.ChangeRaceAction;
+import io.neolab.internship.coins.client.bot.ai.bim.action.DeclineRaceAction;
+import io.neolab.internship.coins.client.bot.ai.bim.action.DistributionUnitsAction;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -18,12 +23,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static io.neolab.internship.coins.client.bot.ai.bim.AIProcessor.removeNotAvailableForCaptureUnits;
+
 public class SimpleBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         final boolean choice = RandomGenerator.isYes();
+        if (SmartBot.tree != null) {
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new DeclineRaceAction(choice));
+        }
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
     }
@@ -31,6 +41,9 @@ public class SimpleBot implements IBot {
     @Override
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
         final Race race = RandomGenerator.chooseItemFromList(game.getRacesPool());
+        if (SmartBot.tree != null) {
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new ChangeRaceAction(race));
+        }
         LOGGER.debug("Simple bot choice race: {} ", race);
         return race;
     }
@@ -38,6 +51,7 @@ public class SimpleBot implements IBot {
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
                                                                    final @NotNull IGame game) {
+        final Pair<Position, List<Unit>> resolution;
         if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
@@ -61,59 +75,25 @@ public class SimpleBot implements IBot {
                             ? catchingCell.getType().getCatchDifficulty()
                             : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
             final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
-            final Pair<Position, List<Unit>> resolution =
+            resolution =
                     remainingUnitsCount >= 0
                             ? new Pair<>(board.getPositionByCell(catchingCell),
                             units.subList(0,
                                     unitsCountNeededToCatchCell + RandomGenerator.chooseNumber(
                                             units.size() - unitsCountNeededToCatchCell + 1)))
                             : null;
+            if (SmartBot.tree != null) {
+                SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new CatchCellAction(resolution));
+            }
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
-            return resolution;
-        } // else
-        LOGGER.debug("Simple bot will not capture of cells");
-        return null;
-    }
-
-    /**
-     * Найти и удалить недоступные для захвата клетки юнитов
-     *
-     * @param board                        - борда
-     * @param units                        - список юнитов
-     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
-     * @param catchingCell                 - захватываемая клетка
-     * @param controlledCells              - контролируемые игроком клетки
-     */
-    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
-                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
-                                                   final @NotNull Cell catchingCell,
-                                                   final @NotNull List<Cell> controlledCells) {
-        final List<Cell> boardEdgeCells = board.getEdgeCells();
-        final Iterator<Unit> iterator = units.iterator();
-        while (iterator.hasNext()) {
-            boolean unitAvailableForCapture = false;
-            final Unit unit = iterator.next();
-            for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                if (neighboringCell.getUnits().contains(unit)) {
-                    unitAvailableForCapture = true;
-                    break;
-                }
-            }
-            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                unitAvailableForCapture = true;
-                for (final Cell controlledCell : controlledCells) {
-                    if (controlledCell.getUnits().contains(unit)) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
-                            unitAvailableForCapture = false;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (!unitAvailableForCapture) {
-                iterator.remove();
-            }
+        } else {
+            resolution = null;
+            LOGGER.debug("Simple bot will not capture of cells");
         }
+        if (SmartBot.tree != null) {
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new CatchCellAction(null));
+        }
+        return resolution;
     }
 
     @Override
@@ -130,6 +110,9 @@ public class SimpleBot implements IBot {
             distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
             availableUnits.removeAll(units);
             units = new LinkedList<>();
+        }
+        if (SmartBot.tree != null) {
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new DistributionUnitsAction(distributionUnits));
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
