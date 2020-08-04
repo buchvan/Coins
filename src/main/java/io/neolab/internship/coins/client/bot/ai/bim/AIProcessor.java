@@ -238,7 +238,6 @@ public class AIProcessor {
      */
     public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player)
             throws InterruptedException {
-
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         createDeclineRaceBranches(game, player, edges);
         return createNodeTree(game, edges);
@@ -272,15 +271,11 @@ public class AIProcessor {
      * @return узел с оценённым данным действием
      */
     private static @NotNull NodeTree createSubtree(final @NotNull IGame game, final @NotNull Player player,
-                                                   final @Nullable Action action,
+                                                   final @NotNull Action action,
                                                    final @Nullable Set<Action> prevActions)
             throws CoinsException, InterruptedException {
 
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
-        if (action == null) {
-            createDeclineRaceBranches(game, player, edges);
-            return createNodeTree(game, edges);
-        }
         final IGame gameCopy;
         final Player playerCopy;
         switch (action.getType()) {
