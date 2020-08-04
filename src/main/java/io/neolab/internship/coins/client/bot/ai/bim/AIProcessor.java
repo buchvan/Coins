@@ -181,7 +181,7 @@ public class AIProcessor {
      * @param edges  - дуги от родителя
      * @throws InterruptedException при ошибке потока
      */
-    private static void declineRaceBranches(final @NotNull IGame game, final @NotNull Player player,
+    private static void createDeclineRaceBranches(final @NotNull IGame game, final @NotNull Player player,
                                             final @NotNull List<Edge> edges) throws InterruptedException {
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
         executorService.execute(() -> {
@@ -212,7 +212,7 @@ public class AIProcessor {
      * @param edges  - дуги от родителя
      * @throws InterruptedException при ошибке потока
      */
-    private static void changeRaceBranches(final @NotNull IGame game, final @NotNull Player player,
+    private static void createChangeRaceBranches(final @NotNull IGame game, final @NotNull Player player,
                                            final @NotNull List<Edge> edges) throws InterruptedException {
         final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
         game.getRacesPool().forEach(race -> executorService.execute(() -> {
@@ -240,7 +240,7 @@ public class AIProcessor {
             throws InterruptedException {
 
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
-        declineRaceBranches(game, player, edges);
+        createDeclineRaceBranches(game, player, edges);
         return createNodeTree(game, edges);
     }
 
@@ -278,7 +278,7 @@ public class AIProcessor {
 
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         if (action == null) {
-            declineRaceBranches(game, player, edges);
+            createDeclineRaceBranches(game, player, edges);
             return createNodeTree(game, edges);
         }
         final IGame gameCopy;
@@ -286,7 +286,7 @@ public class AIProcessor {
         switch (action.getType()) {
             case DECLINE_RACE:
                 if (((DeclineRaceAction) action).isDeclineRace()) {
-                    changeRaceBranches(game, player, edges);
+                    createChangeRaceBranches(game, player, edges);
                     break;
                 }
                 gameCopy = game.getCopy();
@@ -315,7 +315,7 @@ public class AIProcessor {
                     edges.add(new Edge(null, null, createTerminalNode(game)));
                     break;
                 }
-                declineRaceBranches(game, nextPlayer, edges);
+                createDeclineRaceBranches(game, nextPlayer, edges);
                 break;
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
