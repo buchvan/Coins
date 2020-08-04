@@ -96,6 +96,11 @@ public class AIProcessor {
     private static void updateGame(final @NotNull IGame game, final @NotNull Player player,
                                    final @NotNull Action action) throws CoinsException {
         switch (action.getType()) {
+            case DECLINE_RACE:
+                GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
+                        game.getPlayerToAchievableCells().get(player),
+                        game.getOwnToCells().get(player));
+                return;
             case CHANGE_RACE:
                 changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool());
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
@@ -286,9 +291,7 @@ public class AIProcessor {
                 }
                 gameCopy = game.getCopy();
                 playerCopy = getPlayerCopy(gameCopy, player);
-                GameLoopProcessor.updateAchievableCells(playerCopy, gameCopy.getBoard(),
-                        gameCopy.getPlayerToAchievableCells().get(playerCopy),
-                        gameCopy.getOwnToCells().get(playerCopy));
+                updateGame(gameCopy, playerCopy, action);
                 createCatchCellsNodes(gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
                 break;
             case CHANGE_RACE:
@@ -382,17 +385,18 @@ public class AIProcessor {
                 cell, controlledCells);
         units.removeIf(unit -> cell.getUnits().contains(unit));
         final int unitsCountNeededToCatchCell =
+                GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell);
+        final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), cell);
+        final int tiredUnitsCount =
                 controlledCells.contains(cell)
                         ? cell.getType().getCatchDifficulty()
-                        : GameLoopProcessor
-                        .getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell) -
-                        GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), cell);
-        if (units.size() <= unitsCountNeededToCatchCell - 1) {
+                        : unitsCountNeededToCatchCell - bonusAttack;
+        if (units.size() <= tiredUnitsCount - 1) {
             return;
         }
         final ExecutorService executorService1 =
-                Executors.newFixedThreadPool(units.size() - unitsCountNeededToCatchCell + 1);
-        for (int i = unitsCountNeededToCatchCell; i <= units.size(); i++) {
+                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
+        for (int i = tiredUnitsCount; i <= units.size(); i++) {
             final int index = i;
             executorService1.execute(() ->
                     createCatchCellNode(index, game, player, cell, units, edges, prevActions));
