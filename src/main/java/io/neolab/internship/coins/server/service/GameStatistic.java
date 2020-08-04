@@ -22,7 +22,7 @@ public class GameStatistic {
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final int GAME_AMOUNT = 10;
-    private static final int PLAYERS_AMOUNT = 2;
+    private static final int PLAYERS_AMOUNT = 3;
     private static int winCounter = 0;
 
 
