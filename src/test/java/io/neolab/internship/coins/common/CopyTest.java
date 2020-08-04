@@ -11,8 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.MDC;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -42,8 +40,7 @@ public class CopyTest extends TestUtils {
                 actual.getFeudalToCells() == expected.getFeudalToCells() ||
                 actual.getPlayerToTransitCells() == expected.getPlayerToTransitCells() ||
                 actual.getRacesPool() == expected.getRacesPool() ||
-                actual.getPlayerToAchievableCells() == expected.getPlayerToAchievableCells() ||
-                actual.getGameFeatures() == expected.getGameFeatures()) {
+                actual.getPlayerToAchievableCells() == expected.getPlayerToAchievableCells()) {
             fail();
         }
     }
@@ -102,18 +99,6 @@ public class CopyTest extends TestUtils {
                     cells.forEach(cell ->
                             cells1.forEach(cell1 -> {
                                 if (cell == cell1) {
-                                    fail();
-                                }
-                            }));
-                }));
-        expected.getGameFeatures().getRaceCellTypeFeatures().forEach((raceCellTypePair, features) ->
-                actual.getGameFeatures().getRaceCellTypeFeatures().forEach((raceCellTypePair1, features1) -> {
-                    if (raceCellTypePair == raceCellTypePair1) {
-                        fail();
-                    }
-                    features.forEach(feature ->
-                            features1.forEach(feature1 -> {
-                                if (feature == feature1) {
                                     fail();
                                 }
                             }));

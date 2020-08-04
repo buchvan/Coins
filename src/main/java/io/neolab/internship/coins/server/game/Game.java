@@ -152,7 +152,7 @@ public class Game implements IGame, Serializable {
                     final int unitListSize = unitList.size();
                     playerCopy.getUnitStateToUnits().values().forEach(units ->
                             unitList.addAll(units.stream()
-                                    .filter(unitList::contains)
+                                    .filter(cell.getUnits()::contains)
                                     .collect(Collectors.toList())));
                     cell.getUnits().subList(0, unitListSize).clear();
                 });
