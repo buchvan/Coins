@@ -255,7 +255,7 @@ public class AIProcessor {
                     break;
                 case CATCH_CELL:
                     if (((CatchCellAction) action).getResolution() == null) {
-                        createDistributionUnitsNode(game, player, edges);
+                        createDistributionUnitsNodes(game, player, edges);
                         break;
                     }
                     createCatchCellNodes(game, player, edges, Objects.requireNonNull(prevActions));
@@ -362,38 +362,51 @@ public class AIProcessor {
         }
     }
 
-    private static void createDistributionUnitsNode(final @NotNull IGame game, final @NotNull Player player,
-                                                    final @NotNull List<Edge> edges)
+    private static void createDistributionUnitsNodes(final @NotNull IGame game, final @NotNull Player player,
+                                                     final @NotNull List<Edge> edges)
             throws CoinsException, InterruptedException {
 
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
-        boolean wasCreating = false;
-        for (final List<Pair<Cell, Integer>> distribution : distributions) {
-            final Map<Position, List<Unit>> resolution = new HashMap<>();
-            for (final Pair<Cell, Integer> pair : distribution) {
-                final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-                final List<Unit> units = new LinkedList<>(availableUnits.subList(
-                        0, pair.getSecond())); // список юнитов, которое игрок хочет распределить в эту клетку
-                if (!units.isEmpty()) {
-                    resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
-                    availableUnits.removeAll(units);
-                }
-            }
-            final Action action = new DistributionUnitsAction(resolution);
-            final IGame gameCopy = game.getCopy();
-            final Player playerCopy = getPlayerCopy(gameCopy, player);
-            updateGame(gameCopy, playerCopy, action);
-            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
-            wasCreating = true;
-        }
-        if (!wasCreating) {
+
+        if (distributions.size() == 0) {
             final Action action = new DistributionUnitsAction(new HashMap<>());
             final IGame gameCopy = game.getCopy();
             final Player playerCopy = getPlayerCopy(gameCopy, player);
             updateGame(gameCopy, playerCopy, action);
             edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
+            return;
+        }
+        final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
+        for (final List<Pair<Cell, Integer>> distribution : distributions) {
+            executorService.execute(() -> createDistributionUnitsNode(game, player, edges, distribution));
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+
+    private static void createDistributionUnitsNode(final @NotNull IGame game, final @NotNull Player player,
+                                                    final @NotNull List<Edge> edges,
+                                                    final @NotNull List<Pair<Cell, Integer>> distribution) {
+        final Map<Position, List<Unit>> resolution = new HashMap<>();
+        for (final Pair<Cell, Integer> pair : distribution) {
+            final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+            final List<Unit> units = new LinkedList<>(availableUnits.subList(
+                    0, pair.getSecond())); // список юнитов, которое игрок хочет распределить в эту клетку
+            if (!units.isEmpty()) {
+                resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
+                availableUnits.removeAll(units);
+            }
+        }
+        final Action action = new DistributionUnitsAction(resolution);
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = getPlayerCopy(gameCopy, player);
+        try {
+            updateGame(gameCopy, playerCopy, action);
+            edges.add(new Edge(player, action, createSubtree(gameCopy, playerCopy, action, null)));
+        } catch (final CoinsException | InterruptedException exception) {
+            exception.printStackTrace();
         }
     }
 
