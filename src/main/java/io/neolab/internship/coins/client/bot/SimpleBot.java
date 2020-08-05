@@ -1,10 +1,7 @@
 package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
-import io.neolab.internship.coins.client.bot.ai.bim.action.CatchCellAction;
-import io.neolab.internship.coins.client.bot.ai.bim.action.ChangeRaceAction;
-import io.neolab.internship.coins.client.bot.ai.bim.action.DeclineRaceAction;
-import io.neolab.internship.coins.client.bot.ai.bim.action.DistributionUnitsAction;
+import io.neolab.internship.coins.client.bot.ai.bim.action.*;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -30,9 +27,14 @@ public class SimpleBot implements IBot {
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        final boolean choice = RandomGenerator.isYes();
+        final boolean choice;
         if (SmartBot.tree != null) {
-            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new DeclineRaceAction(choice));
+            final DeclineRaceAction action =
+                    (DeclineRaceAction) RandomGenerator.chooseItemFromList(SmartBot.tree.getEdges()).getAction();
+            choice = Objects.requireNonNull(action).isDeclineRace();
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, action);
+        } else {
+            choice = RandomGenerator.isYes();
         }
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
@@ -40,9 +42,14 @@ public class SimpleBot implements IBot {
 
     @Override
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
-        final Race race = RandomGenerator.chooseItemFromList(game.getRacesPool());
+        final Race race;
         if (SmartBot.tree != null) {
-            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new ChangeRaceAction(race));
+            final ChangeRaceAction action =
+                    (ChangeRaceAction) RandomGenerator.chooseItemFromList(SmartBot.tree.getEdges()).getAction();
+            race = Objects.requireNonNull(action).getNewRace();
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, action);
+        } else {
+            race = RandomGenerator.chooseItemFromList(game.getRacesPool());
         }
         LOGGER.debug("Simple bot choice race: {} ", race);
         return race;
