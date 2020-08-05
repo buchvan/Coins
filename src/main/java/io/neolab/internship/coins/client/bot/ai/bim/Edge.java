@@ -44,4 +44,11 @@ public class Edge {
     public int hashCode() {
         return Objects.hash(player, action, to);
     }
+
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "action=" + action +
+                '}';
+    }
 }

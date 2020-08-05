@@ -16,6 +16,8 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +27,10 @@ import java.util.concurrent.TimeUnit;
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
 public class AIProcessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIProcessor.class);
+
     private static final int MAX_DEPTH = 1;
+    private static final boolean isLoggedOn = false;
 
     /**
      * Обновить дерево согласно выполненному действию
@@ -100,14 +105,14 @@ public class AIProcessor {
             case DECLINE_RACE:
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
                         game.getPlayerToAchievableCells().get(player),
-                        game.getOwnToCells().get(player));
+                        game.getOwnToCells().get(player), isLoggedOn);
                 GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
                 return;
             case CHANGE_RACE:
                 game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool());
+                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool(), isLoggedOn);
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
-                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player));
+                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player), isLoggedOn);
                 return;
             case CATCH_CELL:
                 final CatchCellAction catchCellAction = (CatchCellAction) action;
@@ -120,14 +125,14 @@ public class AIProcessor {
                 pretendToCell(player, Objects.requireNonNull(captureCell), units, board, game.getGameFeatures(),
                         game.getOwnToCells(), game.getFeudalToCells(),
                         game.getPlayerToTransitCells().get(player),
-                        game.getPlayerToAchievableCells().get(player));
+                        game.getPlayerToAchievableCells().get(player), isLoggedOn);
                 return;
             case DISTRIBUTION_UNITS:
                 final DistributionUnitsAction distributionUnitsAction = (DistributionUnitsAction) action;
                 distributionUnits(player, game.getOwnToCells().get(player),
                         game.getFeudalToCells().get(player),
                         distributionUnitsAction.getResolutions(),
-                        game.getBoard());
+                        game.getBoard(), isLoggedOn);
                 return;
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
@@ -146,7 +151,7 @@ public class AIProcessor {
                                                                                    final @NotNull IGame game,
                                                                                    final @NotNull Player currentPlayer)
             throws CoinsException {
-        GameLoopProcessor.playerRoundEndUpdate(currentPlayer);
+        GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isLoggedOn);
         boolean wasCurrentPlayer = false;
         for (final Player player : game.getPlayers()) {
             if (player.equals(currentPlayer)) {
@@ -154,23 +159,27 @@ public class AIProcessor {
                 continue;
             }
             if (wasCurrentPlayer) {
-                GameLoopProcessor.playerRoundBeginUpdate(player);
+                LOGGER.debug("Next player: {}", player.getNickname());
+                GameLoopProcessor.playerRoundBeginUpdate(player, isLoggedOn);
                 return new Pair<>(player, currentDepth);
             }
         }
         if (wasCurrentPlayer) {
             final int newDepth = currentDepth + 1;
+            LOGGER.debug("New depth: {}", newDepth);
             game.getPlayers().forEach(player -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
                             player, game.getFeudalToCells().get(player),
-                            game.getGameFeatures(), game.getBoard()));
+                            game.getGameFeatures(), game.getBoard(), isLoggedOn));
             game.incrementCurrentRound();
+            LOGGER.debug("New round: {}", game.getCurrentRound());
             final Player nextPlayer =
                     newDepth < MAX_DEPTH && game.getCurrentRound() <= Game.ROUNDS_COUNT
                             ? game.getPlayers().get(0)
                             : null;
             if (nextPlayer != null) {
-                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer);
+                LOGGER.debug("Next player: {}", nextPlayer.getNickname());
+                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isLoggedOn);
             }
             return new Pair<>(nextPlayer, newDepth);
         }
@@ -274,6 +283,7 @@ public class AIProcessor {
             edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
             casesCount += edge.getTo().getCasesCount();
         }
+        LOGGER.debug("Created new node with edges: {}", edges);
         return new NodeTree(edges, winsCount, casesCount);
     }
 
@@ -316,7 +326,7 @@ public class AIProcessor {
                 }
                 final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
                 final List<Cell> controlledCells = game.getOwnToCells().get(player);
-                GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+                GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, isLoggedOn);
                 controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
                 GameLoopProcessor.makeAllUnitsSomeState(player,
                         AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
@@ -330,7 +340,7 @@ public class AIProcessor {
                     edges.add(new Edge(null, null, createTerminalNode(game)));
                     break;
                 }
-                GameLoopProcessor.playerRoundEndUpdate(player);
+                GameLoopProcessor.playerRoundEndUpdate(player, isLoggedOn);
                 createDeclineRaceBranches(nextDepth, game, nextPlayer, edges);
                 break;
             default:
@@ -373,7 +383,7 @@ public class AIProcessor {
                                               final @NotNull IGame game, final @NotNull Player player,
                                               final @NotNull List<Edge> edges,
                                               final @NotNull Set<Cell> prevCatchCells) {
-        final List<ExecutorService> executorServices = new LinkedList<>();
+//        final List<ExecutorService> executorServices = new LinkedList<>();
         boolean wasCreated = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
@@ -384,20 +394,39 @@ public class AIProcessor {
                 if (unitsToPairTiredUnitsToCell == null) {
                     continue;
                 } // else
-                addExecuteService(currentDepth, game, player, edges, prevCatchCells,
-                        unitsToPairTiredUnitsToCell, executorServices);
+
+                final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+                final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
+                final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
+
+//        final ExecutorService executorService1 =
+//                Executors.newFixedThreadPool(1);
+//        executorService1.execute(() ->
+//                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
+//                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+
+                for (int i = tiredUnitsCount; i <= units.size(); i++) {
+                    final Set<Cell> copyPrevCatchCells = Collections.synchronizedSet(new HashSet<>(prevCatchCells));
+                    createCatchCellNode(currentDepth, i, game, player, cell,
+                            Collections.synchronizedList(new LinkedList<>(units)), edges, copyPrevCatchCells);
+                }
+
+//                addExecuteService(currentDepth, game, player, edges, prevCatchCells,
+//                        unitsToPairTiredUnitsToCell, executorServices);
                 wasCreated = true;
                 break;
             }
         }
         if (!wasCreated) {
-            final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
-            executorServiceEnd.execute(() -> createCatchCellEndNode(currentDepth, game, player, edges));
-            executorServices.add(executorServiceEnd);
+            createCatchCellEndNode(currentDepth, game, player, edges);
+
+//            final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
+//            executorServiceEnd.execute(() -> createCatchCellEndNode(currentDepth, game, player, edges));
+//            executorServices.add(executorServiceEnd);
         }
-        final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
-        executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
-        executeExecutorService(executorService);
+//        final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
+//        executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
+//        executeExecutorService(executorService);
     }
 
     /**
@@ -448,9 +477,11 @@ public class AIProcessor {
             tiredUnitsCount = achievableCell.getType().getCatchDifficulty();
         } else {
             final int unitsCountNeededToCatchCell =
-                    GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), achievableCell);
+                    GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(),
+                            achievableCell, isLoggedOn);
             final int bonusAttack =
-                    GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(), achievableCell);
+                    GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(),
+                            achievableCell, isLoggedOn);
             tiredUnitsCount = unitsCountNeededToCatchCell - bonusAttack;
         }
         prevCatchCells.add(achievableCell);
@@ -459,43 +490,43 @@ public class AIProcessor {
                 : null;
     }
 
-    /**
-     * Добавить ExecuteService (вариация по числу юнитов для захвата)
-     *
-     * @param game                        - игра
-     * @param player                      - игрок
-     * @param edges                       - дуги от общего родителя
-     * @param prevCatchCells              - предыдущие захваченные клетки в этой ветке
-     * @param unitsToPairTiredUnitsToCell - пара (список юнитов, пара(число уставших юнитов, захватываемая клетка)
-     * @param executorServices            - список сервисов, в который нужно добавить новый
-     */
-    private static void addExecuteService(final int currentDepth,
-                                          final @NotNull IGame game, final @NotNull Player player,
-                                          final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells,
-                                          final @NotNull Pair<List<Unit>, Pair<Integer, Cell>>
-                                                  unitsToPairTiredUnitsToCell,
-                                          final @NotNull List<ExecutorService> executorServices) {
-        final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-        final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
-        final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
-
+//    /**
+//     * Добавить ExecuteService (вариация по числу юнитов для захвата)
+//     *
+//     * @param game                        - игра
+//     * @param player                      - игрок
+//     * @param edges                       - дуги от общего родителя
+//     * @param prevCatchCells              - предыдущие захваченные клетки в этой ветке
+//     * @param unitsToPairTiredUnitsToCell - пара (список юнитов, пара(число уставших юнитов, захватываемая клетка)
+//     * @param executorServices            - список сервисов, в который нужно добавить новый
+//     */
+//    private static void addExecuteService(final int currentDepth,
+//                                          final @NotNull IGame game, final @NotNull Player player,
+//                                          final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells,
+//                                          final @NotNull Pair<List<Unit>, Pair<Integer, Cell>>
+//                                                  unitsToPairTiredUnitsToCell,
+//                                          final @NotNull List<ExecutorService> executorServices) {
+//        final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+//        final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
+//        final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
+//
+////        final ExecutorService executorService1 =
+////                Executors.newFixedThreadPool(1);
+////        executorService1.execute(() ->
+////                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
+////                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+//
 //        final ExecutorService executorService1 =
-//                Executors.newFixedThreadPool(1);
-//        executorService1.execute(() ->
-//                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
-//                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-
-        final ExecutorService executorService1 =
-                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
-        for (int i = tiredUnitsCount; i <= units.size(); i++) {
-            final int index = i;
-            final Set<Cell> copyPrevCatchCells = Collections.synchronizedSet(new HashSet<>(prevCatchCells));
-            executorService1.execute(() ->
-                    createCatchCellNode(currentDepth, index, game, player, cell,
-                            Collections.synchronizedList(new LinkedList<>(units)), edges, copyPrevCatchCells));
-        }
-        executorServices.add(executorService1);
-    }
+//                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
+//        for (int i = tiredUnitsCount; i <= units.size(); i++) {
+//            final int index = i;
+//            final Set<Cell> copyPrevCatchCells = Collections.synchronizedSet(new HashSet<>(prevCatchCells));
+//            executorService1.execute(() ->
+//                    createCatchCellNode(currentDepth, index, game, player, cell,
+//                            Collections.synchronizedList(new LinkedList<>(units)), edges, copyPrevCatchCells));
+//        }
+//        executorServices.add(executorService1);
+//    }
 
     /**
      * Выполнить ExecutorService
