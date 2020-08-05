@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Класс бота с ИИ
+ *
+ */
 public class AIBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(AIBot.class);
 

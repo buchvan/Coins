@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.ai.vika.decision;
+package io.neolab.internship.coins.ai.vika.decision.model;
 
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;

@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.ai.vika.decision;
+package io.neolab.internship.coins.ai.vika.decision.model;
 
 public enum DecisionType {
     CATCH_CELL,
