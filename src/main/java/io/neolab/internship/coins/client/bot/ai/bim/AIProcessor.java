@@ -264,18 +264,20 @@ public class AIProcessor {
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         createDeclineRaceBranches(0, gameCopy, playerCopy, edges);
-        return createNodeTree(gameCopy, edges);
+        return createNodeTree(-1, gameCopy, edges);
     }
 
     /**
      * Создать узел дерева
      *
-     * @param game  - игра
-     * @param edges - дуги к потомкам
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param edges        - дуги к потомкам
      * @return узел дерева
      */
-    @Contract("_, _ -> new")
-    private static @NotNull NodeTree createNodeTree(final @NotNull IGame game, final @NotNull List<Edge> edges) {
+    @Contract("_, _, _ -> new")
+    private static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
+                                                    final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         int casesCount = 0;
@@ -283,7 +285,7 @@ public class AIProcessor {
             edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
             casesCount += edge.getTo().getCasesCount();
         }
-        LOGGER.debug("Created new node with edges: {}", edges);
+        LOGGER.debug("Created new node in depth {} with edges: {}", currentDepth, edges);
         return new NodeTree(edges, winsCount, casesCount);
     }
 
@@ -346,7 +348,7 @@ public class AIProcessor {
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
         }
-        return createNodeTree(game, edges);
+        return createNodeTree(currentDepth, game, edges);
     }
 
     /**
@@ -368,7 +370,7 @@ public class AIProcessor {
         }
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         createCatchCellsNodes(currentDepth, game, player, edges, prevCatchCells);
-        return createNodeTree(game, edges);
+        return createNodeTree(currentDepth, game, edges);
     }
 
     /**
