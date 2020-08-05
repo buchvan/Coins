@@ -18,17 +18,25 @@ import java.util.*;
 
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    static @Nullable NodeTree tree;
+    private @Nullable NodeTree tree;
     private final @NotNull IBot simpleBot = new SimpleBot();
 
-    public void clearTree() {
+    @Nullable NodeTree getTree() {
+        return tree;
+    }
+
+    void putTree(final @NotNull NodeTree tree) {
+        this.tree = tree;
+    }
+
+    private void clearTree() {
         tree = null;
     }
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         if (tree != null && tree.getEdges().iterator().next().getAction() == null) {
-            tree = null;
+            clearTree();
         }
         if (tree == null) {
             tree = AIProcessor.createTree(game, player);
