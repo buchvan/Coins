@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.loseCells;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.updateAchievableCellsAfterCatchCell;
 
 class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
@@ -157,8 +158,7 @@ class SelfPlay {
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
-        final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        while (achievableCells.size() > 0 && availableUnits.size() > 0) {
+        while (true) {
             /* Пока есть что захватывать и какими войсками захватывать */
             final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.chooseCatchingCell(player, game);
             if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
@@ -170,15 +170,7 @@ class SelfPlay {
             if (isCatchCellAttemptSucceed(player, Objects.requireNonNull(catchingCell), units, board,
                     game.getGameFeatures(), game.getOwnToCells(), game.getFeudalToCells(),
                     transitCells)) { // если попытка захвата увеначалась успехом
-                if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
-                    achievableCells.clear();
-                }
-                achievableCells.add(catchingCell);
-                final List<Cell> neighboringCells =
-                        GameLoopProcessor.getAllNeighboringCells(board, Objects.requireNonNull(catchingCell));
-                achievableCells.addAll(neighboringCells);
-                neighboringCells.forEach(neighboringCell ->
-                        GameLoopProcessor.updateNeighboringCellsIfNecessary(board, neighboringCell));
+                updateAchievableCellsAfterCatchCell(board, catchingCell, controlledCells, achievableCells);
             }
         }
     }

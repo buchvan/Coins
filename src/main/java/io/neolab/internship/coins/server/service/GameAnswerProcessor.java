@@ -235,15 +235,7 @@ public class GameAnswerProcessor {
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
         catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
                 units, gameFeatures, ownToCells, feudalToCells, transitCells);
-        if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
-            achievableCells.clear();
-        }
-        achievableCells.add(captureCell);
-        final List<Cell> actualNeighboringCells =
-                GameLoopProcessor.getAllNeighboringCells(board, Objects.requireNonNull(captureCell));
-        achievableCells.addAll(actualNeighboringCells);
-        actualNeighboringCells.forEach(neighboringCell ->
-                GameLoopProcessor.updateNeighboringCellsIfNecessary(board, neighboringCell));
+        updateAchievableCellsAfterCatchCell(board, captureCell, controlledCells, achievableCells);
     }
 
     /**

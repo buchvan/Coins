@@ -45,6 +45,20 @@ public class GameLoopProcessor {
         GameLogger.printRoundEndUpdateLog(player);
     }
 
+    static void updateAchievableCellsAfterCatchCell(final @NotNull IBoard board, final @NotNull Cell catchingCell,
+                                                    final @NotNull List<Cell> controlledCells,
+                                                    final @NotNull Set<Cell> achievableCells) {
+        if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
+            achievableCells.clear();
+        }
+        achievableCells.add(catchingCell);
+        final List<Cell> neighboringCells =
+                GameLoopProcessor.getAllNeighboringCells(board, Objects.requireNonNull(catchingCell));
+        achievableCells.addAll(neighboringCells);
+        neighboringCells.forEach(neighboringCell ->
+                GameLoopProcessor.updateNeighboringCellsIfNecessary(board, neighboringCell));
+    }
+
     /**
      * Метод для получения достижимых в один ход игроком клеток, не подконтрольных ему
      *
@@ -167,7 +181,7 @@ public class GameLoopProcessor {
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
-                                              final @NotNull Cell catchingCell) {
+                                                     final @NotNull Cell catchingCell) {
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         final Player defendingPlayer = catchingCell.getFeudal();
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
@@ -195,8 +209,8 @@ public class GameLoopProcessor {
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     public static int getBonusAttackToCatchCell(final @NotNull Player player,
-                                         final @NotNull GameFeatures gameFeatures,
-                                         final @NotNull Cell catchingCell) {
+                                                final @NotNull GameFeatures gameFeatures,
+                                                final @NotNull Cell catchingCell) {
         int bonusAttack = 0;
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 player.getRace(), catchingCell.getType())) { // Смотрим все особенности агрессора
@@ -273,9 +287,9 @@ public class GameLoopProcessor {
     /**
      * Потерять клетки, на которых нет юнитов игрока
      *
-     * @param cells       - клетки, которые необходимо проверить на то, потеряны ли они
+     * @param cells           - клетки, которые необходимо проверить на то, потеряны ли они
      * @param controlledCells - подконтрольные клетки игрока
-     * @param feudalCells - клетки, приносящие монеты игроку
+     * @param feudalCells     - клетки, приносящие монеты игроку
      */
     public static void loseCells(final @NotNull List<Cell> cells,
                                  final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
