@@ -172,8 +172,8 @@ class SelfPlay {
                     transitCells)) { // если попытка захвата увеначалась успехом
                 if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
                     achievableCells.clear();
-                    achievableCells.add(catchingCell);
                 }
+                achievableCells.add(catchingCell);
                 final List<Cell> neighboringCells =
                         GameLoopProcessor.getAllNeighboringCells(board, Objects.requireNonNull(catchingCell));
                 achievableCells.addAll(neighboringCells);

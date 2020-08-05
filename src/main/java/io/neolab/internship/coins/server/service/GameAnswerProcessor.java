@@ -239,7 +239,11 @@ public class GameAnswerProcessor {
             achievableCells.clear();
         }
         achievableCells.add(captureCell);
-        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        final List<Cell> actualNeighboringCells =
+                GameLoopProcessor.getAllNeighboringCells(board, Objects.requireNonNull(captureCell));
+        achievableCells.addAll(actualNeighboringCells);
+        actualNeighboringCells.forEach(neighboringCell ->
+                GameLoopProcessor.updateNeighboringCellsIfNecessary(board, neighboringCell));
     }
 
     /**
