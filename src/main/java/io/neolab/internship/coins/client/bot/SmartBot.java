@@ -31,7 +31,10 @@ public class SmartBot implements IBot {
         final boolean choice;
         if (tree != null || game.getCurrentRound() == Game.ROUNDS_COUNT) {
             if (tree == null) {
+                final long startTime = System.currentTimeMillis();
                 tree = AIProcessor.createTree(game, player);
+                System.out.println("------------------------------"); //FIXME sout
+                System.out.println(System.currentTimeMillis() - startTime);
             }
             final Action action = AIProcessor.getAction(tree);
             tree = AIProcessor.updateTree(tree, action);

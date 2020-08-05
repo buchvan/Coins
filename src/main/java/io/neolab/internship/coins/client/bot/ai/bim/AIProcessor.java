@@ -356,10 +356,7 @@ public class AIProcessor {
                                               final @NotNull List<Edge> edges,
                                               final @NotNull Set<Cell> prevCatchCells) {
         final List<ExecutorService> executorServices = new LinkedList<>();
-        final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
-        executorServiceEnd.execute(() -> createCatchCellEndNode(game, player, edges));
-        executorServices.add(executorServiceEnd);
-
+        boolean wasCreated = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
             achievableCells.removeAll(prevCatchCells);
@@ -370,10 +367,15 @@ public class AIProcessor {
                     continue;
                 } // else
                 addExecuteService(game, player, edges, prevCatchCells, unitsToPairTiredUnitsToCell, executorServices);
+                wasCreated = true;
                 break;
             }
         }
-
+        if (!wasCreated) {
+            final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
+            executorServiceEnd.execute(() -> createCatchCellEndNode(game, player, edges));
+            executorServices.add(executorServiceEnd);
+        }
         final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
         executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
         executeExecutorService(executorService);
@@ -459,7 +461,7 @@ public class AIProcessor {
         final ExecutorService executorService1 =
                 Executors.newFixedThreadPool(1);
         executorService1.execute(() ->
-                createCatchCellNode(units.size(), game, player, cell,
+                createCatchCellNode(tiredUnitsCount, game, player, cell,
                         Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
 
 //        final ExecutorService executorService1 =
