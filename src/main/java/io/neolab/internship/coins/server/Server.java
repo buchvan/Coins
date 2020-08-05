@@ -550,7 +550,7 @@ public class Server implements IServer {
         final Player player = serverSomething.getPlayer();
 
         /* Активация данных игрока в начале раунда */
-        GameLoopProcessor.playerRoundBeginUpdate(player);
+        GameLoopProcessor.playerRoundBeginUpdate(player, true);
 
         if (game.getRacesPool().size() > 0) {
             beginRoundChoice(serverSomething, game);
@@ -559,7 +559,7 @@ public class Server implements IServer {
         distributionUnits(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
-        GameLoopProcessor.playerRoundEndUpdate(player);
+        GameLoopProcessor.playerRoundEndUpdate(player, true);
     }
 
     /**
@@ -614,7 +614,7 @@ public class Server implements IServer {
         final Player player = serverSomething.getPlayer();
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
-                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), true);
         processCaptureCell(serverSomething, game);
     }
 
@@ -668,7 +668,7 @@ public class Server implements IServer {
 
         final Player player = serverSomething.getPlayer();
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
-                game.getOwnToCells().get(player));
+                game.getOwnToCells().get(player), true);
         GameLoopProcessor.loseCells(game.getOwnToCells().get(player), game.getOwnToCells().get(player),
                 game.getFeudalToCells().get(player));
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
@@ -703,7 +703,7 @@ public class Server implements IServer {
                 .forEach(player ->
                         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
                                 game.getGameFeatures(),
-                                game.getBoard()));
+                                game.getBoard(), true));
     }
 
     public static void main(final String[] args) {

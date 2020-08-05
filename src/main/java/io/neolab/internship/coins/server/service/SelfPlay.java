@@ -85,7 +85,7 @@ class SelfPlay {
         botPlayerPairs.forEach(pair ->
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
-                        game.getRacesPool()));
+                        game.getRacesPool(), true));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
@@ -98,7 +98,7 @@ class SelfPlay {
             botPlayerPairs.forEach(pair -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
                             pair.getSecond(), game.getFeudalToCells().get(pair.getSecond()),
-                            game.getGameFeatures(), game.getBoard()));
+                            game.getGameFeatures(), game.getBoard(), true));
             GameLogger.printRoundEndLog(game.getCurrentRound(), game.getPlayers(),
                     game.getOwnToCells(), game.getFeudalToCells());
         }
@@ -113,14 +113,14 @@ class SelfPlay {
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
                                            final @NotNull IGame game) {
-        GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
+        GameLoopProcessor.playerRoundBeginUpdate(player, true);  // активация данных игрока в начале раунда
         if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
             // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRaceProcess(player, simpleBot, game); // Уход в упадок
         }
         cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
         distributionUnits(player, simpleBot, game); // Распределение войск
-        GameLoopProcessor.playerRoundEndUpdate(player); // "затухание" (дезактивация) данных игрока в конце раунда
+        GameLoopProcessor.playerRoundEndUpdate(player, true); // "затухание" (дезактивация) данных игрока в конце раунда
     }
 
     /**
@@ -134,7 +134,7 @@ class SelfPlay {
                                            final @NotNull IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
+        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool(), true);
     }
 
     /**
@@ -151,7 +151,7 @@ class SelfPlay {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, true);
         while (true) {
             /* Пока есть что захватывать и какими войсками захватывать */
             final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.chooseCatchingCell(player, game);
@@ -198,8 +198,9 @@ class SelfPlay {
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
-        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
-        final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
+        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures,
+                catchingCell, true);
+        final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, gameFeatures, catchingCell, true);
         if (!isCellCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
             return false;
@@ -211,7 +212,7 @@ class SelfPlay {
         GameLoopProcessor.catchCell(player, catchingCell, neighboringCells,
                 GameLoopProcessor.getTiredUnits(units, tiredUnitsCount),
                 GameLoopProcessor.getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures,
-                ownToCells, feudalToCells, transitCells);
+                ownToCells, feudalToCells, transitCells, true);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -238,7 +239,8 @@ class SelfPlay {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
-        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board);
+        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount,
+                board, true);
         return true;
     }
 
@@ -276,7 +278,7 @@ class SelfPlay {
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, true);
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
@@ -284,7 +286,7 @@ class SelfPlay {
         distributionUnits.forEach((position, units) -> {
             GameLogger.printCellDefendingLog(player, units.size(), position);
             GameLoopProcessor.protectCell(player,
-                    Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
+                    Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units, true);
         });
         loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         GameLogger.printAfterDistributedUnitsLog(player);

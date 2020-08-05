@@ -36,7 +36,7 @@ public class GameUpdateCoinsTests extends TestUtils {
         final IBoard board = game.getBoard();
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board, false);
         assertEquals(2, somePlayer.getCoins());
     }
 
@@ -54,7 +54,7 @@ public class GameUpdateCoinsTests extends TestUtils {
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board, false);
         assertEquals(4, somePlayer.getCoins());
     }
 
@@ -72,7 +72,7 @@ public class GameUpdateCoinsTests extends TestUtils {
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.MUSHROOM, board));
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board, false);
         assertEquals(2, somePlayer.getCoins());
     }
 
@@ -90,7 +90,7 @@ public class GameUpdateCoinsTests extends TestUtils {
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.WATER, board));
         playerFeudalCells.add(getCellFromBoardByCellType(CellType.LAND, board));
 
-        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board);
+        GameLoopProcessor.updateCoinsCount(somePlayer, playerFeudalCells, game.getGameFeatures(), board, false);
         assertEquals(2, somePlayer.getCoins());
     }
 
