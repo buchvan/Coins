@@ -19,7 +19,6 @@ import java.util.Map;
 
 /**
  * Класс бота с ИИ
- *
  */
 public class AIBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(AIBot.class);
@@ -39,7 +38,8 @@ public class AIBot implements IBot {
     }
 
     @Override
-    public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(@NotNull final Player player, @NotNull final IGame game) {
+    public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(@NotNull final Player player,
+                                                                   @NotNull final IGame game) {
         LOGGER.debug("AI bot will capture of cells"); //only logs
         LOGGER.debug("Resolution of AI bot: ");
         return null;
