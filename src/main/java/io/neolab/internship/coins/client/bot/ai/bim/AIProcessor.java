@@ -479,20 +479,21 @@ public class AIProcessor {
         final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
         final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
 
-        final ExecutorService executorService1 =
-                Executors.newFixedThreadPool(1);
-        executorService1.execute(() ->
-                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
-                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-
 //        final ExecutorService executorService1 =
-//                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
-//        for (int i = tiredUnitsCount; i <= units.size(); i++) {
-//            final int index = i;
-//            executorService1.execute(() ->
-//                    createCatchCellNode(index, game, player, cell,
-//                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-//        }
+//                Executors.newFixedThreadPool(1);
+//        executorService1.execute(() ->
+//                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
+//                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+
+        final ExecutorService executorService1 =
+                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
+        for (int i = tiredUnitsCount; i <= units.size(); i++) {
+            final int index = i;
+            final Set<Cell> copyPrevCatchCells = Collections.synchronizedSet(new HashSet<>(prevCatchCells));
+            executorService1.execute(() ->
+                    createCatchCellNode(currentDepth, index, game, player, cell,
+                            Collections.synchronizedList(new LinkedList<>(units)), edges, copyPrevCatchCells));
+        }
         executorServices.add(executorService1);
     }
 
