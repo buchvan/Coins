@@ -296,15 +296,15 @@ class SelfPlay {
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
-            final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+        final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+//        if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
             distributionUnits.forEach((position, units) -> {
                 GameLogger.printCellDefendingLog(player, units.size(), position);
                 GameLoopProcessor.protectCell(player,
                         Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
             });
             loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
-        }
+//        }
         GameLogger.printAfterDistributedUnitsLog(player);
     }
 

@@ -59,6 +59,14 @@ public class SimpleBot implements IBot {
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
                                                                    final @NotNull IGame game) {
         final Pair<Position, List<Unit>> resolution;
+        if (SmartBot.tree != null) {
+            final CatchCellAction action =
+                    (CatchCellAction) RandomGenerator.chooseItemFromList(SmartBot.tree.getEdges()).getAction();
+            resolution = Objects.requireNonNull(action).getResolution();
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, action);
+            LOGGER.debug("Resolution of simple bot (by tree): {} ", resolution);
+            return resolution;
+        }
         if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
@@ -89,37 +97,39 @@ public class SimpleBot implements IBot {
                                     unitsCountNeededToCatchCell + RandomGenerator.chooseNumber(
                                             units.size() - unitsCountNeededToCatchCell + 1)))
                             : null;
-            if (SmartBot.tree != null) {
-                SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new CatchCellAction(resolution));
-            }
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
-        } else {
-            resolution = null;
-            LOGGER.debug("Simple bot will not capture of cells");
+            return resolution;
         }
-        if (SmartBot.tree != null) {
-            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new CatchCellAction(null));
-        }
+        resolution = null;
+        LOGGER.debug("Simple bot will not capture of cells");
         return resolution;
     }
 
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) {
         LOGGER.debug("Simple bot distributes units");
-        final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
+        final Map<Position, List<Unit>> distributionUnits;
+        if (SmartBot.tree != null) {
+            final DistributionUnitsAction action =
+                    (DistributionUnitsAction) RandomGenerator.chooseItemFromList(SmartBot.tree.getEdges()).getAction();
+            distributionUnits = Objects.requireNonNull(action).getResolutions();
+            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, action);
+            LOGGER.debug("Resolutions of simple bot (by tree): {} ", distributionUnits);
+            return distributionUnits;
+        }
+        distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
         List<Unit> units = new LinkedList<>();
-        while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
-            final Cell protectedCell = RandomGenerator.chooseItemFromList(
-                    game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
-            units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
-                    availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
-            distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
-            availableUnits.removeAll(units);
-            units = new LinkedList<>();
-        }
-        if (SmartBot.tree != null) {
-            SmartBot.tree = AIProcessor.updateTree(SmartBot.tree, new DistributionUnitsAction(distributionUnits));
+        if (!game.getOwnToCells().get(player).isEmpty()) {
+            while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
+                final Cell protectedCell = RandomGenerator.chooseItemFromList(
+                        game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
+                units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
+                        availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
+                distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
+                availableUnits.removeAll(units);
+                units = new LinkedList<>();
+            }
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
