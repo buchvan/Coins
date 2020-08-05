@@ -16,15 +16,19 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
 public class AIProcessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIProcessor.class);
 
     /**
      * Обновить дерево согласно выполненному действию
@@ -344,18 +348,21 @@ public class AIProcessor {
         executorServices.add(executorServiceEnd);
         achievableCells.removeAll(prevCatchCells);
 
-        final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToTiredUnitsCount = new LinkedList<>();
+        final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToTiredUnitsCount =
+                Collections.synchronizedList(new LinkedList<>());
         final ExecutorService executorServiceSetup1 = Executors.newFixedThreadPool(achievableCells.size());
         achievableCells.forEach(cell ->
                 executorServiceSetup1.execute(() ->
                         addPairUnitsToTiredUnits(game, player, cell, prevCatchCells, unitsToTiredUnitsCount)));
         executeExecutorService(executorServiceSetup1);
 
-        final ExecutorService executorServiceSetup2 = Executors.newFixedThreadPool(unitsToTiredUnitsCount.size());
-        unitsToTiredUnitsCount.forEach(pair ->
-                executorServiceSetup2.execute(() ->
-                        addExecutorService(game, player, edges, prevCatchCells, pair, executorServices)));
-        executeExecutorService(executorServiceSetup2);
+        if (!unitsToTiredUnitsCount.isEmpty()) {
+            final ExecutorService executorServiceSetup2 = Executors.newFixedThreadPool(unitsToTiredUnitsCount.size());
+            unitsToTiredUnitsCount.forEach(pair ->
+                    executorServiceSetup2.execute(() ->
+                            addExecutorService(game, player, edges, prevCatchCells, pair, executorServices)));
+            executeExecutorService(executorServiceSetup2);
+        }
 
         final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
         executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
