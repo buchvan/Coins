@@ -338,16 +338,25 @@ public class AIProcessor {
                                               final @NotNull List<Edge> edges,
                                               final @NotNull Set<Cell> prevCatchCells) {
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-        final List<ExecutorService> executorServices = new LinkedList<>();
+        final List<ExecutorService> executorServices = Collections.synchronizedList(new LinkedList<>());
         final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
         executorServiceEnd.execute(() -> createCatchCellEndNode(game, player, edges));
         executorServices.add(executorServiceEnd);
         achievableCells.removeAll(prevCatchCells);
+
         final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToTiredUnitsCount = new LinkedList<>();
-        achievableCells.forEach(cell -> addPairUnitsToTiredUnits(game, player, cell, prevCatchCells,
-                unitsToTiredUnitsCount));
+        final ExecutorService executorServiceSetup1 = Executors.newFixedThreadPool(achievableCells.size());
+        achievableCells.forEach(cell ->
+                executorServiceSetup1.execute(() ->
+                        addPairUnitsToTiredUnits(game, player, cell, prevCatchCells, unitsToTiredUnitsCount)));
+        executeExecutorService(executorServiceSetup1);
+
+        final ExecutorService executorServiceSetup2 = Executors.newFixedThreadPool(unitsToTiredUnitsCount.size());
         unitsToTiredUnitsCount.forEach(pair ->
-                addExecutorService(game, player, edges, prevCatchCells, pair, executorServices));
+                executorServiceSetup2.execute(() ->
+                        addExecutorService(game, player, edges, prevCatchCells, pair, executorServices)));
+        executeExecutorService(executorServiceSetup2);
+
         final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
         executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
         executeExecutorService(executorService);
@@ -440,6 +449,7 @@ public class AIProcessor {
 
     /**
      * Выполнить ExecutorService
+     *
      * @param executorService - очевидно, ExecutorService
      */
     private static void executeExecutorService(final @NotNull ExecutorService executorService) {
@@ -486,7 +496,7 @@ public class AIProcessor {
      * @param game   - игра
      * @param player - игрок
      * @param edges  - дуги от родителя
-     * @throws CoinsException       при ошибке обновления игры
+     * @throws CoinsException при ошибке обновления игры
      */
     private static void createDistributionUnitsNodes(final @NotNull IGame game, final @NotNull Player player,
                                                      final @NotNull List<Edge> edges) throws CoinsException {
