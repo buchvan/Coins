@@ -29,9 +29,6 @@ class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
-    // соответствует только один игрок, и наоборот
-
 
     /**
      * Игра сама с собой (self play)
@@ -45,8 +42,9 @@ class SelfPlay {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
-            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
-            gameLoop(game);
+            final List<Pair<IBot, Player>> botPlayerPairs = new LinkedList<>();
+            game.getPlayers().forEach(player -> botPlayerPairs.add(new Pair<>(new SimpleBot(), player)));
+            gameLoop(game, botPlayerPairs);
             GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
@@ -60,20 +58,16 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
-        try (final LoggerFile ignored = new LoggerFile("self-play")) {
+    static @NotNull List<Player> selfPlayByBotToPlayers(final int index,
+                                                        final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
+        try (final LoggerFile ignored = new LoggerFile("self-play-" + index)) {
             LogCleaner.clean();
             final List<Player> players = new LinkedList<>();
-            botPlayerPairs.forEach(botPlayerPair -> {
-                        simpleBotToPlayer.add(botPlayerPair);
-                        players.add(botPlayerPair.getSecond());
-                    }
-            );
-
+            botPlayerPairs.forEach(pair -> players.add(pair.getSecond()));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
             GameLogger.printGameCreatedLog(game);
-            gameLoop(game);
-            simpleBotToPlayer.clear();
+            gameLoop(game, botPlayerPairs);
+            botPlayerPairs.clear();
             return GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
@@ -86,9 +80,9 @@ class SelfPlay {
      *
      * @param game - объект, хранящий всю метаинформацию об игровых сущностях
      */
-    private static void gameLoop(final @NotNull IGame game) {
+    private static void gameLoop(final @NotNull IGame game, final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
         GameLogger.printStartGameChoiceLog();
-        simpleBotToPlayer.forEach(pair ->
+        botPlayerPairs.forEach(pair ->
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
                         game.getRacesPool()));
@@ -96,12 +90,12 @@ class SelfPlay {
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
             GameLogger.printRoundBeginLog(game.getCurrentRound());
-            simpleBotToPlayer.forEach(pair -> {
+            botPlayerPairs.forEach(pair -> {
                 GameLogger.printNextPlayerLog(pair.getSecond());
                 playerRoundProcess(pair.getSecond(), pair.getFirst(),
                         game); // Раунд игрока. Все свои решения он принимает здесь
             });
-            simpleBotToPlayer.forEach(pair -> // обновление числа монет у каждого игрока
+            botPlayerPairs.forEach(pair -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
                             pair.getSecond(), game.getFeudalToCells().get(pair.getSecond()),
                             game.getGameFeatures(), game.getBoard()));

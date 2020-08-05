@@ -8,10 +8,10 @@ import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
@@ -21,39 +21,33 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final int GAME_AMOUNT = 1;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
 
 
-    private static void play() {
+    private static void play() throws InterruptedException {
         final List<Player> players = initPlayers();
-        initBotPlayerPair(players);
-        simpleBotToPlayer.get(0).setFirst(new SmartBot());
         initStatisticMap(players);
+        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
         for (int i = 0; i < GAME_AMOUNT; i++) {
-            ((SmartBot) simpleBotToPlayer.get(0).getFirst()).clearTree();
-            final List<Player> winners;
-            winners = selfPlayByBotToPlayers(simpleBotToPlayer);
-            for (final Player winner : winners) {
-                winCounter++;
-                int currentWinAmount = playersStatistic.get(winner);
-                playersStatistic.put(winner, ++currentWinAmount);
-            }
-            clearPlayerInfo();
+            final int index = i;
+            executorService.execute(() -> {
+                final List<Player> playersCopy = new LinkedList<>();
+                players.forEach(player -> playersCopy.add(player.getCopy()));
+                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
+                final List<Player> winners = selfPlayByBotToPlayers(index, botToPlayer);
+                synchronized (playersStatistic) {
+                    for (final Player winner : winners) {
+                        winCounter++;
+                        int currentWinAmount = playersStatistic.get(winner);
+                        playersStatistic.put(winner, ++currentWinAmount);
+                    }
+                }
+            });
         }
-    }
-
-    /**
-     * Сброс параметров игроков после каждой игры в начальное состояние
-     */
-    private static void clearPlayerInfo() {
-        for (final Player player : playersStatistic.keySet()) {
-            player.getUnitStateToUnits().forEach((key, value) -> value.clear());
-            player.setCoins(0);
-            player.setRace(null);
-        }
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -69,8 +63,14 @@ public class GameStatistic {
         return playerList;
     }
 
-    private static void initBotPlayerPair(final List<Player> players) {
-        players.forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
+    private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
+        final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
+        final SmartBot smartBot = new SmartBot();
+        botToPlayer.add(new Pair<>(smartBot, players.get(0)));
+        for (int i = 1; i < PLAYERS_AMOUNT; i++) {
+            botToPlayer.add(new Pair<>(new SimpleBot(smartBot), players.get(i)));
+        }
+        return botToPlayer;
     }
 
     /**
@@ -94,7 +94,7 @@ public class GameStatistic {
         }
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws InterruptedException {
         play();
         collectStatistic();
     }
