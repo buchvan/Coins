@@ -100,9 +100,8 @@ public class SimpleBot implements IBot {
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
             return resolution;
         }
-        resolution = null;
         LOGGER.debug("Simple bot will not capture of cells");
-        return resolution;
+        return null;
     }
 
     @Override

@@ -23,6 +23,7 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
     }
 
     @JsonIgnore
+    @Override
     public @NotNull CoefficientlyFeature getCopy() {
         return new CoefficientlyFeature(getType(), coefficient);
     }
