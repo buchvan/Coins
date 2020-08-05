@@ -45,13 +45,4 @@ public class NodeTree {
     public int hashCode() {
         return Objects.hash(edges, winsCount, casesCount);
     }
-
-    @Override
-    public String toString() {
-        return "NodeTree{" +
-                "edges=" + edges +
-                ", winsCount=" + winsCount +
-                ", casesCount=" + casesCount +
-                '}';
-    }
 }
