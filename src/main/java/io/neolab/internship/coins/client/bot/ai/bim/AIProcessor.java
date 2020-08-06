@@ -32,7 +32,7 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 public class AIProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIProcessor.class);
 
-    private static final int MAX_DEPTH = 1;
+    private static final int MAX_DEPTH = 2;
     private static final boolean isLoggedOn = false;
 
     /**
@@ -451,25 +451,25 @@ public class AIProcessor {
                                               final @NotNull IGame game, final @NotNull Player player,
                                               final @NotNull List<Edge> edges,
                                               final @NotNull Set<Cell> prevCatchCells) {
-        final List<ExecutorService> executorServices = Collections.synchronizedList(new LinkedList<>());
+        final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
             achievableCells.removeAll(prevCatchCells);
-            final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size());
-            achievableCells.forEach(achievableCell ->
-                    executorService.execute(() ->
-                            addExecuteService(currentDepth, game, player, achievableCell, edges,
-                                    Collections.synchronizedSet(new HashSet<>(prevCatchCells)), executorServices)));
-            executeExecutorService(executorService);
+            for (final Cell achievableCell : achievableCells) {
+                if (RandomGenerator.isYes()) {
+                    final Pair<List<Unit>, Pair<Integer, Cell>> pair =
+                            getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
+                    if (pair != null) {
+                        unitsToPairTiredUnitsToCellList.add(pair);
+                    }
+                }
+            }
+            addExecuteService(currentDepth, game, player, edges, unitsToPairTiredUnitsToCellList,
+                    Collections.synchronizedSet(new HashSet<>(prevCatchCells)));
         }
-        if (executorServices.isEmpty()) {
-            final ExecutorService executorServiceEnd = Executors.newFixedThreadPool(1);
-            executorServiceEnd.execute(() -> createCatchCellEndNode(currentDepth, game, player, edges));
-            executorServices.add(executorServiceEnd);
+        if (unitsToPairTiredUnitsToCellList.isEmpty()) {
+            createCatchCellEndNode(currentDepth, game, player, edges);
         }
-        final ExecutorService executorService = Executors.newFixedThreadPool(executorServices.size());
-        executorServices.forEach(item -> executorService.execute(() -> executeExecutorService(item)));
-        executeExecutorService(executorService);
     }
 
     /**
@@ -538,38 +538,32 @@ public class AIProcessor {
     /**
      * Добавить ExecutorService (вариация по числу юнитов для захвата)
      *
-     * @param currentDepth     - текущая глубина дерева
-     * @param game             - игра
-     * @param player           - игрок
-     * @param achievableCell   - очередная достижимая клетка
-     * @param edges            - дуги от общего родителя
-     * @param prevCatchCells   - предыдущие захваченные клетки в этой ветке
-     * @param executorServices - список сервисов, в который нужно добавить новый
+     * @param currentDepth                    - текущая глубина дерева
+     * @param game                            - игра
+     * @param player                          - игрок
+     * @param edges                           - дуги от общего родителя
+     * @param unitsToPairTiredUnitsToCellList - список пар (список юнитов, пара(число уставших юнитов,
+     *                                        захватываемая клетка)
+     * @param prevCatchCells                  - предыдущие захваченные клетки в этой ветке
      */
     private static void addExecuteService(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
-                                          final @NotNull Cell achievableCell, final @NotNull List<Edge> edges,
-                                          final @NotNull Set<Cell> prevCatchCells,
-                                          final @NotNull List<ExecutorService> executorServices) {
-        final Pair<List<Unit>, Pair<Integer, Cell>> unitsToPairTiredUnitsToCell =
-                RandomGenerator.isYes()
-                        ? getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells)
-                        : null;
-        if (unitsToPairTiredUnitsToCell == null) {
-            return;
-        }
-        final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-        final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
-        final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
+                                          final @NotNull List<Edge> edges,
+                                          final @NotNull List<Pair<List<Unit>, Pair<Integer, Cell>>>
+                                                  unitsToPairTiredUnitsToCellList,
+                                          final @NotNull Set<Cell> prevCatchCells) {
+        unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
+            final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+            final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
+            final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
 
-        int capacity = (units.size() - tiredUnitsCount + 1) / 3;
-        capacity = capacity == 0 ? 1 : capacity;
-        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
-        final Set<Integer> indexes = getIndexes(capacity, units.size(), tiredUnitsCount);
-        indexes.forEach(index -> executorService.execute(() ->
-                createCatchCellNode(currentDepth, index, game, player, cell,
-                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells)));
-        executorServices.add(executorService);
+            int capacity = (units.size() - tiredUnitsCount + 1) / 3;
+            capacity = capacity == 0 ? 1 : capacity;
+            final Set<Integer> indexes = getIndexes(capacity, units.size(), tiredUnitsCount);
+            indexes.forEach(index ->
+                    createCatchCellNode(currentDepth, index, game, player, cell,
+                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+        });
     }
 
     /**
@@ -691,11 +685,9 @@ public class AIProcessor {
             edges.add(new Edge(player, action, createSubtree(currentDepth, gameCopy, playerCopy, action)));
             return;
         }
-        final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
         for (final List<Pair<Cell, Integer>> distribution : distributions) {
-            executorService.execute(() -> createDistributionUnitsNode(currentDepth, game, player, edges, distribution));
+            createDistributionUnitsNode(currentDepth, game, player, edges, distribution);
         }
-        executeExecutorService(executorService);
     }
 
     /**
