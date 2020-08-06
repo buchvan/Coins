@@ -9,7 +9,6 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -32,7 +31,8 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 public class AIProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIProcessor.class);
 
-    private static final int MAX_DEPTH = 2;
+    private static final int MAX_DEPTH = 1;
+    private static final boolean isGameLoggedOn = false;
     private static final boolean isLoggedOn = false;
 
     /**
@@ -44,8 +44,8 @@ public class AIProcessor {
      */
     public static NodeTree updateTree(final @NotNull NodeTree tree, final @NotNull Action action) {
         NodeTree newTree = null;
-        for (final Edge edge : Objects.requireNonNull(tree).getEdges()) {
-            if (edge.getAction() == action) {
+        for (final Edge edge : tree.getEdges()) {
+            if (Objects.requireNonNull(edge.getAction()).equals(action)) {
                 newTree = edge.getTo();
                 break;
             }
@@ -108,14 +108,15 @@ public class AIProcessor {
             case DECLINE_RACE:
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
                         game.getPlayerToAchievableCells().get(player),
-                        game.getOwnToCells().get(player), isLoggedOn);
+                        game.getOwnToCells().get(player), isGameLoggedOn);
                 GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
                 return;
             case CHANGE_RACE:
                 game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool(), isLoggedOn);
+                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool(), isGameLoggedOn);
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
-                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player), isLoggedOn);
+                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player),
+                        isGameLoggedOn);
                 return;
             case CATCH_CELL:
                 final CatchCellAction catchCellAction = (CatchCellAction) action;
@@ -128,14 +129,14 @@ public class AIProcessor {
                 pretendToCell(player, Objects.requireNonNull(captureCell), units, board, game.getGameFeatures(),
                         game.getOwnToCells(), game.getFeudalToCells(),
                         game.getPlayerToTransitCells().get(player),
-                        game.getPlayerToAchievableCells().get(player), isLoggedOn);
+                        game.getPlayerToAchievableCells().get(player), isGameLoggedOn);
                 return;
             case DISTRIBUTION_UNITS:
                 final DistributionUnitsAction distributionUnitsAction = (DistributionUnitsAction) action;
                 distributionUnits(player, game.getOwnToCells().get(player),
                         game.getFeudalToCells().get(player),
                         distributionUnitsAction.getResolutions(),
-                        game.getBoard(), isLoggedOn);
+                        game.getBoard(), isGameLoggedOn);
                 return;
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
@@ -150,9 +151,10 @@ public class AIProcessor {
      * @return следуюшего в очереди игрока
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
-    private static @Nullable Player getNextPlayer(final @NotNull IGame game, final @NotNull Player currentPlayer)
+    private static @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
+                                                  final @NotNull IGame game, final @NotNull Player currentPlayer)
             throws CoinsException {
-        GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isLoggedOn);
+        GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isGameLoggedOn);
         boolean wasCurrentPlayer = false;
         for (final Player player : game.getPlayers()) {
             if (player.equals(currentPlayer)) {
@@ -173,8 +175,10 @@ public class AIProcessor {
                             ? game.getPlayers().get(0)
                             : null;
             if (nextPlayer != null) {
-                LOGGER.debug("Next player: {}", nextPlayer.getNickname());
-                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isLoggedOn);
+                if (isLoggedOn) {
+                    LOGGER.debug("Next player: {}", nextPlayer.getNickname());
+                }
+                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isGameLoggedOn);
             }
             return nextPlayer;
         }
@@ -211,7 +215,9 @@ public class AIProcessor {
             executorService.execute(() -> {
                 final Action newAction = new DeclineRaceAction(true);
                 try {
-                    LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), true);
+                    if (isLoggedOn) {
+                        LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), true);
+                    }
                     edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
                 } catch (final CoinsException exception) {
                     exception.printStackTrace();
@@ -221,7 +227,9 @@ public class AIProcessor {
         executorService.execute(() -> {
             final Action newAction = new DeclineRaceAction(false);
             try {
-                LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), false);
+                if (isLoggedOn) {
+                    LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), false);
+                }
                 edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
             } catch (final CoinsException exception) {
                 exception.printStackTrace();
@@ -240,25 +248,13 @@ public class AIProcessor {
     private static void createChangeRaceBranches(final int currentDepth,
                                                  final @NotNull IGame game, final @NotNull Player player,
                                                  final @NotNull List<Edge> edges) {
-        int capacity = game.getRacesPool().size() / 2;
-        capacity = capacity == 0 && game.getRacesPool().size() > 0 ? 1 : capacity;
-        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
-        final Set<Race> races = new HashSet<>(capacity);
-        final int constCapacity = capacity;
-        game.getRacesPool().forEach(race -> {
-            if (races.size() < constCapacity && RandomGenerator.isYes()) {
-                races.add(race);
-            }
-        });
-        final Iterator<Race> iterator = game.getRacesPool().iterator();
-        while (races.size() < capacity) {
-            final Race race = iterator.next();
-            races.add(race);
-        }
-        races.forEach(race -> executorService.execute(() -> {
+        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
+        game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
-                LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
+                if (isLoggedOn) {
+                    LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
+                }
                 edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
             } catch (final CoinsException exception) {
                 exception.printStackTrace();
@@ -300,7 +296,9 @@ public class AIProcessor {
             edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
             casesCount += edge.getTo().getCasesCount();
         }
-        LOGGER.debug("Created new node in depth {} with edges: {}", currentDepth, edges);
+        if (isLoggedOn) {
+            LOGGER.debug("Created new node in depth {} with edges: {}", currentDepth, edges);
+        }
         return new NodeTree(edges, winsCount, casesCount);
     }
 
@@ -372,7 +370,9 @@ public class AIProcessor {
      */
     private static void createChangeRaceSubtree(final int currentDepth,
                                                 final @NotNull IGame game, final @NotNull Player player,
-                                                final @NotNull Action action, final @NotNull List<Edge> edges) throws CoinsException {
+                                                final @NotNull Action action, final @NotNull List<Edge> edges)
+            throws CoinsException {
+
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         updateGame(gameCopy, playerCopy, action);
@@ -401,7 +401,7 @@ public class AIProcessor {
         }
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, isLoggedOn);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, isGameLoggedOn);
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
@@ -435,7 +435,7 @@ public class AIProcessor {
             edges.add(new Edge(null, null, createTerminalNode(game)));
             return;
         }
-        GameLoopProcessor.playerRoundEndUpdate(player, isLoggedOn);
+        GameLoopProcessor.playerRoundEndUpdate(player, isGameLoggedOn);
         createDeclineRaceBranches(newDepth, game, nextPlayer, edges);
     }
 
@@ -464,8 +464,15 @@ public class AIProcessor {
                     }
                 }
             }
-            addExecuteService(currentDepth, game, player, edges, unitsToPairTiredUnitsToCellList,
-                    Collections.synchronizedSet(new HashSet<>(prevCatchCells)));
+            unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
+                final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+                final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
+                final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
+                for (int i = tiredUnitsCount; i <= units.size(); i++) {
+                    createCatchCellNode(currentDepth, i, game, player, cell,
+                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells);
+                }
+            });
         }
         if (unitsToPairTiredUnitsToCellList.isEmpty()) {
             createCatchCellEndNode(currentDepth, game, player, edges);
@@ -523,47 +530,16 @@ public class AIProcessor {
         } else {
             final int unitsCountNeededToCatchCell =
                     GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(),
-                            achievableCell, isLoggedOn);
+                            achievableCell, isGameLoggedOn);
             final int bonusAttack =
                     GameLoopProcessor.getBonusAttackToCatchCell(player, game.getGameFeatures(),
-                            achievableCell, isLoggedOn);
+                            achievableCell, isGameLoggedOn);
             tiredUnitsCount = unitsCountNeededToCatchCell - bonusAttack;
         }
         prevCatchCells.add(achievableCell);
         return units.size() >= tiredUnitsCount
                 ? new Pair<>(units, new Pair<>(tiredUnitsCount, achievableCell))
                 : null;
-    }
-
-    /**
-     * Добавить ExecutorService (вариация по числу юнитов для захвата)
-     *
-     * @param currentDepth                    - текущая глубина дерева
-     * @param game                            - игра
-     * @param player                          - игрок
-     * @param edges                           - дуги от общего родителя
-     * @param unitsToPairTiredUnitsToCellList - список пар (список юнитов, пара(число уставших юнитов,
-     *                                        захватываемая клетка)
-     * @param prevCatchCells                  - предыдущие захваченные клетки в этой ветке
-     */
-    private static void addExecuteService(final int currentDepth,
-                                          final @NotNull IGame game, final @NotNull Player player,
-                                          final @NotNull List<Edge> edges,
-                                          final @NotNull List<Pair<List<Unit>, Pair<Integer, Cell>>>
-                                                  unitsToPairTiredUnitsToCellList,
-                                          final @NotNull Set<Cell> prevCatchCells) {
-        unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
-            final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-            final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
-            final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
-
-            int capacity = (units.size() - tiredUnitsCount + 1) / 3;
-            capacity = capacity == 0 ? 1 : capacity;
-            final Set<Integer> indexes = getIndexes(capacity, units.size(), tiredUnitsCount);
-            indexes.forEach(index ->
-                    createCatchCellNode(currentDepth, index, game, player, cell,
-                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-        });
     }
 
     /**
@@ -625,8 +601,10 @@ public class AIProcessor {
         final Pair<Position, List<Unit>> resolution =
                 new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, index));
         final Action newAction = new CatchCellAction(resolution);
-        LOGGER.debug("current depth {}, index {}, player {}, resolution {}", currentDepth, index,
-                player.getNickname(), resolution);
+        if (isLoggedOn) {
+            LOGGER.debug("current depth {}, index {}, player {}, resolution {}", currentDepth, index,
+                    player.getNickname(), resolution);
+        }
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
@@ -763,9 +741,11 @@ public class AIProcessor {
         }
         final Map<Player, Integer> map = new HashMap<>();
         game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
-        LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
-        LOGGER.debug("Created new terminal node:");
-        map.forEach((player, integer) -> LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
+        if (isLoggedOn) {
+            LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
+            LOGGER.debug("Created new terminal node:");
+            map.forEach((player, integer) -> LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
+        }
         return new NodeTree(new LinkedList<>(), map, 1);
     }
 
