@@ -9,10 +9,12 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
@@ -147,9 +150,7 @@ public class AIProcessor {
      * @return следуюшего в очереди игрока
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
-    private static @NotNull Pair<@Nullable Player, @NotNull Integer> getNextPlayer(final int currentDepth,
-                                                                                   final @NotNull IGame game,
-                                                                                   final @NotNull Player currentPlayer)
+    private static @Nullable Player getNextPlayer(final @NotNull IGame game, final @NotNull Player currentPlayer)
             throws CoinsException {
         GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isLoggedOn);
         boolean wasCurrentPlayer = false;
@@ -161,27 +162,21 @@ public class AIProcessor {
             if (wasCurrentPlayer) {
                 LOGGER.debug("Next player: {}", player.getNickname());
                 GameLoopProcessor.playerRoundBeginUpdate(player, isLoggedOn);
-                return new Pair<>(player, currentDepth);
+                return player;
             }
         }
         if (wasCurrentPlayer) {
-            final int newDepth = currentDepth + 1;
-            LOGGER.debug("New depth: {}", newDepth);
-            game.getPlayers().forEach(player -> // обновление числа монет у каждого игрока
-                    GameLoopProcessor.updateCoinsCount(
-                            player, game.getFeudalToCells().get(player),
-                            game.getGameFeatures(), game.getBoard(), isLoggedOn));
             game.incrementCurrentRound();
             LOGGER.debug("New round: {}", game.getCurrentRound());
             final Player nextPlayer =
-                    newDepth < MAX_DEPTH && game.getCurrentRound() <= Game.ROUNDS_COUNT
+                    game.getCurrentRound() <= Game.ROUNDS_COUNT
                             ? game.getPlayers().get(0)
                             : null;
             if (nextPlayer != null) {
                 LOGGER.debug("Next player: {}", nextPlayer.getNickname());
                 GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isLoggedOn);
             }
-            return new Pair<>(nextPlayer, newDepth);
+            return nextPlayer;
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
     }
@@ -210,16 +205,19 @@ public class AIProcessor {
     private static void createDeclineRaceBranches(final int currentDepth,
                                                   final @NotNull IGame game, final @NotNull Player player,
                                                   final @NotNull List<Edge> edges) {
-        final ExecutorService executorService = Executors.newFixedThreadPool(2);
-        executorService.execute(() -> {
-            final Action newAction = new DeclineRaceAction(true);
-            try {
-                LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), true);
-                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
-            } catch (final CoinsException exception) {
-                exception.printStackTrace();
-            }
-        });
+        final boolean isPossible = game.getRacesPool().size() > 0;
+        final ExecutorService executorService = Executors.newFixedThreadPool(isPossible ? 2 : 1);
+        if (isPossible) {
+            executorService.execute(() -> {
+                final Action newAction = new DeclineRaceAction(true);
+                try {
+                    LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), true);
+                    edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
+                } catch (final CoinsException exception) {
+                    exception.printStackTrace();
+                }
+            });
+        }
         executorService.execute(() -> {
             final Action newAction = new DeclineRaceAction(false);
             try {
@@ -242,8 +240,22 @@ public class AIProcessor {
     private static void createChangeRaceBranches(final int currentDepth,
                                                  final @NotNull IGame game, final @NotNull Player player,
                                                  final @NotNull List<Edge> edges) {
-        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
-        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+        int capacity = game.getRacesPool().size() / 2;
+        capacity = capacity == 0 && game.getRacesPool().size() > 0 ? 1 : capacity;
+        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
+        final Set<Race> races = new HashSet<>(capacity);
+        final int constCapacity = capacity;
+        game.getRacesPool().forEach(race -> {
+            if (races.size() < constCapacity && RandomGenerator.isYes()) {
+                races.add(race);
+            }
+        });
+        final Iterator<Race> iterator = game.getRacesPool().iterator();
+        while (races.size() < capacity) {
+            final Race race = iterator.next();
+            races.add(race);
+        }
+        races.forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
                 LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
@@ -266,8 +278,8 @@ public class AIProcessor {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
-        createDeclineRaceBranches(0, gameCopy, playerCopy, edges);
-        return createNodeTree(-1, gameCopy, edges);
+        createDeclineRaceBranches(1, gameCopy, playerCopy, edges);
+        return createNodeTree(0, gameCopy, edges);
     }
 
     /**
@@ -304,49 +316,18 @@ public class AIProcessor {
                                                    final @NotNull IGame game, final @NotNull Player player,
                                                    final @NotNull Action action) throws CoinsException {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
-        final IGame gameCopy;
-        final Player playerCopy;
         switch (action.getType()) {
             case DECLINE_RACE:
-                if (((DeclineRaceAction) action).isDeclineRace()) {
-                    createChangeRaceBranches(currentDepth, game, player, edges);
-                    break;
-                }
-                gameCopy = game.getCopy();
-                playerCopy = getPlayerCopy(gameCopy, player);
-                updateGame(gameCopy, playerCopy, action);
-                createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges,
-                        Collections.synchronizedSet(new HashSet<>()));
+                createDeclineRaceSubtree(currentDepth, game, player, (DeclineRaceAction) action, edges);
                 break;
             case CHANGE_RACE:
-                gameCopy = game.getCopy();
-                playerCopy = getPlayerCopy(gameCopy, player);
-                updateGame(gameCopy, playerCopy, action);
-                createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges,
-                        Collections.synchronizedSet(new HashSet<>()));
+                createChangeRaceSubtree(currentDepth, game, player, action, edges);
                 break;
             case CATCH_CELL:
-                if (((CatchCellAction) action).getResolution() != null) {
-                    throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
-                }
-                final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
-                final List<Cell> controlledCells = game.getOwnToCells().get(player);
-                GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, isLoggedOn);
-                controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
-                GameLoopProcessor.makeAllUnitsSomeState(player,
-                        AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
-                createDistributionUnitsNodes(currentDepth, game, player, edges);
+                createCatchCellSubtree(currentDepth, game, player, action, edges);
                 break;
             case DISTRIBUTION_UNITS:
-                final Pair<Player, Integer> pair = getNextPlayer(currentDepth, game, player);
-                final Player nextPlayer = pair.getFirst();
-                final int nextDepth = pair.getSecond();
-                if (nextPlayer == null) {
-                    edges.add(new Edge(null, null, createTerminalNode(game)));
-                    break;
-                }
-                GameLoopProcessor.playerRoundEndUpdate(player, isLoggedOn);
-                createDeclineRaceBranches(nextDepth, game, nextPlayer, edges);
+                createDistributionUnitsSubtree(currentDepth, game, player, edges);
                 break;
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
@@ -355,25 +336,107 @@ public class AIProcessor {
     }
 
     /**
-     * Создать поддерево захватов клетки симуляционного дерева игры
+     * Создать поддерево узла типа ухода в упадок
      *
-     * @param game   - игра в текущем состоянии
-     * @param player - игрок
-     * @param action - действие, привёдшее к данному узлу
-     * @return узел с оценённым данным действием
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param player       - игрок
+     * @param action       - предыдущее действие
+     * @param edges        - дуги от общего родителя
+     * @throws CoinsException при ошибке обновления игры
      */
-    private static @NotNull NodeTree createCatchCellSubtree(final int currentDepth,
-                                                            final @NotNull IGame game, final @NotNull Player player,
-                                                            final @NotNull Action action,
-                                                            final @NotNull Set<Cell> prevCatchCells)
+    private static void createDeclineRaceSubtree(final int currentDepth,
+                                                 final @NotNull IGame game, final @NotNull Player player,
+                                                 final @NotNull DeclineRaceAction action,
+                                                 final @NotNull List<Edge> edges) throws CoinsException {
+        if (action.isDeclineRace()) {
+            createChangeRaceBranches(currentDepth, game, player, edges);
+            return;
+        }
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = getPlayerCopy(gameCopy, player);
+        updateGame(gameCopy, playerCopy, action);
+        createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges,
+                Collections.synchronizedSet(new HashSet<>()));
+    }
+
+    /**
+     * Создать поддерево узла типа смены расы
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param player       - игрок
+     * @param action       - предыдущее действие
+     * @param edges        - дуги от общего родителя
+     * @throws CoinsException при ошибке обновления игры
+     */
+    private static void createChangeRaceSubtree(final int currentDepth,
+                                                final @NotNull IGame game, final @NotNull Player player,
+                                                final @NotNull Action action, final @NotNull List<Edge> edges) throws CoinsException {
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = getPlayerCopy(gameCopy, player);
+        updateGame(gameCopy, playerCopy, action);
+        createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges,
+                Collections.synchronizedSet(new HashSet<>()));
+    }
+
+    /**
+     * Создать поддерево узла типа захват клетки
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра в текущем состоянии
+     * @param player       - игрок
+     * @param action       - действие, привёдшее к данному узлу
+     * @param edges        - дуги от общего родителя
+     * @throws CoinsException при ошибке обновления игры
+     */
+    private static void createCatchCellSubtree(final int currentDepth,
+                                               final @NotNull IGame game, final @NotNull Player player,
+                                               final @NotNull Action action,
+                                               final @NotNull List<Edge> edges)
             throws CoinsException {
 
-        if (((CatchCellAction) action).getResolution() == null) {
+        if (((CatchCellAction) action).getResolution() != null) {
             throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
         }
-        final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
-        createCatchCellsNodes(currentDepth, game, player, edges, prevCatchCells);
-        return createNodeTree(currentDepth, game, edges);
+        final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, isLoggedOn);
+        controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
+        GameLoopProcessor.makeAllUnitsSomeState(player,
+                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
+        createDistributionUnitsNodes(currentDepth, game, player, edges);
+    }
+
+    /**
+     * Создать поддерево узла типа распределение юнитов
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра в текущем состоянии
+     * @param player       - игрок
+     * @param edges        - дуги от общего родителя
+     * @throws CoinsException при ошибке обновления игры
+     */
+    private static void createDistributionUnitsSubtree(final int currentDepth,
+                                                       final @NotNull IGame game, final @NotNull Player player,
+                                                       final @NotNull List<Edge> edges) throws CoinsException {
+        game.getPlayers().forEach(item -> // обновление числа монет у каждого игрока
+                GameLoopProcessor.updateCoinsCount(
+                        item, game.getFeudalToCells().get(item),
+                        game.getGameFeatures(), game.getBoard(), isLoggedOn));
+        final int newDepth = currentDepth + 1;
+        if (newDepth > MAX_DEPTH) {
+            edges.add(new Edge(null, null, createTerminalNode(game)));
+            return;
+        }
+        LOGGER.debug("New depth: {}", newDepth);
+        final Player nextPlayer = getNextPlayer(game, player);
+        if (nextPlayer == null) {
+            edges.add(new Edge(null, null, createTerminalNode(game)));
+            return;
+        }
+        GameLoopProcessor.playerRoundEndUpdate(player, isLoggedOn);
+        createDeclineRaceBranches(newDepth, game, nextPlayer, edges);
     }
 
     /**
@@ -431,6 +494,8 @@ public class AIProcessor {
     }
 
     /**
+     * Узнать список юнитов, доступных для захвата клетки, и сложность захвата клетки
+     *
      * @param game           - игра
      * @param player         - игрок
      * @param achievableCell - достижимая клетка
@@ -471,7 +536,7 @@ public class AIProcessor {
     }
 
     /**
-     * Добавить ExecuteService (вариация по числу юнитов для захвата)
+     * Добавить ExecutorService (вариация по числу юнитов для захвата)
      *
      * @param currentDepth     - текущая глубина дерева
      * @param game             - игра
@@ -487,7 +552,9 @@ public class AIProcessor {
                                           final @NotNull Set<Cell> prevCatchCells,
                                           final @NotNull List<ExecutorService> executorServices) {
         final Pair<List<Unit>, Pair<Integer, Cell>> unitsToPairTiredUnitsToCell =
-                getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
+                RandomGenerator.isYes()
+                        ? getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells)
+                        : null;
         if (unitsToPairTiredUnitsToCell == null) {
             return;
         }
@@ -495,21 +562,41 @@ public class AIProcessor {
         final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
         final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
 
-//        final ExecutorService executorService1 =
-//                Executors.newFixedThreadPool(1);
-//        executorService1.execute(() ->
-//                createCatchCellNode(currentDepth, tiredUnitsCount, game, player, cell,
-//                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-
-        final ExecutorService executorService =
-                Executors.newFixedThreadPool(units.size() - tiredUnitsCount + 1);
-        for (int i = tiredUnitsCount; i <= units.size(); i++) {
-            final int index = i;
-            executorService.execute(() ->
-                    createCatchCellNode(currentDepth, index, game, player, cell,
-                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-        }
+        int capacity = (units.size() - tiredUnitsCount + 1) / 3;
+        capacity = capacity == 0 ? 1 : capacity;
+        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
+        final Set<Integer> indexes = getIndexes(capacity, units.size(), tiredUnitsCount);
+        indexes.forEach(index -> executorService.execute(() ->
+                createCatchCellNode(currentDepth, index, game, player, cell,
+                        Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells)));
         executorServices.add(executorService);
+    }
+
+    /**
+     * Взять случаи чисел юнитов, отправляемых на захват клетки
+     *
+     * @param capacity        - число случаев
+     * @param unitsCount      - общее число доступных юнитов
+     * @param tiredUnitsCount - минимальное число юнитов
+     * @return множество чисел юнитов, отправляемых на захват клетки
+     */
+    private static Set<Integer> getIndexes(final int capacity, final int unitsCount, final int tiredUnitsCount) {
+        final Set<Integer> indexes = new HashSet<>(capacity);
+        for (int i = tiredUnitsCount; i <= unitsCount; i++) {
+            if (indexes.size() >= capacity) {
+                i = unitsCount;
+                continue;
+            }
+            if (RandomGenerator.isYes()) {
+                indexes.add(tiredUnitsCount);
+            }
+        }
+        int j = unitsCount;
+        while (indexes.size() < capacity) {
+            indexes.add(j);
+            j--;
+        }
+        return indexes;
     }
 
     /**
@@ -551,10 +638,35 @@ public class AIProcessor {
         try {
             updateGame(gameCopy, playerCopy, newAction);
             edges.add(new Edge(player, newAction,
-                    createCatchCellSubtree(currentDepth, gameCopy, playerCopy, newAction, prevCatchCells)));
+                    continueCreatingCatchCellSubtree(currentDepth, gameCopy, playerCopy, newAction, prevCatchCells)));
         } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
+    }
+
+    /**
+     * Продолжить создание поддерева узла типа захват клетки
+     *
+     * @param currentDepth   - текущая глубина
+     * @param game           - игра в текущем состоянии
+     * @param player         - игрок
+     * @param action         - действие, привёдшее к данному узлу
+     * @param prevCatchCells - предыдущие захваченные клетки (в данном поддереве)
+     * @return узел с оценённым данным действием
+     */
+    private static @NotNull NodeTree continueCreatingCatchCellSubtree(final int currentDepth,
+                                                                      final @NotNull IGame game,
+                                                                      final @NotNull Player player,
+                                                                      final @NotNull Action action,
+                                                                      final @NotNull Set<Cell> prevCatchCells)
+            throws CoinsException {
+
+        if (((CatchCellAction) action).getResolution() == null) {
+            throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
+        }
+        final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
+        createCatchCellsNodes(currentDepth, game, player, edges, prevCatchCells);
+        return createNodeTree(currentDepth, game, edges);
     }
 
     /**
@@ -637,6 +749,8 @@ public class AIProcessor {
     }
 
     /**
+     * Создать терминальный узел
+     *
      * @param game - игра в текущем состоянии
      * @return терминальный узел с оценённым данным действием
      */
@@ -657,18 +771,30 @@ public class AIProcessor {
         }
         final Map<Player, Integer> map = new HashMap<>();
         game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
+        LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
+        LOGGER.debug("Created new terminal node:");
+        map.forEach((player, integer) -> LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
         return new NodeTree(new LinkedList<>(), map, 1);
     }
 
     /**
      * @param nodeTree - узел дерева, в котором мы в данный момент находимся
-     * @return самое выгодное на данном этапе действие
+     * @return самое выгодное на данном этапе действие (если таковых несколько, то берём случайное из их числа)
      */
     public static @NotNull Action getAction(final @NotNull NodeTree nodeTree) {
-        return Objects.requireNonNull(nodeTree.getEdges().stream()
-                .max(Comparator.comparingDouble(edge ->
-                        (double) edge.getTo().getWinsCount().get(edge.getPlayer()) / edge.getTo().getCasesCount()))
-                .orElseThrow()
-                .getAction());
+        final double maxValue =
+                nodeTree.getEdges().stream()
+                        .map(edge ->
+                                (double) edge.getTo().getWinsCount().get(edge.getPlayer())
+                                        / edge.getTo().getCasesCount())
+                        .max(Double::compareTo)
+                        .orElseThrow();
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
+                        .filter(edge ->
+                                Double.compare(maxValue, (double) edge.getTo().getWinsCount().get(edge.getPlayer())
+                                        / edge.getTo().getCasesCount()) == 0)
+                        .collect(Collectors.toList()))
+                        .getAction());
     }
 }
