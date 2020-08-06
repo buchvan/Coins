@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot.ai.bim.action;
+package io.neolab.internship.coins.client.bot.ai.bim.model.action;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,9 +1,9 @@
 package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
-import io.neolab.internship.coins.client.bot.ai.bim.FunctionType;
-import io.neolab.internship.coins.client.bot.ai.bim.NodeTree;
-import io.neolab.internship.coins.client.bot.ai.bim.action.*;
+import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
+import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
+import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -11,6 +11,7 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,10 +22,18 @@ import java.util.*;
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private @Nullable NodeTree tree;
-    private final  @NotNull FunctionType functionType;
+    private final @NotNull FunctionType functionType;
+    private final @Nullable FunctionType opponentFunctionType;
 
+    @Contract(pure = true)
     public SmartBot(final @NotNull FunctionType functionType) {
+        this(functionType, null);
+    }
+
+    @Contract(pure = true)
+    public SmartBot(final @NotNull FunctionType functionType, final @Nullable FunctionType opponentFunctionType) {
         this.functionType = functionType;
+        this.opponentFunctionType = opponentFunctionType;
     }
 
     @Override

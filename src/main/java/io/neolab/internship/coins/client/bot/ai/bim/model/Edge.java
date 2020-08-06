@@ -1,6 +1,6 @@
-package io.neolab.internship.coins.client.bot.ai.bim;
+package io.neolab.internship.coins.client.bot.ai.bim.model;
 
-import io.neolab.internship.coins.client.bot.ai.bim.action.Action;
+import io.neolab.internship.coins.client.bot.ai.bim.model.action.Action;
 import io.neolab.internship.coins.server.game.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
