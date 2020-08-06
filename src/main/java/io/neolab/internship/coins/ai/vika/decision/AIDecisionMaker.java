@@ -5,8 +5,10 @@ import io.neolab.internship.coins.ai.vika.decision.model.Decision;
 import io.neolab.internship.coins.ai.vika.decision.model.DeclineRaceDecision;
 import io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNode;
 import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.service.GameAnswerProcessor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -26,13 +28,17 @@ public class AIDecisionMaker {
     public static void createDeclineRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final Game game,
                                                   @NotNull final Player player) {
         final Decision declineRaceDecisionTrue = new DeclineRaceDecision(true);
+        final Player playerCopy = player.getCopy();
+        final IGame gameCopy = game.getCopy();
         final DecisionTreeNode trueChildNode = new DecisionTreeNode(
-                currentNode, declineRaceDecisionTrue, player.getCopy(), game.getCopy());
+                currentNode, declineRaceDecisionTrue, playerCopy, gameCopy);
         currentNode.getChildDecisions().add(trueChildNode);
+        //TODO: decide for game and player copy
         final Decision declineRaceDecisionFalse = new DeclineRaceDecision(true);
         final DecisionTreeNode falseChildNode = new DecisionTreeNode(
                 currentNode, declineRaceDecisionFalse, player.getCopy(), game.getCopy());
         currentNode.getChildDecisions().add(falseChildNode);
+        //TODO: decide for game and player copy
     }
 
     /**
@@ -50,6 +56,7 @@ public class AIDecisionMaker {
             final DecisionTreeNode childNode = new DecisionTreeNode(
                     currentNode, changeRaceDecision, player.getCopy(), game.getCopy());
             currentNode.getChildDecisions().add(childNode);
+            //TODO: decide for game and player copy
         });
     }
 

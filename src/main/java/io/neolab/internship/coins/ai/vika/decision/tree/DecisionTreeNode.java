@@ -2,6 +2,7 @@ package io.neolab.internship.coins.ai.vika.decision.tree;
 
 import io.neolab.internship.coins.ai.vika.decision.model.Decision;
 import io.neolab.internship.coins.server.game.Game;
+import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 
 import java.util.LinkedList;
@@ -19,12 +20,12 @@ public class DecisionTreeNode {
     //Игрок, который принимет решения
     private final Player player;
     //Состояние игры после принятия решения в этом узле
-    private final Game game;
+    private final IGame game;
     //Ссылки на потомков
     private final List<DecisionTreeNode> childDecisions = new LinkedList<>();
 
     public DecisionTreeNode(final DecisionTreeNode parentDecision, final Decision decision,
-                            final Player player, final Game game) {
+                            final Player player, final IGame game) {
         this.parentDecision = parentDecision;
         this.decision = decision;
         this.player = player;
@@ -39,7 +40,7 @@ public class DecisionTreeNode {
         return player;
     }
 
-    public Game getGame() {
+    public IGame getGame() {
         return game;
     }
 
