@@ -1,8 +1,8 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
+import io.neolab.internship.coins.client.bot.ai.bim.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
@@ -21,7 +21,7 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 2;
+    private static final int GAME_AMOUNT = 1;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
 
@@ -65,11 +65,11 @@ public class GameStatistic {
 
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
-        final SmartBot smartBot = new SmartBot();
-        botToPlayer.add(new Pair<>(smartBot, players.get(0)));
-        for (int i = 1; i < PLAYERS_AMOUNT; i++) {
-            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
-        }
+        botToPlayer.add(new Pair<>(new SmartBot(FunctionType.MAX), players.get(0)));
+        botToPlayer.add(new Pair<>(new SmartBot(FunctionType.MIN), players.get(1)));
+//        for (int i = 1; i < PLAYERS_AMOUNT; i++) {
+//            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
+//        }
         return botToPlayer;
     }
 
