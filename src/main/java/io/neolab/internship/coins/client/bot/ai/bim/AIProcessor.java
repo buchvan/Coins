@@ -31,6 +31,7 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 public class AIProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIProcessor.class);
 
+    private static final double EPS = 1E-7;
     private static final int MAX_DEPTH = 1;
     private static final boolean isGameLoggedOn = false;
     private static final boolean isLoggedOn = false;
@@ -743,19 +744,46 @@ public class AIProcessor {
      * @param nodeTree - узел дерева, в котором мы в данный момент находимся
      * @return самое выгодное на данном этапе действие (если таковых несколько, то берём случайное из их числа)
      */
-    public static @NotNull Action getAction(final @NotNull NodeTree nodeTree) {
-        final double maxValue =
-                nodeTree.getEdges().stream()
+    public static @NotNull Action getAction(final @NotNull NodeTree nodeTree,
+                                            final @NotNull FunctionType functionType) {
+        final double value;
+        final Player player;
+        switch (functionType) {
+            case MAX:
+                player = nodeTree.getEdges().get(0).getPlayer();
+                value = nodeTree.getEdges().stream()
                         .map(edge ->
-                                (double) edge.getTo().getWinsCount().get(edge.getPlayer())
+                                (double) edge.getTo().getWinsCount().get(player)
                                         / edge.getTo().getCasesCount())
                         .max(Double::compareTo)
                         .orElseThrow();
+                break;
+            case MIN:
+                player =
+                        nodeTree.getEdges().get(0).getTo()
+                                .getWinsCount()
+                                .keySet()
+                                .stream()
+                                .filter(item ->
+                                        !item.equals(nodeTree.getEdges().get(0).getPlayer()))
+                                .findFirst()
+                                .orElseThrow();
+                value = nodeTree.getEdges().stream()
+                        .map(edge ->
+                                (double) edge.getTo().getWinsCount().get(player)
+                                        / edge.getTo().getCasesCount())
+                        .min(Double::compareTo)
+                        .orElseThrow();
+                break;
+            default:
+                return null;
+        }
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
                         .filter(edge ->
-                                Double.compare(maxValue, (double) edge.getTo().getWinsCount().get(edge.getPlayer())
-                                        / edge.getTo().getCasesCount()) == 0)
+                                Double.compare(Math.abs(value -
+                                        (double) edge.getTo().getWinsCount().get(player)
+                                                / edge.getTo().getCasesCount()), EPS) < 0)
                         .collect(Collectors.toList()))
                         .getAction());
     }
