@@ -97,7 +97,20 @@ public class AIDecisionMaker {
                 //TODO: 4
             }
         });
+        createCatchCellNullDecision(currentNode, game.getCopy(), player.getCopy());
+    }
 
+    /**
+     * Создает узел с null захватом клетки(прекратить захват)
+     *
+     * @param currentNode - текущий узел-родитель
+     * @param game        - текущее состояние игры
+     * @param player      - текущий игрок
+     */
+    public static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode, @NotNull final Game game,
+                                            @NotNull final Player player) {
+        final Decision decision = new CatchCellDecision(null);
+        createDecisionNode(currentNode, decision, player, game);
     }
 
     private static boolean checkCellCaptureOpportunity(final Cell cell, final Player player, final IGame game) {
