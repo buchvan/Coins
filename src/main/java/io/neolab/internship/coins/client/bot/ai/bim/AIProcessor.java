@@ -152,7 +152,7 @@ public class AIProcessor {
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
     private static @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
-                                                  final @NotNull IGame game, final @NotNull Player currentPlayer)
+                                                                                   final @NotNull IGame game, final @NotNull Player currentPlayer)
             throws CoinsException {
         GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isGameLoggedOn);
         boolean wasCurrentPlayer = false;
@@ -162,14 +162,25 @@ public class AIProcessor {
                 continue;
             }
             if (wasCurrentPlayer) {
-                LOGGER.debug("Next player: {}", player.getNickname());
-                GameLoopProcessor.playerRoundBeginUpdate(player, isLoggedOn);
-                return player;
+                if (isLoggedOn) {
+                    LOGGER.debug("Next player: {}", player.getNickname());
+                }
+                GameLoopProcessor.playerRoundBeginUpdate(player, isGameLoggedOn);
+                return new Pair<>(currentDepth, player);
             }
         }
         if (wasCurrentPlayer) {
-            game.incrementCurrentRound();
-            LOGGER.debug("New round: {}", game.getCurrentRound());
+            final int newDepth = currentDepth + 1;
+            if (newDepth > MAX_DEPTH) {
+                return new Pair<>(newDepth, null);
+            }
+            if (isLoggedOn) {
+                LOGGER.debug("New depth: {}", newDepth);
+            }
+            updateGameEndRound(game);
+            if (isLoggedOn) {
+                LOGGER.debug("New round: {}", game.getCurrentRound());
+            }
             final Player nextPlayer =
                     game.getCurrentRound() <= Game.ROUNDS_COUNT
                             ? game.getPlayers().get(0)
@@ -180,9 +191,22 @@ public class AIProcessor {
                 }
                 GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isGameLoggedOn);
             }
-            return nextPlayer;
+            return new Pair<>(newDepth, nextPlayer);
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    /**
+     * Обновление игры в конце раунда
+     *
+     * @param game - игра
+     */
+    private static void updateGameEndRound(final @NotNull IGame game) {
+        game.getPlayers().forEach(item -> // обновление числа монет у каждого игрока
+                GameLoopProcessor.updateCoinsCount(
+                        item, game.getFeudalToCells().get(item),
+                        game.getGameFeatures(), game.getBoard(), isGameLoggedOn));
+        game.incrementCurrentRound();
     }
 
     /**
@@ -420,17 +444,10 @@ public class AIProcessor {
     private static void createDistributionUnitsSubtree(final int currentDepth,
                                                        final @NotNull IGame game, final @NotNull Player player,
                                                        final @NotNull List<Edge> edges) throws CoinsException {
-        game.getPlayers().forEach(item -> // обновление числа монет у каждого игрока
-                GameLoopProcessor.updateCoinsCount(
-                        item, game.getFeudalToCells().get(item),
-                        game.getGameFeatures(), game.getBoard(), isLoggedOn));
-        final int newDepth = currentDepth + 1;
-        if (newDepth > MAX_DEPTH) {
-            edges.add(new Edge(null, null, createTerminalNode(game)));
-            return;
-        }
-        LOGGER.debug("New depth: {}", newDepth);
-        final Player nextPlayer = getNextPlayer(game, player);
+
+        final Pair<Integer, Player> pair = getNextPlayer(currentDepth, game, player);
+        final int newDepth = pair.getFirst();
+        final Player nextPlayer = pair.getSecond();
         if (nextPlayer == null) {
             edges.add(new Edge(null, null, createTerminalNode(game)));
             return;
@@ -540,33 +557,6 @@ public class AIProcessor {
         return units.size() >= tiredUnitsCount
                 ? new Pair<>(units, new Pair<>(tiredUnitsCount, achievableCell))
                 : null;
-    }
-
-    /**
-     * Взять случаи чисел юнитов, отправляемых на захват клетки
-     *
-     * @param capacity        - число случаев
-     * @param unitsCount      - общее число доступных юнитов
-     * @param tiredUnitsCount - минимальное число юнитов
-     * @return множество чисел юнитов, отправляемых на захват клетки
-     */
-    private static Set<Integer> getIndexes(final int capacity, final int unitsCount, final int tiredUnitsCount) {
-        final Set<Integer> indexes = new HashSet<>(capacity);
-        for (int i = tiredUnitsCount; i <= unitsCount; i++) {
-            if (indexes.size() >= capacity) {
-                i = unitsCount;
-                continue;
-            }
-            if (RandomGenerator.isYes()) {
-                indexes.add(tiredUnitsCount);
-            }
-        }
-        int j = unitsCount;
-        while (indexes.size() < capacity) {
-            indexes.add(j);
-            j--;
-        }
-        return indexes;
     }
 
     /**
