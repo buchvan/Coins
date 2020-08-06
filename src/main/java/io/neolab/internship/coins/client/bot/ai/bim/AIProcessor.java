@@ -718,39 +718,22 @@ public class AIProcessor {
     }
 
     /**
-     * @param nodeTree - узел дерева, в котором мы в данный момент находимся
+     * @param nodeTree     - узел дерева, в котором мы в данный момент находимся
+     * @param player       - игрок
+     * @param functionType - тип функции бота
      * @return самое выгодное на данном этапе действие (если таковых несколько, то берём случайное из их числа)
      */
     public static @NotNull Action getAction(final @NotNull NodeTree nodeTree,
+                                            final @NotNull Player player,
                                             final @NotNull FunctionType functionType) {
         final double value;
-        final Player player;
         switch (functionType) {
             case MAX:
-                player = nodeTree.getEdges().get(0).getPlayer();
-                value = nodeTree.getEdges().stream()
-                        .map(edge ->
-                                (double) edge.getTo().getWinsCount().get(player)
-                                        / edge.getTo().getCasesCount())
-                        .max(Double::compareTo)
-                        .orElseThrow();
+                value = getValue(nodeTree, Objects.requireNonNull(player), functionType);
                 break;
             case MIN:
-                player =
-                        nodeTree.getEdges().get(0).getTo()
-                                .getWinsCount()
-                                .keySet()
-                                .stream()
-                                .filter(item ->
-                                        !item.equals(nodeTree.getEdges().get(0).getPlayer()))
-                                .findFirst()
-                                .orElseThrow();
-                value = nodeTree.getEdges().stream()
-                        .map(edge ->
-                                (double) edge.getTo().getWinsCount().get(player)
-                                        / edge.getTo().getCasesCount())
-                        .min(Double::compareTo)
-                        .orElseThrow();
+                final Player opponent = getSomeOpponent(nodeTree, player);
+                value = getValue(nodeTree, opponent, functionType);
                 break;
             default:
                 return null;
@@ -763,5 +746,44 @@ public class AIProcessor {
                                                 / edge.getTo().getCasesCount()), EPS) < 0)
                         .collect(Collectors.toList()))
                         .getAction());
+    }
+
+    /**
+     * Взять какого-нибудь оппонента игрока
+     * @param nodeTree - текущий узел дерева
+     * @param player - игрок
+     * @return оппонента игрока
+     */
+    private static @NotNull Player getSomeOpponent(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+        return nodeTree.getEdges().get(0).getTo()
+                .getWinsCount()
+                .keySet()
+                .stream()
+                .filter(item ->
+                        !item.equals(player))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private static double getValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                   final @NotNull FunctionType functionType) {
+        switch (functionType) {
+            case MAX:
+                return nodeTree.getEdges().stream()
+                        .map(edge ->
+                                (double) edge.getTo().getWinsCount().get(player)
+                                        / edge.getTo().getCasesCount())
+                        .max(Double::compareTo)
+                        .orElseThrow();
+            case MIN:
+                return nodeTree.getEdges().stream()
+                        .map(edge ->
+                                (double) edge.getTo().getWinsCount().get(player)
+                                        / edge.getTo().getCasesCount())
+                        .min(Double::compareTo)
+                        .orElseThrow();
+            default:
+                return -1;
+        }
     }
 }

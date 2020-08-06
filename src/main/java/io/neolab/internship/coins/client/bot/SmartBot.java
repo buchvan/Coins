@@ -23,23 +23,16 @@ public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private @Nullable NodeTree tree;
     private final @NotNull FunctionType functionType;
-    private final @Nullable FunctionType opponentFunctionType;
 
     @Contract(pure = true)
     public SmartBot(final @NotNull FunctionType functionType) {
-        this(functionType, null);
-    }
-
-    @Contract(pure = true)
-    public SmartBot(final @NotNull FunctionType functionType, final @Nullable FunctionType opponentFunctionType) {
         this.functionType = functionType;
-        this.opponentFunctionType = opponentFunctionType;
     }
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         tree = AIProcessor.createTree(game, player);
-        final Action action = AIProcessor.getAction(tree, functionType);
+        final Action action = AIProcessor.getAction(tree, player, functionType);
         tree = AIProcessor.updateTree(tree, action);
         final boolean choice = ((DeclineRaceAction) action).isDeclineRace();
         LOGGER.debug("Smart bot decline race choice: {} ", choice);
@@ -50,7 +43,7 @@ public class SmartBot implements IBot {
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
         final Race race;
         if (tree != null) {
-            final Action action = AIProcessor.getAction(tree, functionType);
+            final Action action = AIProcessor.getAction(tree, player, functionType);
             tree = AIProcessor.updateTree(tree, action);
             race = ((ChangeRaceAction) action).getNewRace();
         } else {
@@ -63,7 +56,7 @@ public class SmartBot implements IBot {
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
                                                                    final @NotNull IGame game) {
-        final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), functionType);
+        final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), player, functionType);
         tree = AIProcessor.updateTree(tree, action);
         final Pair<Position, List<Unit>> resolution = ((CatchCellAction) action).getResolution();
         LOGGER.debug("Resolution of smart bot: {} ", resolution);
@@ -73,7 +66,7 @@ public class SmartBot implements IBot {
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player,
                                                                 final @NotNull IGame game) {
-        final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), functionType);
+        final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), player, functionType);
         tree = AIProcessor.updateTree(tree, action);
         final Map<Position, List<Unit>> resolutions = ((DistributionUnitsAction) action).getResolutions();
         LOGGER.debug("Smart bot distributed units: {} ", resolutions);
