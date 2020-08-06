@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -152,6 +153,7 @@ public class AIProcessor {
      * @return следуюшего в очереди игрока
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
+    @Contract("_, _, _ -> new")
     private static @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
                                                                                    final @NotNull IGame game, final @NotNull Player currentPlayer)
             throws CoinsException {
@@ -163,9 +165,7 @@ public class AIProcessor {
                 continue;
             }
             if (wasCurrentPlayer) {
-                if (isLoggedOn) {
-                    LOGGER.debug("Next player: {}", player.getNickname());
-                }
+                printLogNextPlayer(player);
                 GameLoopProcessor.playerRoundBeginUpdate(player, isGameLoggedOn);
                 return new Pair<>(currentDepth, player);
             }
@@ -175,26 +175,43 @@ public class AIProcessor {
             if (newDepth > MAX_DEPTH) {
                 return new Pair<>(newDepth, null);
             }
-            if (isLoggedOn) {
-                LOGGER.debug("New depth: {}", newDepth);
-            }
             updateGameEndRound(game);
-            if (isLoggedOn) {
-                LOGGER.debug("New round: {}", game.getCurrentRound());
-            }
+            printLogNewDepth(newDepth, game.getCurrentRound());
             final Player nextPlayer =
                     game.getCurrentRound() <= Game.ROUNDS_COUNT
                             ? game.getPlayers().get(0)
                             : null;
             if (nextPlayer != null) {
-                if (isLoggedOn) {
-                    LOGGER.debug("Next player: {}", nextPlayer.getNickname());
-                }
+                printLogNextPlayer(nextPlayer);
                 GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isGameLoggedOn);
             }
             return new Pair<>(newDepth, nextPlayer);
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    /**
+     * Вывод лога о новой глубине
+     *
+     * @param newDepth - новая глубина
+     * @param newRound - новый раунд игры
+     */
+    private static void printLogNewDepth(final int newDepth, final int newRound) {
+        if (isLoggedOn) {
+            LOGGER.debug("New depth: {}", newDepth);
+            LOGGER.debug("New round: {}", newRound);
+        }
+    }
+
+    /**
+     * Вывод лога о следующем игроке
+     *
+     * @param nextPlayer - следующий игрок
+     */
+    private static void printLogNextPlayer(final @NotNull Player nextPlayer) {
+        if (isLoggedOn) {
+            LOGGER.debug("Next player: {}", nextPlayer.getNickname());
+        }
     }
 
     /**
@@ -238,11 +255,10 @@ public class AIProcessor {
         final ExecutorService executorService = Executors.newFixedThreadPool(isPossible ? 2 : 1);
         if (isPossible) {
             executorService.execute(() -> {
-                final Action newAction = new DeclineRaceAction(true);
+                final boolean isDeclineRace = true;
+                final Action newAction = new DeclineRaceAction(isDeclineRace);
                 try {
-                    if (isLoggedOn) {
-                        LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), true);
-                    }
+                    printLogDeclineRace(currentDepth, player, isDeclineRace);
                     edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
                 } catch (final CoinsException exception) {
                     exception.printStackTrace();
@@ -250,17 +266,28 @@ public class AIProcessor {
             });
         }
         executorService.execute(() -> {
-            final Action newAction = new DeclineRaceAction(false);
+            final boolean isDeclineRace = false;
+            final Action newAction = new DeclineRaceAction(isDeclineRace);
             try {
-                if (isLoggedOn) {
-                    LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), false);
-                }
+                printLogDeclineRace(currentDepth, player, isDeclineRace);
                 edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
             } catch (final CoinsException exception) {
                 exception.printStackTrace();
             }
         });
         executeExecutorService(executorService);
+    }
+
+    /**
+     * Вывод лога об уходе в упадок игрока
+     *
+     * @param currentDepth - текущая глубина
+     * @param player       - игрока
+     */
+    private static void printLogDeclineRace(final int currentDepth, final @NotNull Player player, final boolean isDeclineRace) {
+        if (isLoggedOn) {
+            LOGGER.debug("depth {}, player {}, DeclineRace {}", currentDepth, player.getNickname(), isDeclineRace);
+        }
     }
 
     /**
@@ -277,15 +304,27 @@ public class AIProcessor {
         game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
-                if (isLoggedOn) {
-                    LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
-                }
+                printLogChangeRace(currentDepth, race, player);
                 edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
             } catch (final CoinsException exception) {
                 exception.printStackTrace();
             }
         }));
         executeExecutorService(executorService);
+    }
+
+    /**
+     * Вывод лога об изменении расы
+     *
+     * @param currentDepth - текущая глубина
+     * @param race         - новая раса
+     * @param player       - игрок
+     */
+    private static void printLogChangeRace(final int currentDepth, final @NotNull Race race,
+                                           final @NotNull Player player) {
+        if (isLoggedOn) {
+            LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
+        }
     }
 
     /**
@@ -321,10 +360,20 @@ public class AIProcessor {
             edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
             casesCount += edge.getTo().getCasesCount();
         }
+        printLogCreatedNewNode(currentDepth, edges);
+        return new NodeTree(edges, winsCount, casesCount);
+    }
+
+    /**
+     * Вывод лога о создании нового узла
+     *
+     * @param currentDepth - текущая глубина
+     * @param edges        - список дуг, выходящих из этого нового узла
+     */
+    private static void printLogCreatedNewNode(final int currentDepth, final @NotNull List<Edge> edges) {
         if (isLoggedOn) {
             LOGGER.debug("Created new node in depth {} with edges: {}", currentDepth, edges);
         }
-        return new NodeTree(edges, winsCount, casesCount);
     }
 
     /**
@@ -592,10 +641,7 @@ public class AIProcessor {
         final Pair<Position, List<Unit>> resolution =
                 new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, index));
         final Action newAction = new CatchCellAction(resolution);
-        if (isLoggedOn) {
-            LOGGER.debug("current depth {}, index {}, player {}, resolution {}", currentDepth, index,
-                    player.getNickname(), resolution);
-        }
+        printLogCatchCellResolution(currentDepth, index, player, resolution);
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
@@ -604,6 +650,23 @@ public class AIProcessor {
                     continueCreatingCatchCellSubtree(currentDepth, gameCopy, playerCopy, newAction, prevCatchCells)));
         } catch (final CoinsException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    /**
+     * Вывод лога о создании узла с решением по захвату клетки игроком
+     *
+     * @param currentDepth - текущая глубина
+     * @param index        - число юнитов в данном решении
+     * @param player       - игрок
+     * @param resolution   - решение
+     */
+    private static void printLogCatchCellResolution(final int currentDepth, final int index,
+                                                    final @NotNull Player player,
+                                                    final @NotNull Pair<Position, List<Unit>> resolution) {
+        if (isLoggedOn) {
+            LOGGER.debug("current depth {}, index {}, player {}, resolution {}", currentDepth, index,
+                    player.getNickname(), resolution);
         }
     }
 
@@ -732,12 +795,21 @@ public class AIProcessor {
         }
         final Map<Player, Integer> map = new HashMap<>();
         game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
+        printLogNewTerminalNode(map);
+        return new NodeTree(new LinkedList<>(), map, 1);
+    }
+
+    /**
+     * Вывод лога о создании нового терминального узла
+     *
+     * @param map - отображение игрока в число побед в данном узле
+     */
+    private static void printLogNewTerminalNode(final @NotNull Map<Player, Integer> map) {
         if (isLoggedOn) {
             LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
             LOGGER.debug("Created new terminal node:");
             map.forEach((player, integer) -> LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
         }
-        return new NodeTree(new LinkedList<>(), map, 1);
     }
 
     /**
