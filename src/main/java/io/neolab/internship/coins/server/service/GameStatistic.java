@@ -68,7 +68,7 @@ public class GameStatistic {
         final SmartBot smartBot = new SmartBot();
         botToPlayer.add(new Pair<>(smartBot, players.get(0)));
         for (int i = 1; i < PLAYERS_AMOUNT; i++) {
-            botToPlayer.add(new Pair<>(new SimpleBot(smartBot), players.get(i)));
+            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
         }
         return botToPlayer;
     }

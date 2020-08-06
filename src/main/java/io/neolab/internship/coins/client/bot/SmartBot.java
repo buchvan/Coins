@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -19,28 +20,10 @@ import java.util.*;
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private @Nullable NodeTree tree;
-    private final @NotNull IBot simpleBot = new SimpleBot();
-
-    @Nullable NodeTree getTree() {
-        return tree;
-    }
-
-    void putTree(final @NotNull NodeTree tree) {
-        this.tree = tree;
-    }
-
-    private void clearTree() {
-        tree = null;
-    }
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        if (tree != null && tree.getEdges().iterator().next().getAction() == null) {
-            clearTree();
-        }
-        if (tree == null) {
-            tree = AIProcessor.createTree(game, player);
-        }
+        tree = AIProcessor.createTree(game, player);
         final Action action = AIProcessor.getAction(tree);
         tree = AIProcessor.updateTree(tree, action);
         final boolean choice = ((DeclineRaceAction) action).isDeclineRace();
@@ -56,7 +39,7 @@ public class SmartBot implements IBot {
             tree = AIProcessor.updateTree(tree, action);
             race = ((ChangeRaceAction) action).getNewRace();
         } else {
-            race = simpleBot.chooseRace(player, game);
+            race = RandomGenerator.chooseItemFromList(game.getRacesPool());
         }
         LOGGER.debug("Smart bot choice race: {} ", race);
         return race;

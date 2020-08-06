@@ -1,7 +1,5 @@
 package io.neolab.internship.coins.client.bot;
 
-import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
-import io.neolab.internship.coins.client.bot.ai.bim.action.*;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -25,43 +23,16 @@ import static io.neolab.internship.coins.client.bot.ai.bim.AIProcessor.removeNot
 public class SimpleBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
 
-    private final @Nullable SmartBot smartBot;
-
-    public SimpleBot(final @NotNull SmartBot smartBot) {
-        this.smartBot = smartBot;
-    }
-
-    public SimpleBot() {
-        this.smartBot = null;
-    }
-
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        final boolean choice;
-        if (smartBot != null) {
-            final DeclineRaceAction action =
-                    (DeclineRaceAction) RandomGenerator.chooseItemFromList(
-                            Objects.requireNonNull(smartBot.getTree()).getEdges()).getAction();
-            choice = Objects.requireNonNull(action).isDeclineRace();
-            smartBot.putTree(AIProcessor.updateTree(smartBot.getTree(), action));
-        } else {
-            choice = RandomGenerator.isYes();
-        }
+        final boolean choice = RandomGenerator.isYes();
         LOGGER.debug("Simple bot decline race choice: {} ", choice);
         return choice;
     }
 
     @Override
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
-        final Race race;
-        if (smartBot != null && smartBot.getTree() != null) {
-            final ChangeRaceAction action =
-                    (ChangeRaceAction) RandomGenerator.chooseItemFromList(smartBot.getTree().getEdges()).getAction();
-            race = Objects.requireNonNull(action).getNewRace();
-            smartBot.putTree(AIProcessor.updateTree(smartBot.getTree(), action));
-        } else {
-            race = RandomGenerator.chooseItemFromList(game.getRacesPool());
-        }
+        final Race race = RandomGenerator.chooseItemFromList(game.getRacesPool());
         LOGGER.debug("Simple bot choice race: {} ", race);
         return race;
     }
@@ -69,16 +40,6 @@ public class SimpleBot implements IBot {
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
                                                                    final @NotNull IGame game) {
-        final Pair<Position, List<Unit>> resolution;
-        if (smartBot != null) {
-            final CatchCellAction action =
-                    (CatchCellAction) RandomGenerator.chooseItemFromList(
-                            Objects.requireNonNull(smartBot.getTree()).getEdges()).getAction();
-            resolution = Objects.requireNonNull(action).getResolution();
-            smartBot.putTree(AIProcessor.updateTree(smartBot.getTree(), action));
-            LOGGER.debug("Resolution of simple bot (by tree): {} ", resolution);
-            return resolution;
-        }
         if (RandomGenerator.isYes()) {
             LOGGER.debug("Simple bot will capture of cells");
             final IBoard board = game.getBoard();
@@ -103,7 +64,7 @@ public class SimpleBot implements IBot {
                             : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(),
                             catchingCell, true);
             final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
-            resolution =
+            final Pair<Position, List<Unit>> resolution =
                     remainingUnitsCount >= 0
                             ? new Pair<>(board.getPositionByCell(catchingCell),
                             units.subList(0,
@@ -120,17 +81,7 @@ public class SimpleBot implements IBot {
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) {
         LOGGER.debug("Simple bot distributes units");
-        final Map<Position, List<Unit>> distributionUnits;
-        if (smartBot != null) {
-            final DistributionUnitsAction action =
-                    (DistributionUnitsAction) RandomGenerator.chooseItemFromList(
-                            Objects.requireNonNull(smartBot.getTree()).getEdges()).getAction();
-            distributionUnits = Objects.requireNonNull(action).getResolutions();
-            smartBot.putTree(AIProcessor.updateTree(smartBot.getTree(), action));
-            LOGGER.debug("Resolutions of simple bot (by tree): {} ", distributionUnits);
-            return distributionUnits;
-        }
-        distributionUnits = new HashMap<>();
+        final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
         List<Unit> units = new LinkedList<>();
         if (!game.getOwnToCells().get(player).isEmpty()) {
