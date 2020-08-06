@@ -194,7 +194,7 @@ public class GameLoopProcessor {
      * @param catchingCell - захватываемая клетка
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
-    static int getBonusAttackToCatchCell(final @NotNull Player player,
+    public static int getBonusAttackToCatchCell(final @NotNull Player player,
                                          final @NotNull GameFeatures gameFeatures,
                                          final @NotNull Cell catchingCell) {
         int bonusAttack = 0;
