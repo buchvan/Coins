@@ -78,7 +78,7 @@ public class GameLoopProcessor {
      * @param cell  - клетка, чьих соседей мы ищем
      * @return список всех соседей клетки cell на борде board
      */
-    static @NotNull List<Cell> getAllNeighboringCells(final @NotNull IBoard board, final @NotNull Cell cell) {
+    public static @NotNull List<Cell> getAllNeighboringCells(final @NotNull IBoard board, final @NotNull Cell cell) {
         updateNeighboringCellsIfNecessary(board, cell);
         return Objects.requireNonNull(board.getNeighboringCells(cell));
     }
@@ -124,7 +124,7 @@ public class GameLoopProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @param board           - борда
      */
-    static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
+    public static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
                             final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
                             final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board) {
         final List<Cell> achievableCells = new LinkedList<>(GameLoopProcessor.getAllNeighboringCells(board, targetCell));
@@ -224,7 +224,7 @@ public class GameLoopProcessor {
      * @param transitCells     - транзитные клетки игрока
      *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
-    static void catchCell(final @NotNull Player player,
+    public static void catchCell(final @NotNull Player player,
                           final @NotNull Cell catchingCell,
                           final @NotNull List<Cell> neighboringCells,
                           final @NotNull List<Unit> tiredUnits,

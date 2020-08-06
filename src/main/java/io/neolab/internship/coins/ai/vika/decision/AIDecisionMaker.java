@@ -8,21 +8,21 @@ import io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNode;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
-import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.getAllNeighboringCells;
 
 /**
  * Симуляция принятия решений в ходе игры
@@ -44,12 +44,26 @@ public class AIDecisionMaker {
         final DecisionTreeNode trueChildNode = new DecisionTreeNode(
                 currentNode, declineRaceDecisionTrue, playerCopy, gameCopy);
         currentNode.getChildDecisions().add(trueChildNode);
-        //TODO: decide for game and player copy
+        simulateDeclineRaceDecision(playerCopy, gameCopy, (DeclineRaceDecision) declineRaceDecisionTrue);
         final Decision declineRaceDecisionFalse = new DeclineRaceDecision(true);
         final DecisionTreeNode falseChildNode = new DecisionTreeNode(
                 currentNode, declineRaceDecisionFalse, player.getCopy(), game.getCopy());
         currentNode.getChildDecisions().add(falseChildNode);
-        //TODO: decide for game and player copy
+        simulateDeclineRaceDecision(playerCopy, gameCopy, (DeclineRaceDecision) declineRaceDecisionFalse);
+    }
+
+    /**
+     * Симулирует принятое решение об упадке расы для копий игровых сущностей
+     *
+     * @param player   - текущий игрок
+     * @param game     - текуще состояние игры
+     * @param decision - принятое решение
+     */
+    private static void simulateDeclineRaceDecision(final @NotNull Player player, final @NotNull IGame game,
+                                                    @NotNull final DeclineRaceDecision decision) {
+        if (decision.isDeclineRace()) {
+            game.getOwnToCells().get(player).clear();
+        }
     }
 
     /**
@@ -62,13 +76,46 @@ public class AIDecisionMaker {
     public static void createChangeRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final Game game,
                                                  @NotNull final Player player) {
         final List<Race> availableRaces = game.getRacesPool();
+        final Player playerCopy = player.getCopy();
+        final IGame gameCopy = game.getCopy();
         availableRaces.forEach(race -> {
             final Decision changeRaceDecision = new ChangeRaceDecision(race);
             final DecisionTreeNode childNode = new DecisionTreeNode(
                     currentNode, changeRaceDecision, player.getCopy(), game.getCopy());
             currentNode.getChildDecisions().add(childNode);
-            //TODO: decide for game and player copy
+            simulateChangeRaceDecision(playerCopy, gameCopy, (ChangeRaceDecision) changeRaceDecision);
         });
+    }
+
+    /**
+     * Симулирует принятое решение о смене расы для копий игровых сущностей
+     *
+     * @param player   - текущий игрок
+     * @param game     - текуще состояние игры
+     * @param decision - принятое решение
+     */
+    private static void simulateChangeRaceDecision(final @NotNull Player player, final @NotNull IGame game,
+                                                   @NotNull final ChangeRaceDecision decision) {
+        Arrays.stream(AvailabilityType.values())
+                .forEach(availabilityType ->
+                        player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
+
+        final List<Race> racesPool = game.getRacesPool();
+        final Race newRace = decision.getNewRace();
+        final Race oldRace = player.getRace();
+        racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
+        player.setRace(newRace);
+
+        if (oldRace != null) {
+            racesPool.add(oldRace);
+        }
+
+        /* Добавляем юнитов выбранной расы */
+        int i = 0;
+        while (i < newRace.getUnitsAmount()) {
+            player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
+            i++;
+        }
     }
 
     /**
@@ -94,10 +141,48 @@ public class AIDecisionMaker {
                 final IGame gameCopy = game.getCopy();
                 final Player playerCopy = player.getCopy();
                 createDecisionNode(currentNode, decision, playerCopy, gameCopy);
-                //TODO: 4
+                simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             }
         });
         createCatchCellNullDecision(currentNode, game.getCopy(), player.getCopy());
+    }
+
+    private static void simulateCatchCellDecision(final @NotNull Player player, final @NotNull IGame game,
+                                                  @NotNull final CatchCellDecision decision) {
+        if (decision.getResolution() != null) {
+            final GameFeatures gameFeatures = game.getGameFeatures();
+            final IBoard board = game.getBoard();
+
+            final Map<Player, List<Cell>> ownToCells = game.getOwnToCells();
+            final List<Cell> controlledCells = ownToCells.get(player);
+            final Position captureCellPosition = decision.getResolution().getFirst();
+            final Cell captureCell = board.getCellByPosition(captureCellPosition);
+            final boolean isControlled = controlledCells.contains(captureCell);
+
+            final List<Unit> unitsForCapture = decision.getResolution().getSecond();
+
+            final Map<Player, Set<Cell>> feudalToCells = game.getFeudalToCells();
+
+            final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
+            final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
+            if (isControlled) {
+                final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
+                enterToCell(player, captureCell, ownToCells.get(player), feudalToCells.get(player),
+                        unitsForCapture, tiredUnitsCount, board);
+                return;
+            }
+            final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+            neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+            final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
+            final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
+            catchCell(player, captureCell, neighboringCells, unitsForCapture.subList(0, unitsCountNeededToCatch - bonusAttack),
+                    unitsForCapture, gameFeatures, ownToCells, feudalToCells, transitCells);
+            if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
+                achievableCells.clear();
+                achievableCells.add(captureCell);
+            }
+            achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        }
     }
 
     /**
@@ -107,13 +192,15 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - текущий игрок
      */
-    public static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode, @NotNull final Game game,
-                                            @NotNull final Player player) {
+    private static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode,
+                                                    @NotNull final Game game, @NotNull final Player player) {
         final Decision decision = new CatchCellDecision(null);
         createDecisionNode(currentNode, decision, player, game);
+        simulateCatchCellDecision(player, game, (CatchCellDecision) decision);
     }
 
-    private static boolean checkCellCaptureOpportunity(final Cell cell, final Player player, final IGame game) {
+    private static boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
+                                                       @NotNull final IGame game) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Unit> playerAvailableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.contains(cell)) {
