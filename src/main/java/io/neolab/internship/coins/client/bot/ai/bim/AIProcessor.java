@@ -32,7 +32,7 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 public class AIProcessor {
     private static final double EPS = 1E-7;
     private final int maxDepth;
-    private static final boolean isGameLoggedOn = false;
+    private static final boolean isGameLoggedOn = false; // логгирование в функциях игры
 
     public AIProcessor(final int maxDepth) {
         this.maxDepth = maxDepth;
@@ -147,19 +147,18 @@ public class AIProcessor {
     }
 
     /**
-     * Взять следующего в очереди игрока
+     * Выйти на новую глубину
      *
      * @param game          - игра
      * @param currentPlayer - текущий игрок
-     * @return следуюшего в очереди игрока
+     * @return пару (новая глубина, следующий в очереди игрок)
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
     @Contract("_, _, _ -> new")
-    private @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
-                                                                            final @NotNull IGame game,
-                                                                            final @NotNull Player currentPlayer)
+    private @NotNull Pair<@NotNull Integer, @Nullable Player> reachNewDepths(final int currentDepth,
+                                                                             final @NotNull IGame game,
+                                                                             final @NotNull Player currentPlayer)
             throws CoinsException {
-        GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isGameLoggedOn);
         boolean wasCurrentPlayer = false;
         for (final Player player : game.getPlayers()) {
             if (player.equals(currentPlayer)) {
@@ -167,9 +166,12 @@ public class AIProcessor {
                 continue;
             }
             if (wasCurrentPlayer) {
-                AILogger.printLogNextPlayer(player);
-                GameLoopProcessor.playerRoundBeginUpdate(player, isGameLoggedOn);
-                return new Pair<>(currentDepth, player);
+                final int newDepth = currentDepth + 1;
+                if (newDepth > maxDepth) {
+                    return new Pair<>(newDepth, null);
+                }
+                updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
+                return new Pair<>(newDepth, player);
             }
         }
         if (wasCurrentPlayer) {
@@ -177,19 +179,44 @@ public class AIProcessor {
             if (newDepth > maxDepth) {
                 return new Pair<>(newDepth, null);
             }
-            updateGameEndRound(game);
-            AILogger.printLogNewDepth(newDepth, game.getCurrentRound());
-            final Player nextPlayer =
-                    game.getCurrentRound() <= Game.ROUNDS_COUNT
-                            ? game.getPlayers().get(0)
-                            : null;
-            if (nextPlayer != null) {
-                AILogger.printLogNextPlayer(nextPlayer);
-                GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isGameLoggedOn);
-            }
+            final Player nextPlayer = getNextPlayerFromBeginList(game);
+            updateGameBeforeNewDepth(newDepth, game, currentPlayer, nextPlayer);
             return new Pair<>(newDepth, nextPlayer);
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    /**
+     * Взять следующего игрока из начала списка игроков
+     *
+     * @param game - игра
+     * @return следующего игрока из начала списка
+     */
+    private static @Nullable Player getNextPlayerFromBeginList(final @NotNull IGame game) {
+        return game.getCurrentRound() <= Game.ROUNDS_COUNT
+                ? game.getPlayers().get(0)
+                : null;
+    }
+
+    /**
+     * Обновить игру перед спуском на новую глубину
+     *
+     * @param newDepth   - новая глубина
+     * @param game       - игра
+     * @param prevPlayer - предыдущий игрока
+     * @param nextPlayer - следующий игрок
+     */
+    private static void updateGameBeforeNewDepth(final int newDepth,
+                                                 final @NotNull IGame game,
+                                                 final @NotNull Player prevPlayer,
+                                                 final @Nullable Player nextPlayer) {
+        GameLoopProcessor.playerRoundEndUpdate(prevPlayer, isGameLoggedOn);
+        updateGameEndRound(game);
+        AILogger.printLogNewDepth(newDepth, game.getCurrentRound());
+        if (nextPlayer != null) {
+            AILogger.printLogNextPlayer(nextPlayer);
+            GameLoopProcessor.playerRoundBeginUpdate(nextPlayer, isGameLoggedOn);
+        }
     }
 
     /**
@@ -303,8 +330,8 @@ public class AIProcessor {
      * @return узел дерева
      */
     @Contract("_, _, _ -> new")
-    private static  @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
-                                             final @NotNull List<Edge> edges) {
+    private static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
+                                                    final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         int casesCount = 0;
@@ -435,7 +462,7 @@ public class AIProcessor {
                                                 final @NotNull IGame game, final @NotNull Player player,
                                                 final @NotNull List<Edge> edges) throws CoinsException {
 
-        final Pair<Integer, Player> pair = getNextPlayer(currentDepth, game, player);
+        final Pair<Integer, Player> pair = reachNewDepths(currentDepth, game, player);
         final int newDepth = pair.getFirst();
         final Player nextPlayer = pair.getSecond();
         if (nextPlayer == null) {
