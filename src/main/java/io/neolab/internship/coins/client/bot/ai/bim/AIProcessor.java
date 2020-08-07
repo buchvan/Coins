@@ -751,35 +751,24 @@ public class AIProcessor {
      * @param cells - список клеток
      * @param n     - число юнитов, которое можно распределить на cells
      * @return список распределений. Распределение - это список пар (клетка, число юнитов, распределённых в неё)
-     * @throws CoinsException, если n < 0
      */
     @Contract(pure = true)
     private static @NotNull List<List<Pair<Cell, Integer>>> getDistributions(final @NotNull List<Cell> cells,
-                                                                             final int n) throws CoinsException {
-        if (n < 0) {
-            throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
-        }
+                                                                             final int n) {
         final List<List<Pair<Cell, Integer>>> distributions = new LinkedList<>();
         if (!cells.isEmpty()) {
-            if (n == 0) {
-                distributions.add(new LinkedList<>());
-                return distributions;
-            }
             final Cell cell = cells.get(0);
-            for (int i = n; i > 0; i--) {
+            for (int i = n; i >= 0; i--) {
                 final List<Cell> otherCells = new LinkedList<>(cells);
                 otherCells.remove(cell);
-                final List<List<Pair<Cell, Integer>>> miniDistributions;
-                miniDistributions = getDistributions(otherCells, n - i);
-                if (miniDistributions.isEmpty()) {
-                    miniDistributions.add(new LinkedList<>());
+                final List<List<Pair<Cell, Integer>>> miniDistributions = getDistributions(otherCells, n - i);
+                if (i > 0) {
+                    final int unitsToCell = i;
+                    miniDistributions.forEach(miniDistribution -> miniDistribution.add(new Pair<>(cell, unitsToCell)));
+                    final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
+                    distribution.add(new Pair<>(cell, unitsToCell));
+                    miniDistributions.add(distribution);
                 }
-                final int unitsToCell = i;
-                miniDistributions.forEach(miniDistribution ->
-                        miniDistribution.add(new Pair<>(cell, unitsToCell)));
-                final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
-                distribution.add(new Pair<>(cell, unitsToCell));
-                miniDistributions.add(distribution);
                 distributions.addAll(miniDistributions);
             }
         }
