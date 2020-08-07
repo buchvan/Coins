@@ -12,6 +12,7 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -294,28 +295,27 @@ public class AIProcessor {
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
-//        int capacity = game.getRacesPool().size() / 2;
-//        capacity = capacity == 0 ? 1 : capacity;
-//        final Set<Race> races = new HashSet<>(capacity);
-//        for (final Race race : game.getRacesPool()) {
-//            if (RandomGenerator.isYes()) {
-//                races.add(race);
-//            }
-//            if (races.size() >= capacity) {
-//                break;
-//            }
-//        }
-//        if (races.size() < capacity) {
-//            for (final Race race : game.getRacesPool()) {
-//                races.add(race);
-//                if (races.size() >= capacity) {
-//                    break;
-//                }
-//            }
-//        }
-//        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
-        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
-        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+        int capacity = game.getRacesPool().size() / 2;
+        capacity = capacity == 0 ? 1 : capacity;
+        final Set<Race> races = new HashSet<>(capacity);
+        for (final Race race : game.getRacesPool()) {
+            if (RandomGenerator.isYes()) {
+                races.add(race);
+            }
+            if (races.size() >= capacity) {
+                break;
+            }
+        }
+        if (races.size() < capacity) {
+            for (final Race race : game.getRacesPool()) {
+                races.add(race);
+                if (races.size() >= capacity) {
+                    break;
+                }
+            }
+        }
+        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
+        races.forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
                 AILogger.printLogChangeRace(currentDepth, race, player);
@@ -324,6 +324,16 @@ public class AIProcessor {
                 exception.printStackTrace();
             }
         }));
+//        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
+//        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+//            final Action newAction = new ChangeRaceAction(race);
+//            try {
+//                AILogger.printLogChangeRace(currentDepth, race, player);
+//                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
+//            } catch (final CoinsException exception) {
+//                exception.printStackTrace();
+//            }
+//        }));
         executeExecutorService(executorService);
     }
 
@@ -523,32 +533,32 @@ public class AIProcessor {
                 final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                 final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
                 final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
-//                int capacity = (units.size() - tiredUnitsCount + 1) / 3;
-//                capacity = capacity == 0 ? 1 : capacity;
-//                final Set<Integer> indexes = new HashSet<>(capacity);
-//                for (int i = tiredUnitsCount; i <= units.size(); i++) {
-//                    if (RandomGenerator.isYes()) {
-//                        indexes.add(i);
-//                    }
-//                    if (indexes.size() >= capacity) {
-//                        i = units.size();
-//                    }
-//                }
-//                if (indexes.size() < capacity) {
-//                    for (int i = tiredUnitsCount; i <= units.size(); i++) {
-//                        indexes.add(i);
-//                        if (indexes.size() >= capacity) {
-//                            i = units.size();
-//                        }
-//                    }
-//                }
-//                indexes.forEach(i ->
-//                        createCatchCellNode(currentDepth, i, game, player, cell,
-//                                Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+                int capacity = (units.size() - tiredUnitsCount + 1) / 3;
+                capacity = capacity == 0 ? 1 : capacity;
+                final Set<Integer> indexes = new HashSet<>(capacity);
                 for (int i = tiredUnitsCount; i <= units.size(); i++) {
-                    createCatchCellNode(currentDepth, i, game, player, cell,
-                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells);
+                    if (RandomGenerator.isYes()) {
+                        indexes.add(i);
+                    }
+                    if (indexes.size() >= capacity) {
+                        i = units.size();
+                    }
                 }
+                if (indexes.size() < capacity) {
+                    for (int i = tiredUnitsCount; i <= units.size(); i++) {
+                        indexes.add(i);
+                        if (indexes.size() >= capacity) {
+                            i = units.size();
+                        }
+                    }
+                }
+                indexes.forEach(i ->
+                        createCatchCellNode(currentDepth, i, game, player, cell,
+                                Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+//                for (int i = tiredUnitsCount; i <= units.size(); i++) {
+//                    createCatchCellNode(currentDepth, i, game, player, cell,
+//                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells);
+//                }
             });
         }
         if (unitsToPairTiredUnitsToCellList.isEmpty()) {
