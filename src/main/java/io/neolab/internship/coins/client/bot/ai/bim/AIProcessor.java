@@ -31,8 +31,12 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
 public class AIProcessor {
     private static final double EPS = 1E-7;
-    private static final int MAX_DEPTH = 1;
+    private final int maxDepth;
     private static final boolean isGameLoggedOn = false;
+
+    public AIProcessor(final int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
 
     /**
      * Обновить дерево согласно выполненному действию
@@ -101,8 +105,8 @@ public class AIProcessor {
      * @param action - совершённое действие
      * @throws CoinsException при неизвестном типе действия
      */
-    private static void updateGame(final @NotNull IGame game, final @NotNull Player player,
-                                   final @NotNull Action action) throws CoinsException {
+    private void updateGame(final @NotNull IGame game, final @NotNull Player player,
+                            final @NotNull Action action) throws CoinsException {
         switch (action.getType()) {
             case DECLINE_RACE:
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
@@ -151,8 +155,9 @@ public class AIProcessor {
      * @throws CoinsException в случае, если currentPlayer отсутствует в игре game
      */
     @Contract("_, _, _ -> new")
-    private static @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
-                                                                                   final @NotNull IGame game, final @NotNull Player currentPlayer)
+    private @NotNull Pair<@NotNull Integer, @Nullable Player> getNextPlayer(final int currentDepth,
+                                                                            final @NotNull IGame game,
+                                                                            final @NotNull Player currentPlayer)
             throws CoinsException {
         GameLoopProcessor.playerRoundEndUpdate(currentPlayer, isGameLoggedOn);
         boolean wasCurrentPlayer = false;
@@ -169,7 +174,7 @@ public class AIProcessor {
         }
         if (wasCurrentPlayer) {
             final int newDepth = currentDepth + 1;
-            if (newDepth > MAX_DEPTH) {
+            if (newDepth > maxDepth) {
                 return new Pair<>(newDepth, null);
             }
             updateGameEndRound(game);
@@ -221,9 +226,9 @@ public class AIProcessor {
      * @param player - игрок
      * @param edges  - дуги от родителя
      */
-    private static void createDeclineRaceBranches(final int currentDepth,
-                                                  final @NotNull IGame game, final @NotNull Player player,
-                                                  final @NotNull List<Edge> edges) {
+    private void createDeclineRaceBranches(final int currentDepth,
+                                           final @NotNull IGame game, final @NotNull Player player,
+                                           final @NotNull List<Edge> edges) {
         final boolean isPossible = game.getRacesPool().size() > 0;
         final ExecutorService executorService = Executors.newFixedThreadPool(isPossible ? 2 : 1);
         if (isPossible) {
@@ -258,9 +263,9 @@ public class AIProcessor {
      * @param player - игрок
      * @param edges  - дуги от родителя
      */
-    private static void createChangeRaceBranches(final int currentDepth,
-                                                 final @NotNull IGame game, final @NotNull Player player,
-                                                 final @NotNull List<Edge> edges) {
+    private void createChangeRaceBranches(final int currentDepth,
+                                          final @NotNull IGame game, final @NotNull Player player,
+                                          final @NotNull List<Edge> edges) {
         final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
         game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
@@ -281,7 +286,7 @@ public class AIProcessor {
      * @param player - игрок 1
      * @return корень на созданное дерево
      */
-    public static @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player) {
+    public @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player) {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
@@ -298,8 +303,8 @@ public class AIProcessor {
      * @return узел дерева
      */
     @Contract("_, _, _ -> new")
-    private static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
-                                                    final @NotNull List<Edge> edges) {
+    private static  @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
+                                             final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         int casesCount = 0;
@@ -319,9 +324,9 @@ public class AIProcessor {
      * @param action - действие, привёдшее к данному узлу
      * @return узел с оценённым данным действием
      */
-    private static @NotNull NodeTree createSubtree(final int currentDepth,
-                                                   final @NotNull IGame game, final @NotNull Player player,
-                                                   final @NotNull Action action) throws CoinsException {
+    private @NotNull NodeTree createSubtree(final int currentDepth,
+                                            final @NotNull IGame game, final @NotNull Player player,
+                                            final @NotNull Action action) throws CoinsException {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         switch (action.getType()) {
             case DECLINE_RACE:
@@ -352,10 +357,10 @@ public class AIProcessor {
      * @param edges        - дуги от общего родителя
      * @throws CoinsException при ошибке обновления игры
      */
-    private static void createDeclineRaceSubtree(final int currentDepth,
-                                                 final @NotNull IGame game, final @NotNull Player player,
-                                                 final @NotNull DeclineRaceAction action,
-                                                 final @NotNull List<Edge> edges) throws CoinsException {
+    private void createDeclineRaceSubtree(final int currentDepth,
+                                          final @NotNull IGame game, final @NotNull Player player,
+                                          final @NotNull DeclineRaceAction action,
+                                          final @NotNull List<Edge> edges) throws CoinsException {
         if (action.isDeclineRace()) {
             createChangeRaceBranches(currentDepth, game, player, edges);
             return;
@@ -377,9 +382,9 @@ public class AIProcessor {
      * @param edges        - дуги от общего родителя
      * @throws CoinsException при ошибке обновления игры
      */
-    private static void createChangeRaceSubtree(final int currentDepth,
-                                                final @NotNull IGame game, final @NotNull Player player,
-                                                final @NotNull Action action, final @NotNull List<Edge> edges)
+    private void createChangeRaceSubtree(final int currentDepth,
+                                         final @NotNull IGame game, final @NotNull Player player,
+                                         final @NotNull Action action, final @NotNull List<Edge> edges)
             throws CoinsException {
 
         final IGame gameCopy = game.getCopy();
@@ -399,10 +404,10 @@ public class AIProcessor {
      * @param edges        - дуги от общего родителя
      * @throws CoinsException при ошибке обновления игры
      */
-    private static void createCatchCellSubtree(final int currentDepth,
-                                               final @NotNull IGame game, final @NotNull Player player,
-                                               final @NotNull Action action,
-                                               final @NotNull List<Edge> edges)
+    private void createCatchCellSubtree(final int currentDepth,
+                                        final @NotNull IGame game, final @NotNull Player player,
+                                        final @NotNull Action action,
+                                        final @NotNull List<Edge> edges)
             throws CoinsException {
 
         if (((CatchCellAction) action).getResolution() != null) {
@@ -426,9 +431,9 @@ public class AIProcessor {
      * @param edges        - дуги от общего родителя
      * @throws CoinsException при ошибке обновления игры
      */
-    private static void createDistributionUnitsSubtree(final int currentDepth,
-                                                       final @NotNull IGame game, final @NotNull Player player,
-                                                       final @NotNull List<Edge> edges) throws CoinsException {
+    private void createDistributionUnitsSubtree(final int currentDepth,
+                                                final @NotNull IGame game, final @NotNull Player player,
+                                                final @NotNull List<Edge> edges) throws CoinsException {
 
         final Pair<Integer, Player> pair = getNextPlayer(currentDepth, game, player);
         final int newDepth = pair.getFirst();
@@ -449,10 +454,10 @@ public class AIProcessor {
      * @param edges          - список дуг от общего родителя
      * @param prevCatchCells - предыдущие захваченные клетки
      */
-    private static void createCatchCellsNodes(final int currentDepth,
-                                              final @NotNull IGame game, final @NotNull Player player,
-                                              final @NotNull List<Edge> edges,
-                                              final @NotNull Set<Cell> prevCatchCells) {
+    private void createCatchCellsNodes(final int currentDepth,
+                                       final @NotNull IGame game, final @NotNull Player player,
+                                       final @NotNull List<Edge> edges,
+                                       final @NotNull Set<Cell> prevCatchCells) {
         final List<Pair<List<Unit>, Pair<Integer, Cell>>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
@@ -488,9 +493,9 @@ public class AIProcessor {
      * @param player - игрок
      * @param edges  - дуги от родителя
      */
-    private static void createCatchCellEndNode(final int currentDepth,
-                                               final @NotNull IGame game, final @NotNull Player player,
-                                               final @NotNull List<Edge> edges) {
+    private void createCatchCellEndNode(final int currentDepth,
+                                        final @NotNull IGame game, final @NotNull Player player,
+                                        final @NotNull List<Edge> edges) {
         final Action newAction = new CatchCellAction(null);
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
@@ -569,10 +574,10 @@ public class AIProcessor {
      * @param edges          - дуги от родителя
      * @param prevCatchCells - предыдущие захваченные клетки
      */
-    private static void createCatchCellNode(final int currentDepth, final int index,
-                                            final @NotNull IGame game, final @NotNull Player player,
-                                            final @NotNull Cell cell, final @NotNull List<Unit> units,
-                                            final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells) {
+    private void createCatchCellNode(final int currentDepth, final int index,
+                                     final @NotNull IGame game, final @NotNull Player player,
+                                     final @NotNull Cell cell, final @NotNull List<Unit> units,
+                                     final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells) {
         final Pair<Position, List<Unit>> resolution =
                 new Pair<>(game.getBoard().getPositionByCell(cell), units.subList(0, index));
         final Action newAction = new CatchCellAction(resolution);
@@ -598,11 +603,11 @@ public class AIProcessor {
      * @param prevCatchCells - предыдущие захваченные клетки (в данном поддереве)
      * @return узел с оценённым данным действием
      */
-    private static @NotNull NodeTree continueCreatingCatchCellSubtree(final int currentDepth,
-                                                                      final @NotNull IGame game,
-                                                                      final @NotNull Player player,
-                                                                      final @NotNull Action action,
-                                                                      final @NotNull Set<Cell> prevCatchCells)
+    private @NotNull NodeTree continueCreatingCatchCellSubtree(final int currentDepth,
+                                                               final @NotNull IGame game,
+                                                               final @NotNull Player player,
+                                                               final @NotNull Action action,
+                                                               final @NotNull Set<Cell> prevCatchCells)
             throws CoinsException {
 
         if (((CatchCellAction) action).getResolution() == null) {
@@ -621,9 +626,9 @@ public class AIProcessor {
      * @param edges  - дуги от родителя
      * @throws CoinsException при ошибке обновления игры
      */
-    private static void createDistributionUnitsNodes(final int currentDepth,
-                                                     final @NotNull IGame game, final @NotNull Player player,
-                                                     final @NotNull List<Edge> edges) throws CoinsException {
+    private void createDistributionUnitsNodes(final int currentDepth,
+                                              final @NotNull IGame game, final @NotNull Player player,
+                                              final @NotNull List<Edge> edges) throws CoinsException {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
@@ -648,10 +653,10 @@ public class AIProcessor {
      * @param edges        - дуги от родителя
      * @param distribution - распределение
      */
-    private static void createDistributionUnitsNode(final int currentDepth,
-                                                    final @NotNull IGame game, final @NotNull Player player,
-                                                    final @NotNull List<Edge> edges,
-                                                    final @NotNull List<Pair<Cell, Integer>> distribution) {
+    private void createDistributionUnitsNode(final int currentDepth,
+                                             final @NotNull IGame game, final @NotNull Player player,
+                                             final @NotNull List<Edge> edges,
+                                             final @NotNull List<Pair<Cell, Integer>> distribution) {
         final Map<Position, List<Unit>> resolution = new HashMap<>();
         for (final Pair<Cell, Integer> pair : distribution) {
             final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
@@ -750,8 +755,9 @@ public class AIProcessor {
 
     /**
      * Взять какого-нибудь оппонента игрока
+     *
      * @param nodeTree - текущий узел дерева
-     * @param player - игрок
+     * @param player   - игрок
      * @return оппонента игрока
      */
     private static @NotNull Player getSomeOpponent(final @NotNull NodeTree nodeTree, final @NotNull Player player) {

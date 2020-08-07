@@ -22,16 +22,18 @@ import java.util.*;
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private @Nullable NodeTree tree;
+    private final @NotNull AIProcessor aiProcessor;
     private final @NotNull FunctionType functionType;
 
     @Contract(pure = true)
-    public SmartBot(final @NotNull FunctionType functionType) {
+    public SmartBot(final int maxDepth, final @NotNull FunctionType functionType) {
+        this.aiProcessor = new AIProcessor(maxDepth);
         this.functionType = functionType;
     }
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        tree = AIProcessor.createTree(game, player);
+        tree = aiProcessor.createTree(game, player);
         final Action action = AIProcessor.getAction(tree, player, functionType);
         tree = AIProcessor.updateTree(tree, action);
         final boolean choice = ((DeclineRaceAction) action).isDeclineRace();
