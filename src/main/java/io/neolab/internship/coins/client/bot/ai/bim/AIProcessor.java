@@ -694,24 +694,22 @@ public class AIProcessor {
      * @param game   - игра
      * @param player - игрок
      * @param edges  - дуги от родителя
-     * @throws CoinsException при ошибке обновления игры
      */
     private void createDistributionUnitsNodes(final int currentDepth,
                                               final @NotNull IGame game, final @NotNull Player player,
-                                              final @NotNull List<Edge> edges) throws CoinsException {
+                                              final @NotNull List<Edge> edges) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
         if (distributions.size() == 0) {
-            final Action action = new DistributionUnitsAction(new HashMap<>());
-            final IGame gameCopy = game.getCopy();
-            final Player playerCopy = getPlayerCopy(gameCopy, player);
-            updateGame(gameCopy, playerCopy, action);
-            edges.add(new Edge(player, action, createSubtree(currentDepth, gameCopy, playerCopy, action)));
+            createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
             return;
         }
+        final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
         distributions.forEach(distribution ->
-                createDistributionUnitsNode(currentDepth, game, player, edges, distribution));
+                executorService.execute(() ->
+                        createDistributionUnitsNode(currentDepth, game, player, edges, distribution)));
+        executeExecutorService(executorService);
     }
 
     /**
