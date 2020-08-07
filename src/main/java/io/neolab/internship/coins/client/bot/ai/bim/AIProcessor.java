@@ -710,9 +710,8 @@ public class AIProcessor {
             edges.add(new Edge(player, action, createSubtree(currentDepth, gameCopy, playerCopy, action)));
             return;
         }
-        for (final List<Pair<Cell, Integer>> distribution : distributions) {
-            createDistributionUnitsNode(currentDepth, game, player, edges, distribution);
-        }
+        distributions.forEach(distribution ->
+                createDistributionUnitsNode(currentDepth, game, player, edges, distribution));
     }
 
     /**
@@ -728,15 +727,13 @@ public class AIProcessor {
                                              final @NotNull List<Edge> edges,
                                              final @NotNull List<Pair<Cell, Integer>> distribution) {
         final Map<Position, List<Unit>> resolution = new HashMap<>();
-        for (final Pair<Cell, Integer> pair : distribution) {
+        distribution.forEach(pair -> {
             final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
             final List<Unit> units = new LinkedList<>(availableUnits.subList(
                     0, pair.getSecond())); // список юнитов, которое игрок хочет распределить в эту клетку
-            if (!units.isEmpty()) {
-                resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
-                availableUnits.removeAll(units);
-            }
-        }
+            resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
+            availableUnits.removeAll(units);
+        });
         final Action action = new DistributionUnitsAction(resolution);
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
@@ -748,19 +745,43 @@ public class AIProcessor {
         }
     }
 
-    //FIXME: придумать перебор всех случаев распределения юнитов
+    /**
+     * Взять всевозможные распределения n юнитов на клетках cells
+     *
+     * @param cells - список клеток
+     * @param n     - число юнитов, которое можно распределить на cells
+     * @return список распределений. Распределение - это список пар (клетка, число юнитов, распределённых в неё)
+     * @throws CoinsException, если n < 0
+     */
     @Contract(pure = true)
     private static @NotNull List<List<Pair<Cell, Integer>>> getDistributions(final @NotNull List<Cell> cells,
-                                                                             final int n) {
+                                                                             final int n) throws CoinsException {
+        if (n < 0) {
+            throw new CoinsException(CoinsErrorCode.LOGIC_ERROR);
+        }
         final List<List<Pair<Cell, Integer>>> distributions = new LinkedList<>();
-        for (int i = 0; i < cells.size(); i++) {
-            final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
-            int j = 0;
-            for (final Cell cell : cells) {
-                distribution.add(new Pair<>(cell, j == i ? n : 0));
-                j++;
+        if (!cells.isEmpty()) {
+            if (n == 0) {
+                distributions.add(new LinkedList<>());
+                return distributions;
             }
-            distributions.add(distribution);
+            final Cell cell = cells.get(0);
+            for (int i = n; i > 0; i--) {
+                final List<Cell> otherCells = new LinkedList<>(cells);
+                otherCells.remove(cell);
+                final List<List<Pair<Cell, Integer>>> miniDistributions;
+                miniDistributions = getDistributions(otherCells, n - i);
+                if (miniDistributions.isEmpty()) {
+                    miniDistributions.add(new LinkedList<>());
+                }
+                final int unitsToCell = i;
+                miniDistributions.forEach(miniDistribution ->
+                        miniDistribution.add(new Pair<>(cell, unitsToCell)));
+                final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
+                distribution.add(new Pair<>(cell, unitsToCell));
+                miniDistributions.add(distribution);
+                distributions.addAll(miniDistributions);
+            }
         }
         return distributions;
     }
