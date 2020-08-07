@@ -705,6 +705,20 @@ public class AIProcessor {
             createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
             return;
         }
+        final Iterator<List<Pair<Cell, Integer>>> iterator = distributions.listIterator();
+        while (iterator.hasNext()) {
+            boolean flag = false;
+            final List<Pair<Cell, Integer>> item = iterator.next();
+            for (final Pair<Cell, Integer> pair : item) {
+                if (pair.getSecond() == player.getUnitsByState(AvailabilityType.AVAILABLE).size()) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                iterator.remove();
+            }
+        }
         final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
         distributions.forEach(distribution ->
                 executorService.execute(() ->
