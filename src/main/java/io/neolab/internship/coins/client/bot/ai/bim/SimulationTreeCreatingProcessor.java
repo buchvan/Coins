@@ -44,7 +44,7 @@ public class SimulationTreeCreatingProcessor {
      * @return узел дерева
      */
     @Contract("_, _, _ -> new")
-    static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
+    private static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
                                                     final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
@@ -64,7 +64,7 @@ public class SimulationTreeCreatingProcessor {
      * @return терминальный узел с оценённым данным действием
      */
     @Contract("_ -> new")
-    static @NotNull NodeTree createTerminalNode(final @NotNull IGame game) {
+    private static @NotNull NodeTree createTerminalNode(final @NotNull IGame game) {
         final List<Player> winners = new LinkedList<>();
         int maxCoinsCount = 0;
         for (final Player item : game.getPlayers()) {
