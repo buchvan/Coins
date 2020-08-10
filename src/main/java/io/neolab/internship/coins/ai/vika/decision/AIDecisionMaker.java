@@ -1,9 +1,6 @@
 package io.neolab.internship.coins.ai.vika.decision;
 
-import io.neolab.internship.coins.ai.vika.decision.model.CatchCellDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.ChangeRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.Decision;
-import io.neolab.internship.coins.ai.vika.decision.model.DeclineRaceDecision;
+import io.neolab.internship.coins.ai.vika.decision.model.*;
 import io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNode;
 import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
@@ -14,7 +11,6 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.service.GameLogger;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
-import static io.neolab.internship.coins.server.service.GameLoopProcessor.getAllNeighboringCells;
 
 /**
  * Симуляция принятия решений в ходе игры
@@ -147,6 +142,13 @@ public class AIDecisionMaker {
         createCatchCellNullDecision(currentNode, game.getCopy(), player.getCopy());
     }
 
+    /**
+     * Симулирует принятое решение о захвате для копий игровых сущностей
+     *
+     * @param player   - текущий игрок
+     * @param game     - текуще состояние игры
+     * @param decision - принятое решение
+     */
     private static void simulateCatchCellDecision(final @NotNull Player player, final @NotNull IGame game,
                                                   @NotNull final CatchCellDecision decision) {
         if (decision.getResolution() != null) {
@@ -195,10 +197,18 @@ public class AIDecisionMaker {
     private static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode,
                                                     @NotNull final Game game, @NotNull final Player player) {
         final Decision decision = new CatchCellDecision(null);
-        createDecisionNode(currentNode, decision, player, game);
+        createDecisionNode(currentNode, decision, player.getCopy(), game.getCopy());
         simulateCatchCellDecision(player, game, (CatchCellDecision) decision);
     }
 
+    /**
+     * Проверка возможности захвата клетки
+     *
+     * @param cell   -клетка
+     * @param player - текущий игрок
+     * @param game   - текущее состояние игры
+     * @return - возможность захвата клетки
+     */
     private static boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
                                                        @NotNull final IGame game) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -222,9 +232,63 @@ public class AIDecisionMaker {
     public static void createDistributionUnitsDecisions(@NotNull final DecisionTreeNode currentNode,
                                                         @NotNull final Game game, @NotNull final Player player) {
         // 1. составить все возможные комбинации перераспределний
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        final List<Unit> playerUnits = new LinkedList<>();
+        playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
+        playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+        final List<List<Pair<Cell, Integer>>> combinations = getDistributionUnitsCombination(
+                new LinkedList<>(controlledCells), playerUnits.size());
         // 2. построить узлы
-        // 3. применить решение для копийй игры и игрока
+        // 3. применить решение для копий игры и игрока
+        final IBoard board = game.getBoard();
+        for (final List<Pair<Cell, Integer>> combination : combinations) {
+            final Map<Position, List<Unit>> resolutions = new HashMap<>();
+            combination
+                    .forEach(cellUnitsAmountsPair
+                            -> resolutions.put(board.getPositionByCell(cellUnitsAmountsPair.getFirst()),
+                    playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
+            final IGame gameCopy = game.getCopy();
+            final Player playerCopy = player.getCopy();
+            final Decision decision = new DistributionUnitsDecision(resolutions);
+            createDecisionNode(currentNode, decision, playerCopy, gameCopy);
+            simulateDistributionUnitsDecision(decision, playerCopy, game);
+        }
     }
+
+    //TODO: realize
+    private static void simulateDistributionUnitsDecision(final Decision decision, final Player playerCopy, final Game game) {
+    }
+
+    /**
+     * Рекурсивная функция, которая возвращает всевозможные комбинации для клеток и количества юнитов,
+     * которые туда отправляются
+     *
+     * @param cellForDistribution  - клетки, для которых нужно решить сколько юнитов туда отправлять
+     * @param remainingUnitsAmount - оставшееся количество юнитов
+     * @return - всевозможные комбинации клетка->количество юнитов для нее
+     */
+    private static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
+                                                                                   final int remainingUnitsAmount) {
+        final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
+        if (remainingUnitsAmount <= 0) {
+            return combinations;
+        }
+        for (int i = 0; i < remainingUnitsAmount; i++) {
+            for (final Cell cell : cellForDistribution) {
+                final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
+                currentCombination.add(new Pair<>(cell, i));
+                cellForDistribution.remove(cell);
+                final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
+                        getDistributionUnitsCombination(cellForDistribution, remainingUnitsAmount - i);
+                for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
+                    currentCombination.addAll(remainingCellCombination);
+                }
+                combinations.add(currentCombination);
+            }
+        }
+        return combinations;
+    }
+
 
     /**
      * Создает узел по новому решению

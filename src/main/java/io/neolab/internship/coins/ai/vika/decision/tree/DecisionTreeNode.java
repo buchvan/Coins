@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.ai.vika.decision.tree;
 
 import io.neolab.internship.coins.ai.vika.decision.model.Decision;
-import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 
