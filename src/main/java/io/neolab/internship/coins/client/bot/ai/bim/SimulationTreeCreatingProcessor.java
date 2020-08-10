@@ -35,7 +35,7 @@ public class SimulationTreeCreatingProcessor {
      */
     @Contract("_, _, _ -> new")
     static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
-                                                    final @NotNull List<Edge> edges) {
+                                            final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         int casesCount = 0;
@@ -101,7 +101,7 @@ public class SimulationTreeCreatingProcessor {
      * @throws CoinsException при неизвестном типе действия
      */
     static void updateGame(final @NotNull IGame game, final @NotNull Player player,
-                                   final @NotNull Action action) throws CoinsException {
+                           final @NotNull Action action) throws CoinsException {
         switch (action.getType()) {
             case DECLINE_RACE:
                 GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
@@ -178,9 +178,9 @@ public class SimulationTreeCreatingProcessor {
      * @param nextPlayer - следующий игрок
      */
     static void updateGameBeforeNewDepth(final int newDepth,
-                                                 final @NotNull IGame game,
-                                                 final @NotNull Player prevPlayer,
-                                                 final @Nullable Player nextPlayer) {
+                                         final @NotNull IGame game,
+                                         final @NotNull Player prevPlayer,
+                                         final @Nullable Player nextPlayer) {
         GameLoopProcessor.playerRoundEndUpdate(prevPlayer, isGameLoggedOn);
         updateGameEndRound(game);
         AILogger.printLogNewDepth(newDepth, game.getCurrentRound());

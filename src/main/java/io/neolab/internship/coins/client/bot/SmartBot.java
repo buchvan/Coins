@@ -12,7 +12,6 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
-import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +25,7 @@ public class SmartBot implements IBot {
     private @Nullable NodeTree tree;
     private final @NotNull SimulationTreeCreator treeCreator;
     private final @NotNull FunctionType functionType;
+    private final @NotNull SimpleBot simpleBot = new SimpleBot();
 
     @Contract(pure = true)
     public SmartBot(final int maxDepth, final @NotNull FunctionType functionType) {
@@ -36,6 +36,9 @@ public class SmartBot implements IBot {
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         tree = treeCreator.createTree(game, player);
+        if (tree.getEdges().isEmpty()) {
+            return simpleBot.declineRaceChoose(player, game);
+        }
         final Action action = AIProcessor.getAction(tree, player, functionType);
         tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
         final boolean choice = ((DeclineRaceAction) action).isDeclineRace();
@@ -47,11 +50,14 @@ public class SmartBot implements IBot {
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
         final Race race;
         if (tree != null) {
+            if (tree.getEdges().isEmpty()) {
+                return simpleBot.chooseRace(player, game);
+            }
             final Action action = AIProcessor.getAction(tree, player, functionType);
             tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
             race = ((ChangeRaceAction) action).getNewRace();
         } else {
-            race = RandomGenerator.chooseItemFromList(game.getRacesPool());
+            race = simpleBot.chooseRace(player, game);
         }
         LOGGER.debug("Smart bot choice race: {} ", race);
         return race;
@@ -60,6 +66,9 @@ public class SmartBot implements IBot {
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player,
                                                                    final @NotNull IGame game) {
+        if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
+            return simpleBot.chooseCatchingCell(player, game);
+        }
         final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), player, functionType);
         tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
         final Pair<Position, List<Unit>> resolution = ((CatchCellAction) action).getResolution();
@@ -70,6 +79,9 @@ public class SmartBot implements IBot {
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player,
                                                                 final @NotNull IGame game) {
+        if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
+            return simpleBot.distributionUnits(player, game);
+        }
         final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), player, functionType);
         tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
         final Map<Position, List<Unit>> resolutions = ((DistributionUnitsAction) action).getResolutions();
