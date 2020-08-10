@@ -58,9 +58,7 @@ public class Cell implements Serializable {
     @Contract(pure = true)
     @JsonIgnore
     public @NotNull  Cell getCopy() {
-        final List<Unit> units = new LinkedList<>();
-        this.units.forEach(unit -> units.add(unit.getCopy()));
-        return new Cell(this.id, this.type, units, null, this.race);
+        return new Cell(this.id, this.type, new LinkedList<>(this.units), null, this.race);
     }
 
     public int getId() {
