@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.client.bot;
 
+import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -17,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-
-import static io.neolab.internship.coins.client.bot.ai.bim.AIProcessor.removeNotAvailableForCaptureUnits;
 
 public class SimpleBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
@@ -56,7 +55,7 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+            AIProcessor.removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
                     catchingCell, controlledCells);
             final int unitsCountNeededToCatchCell =
                     controlledCells.contains(catchingCell)
