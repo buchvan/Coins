@@ -192,7 +192,7 @@ public class GameLoopProcessor {
      *
      * @param gameFeatures - особенности игры
      * @param catchingCell - захватываемая клетка
-     * @param isLoggedOn - включено логгирование?
+     * @param isLoggedOn   - включено логгирование?
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
@@ -225,7 +225,7 @@ public class GameLoopProcessor {
      * @param player       - игрок-агрессор
      * @param gameFeatures - особенности игры
      * @param catchingCell - захватываемая клетка
-     * @param isLoggedOn  - включено логгирование?
+     * @param isLoggedOn   - включено логгирование?
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     public static int getBonusAttackToCatchCell(final @NotNull Player player,
@@ -517,8 +517,10 @@ public class GameLoopProcessor {
                                         final @NotNull Set<Cell> feudalCells,
                                         final @NotNull GameFeatures gameFeatures,
                                         final @NotNull IBoard board, final boolean isLoggedOn) {
+        final Map<CellType, Boolean> cellTypeMet = new HashMap<>(CellType.values().length);
+        Arrays.stream(CellType.values()).forEach(cellType -> cellTypeMet.put(cellType, false));
         feudalCells.forEach(cell -> {
-            updateCoinsCountByCellWithFeatures(player, gameFeatures, cell, isLoggedOn);
+            updateCoinsCountByCellWithFeatures(player, gameFeatures, cell, cellTypeMet, isLoggedOn);
             player.increaseCoins(cell.getType().getCoinYield());
             if (isLoggedOn) {
                 GameLogger.printPlayerCoinsCountByCellUpdatingLog(player, board.getPositionByCell(cell));
@@ -539,10 +541,9 @@ public class GameLoopProcessor {
      */
     private static void updateCoinsCountByCellWithFeatures(final @NotNull Player player,
                                                            final @NotNull GameFeatures gameFeatures,
-                                                           final @NotNull Cell cell, final boolean isLoggedOn) {
-
-        final Map<CellType, Boolean> cellTypeMet = new HashMap<>(CellType.values().length);
-        Arrays.stream(CellType.values()).forEach(cellType -> cellTypeMet.put(cellType, false));
+                                                           final @NotNull Cell cell,
+                                                           final @NotNull Map<CellType, Boolean> cellTypeMet,
+                                                           final boolean isLoggedOn) {
         gameFeatures.getFeaturesByRaceAndCellType(player.getRace(), cell.getType())
                 .forEach(feature -> {
                     if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL) {
@@ -553,7 +554,6 @@ public class GameLoopProcessor {
                         }
                     } else if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL_GROUP
                             && !cellTypeMet.get(cell.getType())) {
-
                         cellTypeMet.put(cell.getType(), true);
                         final int coefficient = ((CoefficientlyFeature) feature).getCoefficient();
                         player.increaseCoins(coefficient);

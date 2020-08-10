@@ -131,7 +131,7 @@ public class CopyTest extends TestUtils {
         final IBoard actual = expected.getCopy();
         expected.getPositionToCellMap().forEach((position, cell) ->
                 actual.getPositionToCellMap().forEach((position1, cell1) -> {
-                    if (position == position1 || cell == cell1) {
+                    if (cell == cell1) {
                         fail();
                     }
                 }));
