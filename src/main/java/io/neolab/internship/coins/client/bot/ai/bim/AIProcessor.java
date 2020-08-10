@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AIProcessor {
-    private static final double EPS = 1E-7;
+    private static final double EPS = 1E-4;
 
     /**
      * Найти и удалить недоступные для захвата клетки юнитов
@@ -66,15 +66,14 @@ public class AIProcessor {
     public static @NotNull Action getAction(final @NotNull NodeTree nodeTree,
                                             final @NotNull Player player,
                                             final @NotNull FunctionType functionType) {
-        final double value;
         switch (functionType) {
             case MAX:
-                value = MinMaxProcessor.getValue(nodeTree, Objects.requireNonNull(player), functionType);
-                break;
+                return getAdvantageousAction(nodeTree, player,
+                        MinMaxProcessor.getValue(nodeTree, player, functionType));
             case MIN:
                 final Player opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
-                value = MinMaxProcessor.getValue(nodeTree, opponent, functionType);
-                break;
+                return getAdvantageousAction(nodeTree, opponent,
+                        MinMaxProcessor.getValue(nodeTree, opponent, functionType));
             case MIN_MAX:
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
                         ? MinMaxProcessor.maxAlgorithm(nodeTree, player)
@@ -82,7 +81,6 @@ public class AIProcessor {
             default:
                 return null;
         }
-        return getAdvantageousAction(nodeTree, player, value);
     }
 
     /**
