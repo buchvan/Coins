@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
 
-public class DecisionSimulationProcessor {
+public class AIDecisionSimulationProcessor {
     //TODO: realize
     static void simulateDistributionUnitsDecision(final Decision decision, final Player playerCopy, final IGame game) {
 

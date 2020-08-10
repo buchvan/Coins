@@ -16,8 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static io.neolab.internship.coins.ai.vika.decision.DecisionSimulationProcessor.*;
-import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
+import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
+import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
 /**
  * Симуляция принятия решений в ходе игры
@@ -27,6 +28,18 @@ public class AIDecisionMaker {
 
     public static boolean getDeclineRaceDecision(final Player player, final IGame game) {
         return true;
+    }
+
+    public static Race getChooseRaceDecision(final Player player, final IGame game) {
+        return null;
+    }
+
+    public static Pair<Position, List<Unit>> getChooseCaptureCellDecision(final Player player, final IGame game) {
+        return null;
+    }
+
+    public static Map<Position, List<Unit>> getDistributionUnitsDecision(final Player player, final IGame game) {
+        return null;
     }
 
     /**
@@ -80,7 +93,6 @@ public class AIDecisionMaker {
             createCatchCellDecisions(childNode, gameCopy, playerCopy);
         });
     }
-
 
 
     /**
@@ -182,7 +194,10 @@ public class AIDecisionMaker {
             final Player playerCopy = player.getCopy();
             final Decision decision = new DistributionUnitsDecision(resolutions);
             createDecisionNode(currentNode, decision, playerCopy, gameCopy);
+
             simulateDistributionUnitsDecision(decision, playerCopy, game);
+
+            //simulate opponent steps
         }
     }
 

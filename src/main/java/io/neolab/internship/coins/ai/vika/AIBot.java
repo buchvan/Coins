@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.ai.vika;
 
-import io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
@@ -8,17 +7,16 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
-import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker.getDeclineRaceDecision;
+import static io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker.*;
 
 
 /**
@@ -36,23 +34,25 @@ public class AIBot implements IBot {
 
     @Override
     public @NotNull Race chooseRace(@NotNull final Player player, @NotNull final IGame game) {
-        final Race race = RandomGenerator.chooseItemFromList(game.getRacesPool()); //make decision here, now random
+        final Race race = getChooseRaceDecision(player, game);
         LOGGER.debug("AI bot choice race: {} ", race);
-        return race;
+        return Objects.requireNonNull(race);
     }
 
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(@NotNull final Player player,
                                                                    @NotNull final IGame game) {
-        LOGGER.debug("AI bot will capture of cells"); //only logs
+        LOGGER.debug("AI bot will capture of cells");
+        final Pair<Position, List<Unit>> captureCell = getChooseCaptureCellDecision(player, game);
         LOGGER.debug("Resolution of AI bot: ");
-        return null;
+        return captureCell;
     }
 
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(@NotNull final Player player, @NotNull final IGame game) {
-        LOGGER.debug("AI bot distributes units"); //only logs
+        LOGGER.debug("AI bot distributes units");
+        final Map<Position, List<Unit>> resolution = getDistributionUnitsDecision(player, game);
         LOGGER.debug("AI bot distributed units: ");
-        return new HashMap<>();
+        return Objects.requireNonNull(resolution);
     }
 }
