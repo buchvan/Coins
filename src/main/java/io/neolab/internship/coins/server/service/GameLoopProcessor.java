@@ -421,7 +421,7 @@ public class GameLoopProcessor {
      * @param player           - игрок, чьих юнитов нужно перевести в одно состояние
      * @param availabilityType - состояние, в которое нужно перевести всех юнитов игрока
      */
-    static void makeAllUnitsSomeState(final @NotNull Player player, final @NotNull AvailabilityType availabilityType) {
+    public static void makeAllUnitsSomeState(final @NotNull Player player, final @NotNull AvailabilityType availabilityType) {
         for (final AvailabilityType item : AvailabilityType.values()) {
             if (item != availabilityType) {
                 player.getUnitStateToUnits().get(availabilityType).addAll(player.getUnitStateToUnits().get(item));
@@ -437,8 +437,8 @@ public class GameLoopProcessor {
      * @param protectedCell - защищаемая клетка
      * @param units         - список юнитов, которых игрок хочет направить в клетку
      */
-    static void protectCell(final @NotNull Player player, final @NotNull Cell protectedCell,
-                            final @NotNull List<Unit> units) {
+    public static void protectCell(final @NotNull Player player, final @NotNull Cell protectedCell,
+                                   final @NotNull List<Unit> units) {
         protectedCell.getUnits().addAll(units); // отправить первые unitsCount доступных юнитов
         makeAvailableUnitsToNotAvailable(player, units);
         GameLogger.printCellAfterDefendingLog(player, protectedCell);

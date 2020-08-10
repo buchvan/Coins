@@ -2,8 +2,8 @@ package io.neolab.internship.coins.ai.vika.decision;
 
 import io.neolab.internship.coins.ai.vika.decision.model.CatchCellDecision;
 import io.neolab.internship.coins.ai.vika.decision.model.ChangeRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.Decision;
 import io.neolab.internship.coins.ai.vika.decision.model.DeclineRaceDecision;
+import io.neolab.internship.coins.ai.vika.decision.model.DistributionUnitsDecision;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -12,20 +12,31 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.service.GameLogger;
+import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
 
 public class AIDecisionSimulationProcessor {
-    //TODO: realize
-    static void simulateDistributionUnitsDecision(final Decision decision, final Player playerCopy, final IGame game) {
-            
+    static void simulateDistributionUnitsDecision(final DistributionUnitsDecision decision, final Player player, final IGame game) {
+        final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
+        controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
+        GameLoopProcessor.makeAllUnitsSomeState(player,
+                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
+        decision.getResolutions().forEach((position, units) -> {
+            GameLogger.printCellDefendingLog(player, units.size(), position);
+            GameLoopProcessor.protectCell(player,
+                    Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
+        });
+        loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
+
     }
 
     /**

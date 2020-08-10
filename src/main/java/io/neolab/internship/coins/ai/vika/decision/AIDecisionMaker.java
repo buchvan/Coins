@@ -15,11 +15,13 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
 import static io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNodeProcessor.createDecisionNode;
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
+import static io.neolab.internship.coins.utils.RandomGenerator.chooseItemFromList;
 
 /**
  * Симуляция принятия решений в ходе игры
@@ -202,7 +204,7 @@ public class AIDecisionMaker {
             final Decision decision = new DistributionUnitsDecision(resolutions);
             createDecisionNode(currentNode, decision, playerCopy, gameCopy);
 
-            simulateDistributionUnitsDecision(decision, playerCopy, game);
+            simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
 
             //simulate opponent steps ?
         }
@@ -236,5 +238,23 @@ public class AIDecisionMaker {
             }
         }
         return combinations;
+    }
+
+    /**
+     * Выбор "лучшего" терминального узла
+     * Подсчитывается число монет, приносящее каждое решение
+     * При наличии n ответов с одинаковым выигрышем выбирается случайный с вероятностью 1/n
+     *
+     * @param decisionTreeNodes - терминальные узлы
+     * @return - лучшее решение
+     */
+    private static Decision getBestTerminalNode(final List<DecisionTreeNode> decisionTreeNodes) {
+        decisionTreeNodes.sort(Comparator.comparingInt(o -> o.getPlayer().getCoins()));
+        final int maxCoinsAmount = decisionTreeNodes.get(0).getPlayer().getCoins();
+        final List<DecisionTreeNode> bestDecisions = decisionTreeNodes
+                .stream()
+                .filter(decisionTreeNode -> decisionTreeNode.getPlayer().getCoins() == maxCoinsAmount)
+                .collect(Collectors.toList());
+        return chooseItemFromList(bestDecisions).getDecision();
     }
 }
