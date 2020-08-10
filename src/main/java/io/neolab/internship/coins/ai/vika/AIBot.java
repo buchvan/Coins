@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.ai.vika;
 
+import io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
@@ -17,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker.getDeclineRaceDecision;
+
+
 /**
  * Класс бота с ИИ
  */
@@ -25,7 +29,7 @@ public class AIBot implements IBot {
 
     @Override
     public boolean declineRaceChoose(@NotNull final Player player, @NotNull final IGame game) {
-        final boolean choice = true; //make decision here
+        final boolean choice = getDeclineRaceDecision(player, game);
         LOGGER.debug("AI bot decline race choice: {} ", choice);
         return choice;
     }
