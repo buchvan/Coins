@@ -294,8 +294,6 @@ public class GameAnswerProcessor {
         if (isLoggedOn) {
             GameLogger.printBeginUnitsDistributionLog(player);
         }
-        makeAllUnitsSomeState(player,
-                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         resolutions.forEach((position, units) -> {
             if (isLoggedOn) {
                 GameLogger.printCellDefendingLog(player, units.size(), position);

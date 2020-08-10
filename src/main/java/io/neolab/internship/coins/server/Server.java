@@ -19,6 +19,7 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.*;
+import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
@@ -667,10 +668,12 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         final Player player = serverSomething.getPlayer();
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
-                game.getOwnToCells().get(player), true);
-        GameLoopProcessor.loseCells(game.getOwnToCells().get(player), game.getOwnToCells().get(player),
-                game.getFeudalToCells().get(player));
+                controlledCells, true);
+        controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
+        GameLoopProcessor.makeAllUnitsSomeState(player,
+                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
             processDistributionUnits(serverSomething, game);
         }
@@ -702,8 +705,7 @@ public class Server implements IServer {
         game.getPlayers()
                 .forEach(player ->
                         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
-                                game.getGameFeatures(),
-                                game.getBoard(), true));
+                                game.getGameFeatures(), game.getBoard(), true));
     }
 
     public static void main(final String[] args) {
