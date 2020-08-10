@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
+import static io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNodeProcessor.createDecisionNode;
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBonusAttackToCatchCell;
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
@@ -62,12 +63,16 @@ public class AIDecisionMaker {
 
         createChangeRaceDecisions(trueChildNode, gameCopy, playerCopy);
 
-        final Decision declineRaceDecisionFalse = new DeclineRaceDecision(true);
+        final Decision declineRaceDecisionFalse = new DeclineRaceDecision(false);
+        final Player secondPlayerCopy = player.getCopy();
+        final IGame secondGameCopy = game.getCopy();
         final DecisionTreeNode falseChildNode = new DecisionTreeNode(
-                currentNode, declineRaceDecisionFalse, player.getCopy(), game.getCopy());
+                currentNode, declineRaceDecisionFalse, secondPlayerCopy, secondGameCopy);
         currentNode.getChildDecisions().add(falseChildNode);
-        simulateDeclineRaceDecision(playerCopy, gameCopy, (DeclineRaceDecision) declineRaceDecisionFalse);
-        createCatchCellDecisions(falseChildNode, gameCopy, playerCopy);
+
+        simulateDeclineRaceDecision(secondPlayerCopy, secondGameCopy, (DeclineRaceDecision) declineRaceDecisionFalse);
+
+        createCatchCellDecisions(falseChildNode, secondGameCopy, secondPlayerCopy);
     }
 
     /**
@@ -85,7 +90,7 @@ public class AIDecisionMaker {
             final IGame gameCopy = game.getCopy();
             final Decision changeRaceDecision = new ChangeRaceDecision(race);
             final DecisionTreeNode childNode = new DecisionTreeNode(
-                    currentNode, changeRaceDecision, player.getCopy(), game.getCopy());
+                    currentNode, changeRaceDecision, playerCopy, gameCopy);
             currentNode.getChildDecisions().add(childNode);
 
             simulateChangeRaceDecision(playerCopy, gameCopy, (ChangeRaceDecision) changeRaceDecision);
@@ -107,7 +112,7 @@ public class AIDecisionMaker {
         // 1. получить все доступные для захвата клетки +
         // 2. отфильтровать по принципу достаточно ли юнитов для захвата +
         // 3. построить узлы по оставшимся +
-        // 4. применить решение для копий игры и игрока
+        // 4. применить решение для копий игры и игрока +
 
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         achievableCells.forEach(cell -> {
@@ -121,13 +126,12 @@ public class AIDecisionMaker {
 
                 simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
 
-                createDistributionUnitsDecisions(currentNode, gameCopy, playerCopy);
+                createCatchCellDecisions(currentNode, gameCopy, playerCopy);
             }
         });
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = player.getCopy();
         createCatchCellNullDecision(currentNode, gameCopy, playerCopy);
-        createDistributionUnitsDecisions(currentNode, gameCopy, playerCopy);
     }
 
     /**
@@ -140,8 +144,11 @@ public class AIDecisionMaker {
     private static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode,
                                                     @NotNull final IGame game, @NotNull final Player player) {
         final Decision decision = new CatchCellDecision(null);
-        createDecisionNode(currentNode, decision, player.getCopy(), game.getCopy());
+        final IGame gameCopy = game.getCopy();
+        final Player playerCopy = player.getCopy();
+        createDecisionNode(currentNode, decision, playerCopy, gameCopy);
         simulateCatchCellDecision(player, game, (CatchCellDecision) decision);
+        createDistributionUnitsDecisions(currentNode, gameCopy, playerCopy);
     }
 
     /**
@@ -197,7 +204,7 @@ public class AIDecisionMaker {
 
             simulateDistributionUnitsDecision(decision, playerCopy, game);
 
-            //simulate opponent steps
+            //simulate opponent steps ?
         }
     }
 
@@ -229,33 +236,5 @@ public class AIDecisionMaker {
             }
         }
         return combinations;
-    }
-
-
-    /**
-     * Создает узел по новому решению
-     *
-     * @param currentNode - текущий узел
-     * @param newDecision - новое решение
-     * @param player      - текущий игрок
-     * @param game        - игра
-     */
-    private static void createDecisionNode(@NotNull final DecisionTreeNode currentNode,
-                                           @NotNull final Decision newDecision,
-                                           @NotNull final Player player,
-                                           @NotNull final IGame game) {
-        final DecisionTreeNode childNode = new DecisionTreeNode(currentNode, newDecision, player, game);
-        addChildNodeToParentNode(currentNode, childNode);
-    }
-
-    /**
-     * Добавляет созданный узел к списку потомков текущего узла
-     *
-     * @param currentNode - текущий узел
-     * @param childNode   - новый узел-потомок
-     */
-    private static void addChildNodeToParentNode(@NotNull final DecisionTreeNode currentNode,
-                                                 @NotNull final DecisionTreeNode childNode) {
-        currentNode.getChildDecisions().add(childNode);
     }
 }
