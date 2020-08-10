@@ -26,7 +26,6 @@ import static io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatin
 
 public class SimulationTreeCreator {
     private final int maxDepth;
-    private static final long TIMEOUT_MILLIS = 5000;
 
     @Contract(pure = true)
     public SimulationTreeCreator(final int maxDepth) {
@@ -111,7 +110,7 @@ public class SimulationTreeCreator {
                 exception.printStackTrace();
             }
         });
-        ExecutorServiceProcessor.executeExecutorService(executorService, TIMEOUT_MILLIS);
+        ExecutorServiceProcessor.executeExecutorService(executorService);
     }
 
     /**
@@ -163,7 +162,7 @@ public class SimulationTreeCreator {
                 exception.printStackTrace();
             }
         }));
-        ExecutorServiceProcessor.executeExecutorService(executorService, TIMEOUT_MILLIS);
+        ExecutorServiceProcessor.executeExecutorService(executorService);
     }
 
     /**
@@ -471,7 +470,7 @@ public class SimulationTreeCreator {
         distributions.forEach(distribution ->
                 executorService.execute(() ->
                         createDistributionUnitsNode(currentDepth, game, player, edges, distribution)));
-        ExecutorServiceProcessor.executeExecutorService(executorService, TIMEOUT_MILLIS);
+        ExecutorServiceProcessor.executeExecutorService(executorService);
     }
 
     /**

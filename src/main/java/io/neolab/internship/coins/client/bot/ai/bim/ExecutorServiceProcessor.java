@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorServiceProcessor {
+    private static final long TIMEOUT_MILLIS = 5000;
+
     /**
      * Выполнить ExecutorService
      *
@@ -14,23 +16,7 @@ public class ExecutorServiceProcessor {
     static void executeExecutorService(final @NotNull ExecutorService executorService) {
         executorService.shutdown();
         try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Выполнить ExecutorService
-     *
-     * @param executorService - очевидно, ExecutorService
-     * @param timeoutMillis   - время ожидания
-     */
-    @SuppressWarnings("SameParameterValue")
-    static void executeExecutorService(final @NotNull ExecutorService executorService, final long timeoutMillis) {
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
+            executorService.awaitTermination(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
