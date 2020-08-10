@@ -19,4 +19,20 @@ public class ExecutorServiceProcessor {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Выполнить ExecutorService
+     *
+     * @param executorService - очевидно, ExecutorService
+     * @param timeoutMillis   - время ожидания
+     */
+    @SuppressWarnings("SameParameterValue")
+    static void executeExecutorService(final @NotNull ExecutorService executorService, final long timeoutMillis) {
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
