@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.client;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
 import io.neolab.internship.coins.common.message.client.answer.*;
@@ -27,20 +26,20 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client implements IClient {
-    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
+    protected static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private final @NotNull String ip; // ip адрес клиента
-    private final @NotNull InetAddress ipAddress;
-    private  final int port; // порт соединения
+    protected final @NotNull String ip; // ip адрес клиента
+    protected final @NotNull InetAddress ipAddress;
+    protected final int port; // порт соединения
 
-    private Socket socket = null;
-    private BufferedReader keyboardReader = null; // поток чтения с консоли
-    private BufferedReader in = null; // поток чтения из сокета
-    private BufferedWriter out = null; // поток записи в сокет
+    protected Socket socket = null;
+    protected BufferedReader keyboardReader = null; // поток чтения с консоли
+    protected BufferedReader in = null; // поток чтения из сокета
+    protected BufferedWriter out = null; // поток записи в сокет
 
-    private @NotNull String nickname = "";
+    protected @NotNull String nickname = "";
 
-    private final @NotNull IBot simpleBot;
+    protected final @NotNull IBot bot;
 
     /**
      * Для создания необходимо принять адрес и номер порта
@@ -48,12 +47,12 @@ public class Client implements IClient {
      * @param ip   - ip адрес клиента
      * @param port - порт соединения
      */
-    private Client(final @NotNull String ip, final int port) throws CoinsException {
+    Client(final @NotNull String ip, final int port, final @NotNull IBot bot) throws CoinsException {
         try {
             this.ip = ip;
             this.ipAddress = InetAddress.getByName(ip);
             this.port = port;
-            this.simpleBot = new SimpleBot();
+            this.bot = bot;
         } catch (final UnknownHostException exception) {
             throw new CoinsException(CoinsErrorCode.CLIENT_CREATION_FAILED);
         }
@@ -65,22 +64,22 @@ public class Client implements IClient {
             case CATCH_CELL: {
                 LOGGER.info("Catch cell question: {} ", playerQuestion);
                 return new CatchCellAnswer(
-                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS: {
                 LOGGER.info("Distribution units question: {} ", playerQuestion);
                 return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DECLINE_RACE: {
                 LOGGER.info("Decline race question: {} ", playerQuestion);
                 return new DeclineRaceAnswer(
-                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case CHANGE_RACE: {
                 LOGGER.info("Change race question: {} ", playerQuestion);
                 return new ChangeRaceAnswer(
-                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             default: {
                 throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
@@ -137,7 +136,7 @@ public class Client implements IClient {
     /**
      * Запуск клиента
      */
-    private void startClient() {
+    void startClient() {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
                 socket = new Socket(this.ipAddress, this.port);
@@ -247,15 +246,5 @@ public class Client implements IClient {
             LOGGER.info("Entered nickname: {}", nickname);
         } while (nickname.isEmpty() || nickname.equals(this.nickname));
         this.nickname = nickname;
-    }
-
-    public static void main(final String[] args) {
-        try {
-            final ClientConfigResource clientConfig = new ClientConfigResource();
-            final Client client = new Client(clientConfig.getHost(), clientConfig.getPort());
-            client.startClient();
-        } catch (final CoinsException exception) {
-            LOGGER.error("Error!", exception);
-        }
     }
 }
