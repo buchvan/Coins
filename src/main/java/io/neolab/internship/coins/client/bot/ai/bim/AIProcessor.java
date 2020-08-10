@@ -12,7 +12,6 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -172,7 +171,9 @@ public class AIProcessor {
                 if (newDepth > maxDepth) {
                     return new Pair<>(newDepth, null);
                 }
-                updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
+                if (maxDepth % 2 != 0) {
+                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
+                }
                 return new Pair<>(newDepth, player);
             }
         }
@@ -295,37 +296,27 @@ public class AIProcessor {
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
-        int capacity = game.getRacesPool().size() / 2;
-        capacity = capacity == 0 ? 1 : capacity;
-        final Set<Race> races = new HashSet<>(capacity);
-        for (final Race race : game.getRacesPool()) {
-            if (RandomGenerator.isYes()) {
-                races.add(race);
-            }
-            if (races.size() >= capacity) {
-                break;
-            }
-        }
-        if (races.size() < capacity) {
-            for (final Race race : game.getRacesPool()) {
-                races.add(race);
-                if (races.size() >= capacity) {
-                    break;
-                }
-            }
-        }
-        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
-        races.forEach(race -> executorService.execute(() -> {
-            final Action newAction = new ChangeRaceAction(race);
-            try {
-                AILogger.printLogChangeRace(currentDepth, race, player);
-                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
-            } catch (final CoinsException exception) {
-                exception.printStackTrace();
-            }
-        }));
-//        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
-//        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+//        int capacity = game.getRacesPool().size() / 2;
+//        capacity = capacity == 0 ? 1 : capacity;
+//        final Set<Race> races = new HashSet<>(capacity);
+//        for (final Race race : game.getRacesPool()) {
+//            if (RandomGenerator.isYes()) {
+//                races.add(race);
+//            }
+//            if (races.size() >= capacity) {
+//                break;
+//            }
+//        }
+//        if (races.size() < capacity) {
+//            for (final Race race : game.getRacesPool()) {
+//                races.add(race);
+//                if (races.size() >= capacity) {
+//                    break;
+//                }
+//            }
+//        }
+//        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
+//        races.forEach(race -> executorService.execute(() -> {
 //            final Action newAction = new ChangeRaceAction(race);
 //            try {
 //                AILogger.printLogChangeRace(currentDepth, race, player);
@@ -334,6 +325,16 @@ public class AIProcessor {
 //                exception.printStackTrace();
 //            }
 //        }));
+        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
+        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+            final Action newAction = new ChangeRaceAction(race);
+            try {
+                AILogger.printLogChangeRace(currentDepth, race, player);
+                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
+            } catch (final CoinsException exception) {
+                exception.printStackTrace();
+            }
+        }));
         executeExecutorService(executorService);
     }
 
@@ -533,7 +534,7 @@ public class AIProcessor {
                 final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                 final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
                 final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
-                int capacity = (units.size() - tiredUnitsCount + 1) / 3;
+                int capacity = (units.size() - tiredUnitsCount + 1) / 2;
                 capacity = capacity == 0 ? 1 : capacity;
                 final Set<Integer> indexes = new HashSet<>(capacity);
                 for (int i = tiredUnitsCount; i <= units.size(); i++) {
@@ -842,6 +843,10 @@ public class AIProcessor {
                 final Player opponent = getSomeOpponent(nodeTree, player);
                 value = getValue(nodeTree, opponent, functionType);
                 break;
+            case MIN_MAX:
+                return isFirstPlayer(nodeTree, player)
+                        ? maxAlgorithm(nodeTree, player)
+                        : minAlgorithm(nodeTree, player);
             default:
                 return null;
         }
@@ -853,6 +858,140 @@ public class AIProcessor {
                                                 / edge.getTo().getCasesCount()), EPS) < 0)
                         .collect(Collectors.toList()))
                         .getAction());
+    }
+
+    /**
+     * Игрок имеет право первого хода в данном дереве?
+     *
+     * @param nodeTree - корень дерева
+     * @param player   - игрок
+     * @return true, если игрок ходит первым, false - иначе
+     */
+    private static boolean isFirstPlayer(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+        for (final Player item : nodeTree.getWinsCount().keySet()) {
+            if (item.getId() < player.getId()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Поиск действия, максимизирующего доход игрока
+     *
+     * @param nodeTree - корень дерева
+     * @param player   - игрок
+     * @return действие, максимизирующее доход игрока
+     */
+    private static @NotNull Action maxAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+        final List<Edge> edges = nodeTree.getEdges();
+        final Map<Edge, Integer> map = new HashMap<>(edges.size());
+        final ExecutorService executorService = Executors.newFixedThreadPool(edges.size());
+        edges.forEach(edge ->
+                executorService.execute(() ->
+                        map.put(edge,
+                                getMaxValue(edge.getTo(), player, Objects.requireNonNull(edge.getPlayer())))));
+        executeExecutorService(executorService);
+        final List<Edge> profitableEdges = new LinkedList<>();
+        int maxValue = -1;
+        for (final Map.Entry<Edge, Integer> entry : map.entrySet()) {
+            if (entry.getValue() > maxValue) {
+                profitableEdges.clear();
+                profitableEdges.add(entry.getKey());
+                maxValue = entry.getValue();
+                continue;
+            }
+            if (entry.getValue() == maxValue) {
+                profitableEdges.add(entry.getKey());
+            }
+        }
+        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(profitableEdges).getAction());
+    }
+
+    /**
+     * @param nodeTree      - корень дерева
+     * @param player        - думающий игрок
+     * @param currentPlayer - игрок, который ходит на данном этапе
+     * @return максимальное значение в дереве для игрока player
+     */
+    private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                   final @NotNull Player currentPlayer) {
+        if (nodeTree.getEdges().isEmpty()) {
+            return nodeTree.getWinsCount().get(player);
+        }
+        if (player == currentPlayer) {
+            int maxValue = -1;
+            for (final Edge edge : nodeTree.getEdges()) {
+                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player,
+                        edge.getPlayer() == null ? currentPlayer : edge.getPlayer()));
+            }
+            return maxValue;
+        }
+        int minValue = 2;
+        for (final Edge edge : nodeTree.getEdges()) {
+            minValue = Math.min(minValue, getMaxValue(edge.getTo(), player,
+                    edge.getPlayer() == null ? currentPlayer : edge.getPlayer()));
+        }
+        return minValue;
+    }
+
+    /**
+     * Поиск действия, минимизирующего доход оппонента игрока
+     *
+     * @param nodeTree - корень дерева
+     * @param player   - игрок
+     * @return действие, минимизирующее доход оппонента игрока
+     */
+    private static @NotNull Action minAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+        final List<Edge> edges = nodeTree.getEdges();
+        final Map<Edge, Integer> map = new HashMap<>(edges.size());
+        final ExecutorService executorService = Executors.newFixedThreadPool(edges.size());
+        edges.forEach(edge ->
+                executorService.execute(() ->
+                        map.put(edge,
+                                getMinValue(edge.getTo(), player, Objects.requireNonNull(edge.getPlayer())))));
+        executeExecutorService(executorService);
+        final List<Edge> profitableEdges = new LinkedList<>();
+        int minValue = 2;
+        for (final Map.Entry<Edge, Integer> entry : map.entrySet()) {
+            if (entry.getValue() < minValue) {
+                profitableEdges.clear();
+                profitableEdges.add(entry.getKey());
+                minValue = entry.getValue();
+                continue;
+            }
+            if (entry.getValue() == minValue) {
+                profitableEdges.add(entry.getKey());
+            }
+        }
+        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(profitableEdges).getAction());
+    }
+
+    /**
+     * @param nodeTree      - корень дерева
+     * @param player        - думающий игрок
+     * @param currentPlayer - игрок, который ходит на данном этапе
+     * @return минимальное значение в дереве для игрока currentPlayer
+     */
+    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                   final @NotNull Player currentPlayer) {
+        if (nodeTree.getEdges().isEmpty()) {
+            return nodeTree.getWinsCount().get(currentPlayer);
+        }
+        if (player == currentPlayer) {
+            int minValue = 2;
+            for (final Edge edge : nodeTree.getEdges()) {
+                minValue = Math.min(minValue, getMinValue(edge.getTo(), player,
+                        edge.getPlayer() == null ? currentPlayer : edge.getPlayer()));
+            }
+            return minValue;
+        }
+        int maxValue = -1;
+        for (final Edge edge : nodeTree.getEdges()) {
+            maxValue = Math.max(maxValue, getMinValue(edge.getTo(), player,
+                    edge.getPlayer() == null ? currentPlayer : edge.getPlayer()));
+        }
+        return maxValue;
     }
 
     /**

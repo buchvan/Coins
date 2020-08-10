@@ -66,7 +66,7 @@ public class GameStatistic {
 
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
-        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MAX), players.get(0)));
+        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX), players.get(0)));
         for (int i = 1; i < PLAYERS_AMOUNT; i++) {
             botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
         }
