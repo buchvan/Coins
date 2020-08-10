@@ -29,18 +29,22 @@ import static io.neolab.internship.coins.utils.RandomGenerator.chooseItemFromLis
 public class AIDecisionMaker {
 
 
+    //TODO
     public static boolean getDeclineRaceDecision(final Player player, final IGame game) {
         return true;
     }
 
+    //TODO
     public static Race getChooseRaceDecision(final Player player, final IGame game) {
         return null;
     }
 
+    //TODO
     public static Pair<Position, List<Unit>> getChooseCaptureCellDecision(final Player player, final IGame game) {
         return null;
     }
 
+    //TODO
     public static Map<Position, List<Unit>> getDistributionUnitsDecision(final Player player, final IGame game) {
         return null;
     }
@@ -205,9 +209,9 @@ public class AIDecisionMaker {
             createDecisionNode(currentNode, decision, playerCopy, gameCopy);
 
             simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
-
-            //simulate opponent steps ?
         }
+        //simulate opponent steps ?
+        getBestTerminalNode(currentNode.getChildDecisions());
     }
 
     /**
