@@ -168,25 +168,43 @@ public class AIProcessor {
             }
             if (wasCurrentPlayer) {
                 final int newDepth = currentDepth + 1;
+                if (!isFirstPlayer(game, currentPlayer) && maxDepth % 2 != 1) {
+                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
+                } else if (isFirstPlayer(game, currentPlayer) && maxDepth % 2 != 0) {
+                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
+                }
                 if (newDepth > maxDepth) {
                     return new Pair<>(newDepth, null);
-                }
-                if (maxDepth % 2 != 0) {
-                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
                 }
                 return new Pair<>(newDepth, player);
             }
         }
         if (wasCurrentPlayer) {
             final int newDepth = currentDepth + 1;
+            final Player nextPlayer = getNextPlayerFromBeginList(game);
+            updateGameBeforeNewDepth(newDepth, game, currentPlayer, nextPlayer);
             if (newDepth > maxDepth) {
                 return new Pair<>(newDepth, null);
             }
-            final Player nextPlayer = getNextPlayerFromBeginList(game);
-            updateGameBeforeNewDepth(newDepth, game, currentPlayer, nextPlayer);
             return new Pair<>(newDepth, nextPlayer);
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    /**
+     * Игрок имеет право первого хода?
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @return true, если игрок ходит первым, false - иначе
+     */
+    private static boolean isFirstPlayer(final @NotNull IGame game, final @NotNull Player player) {
+        for (final Player item : game.getPlayers()) {
+            if (item.getId() < player.getId()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
