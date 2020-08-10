@@ -461,23 +461,10 @@ public class SimulationTreeCreator {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<List<Pair<Cell, Integer>>> distributions = AIDistributionProcessor.getDistributions(controlledCells,
                 player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+        AIDistributionProcessor.distributionsNumberReduce(distributions, player);
         if (distributions.size() == 0) {
             createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
             return;
-        }
-        final Iterator<List<Pair<Cell, Integer>>> iterator = distributions.listIterator();
-        while (iterator.hasNext()) {
-            boolean flag = false;
-            final List<Pair<Cell, Integer>> item = iterator.next();
-            for (final Pair<Cell, Integer> pair : item) {
-                if (pair.getSecond() == player.getUnitsByState(AvailabilityType.AVAILABLE).size()) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) {
-                iterator.remove();
-            }
         }
         final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
         distributions.forEach(distribution ->
