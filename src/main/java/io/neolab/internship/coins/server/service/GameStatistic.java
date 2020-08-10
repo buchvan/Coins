@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -67,9 +66,10 @@ public class GameStatistic {
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
         botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX), players.get(0)));
-        for (int i = 1; i < PLAYERS_AMOUNT; i++) {
-            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
-        }
+//        for (int i = 1; i < PLAYERS_AMOUNT - 1; i++) {
+//            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
+//        }
+        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX), players.get(players.size() - 1)));
         return botToPlayer;
     }
 
