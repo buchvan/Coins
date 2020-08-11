@@ -130,10 +130,11 @@ public class MinMaxProcessor {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
         edges.forEach(edge -> edgeToPercent.put(edge, getMaxPercent(edge.getTo(), player, player)));
-        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(getProfitableEdges(edgeToPercent)).getAction());
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
 
-    private static @NotNull List<Edge> getProfitableEdges(final @NotNull Map<Edge, Boolean> edgeToPercent) {
+    private static @NotNull List<Edge> getProfitableEdgesPercent(final @NotNull Map<Edge, Boolean> edgeToPercent) {
         final List<Edge> profitableEdges = new LinkedList<>();
         for (final Map.Entry<Edge, Boolean> entry : edgeToPercent.entrySet()) {
             if (entry.getValue()) {
@@ -154,19 +155,23 @@ public class MinMaxProcessor {
      */
     private static boolean getMaxPercent(final @NotNull NodeTree nodeTree, final @NotNull Player player,
                                          final @NotNull Player currentPlayer) {
-        if (nodeTree.getEdges().isEmpty()) {
-            return Objects.requireNonNull(nodeTree.getWinsCount()).get(player) == 1;
-        }
+        return nodeTree.getEdges().isEmpty()
+                ? Objects.requireNonNull(nodeTree.getWinsCount()).get(player) == 1
+                : getDefaultPercent(nodeTree.getEdges(), player, currentPlayer);
+    }
+
+    private static boolean getDefaultPercent(final @NotNull List<Edge> edges, final @NotNull Player player,
+                                             final @NotNull Player currentPlayer) {
         if (player == currentPlayer) {
             boolean isWin = false;
-            for (final Edge edge : nodeTree.getEdges()) {
+            for (final Edge edge : edges) {
                 isWin = isWin || getMaxPercent(edge.getTo(), player,
                         edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player);
             }
             return isWin;
         }
         boolean isWin = true;
-        for (final Edge edge : nodeTree.getEdges()) {
+        for (final Edge edge : edges) {
             isWin = isWin && getMinPercent(edge.getTo(), player,
                     edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player);
         }
@@ -181,23 +186,9 @@ public class MinMaxProcessor {
      */
     private static boolean getMinPercent(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
                                          final @NotNull Player currentPlayer) {
-        if (nodeTree.getEdges().isEmpty()) {
-            return Objects.requireNonNull(nodeTree.getWinsCount()).get(opponent) == 0;
-        }
-        if (opponent == currentPlayer) {
-            boolean isWin = false;
-            for (final Edge edge : nodeTree.getEdges()) {
-                isWin = isWin || getMaxPercent(edge.getTo(), opponent,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent);
-            }
-            return isWin;
-        }
-        boolean isWin = true;
-        for (final Edge edge : nodeTree.getEdges()) {
-            isWin = isWin && getMinPercent(edge.getTo(), opponent,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent);
-        }
-        return isWin;
+        return nodeTree.getEdges().isEmpty()
+                ? Objects.requireNonNull(nodeTree.getWinsCount()).get(opponent) == 0
+                : getDefaultPercent(nodeTree.getEdges(), opponent, currentPlayer);
     }
 
     /**
@@ -213,112 +204,107 @@ public class MinMaxProcessor {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
         edges.forEach(edge -> edgeToPercent.put(edge, getMinPercent(edge.getTo(), opponent, player)));
-        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(getProfitableEdges(edgeToPercent)).getAction());
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
 
     /**
      * Поиск действия, максимизирующего доход игрока
      *
      * @param nodeTree - корень дерева
-     * @param player   - игрок
+     * @param player   - думающий игрок
+     * @param opponent - оппонент игрока
      * @return действие, максимизирующее доход игрока
      */
-    static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+    static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                                final @NotNull Player opponent) {
+        final List<Edge> edges = nodeTree.getEdges();
+        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        edges.forEach(edge -> edgeToValue.put(edge, getMaxValue(edge.getTo(), player, opponent, player)));
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
+    }
+
+    private static @NotNull List<Edge> getProfitableEdgesMaxValue(final @NotNull Map<Edge, Integer> edgeToValue) {
         final List<Edge> profitableEdges = new LinkedList<>();
-        for (final Edge edge : nodeTree.getEdges()) {
-            if (profitableEdges.isEmpty()) {
-                profitableEdges.add(edge);
-                continue;
-            }
-            if (Objects.requireNonNull(
-                    profitableEdges.get(0).getTo().getPlayerToMaxAndMinCoinsCount()).get(player).getFirst() <
-                    Objects.requireNonNull(
-                            edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(player).getFirst()) {
+        int maxValue = -1;
+        for (final Map.Entry<Edge, Integer> entry : edgeToValue.entrySet()) {
+            if (entry.getValue() > maxValue) {
+                maxValue = entry.getValue();
                 profitableEdges.clear();
-                profitableEdges.add(edge);
+                profitableEdges.add(entry.getKey());
                 continue;
             }
-            if (Objects.requireNonNull(
-                    profitableEdges.get(0).getTo().getPlayerToMaxAndMinCoinsCount()).get(player).getFirst()
-                    .equals(Objects.requireNonNull(
-                            edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(player).getFirst())) {
-                profitableEdges.add(edge);
+            if (entry.getValue() == maxValue) {
+                profitableEdges.add(entry.getKey());
             }
         }
-        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(profitableEdges).getAction());
+        return profitableEdges;
     }
 
     private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                   final @NotNull Player currentPlayer) {
-        if (nodeTree.getEdges().isEmpty()) {
-            return Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(player).getFirst();
-        }
-        if (player == currentPlayer) {
-            int maxValue = -1;
-            for (final Edge edge : nodeTree.getEdges()) {
-                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
-            }
-            return maxValue;
-        }
-        int minValue = Integer.MAX_VALUE;
-        for (final Edge edge : nodeTree.getEdges()) {
-            minValue = Math.min(minValue, getMinValue(edge.getTo(), player,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
-        }
-        return minValue;
+                                   final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+        return nodeTree.getEdges().isEmpty()
+                ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(player).getFirst()
+                : getDefaultValue(nodeTree.getEdges(), player, opponent, currentPlayer);
     }
 
-    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
-                                   final @NotNull Player currentPlayer) {
-        if (nodeTree.getEdges().isEmpty()) {
-            return Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond();
-        }
-        if (opponent == currentPlayer) {
+    private static int getDefaultValue(final @NotNull List<Edge> edges, final @NotNull Player player,
+                                       final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+        if (player == currentPlayer) {
             int maxValue = -1;
-            for (final Edge edge : nodeTree.getEdges()) {
-                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), opponent,
+            for (final Edge edge : edges) {
+                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player, opponent,
                         edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent));
             }
             return maxValue;
         }
         int minValue = Integer.MAX_VALUE;
-        for (final Edge edge : nodeTree.getEdges()) {
-            minValue = Math.min(minValue, getMinValue(edge.getTo(), opponent,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent));
+        for (final Edge edge : edges) {
+            minValue = Math.min(minValue, getMinValue(edge.getTo(), player, opponent,
+                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
         }
         return minValue;
+    }
+
+    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                   final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+        return nodeTree.getEdges().isEmpty()
+                ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond()
+                : getDefaultValue(nodeTree.getEdges(), player, opponent, currentPlayer);
     }
 
     /**
      * Поиск действия, минимизирующего доход оппонента игрока
      *
      * @param nodeTree - корень дерева
+     * @param player   - думающий игрок
      * @param opponent - оппонент игрока
      * @return действие, минимизирующее доход оппонента игрока
      */
-    static @NotNull Action minMaxValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
+    static @NotNull Action minMaxValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                                final @NotNull Player opponent) {
+        final List<Edge> edges = nodeTree.getEdges();
+        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        edges.forEach(edge -> edgeToValue.put(edge, getMinValue(edge.getTo(), player, opponent, player)));
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(getProfitableEdgesMinValue(edgeToValue)).getAction());
+    }
+
+    private static @NotNull List<Edge> getProfitableEdgesMinValue(final @NotNull Map<Edge, Integer> edgeToValue) {
         final List<Edge> profitableEdges = new LinkedList<>();
-        for (final Edge edge : nodeTree.getEdges()) {
-            if (profitableEdges.isEmpty()) {
-                profitableEdges.add(edge);
-                continue;
-            }
-            if (Objects.requireNonNull(
-                    profitableEdges.get(0).getTo().getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond() >
-                    Objects.requireNonNull(
-                            edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond()) {
+        int minValue = Integer.MAX_VALUE;
+        for (final Map.Entry<Edge, Integer> entry : edgeToValue.entrySet()) {
+            if (entry.getValue() < minValue) {
+                minValue = entry.getValue();
                 profitableEdges.clear();
-                profitableEdges.add(edge);
+                profitableEdges.add(entry.getKey());
                 continue;
             }
-            if (Objects.requireNonNull(
-                    profitableEdges.get(0).getTo().getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond()
-                    .equals(Objects.requireNonNull(
-                            edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond())) {
-                profitableEdges.add(edge);
+            if (entry.getValue() == minValue) {
+                profitableEdges.add(entry.getKey());
             }
         }
-        return Objects.requireNonNull(RandomGenerator.chooseItemFromList(profitableEdges).getAction());
+        return profitableEdges;
     }
 }

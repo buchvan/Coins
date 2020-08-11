@@ -88,10 +88,11 @@ public class AIProcessor {
                 return getAdvantageousValueAction(nodeTree, opponent,
                         MinMaxProcessor.getValue(nodeTree, opponent, functionType), functionType);
             case MIN_MAX_VALUE:
+                opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
-                        ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, player)
+                        ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, opponent, player)
                         : MinMaxProcessor.minMaxValueAlgorithm(
-                        nodeTree, MinMaxProcessor.getSomeOpponent(nodeTree, player));
+                        nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             default:
                 return null;
         }
