@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.client.bot.ai.bim;
 
 import io.neolab.internship.coins.client.bot.ai.bim.model.Edge;
+import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
 import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
@@ -14,6 +15,7 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.utils.Triplet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,50 +33,112 @@ public class SimulationTreeCreatingProcessor {
      * @param currentDepth - текущая глубина
      * @param game         - игра
      * @param edges        - дуги к потомкам
+     * @param functionType - тип функции бота
      * @return узел дерева
      */
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    @Contract("_, _, _ -> new")
+    @Contract("_, _, _, _ -> new")
+    @SuppressWarnings("all")
     static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
-                                            final @NotNull List<Edge> edges) {
-        final Map<Player, Integer> winsCount = new HashMap<>();
-        game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
+                                            final @NotNull List<Edge> edges, final @NotNull FunctionType functionType) {
         int casesCount = 0;
-        synchronized (edges) {
-            for (final Edge edge : edges) {
-                edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
-                casesCount += edge.getTo().getCasesCount();
+        if (isPercentFunctionType(functionType)) {
+            final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
+            synchronized (edges) {
+                for (final Edge edge : edges) {
+                    Objects.requireNonNull(edge.getTo().getWinsCount()).forEach((key, value) ->
+                            winsCount.replace(key, winsCount.get(key) + value));
+                    casesCount += edge.getTo().getCasesCount();
+                }
             }
+            AILogger.printLogCreatedNewNode(currentDepth, edges);
+            return new NodeTree(edges, winsCount, casesCount, null);
+        } // else
+        if (isValueFunctionType(functionType)) {
+            final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
+                    new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player1 -> playerToMaxAndMinCoinsCount.put(player1,
+                    new Pair<>(-1, Integer.MAX_VALUE)));
+            synchronized (edges) {
+                for (final Edge edge : edges) {
+                    Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).forEach((key, value) ->
+                            playerToMaxAndMinCoinsCount.replace(key,
+                                    new Pair<>(
+                                            Math.max(playerToMaxAndMinCoinsCount.get(key).getFirst(), value.getFirst()),
+                                            Math.min(playerToMaxAndMinCoinsCount.get(key).getSecond(), value.getSecond()
+                                            )
+                                    )
+                            )
+                    );
+                    casesCount += edge.getTo().getCasesCount();
+                }
+            }
+            AILogger.printLogCreatedNewNode(currentDepth, edges);
+            return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount);
         }
-        AILogger.printLogCreatedNewNode(currentDepth, edges);
-        return new NodeTree(edges, winsCount, casesCount);
+        return null;
+    }
+
+    /**
+     * @param functionType - тип функции бота
+     * @return true, если бот ориентируется на проценты, false - иначе
+     */
+    @Contract(pure = true)
+    private static boolean isPercentFunctionType(final @NotNull FunctionType functionType) {
+        return functionType == FunctionType.MAX_PERCENT
+                || functionType == FunctionType.MIN_PERCENT
+                || functionType == FunctionType.MIN_MAX_PERCENT;
+    }
+
+    /**
+     * @param functionType - тип функции бота
+     * @return true, если бот ориентируется на число монет, false - иначе
+     */
+    @Contract(pure = true)
+    private static boolean isValueFunctionType(final @NotNull FunctionType functionType) {
+        return functionType == FunctionType.MAX_VALUE
+                || functionType == FunctionType.MIN_VALUE
+                || functionType == FunctionType.MIN_MAX_VALUE;
     }
 
     /**
      * Создать терминальный узел
      *
-     * @param game - игра в текущем состоянии
+     * @param game         - игра в текущем состоянии
+     * @param functionType - тип функции бота
      * @return терминальный узел с оценённым данным действием
      */
-    @Contract("_ -> new")
-    static @NotNull NodeTree createTerminalNode(final @NotNull IGame game) {
-        final List<Player> winners = new LinkedList<>();
-        int maxCoinsCount = 0;
-        for (final Player item : game.getPlayers()) {
-            if (item.getCoins() > maxCoinsCount) {
-                maxCoinsCount = item.getCoins();
-                winners.clear();
-                winners.add(item);
-                continue;
+    @Contract("_, _ -> new")
+    @SuppressWarnings("all")
+    static @NotNull NodeTree createTerminalNode(final @NotNull IGame game, final @NotNull FunctionType functionType) {
+        if (isPercentFunctionType(functionType)) {
+            final List<Player> winners = new LinkedList<>();
+            int maxCoinsCount = 0;
+            for (final Player item : game.getPlayers()) {
+                if (item.getCoins() > maxCoinsCount) {
+                    maxCoinsCount = item.getCoins();
+                    winners.clear();
+                    winners.add(item);
+                    continue;
+                }
+                if (item.getCoins() == maxCoinsCount) {
+                    winners.add(item);
+                }
             }
-            if (item.getCoins() == maxCoinsCount) {
-                winners.add(item);
-            }
+            final Map<Player, Integer> map = new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
+            AILogger.printLogNewTerminalNodePercent(map);
+            return new NodeTree(new LinkedList<>(), map, 1, null);
+        } // else
+        if (isValueFunctionType(functionType)) {
+            final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
+                    new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player1 ->
+                    playerToMaxAndMinCoinsCount.put(player1, new Pair<>(player1.getCoins(), player1.getCoins())));
+            AILogger.printLogNewTerminalNodeValue(playerToMaxAndMinCoinsCount);
+            return new NodeTree(new LinkedList<>(), null, 1, playerToMaxAndMinCoinsCount);
         }
-        final Map<Player, Integer> map = new HashMap<>();
-        game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
-        AILogger.printLogNewTerminalNode(map);
-        return new NodeTree(new LinkedList<>(), map, 1);
+        return null;
     }
 
     /**
@@ -222,9 +286,9 @@ public class SimulationTreeCreatingProcessor {
      * @param player         - игрок
      * @param achievableCell - достижимая клетка
      * @param prevCatchCells - предыдущие захваченные клетки в этой ветке
-     * @return пару (список юнитов, пара(число уставших юнитов, захватываемая клетка)
+     * @return тройку (список юнитов, число уставших юнитов, захватываемая клетка)
      */
-    static @Nullable Pair<List<Unit>, Pair<Integer, Cell>> getUnitsToPairTiredUnitsToCell(
+    static @Nullable Triplet<List<Unit>, Integer, Cell> getUnitsToPairTiredUnitsToCell(
             final @NotNull IGame game, final @NotNull Player player, final @NotNull Cell achievableCell,
             final @NotNull Set<Cell> prevCatchCells) {
 
@@ -253,7 +317,7 @@ public class SimulationTreeCreatingProcessor {
         }
         prevCatchCells.add(achievableCell);
         return units.size() >= tiredUnitsCount
-                ? new Pair<>(units, new Pair<>(tiredUnitsCount, achievableCell))
+                ? new Triplet<>(units, tiredUnitsCount, achievableCell)
                 : null;
     }
 }
