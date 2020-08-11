@@ -18,6 +18,8 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
@@ -67,27 +69,32 @@ public class AIDecisionMaker {
      */
     public void createDeclineRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
                                            @NotNull final Player player) {
-        final Decision declineRaceDecisionTrue = new DeclineRaceDecision(true);
-        final Player playerCopy = player.getCopy();
-        final IGame gameCopy = game.getCopy();
-        final DecisionTreeNode trueChildNode = new DecisionTreeNode(
-                currentNode, declineRaceDecisionTrue, playerCopy, gameCopy);
-        currentNode.getChildDecisions().add(trueChildNode);
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.execute(() -> {
+            final Decision declineRaceDecisionTrue = new DeclineRaceDecision(true);
+            final Player playerCopy = player.getCopy();
+            final IGame gameCopy = game.getCopy();
+            final DecisionTreeNode trueChildNode = new DecisionTreeNode(
+                    currentNode, declineRaceDecisionTrue, playerCopy, gameCopy);
+            currentNode.getChildDecisions().add(trueChildNode);
 
-        simulateDeclineRaceDecision(playerCopy, gameCopy, (DeclineRaceDecision) declineRaceDecisionTrue);
+            simulateDeclineRaceDecision(playerCopy, gameCopy, (DeclineRaceDecision) declineRaceDecisionTrue);
 
-        createChangeRaceDecisions(trueChildNode, gameCopy, playerCopy);
+            createChangeRaceDecisions(trueChildNode, gameCopy, playerCopy);
+        });
 
-        final Decision declineRaceDecisionFalse = new DeclineRaceDecision(false);
-        final Player secondPlayerCopy = player.getCopy();
-        final IGame secondGameCopy = game.getCopy();
-        final DecisionTreeNode falseChildNode = new DecisionTreeNode(
-                currentNode, declineRaceDecisionFalse, secondPlayerCopy, secondGameCopy);
-        currentNode.getChildDecisions().add(falseChildNode);
+        executorService.execute(() -> {
+            final Decision declineRaceDecisionFalse = new DeclineRaceDecision(false);
+            final Player secondPlayerCopy = player.getCopy();
+            final IGame secondGameCopy = game.getCopy();
+            final DecisionTreeNode falseChildNode = new DecisionTreeNode(
+                    currentNode, declineRaceDecisionFalse, secondPlayerCopy, secondGameCopy);
+            currentNode.getChildDecisions().add(falseChildNode);
 
-        simulateDeclineRaceDecision(secondPlayerCopy, secondGameCopy, (DeclineRaceDecision) declineRaceDecisionFalse);
+            simulateDeclineRaceDecision(secondPlayerCopy, secondGameCopy, (DeclineRaceDecision) declineRaceDecisionFalse);
 
-        createCatchCellDecisions(falseChildNode, secondGameCopy, secondPlayerCopy);
+            createCatchCellDecisions(falseChildNode, secondGameCopy, secondPlayerCopy);
+        });
     }
 
     /**
