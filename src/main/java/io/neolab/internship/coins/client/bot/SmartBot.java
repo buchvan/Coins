@@ -30,7 +30,7 @@ public class SmartBot implements IBot {
 
     @Contract(pure = true)
     public SmartBot(final int maxDepth, final @NotNull FunctionType functionType) {
-        this.treeCreator = new SimulationTreeCreator(maxDepth);
+        this.treeCreator = new SimulationTreeCreator(maxDepth, functionType);
         this.functionType = functionType;
     }
 

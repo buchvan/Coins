@@ -61,7 +61,7 @@ class AILogger {
      * @param player       - игрок
      */
     static void printLogChangeRace(final int currentDepth, final @NotNull Race race,
-                                           final @NotNull Player player) {
+                                   final @NotNull Player player) {
         if (isLoggedOn) {
             LOGGER.debug("depth {}, ChangeRace {}, player {}", currentDepth, race, player.getNickname());
         }
@@ -88,8 +88,8 @@ class AILogger {
      * @param resolution   - решение
      */
     static void printLogCatchCellResolution(final int currentDepth, final int index,
-                                                    final @NotNull Player player,
-                                                    final @NotNull Pair<Position, List<Unit>> resolution) {
+                                            final @NotNull Player player,
+                                            final @NotNull Pair<Position, List<Unit>> resolution) {
         if (isLoggedOn) {
             LOGGER.debug("current depth {}, index {}, player {}, resolution {}", currentDepth, index,
                     player.getNickname(), resolution);
@@ -101,11 +101,26 @@ class AILogger {
      *
      * @param map - отображение игрока в число побед в данном узле
      */
-    static void printLogNewTerminalNode(final @NotNull Map<Player, Integer> map) {
+    static void printLogNewTerminalNodePercent(final @NotNull Map<Player, Integer> map) {
         if (isLoggedOn) {
             LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
             LOGGER.debug("Created new terminal node:");
             map.forEach((player, integer) -> LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
+        }
+    }
+
+    /**
+     * Вывод лога о создании нового терминального узла
+     *
+     * @param playerToMaxAndMinCoinsCount - отображение игрока в пару
+     *                                    (максимально число монет игрока, минимально число монет)
+     */
+    static void printLogNewTerminalNodeValue(final @NotNull Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount) {
+        if (isLoggedOn) {
+            LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
+            LOGGER.debug("Created new terminal node:");
+            playerToMaxAndMinCoinsCount.forEach((player, pair) ->
+                    LOGGER.debug("--- {} -> {}", player.getNickname(), pair));
         }
     }
 }
