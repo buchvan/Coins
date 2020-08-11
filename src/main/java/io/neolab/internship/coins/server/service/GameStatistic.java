@@ -70,7 +70,7 @@ public class GameStatistic {
 //            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
 //        }
         botToPlayer.add(new Pair<>(
-                new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX),
+                new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN),
                 players.get(players.size() - 1)));
         return botToPlayer;
     }
