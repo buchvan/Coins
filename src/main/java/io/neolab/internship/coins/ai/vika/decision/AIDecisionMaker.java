@@ -137,7 +137,7 @@ public class AIDecisionMaker {
         // 3. построить узлы по оставшимся +
         // 4. применить решение для копий игры и игрока +
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size());
+        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size() + 1);
         achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 final Position position = game.getBoard().getPositionByCell(cell);
@@ -152,9 +152,11 @@ public class AIDecisionMaker {
                 createCatchCellDecisions(currentNode, gameCopy, playerCopy);
             }
         }));
-        final IGame gameCopy = game.getCopy();
-        final Player playerCopy = player.getCopy();
-        createCatchCellNullDecision(currentNode, gameCopy, playerCopy);
+        executorService.execute(() -> {
+            final IGame gameCopy = game.getCopy();
+            final Player playerCopy = player.getCopy();
+            createCatchCellNullDecision(currentNode, gameCopy, playerCopy);
+        });
     }
 
     /**
@@ -215,17 +217,20 @@ public class AIDecisionMaker {
         // 3. применить решение для копий игры и игрока
         final IBoard board = game.getBoard();
         for (final List<Pair<Cell, Integer>> combination : combinations) {
-            final Map<Position, List<Unit>> resolutions = new HashMap<>();
-            combination
-                    .forEach(cellUnitsAmountsPair
-                            -> resolutions.put(board.getPositionByCell(cellUnitsAmountsPair.getFirst()),
-                            playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
-            final IGame gameCopy = game.getCopy();
-            final Player playerCopy = player.getCopy();
-            final Decision decision = new DistributionUnitsDecision(resolutions);
-            createDecisionNode(currentNode, decision, playerCopy, gameCopy);
+            ExecutorService executorService = Executors.newFixedThreadPool(combination.size());
+            executorService.execute(() -> {
+                final Map<Position, List<Unit>> resolutions = new HashMap<>();
+                combination
+                        .forEach(cellUnitsAmountsPair
+                                -> resolutions.put(board.getPositionByCell(cellUnitsAmountsPair.getFirst()),
+                                playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
+                final IGame gameCopy = game.getCopy();
+                final Player playerCopy = player.getCopy();
+                final Decision decision = new DistributionUnitsDecision(resolutions);
+                createDecisionNode(currentNode, decision, playerCopy, gameCopy);
 
-            simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
+                simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
+            });
         }
         //simulate opponent steps ?
         getBestTerminalNode(currentNode);
