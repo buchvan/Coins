@@ -281,8 +281,7 @@ public class AIDecisionMaker {
         checkIfDecisionExists(bestDecisionTreeNode);
         return bestDecisionTreeNode.getDecision();
     }
-
-    //TODO: add own decision
+    
     private void checkIfDecisionExists(final DecisionTreeNode decisionTreeNode) throws Exception {
         if (decisionTreeNode == null || decisionTreeNode.getDecision() == null) {
             throw new AIBotException(AIBotExceptionErrorCode.DECISION_NOT_EXISTS);
