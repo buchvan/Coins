@@ -281,7 +281,7 @@ public class AIDecisionMaker {
         checkIfDecisionExists(bestDecisionTreeNode);
         return bestDecisionTreeNode.getDecision();
     }
-    
+
     private void checkIfDecisionExists(final DecisionTreeNode decisionTreeNode) throws Exception {
         if (decisionTreeNode == null || decisionTreeNode.getDecision() == null) {
             throw new AIBotException(AIBotExceptionErrorCode.DECISION_NOT_EXISTS);
@@ -293,5 +293,6 @@ public class AIDecisionMaker {
         final Player player = decisionTreeNode.getPlayer();
         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
                 game.getGameFeatures(), game.getBoard());
+        decisionTreeNode.setCoinsAmountAfterDecision(player.getCoins());
     }
 }
