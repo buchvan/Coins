@@ -4,6 +4,7 @@ import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,7 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 1;
+    private static final int GAME_AMOUNT = 3;
     private static final int PLAYERS_AMOUNT = 2;
     private static final int SMART_BOT_MAX_DEPTH = 2;
     private static int winCounter = 0;
@@ -65,12 +66,12 @@ public class GameStatistic {
 
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
-        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX), players.get(0)));
+        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX_VALUE), players.get(0)));
 //        for (int i = 1; i < PLAYERS_AMOUNT - 1; i++) {
 //            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
 //        }
         botToPlayer.add(new Pair<>(
-                new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN),
+                new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_VALUE),
                 players.get(players.size() - 1)));
         return botToPlayer;
     }
@@ -96,8 +97,33 @@ public class GameStatistic {
         }
     }
 
+    private static void playNotParallel() {
+        final List<Player> players = initPlayers();
+        initStatisticMap(players);
+        for (int i = 0; i < GAME_AMOUNT; i++) {
+            final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(players);
+            final List<Player> winners = selfPlayByBotToPlayers(i, botToPlayer);
+            for (final Player winner : winners) {
+                winCounter++;
+                int currentWinAmount = playersStatistic.get(winner);
+                playersStatistic.put(winner, ++currentWinAmount);
+            }
+            toDefault(players);
+        }
+    }
+
+    private static void toDefault(final @NotNull List<Player> players) {
+        players.forEach(player -> {
+            player.setCoins(0);
+            player.setRace(null);
+            Arrays.stream(AvailabilityType.values()).forEach(availabilityType ->
+                    player.getUnitsByState(availabilityType).clear());
+        });
+    }
+
     public static void main(final String[] args) throws InterruptedException {
-        play();
+//        play();
+        playNotParallel();
         collectStatistic();
     }
 }
