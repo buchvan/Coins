@@ -33,15 +33,18 @@ public class SimulationTreeCreatingProcessor {
      * @param edges        - дуги к потомкам
      * @return узел дерева
      */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Contract("_, _, _ -> new")
     static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
                                             final @NotNull List<Edge> edges) {
         final Map<Player, Integer> winsCount = new HashMap<>();
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         int casesCount = 0;
-        for (final Edge edge : edges) {
-            edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
-            casesCount += edge.getTo().getCasesCount();
+        synchronized (edges) {
+            for (final Edge edge : edges) {
+                edge.getTo().getWinsCount().forEach((key, value) -> winsCount.replace(key, winsCount.get(key) + value));
+                casesCount += edge.getTo().getCasesCount();
+            }
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
         return new NodeTree(edges, winsCount, casesCount);
