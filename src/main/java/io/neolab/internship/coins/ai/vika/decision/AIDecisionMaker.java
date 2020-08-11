@@ -2,6 +2,8 @@ package io.neolab.internship.coins.ai.vika.decision;
 
 import io.neolab.internship.coins.ai.vika.decision.model.*;
 import io.neolab.internship.coins.ai.vika.decision.tree.DecisionTreeNode;
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai.vika.exception.AIBotExceptionErrorCode;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -10,6 +12,7 @@ import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -28,24 +31,30 @@ import static io.neolab.internship.coins.utils.RandomGenerator.chooseItemFromLis
  */
 public class AIDecisionMaker {
 
+    private DecisionTreeNode currentNode;
+
+    public AIDecisionMaker(final Player player, final IGame game) {
+        this.currentNode = new DecisionTreeNode(null, null, player.getCopy(), game.getCopy());
+    }
 
     //TODO
-    public static boolean getDeclineRaceDecision(final Player player, final IGame game) {
+    public boolean getDeclineRaceDecision(final Player player, final IGame game) {
+        createDeclineRaceDecisions(currentNode, game, player);
         return true;
     }
 
     //TODO
-    public static Race getChooseRaceDecision(final Player player, final IGame game) {
+    public Race getChooseRaceDecision(final Player player, final IGame game) {
         return null;
     }
 
     //TODO
-    public static Pair<Position, List<Unit>> getChooseCaptureCellDecision(final Player player, final IGame game) {
+    public Pair<Position, List<Unit>> getChooseCaptureCellDecision(final Player player, final IGame game) {
         return null;
     }
 
     //TODO
-    public static Map<Position, List<Unit>> getDistributionUnitsDecision(final Player player, final IGame game) {
+    public Map<Position, List<Unit>> getDistributionUnitsDecision(final Player player, final IGame game) {
         return null;
     }
 
@@ -56,8 +65,8 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - игрок, относительно которого принимаются решение
      */
-    public static void createDeclineRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
-                                                  @NotNull final Player player) {
+    public void createDeclineRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
+                                           @NotNull final Player player) {
         final Decision declineRaceDecisionTrue = new DeclineRaceDecision(true);
         final Player playerCopy = player.getCopy();
         final IGame gameCopy = game.getCopy();
@@ -88,8 +97,8 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - игрок, относительно которого принимаются решение
      */
-    public static void createChangeRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
-                                                 @NotNull final Player player) {
+    public void createChangeRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
+                                          @NotNull final Player player) {
         final List<Race> availableRaces = game.getRacesPool();
         availableRaces.forEach(race -> {
             final Player playerCopy = player.getCopy();
@@ -113,8 +122,8 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - игрок, относительно которого принимаются решение
      */
-    public static void createCatchCellDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
-                                                @NotNull final Player player) {
+    public void createCatchCellDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
+                                         @NotNull final Player player) {
         // 1. получить все доступные для захвата клетки +
         // 2. отфильтровать по принципу достаточно ли юнитов для захвата +
         // 3. построить узлы по оставшимся +
@@ -147,8 +156,8 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - текущий игрок
      */
-    private static void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode,
-                                                    @NotNull final IGame game, @NotNull final Player player) {
+    private void createCatchCellNullDecision(@NotNull final DecisionTreeNode currentNode,
+                                             @NotNull final IGame game, @NotNull final Player player) {
         final Decision decision = new CatchCellDecision(null);
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = player.getCopy();
@@ -165,8 +174,8 @@ public class AIDecisionMaker {
      * @param game   - текущее состояние игры
      * @return - возможность захвата клетки
      */
-    private static boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
-                                                       @NotNull final IGame game) {
+    private boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
+                                                @NotNull final IGame game) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Unit> playerAvailableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.contains(cell)) {
@@ -185,8 +194,8 @@ public class AIDecisionMaker {
      * @param game        - текущее состояние игры
      * @param player      - игрок, относительно которого принимаются решение
      */
-    public static void createDistributionUnitsDecisions(@NotNull final DecisionTreeNode currentNode,
-                                                        @NotNull final IGame game, @NotNull final Player player) {
+    public void createDistributionUnitsDecisions(@NotNull final DecisionTreeNode currentNode,
+                                                 @NotNull final IGame game, @NotNull final Player player) {
         // 1. составить все возможные комбинации перераспределний
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Unit> playerUnits = new LinkedList<>();
@@ -211,7 +220,7 @@ public class AIDecisionMaker {
             simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
         }
         //simulate opponent steps ?
-        getBestTerminalNode(currentNode.getChildDecisions());
+        getBestTerminalNode(currentNode);
     }
 
     /**
@@ -222,8 +231,8 @@ public class AIDecisionMaker {
      * @param remainingUnitsAmount - оставшееся количество юнитов
      * @return - всевозможные комбинации клетка->количество юнитов для нее
      */
-    private static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
-                                                                                   final int remainingUnitsAmount) {
+    private List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
+                                                                            final int remainingUnitsAmount) {
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
         if (remainingUnitsAmount <= 0) {
             return combinations;
@@ -249,16 +258,41 @@ public class AIDecisionMaker {
      * Подсчитывается число монет, приносящее каждое решение
      * При наличии n ответов с одинаковым выигрышем выбирается случайный с вероятностью 1/n
      *
-     * @param decisionTreeNodes - терминальные узлы
+     * @param currentNode - узел, среди потомков которого выбирается самый выгодный узел
      * @return - лучшее решение
      */
-    private static Decision getBestTerminalNode(final List<DecisionTreeNode> decisionTreeNodes) {
+    private DecisionTreeNode getBestTerminalNode(final DecisionTreeNode currentNode) {
+        currentNode.getChildDecisions().forEach(this::updateDecisionNodeCoinsCoinsAmount);
+        final List<DecisionTreeNode> decisionTreeNodes = currentNode.getChildDecisions();
         decisionTreeNodes.sort(Comparator.comparingInt(o -> o.getPlayer().getCoins()));
         final int maxCoinsAmount = decisionTreeNodes.get(0).getPlayer().getCoins();
         final List<DecisionTreeNode> bestDecisions = decisionTreeNodes
                 .stream()
                 .filter(decisionTreeNode -> decisionTreeNode.getPlayer().getCoins() == maxCoinsAmount)
                 .collect(Collectors.toList());
-        return chooseItemFromList(bestDecisions).getDecision();
+        return chooseItemFromList(bestDecisions);
+    }
+
+    private Decision getBestDecision(final DecisionTreeNode bestTerminalNode) throws Exception {
+        DecisionTreeNode bestDecisionTreeNode = null;
+        while (bestTerminalNode.getParentDecision() != null && bestTerminalNode.getDecision() != null) {
+            bestDecisionTreeNode = bestTerminalNode.getParentDecision();
+        }
+        checkIfDecisionExists(bestDecisionTreeNode);
+        return bestDecisionTreeNode.getDecision();
+    }
+
+    //TODO: add own decision
+    private void checkIfDecisionExists(final DecisionTreeNode decisionTreeNode) throws Exception {
+        if (decisionTreeNode == null || decisionTreeNode.getDecision() == null) {
+            throw new AIBotException(AIBotExceptionErrorCode.DECISION_NOT_EXISTS);
+        }
+    }
+
+    private void updateDecisionNodeCoinsCoinsAmount(final DecisionTreeNode decisionTreeNode) {
+        final IGame game = decisionTreeNode.getGame();
+        final Player player = decisionTreeNode.getPlayer();
+        GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
+                game.getGameFeatures(), game.getBoard());
     }
 }

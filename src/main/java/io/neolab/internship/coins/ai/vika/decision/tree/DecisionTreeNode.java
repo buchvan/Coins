@@ -23,12 +23,15 @@ public class DecisionTreeNode {
     //Ссылки на потомков
     private final List<DecisionTreeNode> childDecisions = new LinkedList<>();
 
+    private int coinsAmountAfterDecision = 0;
+
     public DecisionTreeNode(final DecisionTreeNode parentDecision, final Decision decision,
                             final Player player, final IGame game) {
         this.parentDecision = parentDecision;
         this.decision = decision;
         this.player = player;
         this.game = game;
+        this.coinsAmountAfterDecision = 0;
     }
 
     public Decision getDecision() {
@@ -51,27 +54,41 @@ public class DecisionTreeNode {
         return childDecisions;
     }
 
+    public int getCoinsAmountAfterDecision() {
+        return coinsAmountAfterDecision;
+    }
+
+    public void setCoinsAmountAfterDecision(final int coinsAmountAfterDecision) {
+        this.coinsAmountAfterDecision = coinsAmountAfterDecision;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof DecisionTreeNode)) return false;
         final DecisionTreeNode that = (DecisionTreeNode) o;
-        return Objects.equals(getDecision(), that.getDecision()) &&
+        return getCoinsAmountAfterDecision() == that.getCoinsAmountAfterDecision() &&
+                Objects.equals(getParentDecision(), that.getParentDecision()) &&
+                Objects.equals(getDecision(), that.getDecision()) &&
                 Objects.equals(getPlayer(), that.getPlayer()) &&
-                Objects.equals(getGame(), that.getGame());
+                Objects.equals(getGame(), that.getGame()) &&
+                Objects.equals(getChildDecisions(), that.getChildDecisions());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDecision(), getPlayer(), getGame());
+        return Objects.hash(getParentDecision(), getDecision(), getPlayer(), getGame(), getChildDecisions(), getCoinsAmountAfterDecision());
     }
 
     @Override
     public String toString() {
         return "DecisionTreeNode{" +
-                "decision=" + decision +
+                "parentDecision=" + parentDecision +
+                ", decision=" + decision +
                 ", player=" + player +
                 ", game=" + game +
+                ", childDecisions=" + childDecisions +
+                ", coinsAmountAfterDecision=" + coinsAmountAfterDecision +
                 '}';
     }
 }
