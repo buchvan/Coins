@@ -1,15 +1,45 @@
 package io.neolab.internship.coins.client.bot.ai.bim;
 
 import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.utils.AvailabilityType;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class AIDistributionProcessor {
+
+    /**
+     * Взять какое-то подмножество индексов из отрезка [tiredUnitsCount; units.size()]
+     *
+     * @param units           - список юнитов
+     * @param tiredUnitsCount - число уставших юнитов
+     * @return подмножество индексов из отрезка [tiredUnitsCount; units.size()]
+     */
+    static @NotNull Set<Integer> getIndexes(final @NotNull List<Unit> units, final int tiredUnitsCount) {
+        int capacity = (units.size() - tiredUnitsCount + 1) / 2;
+        capacity = capacity == 0 ? 1 : capacity;
+        final Set<Integer> indexes = new HashSet<>(capacity);
+        for (int i = tiredUnitsCount; i <= units.size(); i++) {
+            if (RandomGenerator.isYes()) {
+                indexes.add(i);
+            }
+            if (indexes.size() >= capacity) {
+                i = units.size();
+            }
+        }
+        if (indexes.size() < capacity) {
+            for (int i = tiredUnitsCount; i <= units.size(); i++) {
+                indexes.add(i);
+                if (indexes.size() >= capacity) {
+                    i = units.size();
+                }
+            }
+        }
+        return indexes;
+    }
 
     /**
      * Взять всевозможные распределения n юнитов на клетках cells
@@ -45,10 +75,33 @@ public class AIDistributionProcessor {
      * Сократить число распределений
      *
      * @param distributions - список распределений
-     * @param player        - игрок
+     * @param controlledCellsCount - число подконтрольных клеток
+     * @return какое-то множество распределений
      */
-    static void distributionsNumberReduce(final @NotNull List<List<Pair<Cell, Integer>>> distributions,
-                                          final @NotNull Player player) {
+    static @NotNull Set<List<Pair<Cell, Integer>>> distributionsNumberReduce(
+            final @NotNull List<List<Pair<Cell, Integer>>> distributions, final int controlledCellsCount) {
+        if (controlledCellsCount == 0) {
+            return new HashSet<>();
+        }
+        final Set<List<Pair<Cell, Integer>>> actualDistributions = new HashSet<>(controlledCellsCount);
+        for (final List<Pair<Cell, Integer>> distribution : distributions) {
+            if (RandomGenerator.isYes()) {
+                actualDistributions.add(distribution);
+            }
+            if (actualDistributions.size() >= controlledCellsCount) {
+                break;
+            }
+        }
+        if (actualDistributions.size() < controlledCellsCount) {
+            for (final List<Pair<Cell, Integer>> distribution : distributions) {
+                actualDistributions.add(distribution);
+                if (actualDistributions.size() >= controlledCellsCount) {
+                    break;
+                }
+            }
+        }
+        return actualDistributions;
+
 //        final int removeDistributionsNumber = distributions.size() - distributions.size() / 5;
 //        final Iterator<List<Pair<Cell, Integer>>> iterator1 = distributions.listIterator();
 //        int i = 0;
@@ -68,19 +121,21 @@ public class AIDistributionProcessor {
 //            }
 //        }
 
-        final Iterator<List<Pair<Cell, Integer>>> iterator = distributions.listIterator();
-        while (iterator.hasNext()) {
-            boolean flag = false;
-            final List<Pair<Cell, Integer>> item = iterator.next();
-            for (final Pair<Cell, Integer> pair : item) {
-                if (pair.getSecond() == player.getUnitsByState(AvailabilityType.AVAILABLE).size()) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) {
-                iterator.remove();
-            }
-        }
+//        --------
+
+//        final Iterator<List<Pair<Cell, Integer>>> iterator = distributions.listIterator();
+//        while (iterator.hasNext()) {
+//            boolean flag = false;
+//            final List<Pair<Cell, Integer>> item = iterator.next();
+//            for (final Pair<Cell, Integer> pair : item) {
+//                if (pair.getSecond() == player.getUnitsByState(AvailabilityType.AVAILABLE).size()) {
+//                    flag = true;
+//                    break;
+//                }
+//            }
+//            if (!flag) {
+//                iterator.remove();
+//            }
+//        }
     }
 }

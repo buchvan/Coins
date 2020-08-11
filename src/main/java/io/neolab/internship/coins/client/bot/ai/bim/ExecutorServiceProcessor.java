@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorServiceProcessor {
-    private static final long TIMEOUT_MILLIS = 7000; //Note: если делать параллельный прогон нескольких игр,
+    private static final long TIMEOUT_MILLIS = 5000; //Note: если делать параллельный прогон нескольких игр,
     // то стоит данное значение намного увеличить
 
     /**
