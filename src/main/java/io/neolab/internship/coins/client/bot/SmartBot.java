@@ -49,16 +49,19 @@ public class SmartBot implements IBot {
      */
     private static @NotNull NodeTree updateTreeAfterChoiceBeforeGame(final @NotNull NodeTree tree,
                                                                      final @NotNull IGame game) {
-        while (!tree.getEdges().isEmpty() && tree.getEdges().get(0).getAction() instanceof ChangeRaceAction) {
-            final Player currentPlayer = game.getPlayers().stream()
-                    .filter(player1 ->
-                            player1.getId() == Objects.requireNonNull(tree.getEdges().get(0).getPlayer()).getId())
-                    .findAny()
-                    .orElseThrow();
-            for (final Edge edge : tree.getEdges()) {
-                final ChangeRaceAction changeRaceAction = (ChangeRaceAction) edge.getAction();
-                if (currentPlayer.getRace() == Objects.requireNonNull(changeRaceAction).getNewRace()) {
-                    return SimulationTreeCreatingProcessor.updateTree(tree, changeRaceAction);
+        final List<Edge> edges = tree.getEdges();
+        synchronized (edges) {
+            while (!edges.isEmpty() && edges.get(0).getAction() instanceof ChangeRaceAction) {
+                final Player currentPlayer = game.getPlayers().stream()
+                        .filter(player1 ->
+                                player1.getId() == Objects.requireNonNull(edges.get(0).getPlayer()).getId())
+                        .findAny()
+                        .orElseThrow();
+                for (final Edge edge : edges) {
+                    final ChangeRaceAction changeRaceAction = (ChangeRaceAction) edge.getAction();
+                    if (currentPlayer.getRace() == Objects.requireNonNull(changeRaceAction).getNewRace()) {
+                        return SimulationTreeCreatingProcessor.updateTree(tree, changeRaceAction);
+                    }
                 }
             }
         }
