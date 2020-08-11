@@ -1,22 +1,16 @@
 package io.neolab.internship.coins.utils;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.io.Serializable;
 import java.util.Objects;
 
-public class Pair<T, U> implements Serializable {
-    @JsonProperty
+public class Triplet<T, U, V> {
     private final T first;
-    @JsonProperty
     private final U second;
+    private final V third;
 
-    @JsonCreator
-    public Pair(@JsonProperty("first") final T first,
-                @JsonProperty("second") final U second) {
+    public Triplet(final T first, final U second, final V third) {
         this.first = first;
         this.second = second;
+        this.third = third;
     }
 
     public T getFirst() {
@@ -27,25 +21,31 @@ public class Pair<T, U> implements Serializable {
         return second;
     }
 
+    public V getThird() {
+        return third;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Pair<?, ?> pair = (Pair<?, ?>) o;
-        return Objects.equals(first, pair.first) &&
-                Objects.equals(second, pair.second);
+        final Triplet<?, ?, ?> triplet = (Triplet<?, ?, ?>) o;
+        return Objects.equals(first, triplet.first) &&
+                Objects.equals(second, triplet.second) &&
+                Objects.equals(third, triplet.third);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(first, second);
+        return Objects.hash(first, second, third);
     }
 
     @Override
     public String toString() {
-        return "Pair{" +
+        return "Triplet{" +
                 "first=" + first +
                 ", second=" + second +
+                ", third=" + third +
                 '}';
     }
 }
