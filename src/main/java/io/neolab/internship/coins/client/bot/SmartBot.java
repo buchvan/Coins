@@ -3,6 +3,7 @@ package io.neolab.internship.coins.client.bot;
 import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
 import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatingProcessor;
 import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreator;
+import io.neolab.internship.coins.client.bot.ai.bim.model.Edge;
 import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
 import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
@@ -33,9 +34,43 @@ public class SmartBot implements IBot {
         this.functionType = functionType;
     }
 
+    @Contract(mutates = "this")
+    private void clearTree() {
+        tree = null;
+    }
+
+    /**
+     * Обновление симуляционного дерева игры после выбора до начала игры
+     *
+     * @param tree - дерево
+     * @param game - игра
+     * @return ссылку на новый корень
+     */
+    private static @NotNull NodeTree updateTreeAfterChoiceBeforeGame(final @NotNull NodeTree tree,
+                                                                     final @NotNull IGame game) {
+        while (!tree.getEdges().isEmpty() && tree.getEdges().get(0).getAction() instanceof ChangeRaceAction) {
+            final Player currentPlayer = game.getPlayers().stream()
+                    .filter(player1 ->
+                            player1.getId() == Objects.requireNonNull(tree.getEdges().get(0).getPlayer()).getId())
+                    .findAny()
+                    .orElseThrow();
+            for (final Edge edge : tree.getEdges()) {
+                final ChangeRaceAction changeRaceAction = (ChangeRaceAction) edge.getAction();
+                if (currentPlayer.getRace() == Objects.requireNonNull(changeRaceAction).getNewRace()) {
+                    return SimulationTreeCreatingProcessor.updateTree(tree, changeRaceAction);
+                }
+            }
+        }
+        return new NodeTree(new LinkedList<>(), new HashMap<>(), 0);
+    }
+
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        tree = treeCreator.createTree(game, player);
+        if (tree != null) {
+            tree = updateTreeAfterChoiceBeforeGame(tree, game);
+        } else {
+            tree = treeCreator.createTree(game, player);
+        }
         if (tree.getEdges().isEmpty()) {
             return simpleBot.declineRaceChoose(player, game);
         }
@@ -48,17 +83,20 @@ public class SmartBot implements IBot {
 
     @Override
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
-        final Race race;
-        if (tree != null) {
-            if (tree.getEdges().isEmpty()) {
-                return simpleBot.chooseRace(player, game);
-            }
-            final Action action = AIProcessor.getAction(tree, player, functionType);
-            tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
-            race = ((ChangeRaceAction) action).getNewRace();
-        } else {
-            race = simpleBot.chooseRace(player, game);
+        final boolean isChoiceBeforeGame = game.getCurrentRound() == 0;
+        if (isChoiceBeforeGame) {
+            tree = treeCreator.createTree(game, player);
         }
+        if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
+            return simpleBot.chooseRace(player, game);
+        }
+        final Action action = AIProcessor.getAction(tree, player, functionType);
+        if (isChoiceBeforeGame && !SimulationTreeCreatingProcessor.isFirstPlayer(game, player)) {
+            clearTree();
+        } else {
+            tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
+        }
+        final Race race = ((ChangeRaceAction) action).getNewRace();
         LOGGER.debug("Smart bot choice race: {} ", race);
         return race;
     }
@@ -83,7 +121,7 @@ public class SmartBot implements IBot {
             return simpleBot.distributionUnits(player, game);
         }
         final Action action = AIProcessor.getAction(Objects.requireNonNull(tree), player, functionType);
-        tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
+        clearTree();
         final Map<Position, List<Unit>> resolutions = ((DistributionUnitsAction) action).getResolutions();
         LOGGER.debug("Smart bot distributed units: {} ", resolutions);
         return resolutions;
