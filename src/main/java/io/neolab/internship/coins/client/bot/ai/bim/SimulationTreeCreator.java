@@ -7,6 +7,7 @@ import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -130,54 +131,25 @@ public class SimulationTreeCreator {
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
-//        int capacity = game.getRacesPool().size() / 2;
-//        capacity = capacity == 0 ? 1 : capacity;
-//        final Set<Race> races = new HashSet<>(capacity);
+//        final int capacity = Math.min(game.getRacesPool().size(), 3);
+//        final Set<Race> races = Collections.synchronizedSet(new HashSet<>(capacity));
+//        if (game.getRacesPool().contains(Race.ELF)) {
+//            races.add(Race.ELF);
+//        }
+//        if (game.getRacesPool().contains(Race.UNDEAD)) {
+//            races.add(Race.UNDEAD);
+//        }
+//        if (game.getRacesPool().contains(Race.AMPHIBIAN)) {
+//            races.add(Race.AMPHIBIAN);
+//        }
 //        for (final Race race : game.getRacesPool()) {
-//            if (RandomGenerator.isYes()) {
-//                races.add(race);
-//            }
 //            if (races.size() >= capacity) {
 //                break;
 //            }
+//            races.add(race);
 //        }
-//        if (races.size() < capacity) {
-//            for (final Race race : game.getRacesPool()) {
-//                races.add(race);
-//                if (races.size() >= capacity) {
-//                    break;
-//                }
-//            }
-//        }
-//        final ExecutorService executorService = Executors.newFixedThreadPool(capacity);
-//        races.forEach(race -> executorService.execute(() -> {
-//            final Action newAction = new ChangeRaceAction(race);
-//            try {
-//                AILogger.printLogChangeRace(currentDepth, race, player);
-//                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
-//            } catch (final CoinsException exception) {
-//                exception.printStackTrace();
-//            }
-//        }));
-        final int capacity = Math.min(game.getRacesPool().size(), 3);
-        final Set<Race> races = Collections.synchronizedSet(new HashSet<>(capacity));
-        if (game.getRacesPool().contains(Race.ELF)) {
-            races.add(Race.ELF);
-        }
-        if (game.getRacesPool().contains(Race.UNDEAD)) {
-            races.add(Race.UNDEAD);
-        }
-        if (game.getRacesPool().contains(Race.AMPHIBIAN)) {
-            races.add(Race.AMPHIBIAN);
-        }
-        for (final Race race : game.getRacesPool()) {
-            if (races.size() >= capacity) {
-                break;
-            }
-            races.add(race);
-        }
-        final ExecutorService executorService = Executors.newFixedThreadPool(races.size());
-        races.forEach(race -> executorService.execute(() -> {
+        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
+        game.getRacesPool().forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
                 AILogger.printLogChangeRace(currentDepth, race, player);
@@ -375,7 +347,15 @@ public class SimulationTreeCreator {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
             achievableCells.removeAll(prevCatchCells);
             for (final Cell achievableCell : achievableCells) {
-                if (RandomGenerator.isYes()) {
+                if (player.getRace() == Race.ELF
+                        && achievableCell.getType() != CellType.WATER
+                        && game.getOwnToCells().get(player)
+                        .stream()
+                        .noneMatch(cell ->
+                                cell.getType() == achievableCell.getType())
+                        || player.getRace() == Race.AMPHIBIAN && achievableCell.getType() == CellType.WATER
+                        || player.getRace() == Race.MUSHROOM && achievableCell.getType() == CellType.MUSHROOM
+                        || RandomGenerator.isYes()) {
                     final Pair<List<Unit>, Pair<Integer, Cell>> pair =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (pair != null) {
