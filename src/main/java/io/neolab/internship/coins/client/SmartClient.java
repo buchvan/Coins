@@ -32,20 +32,32 @@ public class SmartClient extends Client {
                             new InputStreamReader(
                                     System.in, "CP866"));
             System.out.println("Choose type of bot:");
-            System.out.println("--- 1. MAX");
-            System.out.println("--- 2. MIN");
-            System.out.println("--- 3. MIN_MAX");
+            System.out.println("--- 1. MAX_PERCENT");
+            System.out.println("--- 2. MIN_PERCENT");
+            System.out.println("--- 3. MIN_MAX_PERCENT");
+            System.out.println("--- 4. MAX_VALUE");
+            System.out.println("--- 5. MIN_VALUE");
+            System.out.println("--- 6. MIN_MAX_VALUE");
             final int choose = Integer.parseInt(keyboardReader.readLine());
             final Client client;
             switch (choose) {
                 case 1:
-                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MAX);
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MAX_PERCENT);
                     break;
                 case 2:
-                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN);
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN_PERCENT);
                     break;
                 case 3:
-                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN_MAX);
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN_MAX_PERCENT);
+                    break;
+                case 4:
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MAX_VALUE);
+                    break;
+                case 5:
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN_VALUE);
+                    break;
+                case 6:
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(), FunctionType.MIN_MAX_VALUE);
                     break;
                 default:
                     throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
