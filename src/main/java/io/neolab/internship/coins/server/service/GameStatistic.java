@@ -10,9 +10,6 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
@@ -27,29 +24,29 @@ public class GameStatistic {
     private static final int SMART_BOT_MAX_DEPTH = 2;
     private static int winCounter = 0;
 
-    private static void play() throws InterruptedException {
-        final List<Player> players = initPlayers();
-        initStatisticMap(players);
-        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
-        for (int i = 0; i < GAME_AMOUNT; i++) {
-            final int index = i;
-            executorService.execute(() -> {
-                final List<Player> playersCopy = new LinkedList<>();
-                players.forEach(player -> playersCopy.add(player.getCopy()));
-                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
-                final List<Player> winners = selfPlayByBotToPlayers(index, botToPlayer);
-                synchronized (playersStatistic) {
-                    for (final Player winner : winners) {
-                        winCounter++;
-                        int currentWinAmount = playersStatistic.get(winner);
-                        playersStatistic.put(winner, ++currentWinAmount);
-                    }
-                }
-            });
-        }
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-    }
+//    private static void play() throws InterruptedException {
+//        final List<Player> players = initPlayers();
+//        initStatisticMap(players);
+//        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
+//        for (int i = 0; i < GAME_AMOUNT; i++) {
+//            final int index = i;
+//            executorService.execute(() -> {
+//                final List<Player> playersCopy = new LinkedList<>();
+//                players.forEach(player -> playersCopy.add(player.getCopy()));
+//                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
+//                final List<Player> winners = selfPlayByBotToPlayers(index, botToPlayer);
+//                synchronized (playersStatistic) {
+//                    for (final Player winner : winners) {
+//                        winCounter++;
+//                        int currentWinAmount = playersStatistic.get(winner);
+//                        playersStatistic.put(winner, ++currentWinAmount);
+//                    }
+//                }
+//            });
+//        }
+//        executorService.shutdown();
+//        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+//    }
 
     /**
      * Иннициализация тестовых игроков
@@ -121,7 +118,7 @@ public class GameStatistic {
         });
     }
 
-    public static void main(final String[] args) throws InterruptedException {
+    public static void main(final String[] args) {
 //        play();
         playNotParallel();
         collectStatistic();
