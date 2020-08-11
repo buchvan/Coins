@@ -66,25 +66,39 @@ public class AIProcessor {
     public static @NotNull Action getAction(final @NotNull NodeTree nodeTree,
                                             final @NotNull Player player,
                                             final @NotNull FunctionType functionType) {
+        final Player opponent;
         switch (functionType) {
-            case MAX:
-                return getAdvantageousAction(nodeTree, player,
-                        MinMaxProcessor.getValue(nodeTree, player, functionType));
-            case MIN:
-                final Player opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
-                return getAdvantageousAction(nodeTree, opponent,
-                        MinMaxProcessor.getValue(nodeTree, opponent, functionType));
-            case MIN_MAX:
+            case MAX_PERCENT:
+                return getAdvantageousPercentAction(nodeTree, player,
+                        MinMaxProcessor.getPercent(nodeTree, player, functionType));
+            case MIN_PERCENT:
+                opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
+                return getAdvantageousPercentAction(nodeTree, opponent,
+                        MinMaxProcessor.getPercent(nodeTree, opponent, functionType));
+            case MIN_MAX_PERCENT:
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
-                        ? MinMaxProcessor.maxAlgorithm(nodeTree, player)
-                        : MinMaxProcessor.minAlgorithm(nodeTree, player);
+                        ? MinMaxProcessor.maxMinPercentAlgorithm(nodeTree, player)
+                        : MinMaxProcessor.minMaxPercentAlgorithm(
+                        nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
+            case MAX_VALUE:
+                return getAdvantageousValueAction(nodeTree, player,
+                        MinMaxProcessor.getValue(nodeTree, player, functionType), functionType);
+            case MIN_VALUE:
+                opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
+                return getAdvantageousValueAction(nodeTree, opponent,
+                        MinMaxProcessor.getValue(nodeTree, opponent, functionType), functionType);
+            case MIN_MAX_VALUE:
+                return MinMaxProcessor.isFirstPlayer(nodeTree, player)
+                        ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, player)
+                        : MinMaxProcessor.minMaxValueAlgorithm(
+                        nodeTree, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             default:
                 return null;
         }
     }
 
     /**
-     * Взять выгодное действие
+     * Взять выгодное с точки зрения отношения числа побед к общему числу случаев действие
      *
      * @param nodeTree - корень дерева
      * @param player   - игрок
@@ -92,14 +106,45 @@ public class AIProcessor {
      * @return выгодное значение с точки зрения отношения числа побед к общему числу случаев,
      * которое повлечёт за собой данное действие
      */
-    private static @NotNull Action getAdvantageousAction(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                                         final double value) {
+    private static @NotNull Action getAdvantageousPercentAction(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                                                final double value) {
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
                         .filter(edge ->
                                 Double.compare(Math.abs(value -
-                                        (double) edge.getTo().getWinsCount().get(player)
+                                        (double) Objects.requireNonNull(edge.getTo().getWinsCount()).get(player)
                                                 / edge.getTo().getCasesCount()), EPS) < 0)
+                        .collect(Collectors.toList()))
+                        .getAction());
+    }
+
+    /**
+     * Взять выгодное с точки зрения числа монет
+     *
+     * @param nodeTree     - корень дерева
+     * @param player       - игрок
+     * @param value        - выгодное значение (число монет)
+     * @param functionType - тип функции бота
+     * @return выгодное значение с точки зрения числа монет,
+     * которое повлечёт за собой данное действие
+     */
+    private static @NotNull Action getAdvantageousValueAction(final @NotNull NodeTree nodeTree,
+                                                              final @NotNull Player player,
+                                                              final int value,
+                                                              final @NotNull FunctionType functionType) {
+        return functionType == FunctionType.MAX_VALUE
+                ? Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
+                        .filter(edge ->
+                                Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(player)
+                                        .getFirst() == value)
+                        .collect(Collectors.toList()))
+                        .getAction())
+                : Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
+                        .filter(edge ->
+                                Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(player)
+                                        .getSecond() == value)
                         .collect(Collectors.toList()))
                         .getAction());
     }
