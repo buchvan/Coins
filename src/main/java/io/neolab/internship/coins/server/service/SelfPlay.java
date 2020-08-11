@@ -108,18 +108,18 @@ class SelfPlay {
      * Раунд в исполнении игрока
      *
      * @param player    - игрок, который исполняет раунд
-     * @param simpleBot - симплбот игрока
+     * @param bot - бот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
+    private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
         GameLoopProcessor.playerRoundBeginUpdate(player, true);  // активация данных игрока в начале раунда
-        if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
-            // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
-            declineRaceProcess(player, simpleBot, game); // Уход в упадок
+        if (game.getRacesPool().size() > 0 && bot.declineRaceChoose(player, game)) {
+            // В случае ответа "ДА" от бота на вопрос: "Идти в упадок?"
+            declineRaceProcess(player, bot, game); // Уход в упадок
         }
-        cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
-        distributionUnits(player, simpleBot, game); // Распределение войск
+        cellCaptureProcess(player, bot, game); // Завоёвывание клеток
+        distributionUnits(player, bot, game); // Распределение войск
         GameLoopProcessor.playerRoundEndUpdate(player, true); // "затухание" (дезактивация) данных игрока в конце раунда
     }
 
@@ -127,24 +127,24 @@ class SelfPlay {
      * Процесс упадка: потеря контроля над всеми клетками с сохранением от них дохода, выбор новой расы
      *
      * @param player    - игрок, который решил идти в упадок
-     * @param simpleBot - симплбот игрока
+     * @param bot - бот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void declineRaceProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
+    private static void declineRaceProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool(), true);
+        GameAnswerProcessor.changeRace(player, bot.chooseRace(player, game), game.getRacesPool(), true);
     }
 
     /**
      * Метод для завоёвывания клеток игроком
      *
      * @param player    - игрок, проводящий завоёвывание
-     * @param simpleBot - симплбот игрока
+     * @param bot - бот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
+    private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
@@ -154,7 +154,7 @@ class SelfPlay {
         GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, true);
         while (true) {
             /* Пока есть что захватывать и какими войсками захватывать */
-            final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.chooseCatchingCell(player, game);
+            final Pair<Position, List<Unit>> catchingCellToUnitsList = bot.chooseCatchingCell(player, game);
             if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
                 break;
             }
@@ -270,10 +270,10 @@ class SelfPlay {
      * Метод для распределения юнитов игроком
      *
      * @param player    - игрок, делающий выбор
-     * @param simpleBot - симплбот игрока
+     * @param bot - бот игрока
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
-    private static void distributionUnits(final @NotNull Player player, final @NotNull IBot simpleBot,
+    private static void distributionUnits(final @NotNull Player player, final @NotNull IBot bot,
                                           final @NotNull IGame game) {
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
@@ -282,7 +282,7 @@ class SelfPlay {
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
-        final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+        final Map<Position, List<Unit>> distributionUnits = bot.distributionUnits(player, game);
         distributionUnits.forEach((position, units) -> {
             GameLogger.printCellDefendingLog(player, units.size(), position);
             GameLoopProcessor.protectCell(player,
