@@ -107,7 +107,8 @@ public class AIDecisionMaker {
     public void createChangeRaceDecisions(@NotNull final DecisionTreeNode currentNode, @NotNull final IGame game,
                                           @NotNull final Player player) {
         final List<Race> availableRaces = game.getRacesPool();
-        availableRaces.forEach(race -> {
+        final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
+        availableRaces.forEach(race -> executorService.execute(() -> {
             final Player playerCopy = player.getCopy();
             final IGame gameCopy = game.getCopy();
             final Decision changeRaceDecision = new ChangeRaceDecision(race);
@@ -118,7 +119,7 @@ public class AIDecisionMaker {
             simulateChangeRaceDecision(playerCopy, gameCopy, (ChangeRaceDecision) changeRaceDecision);
 
             createCatchCellDecisions(childNode, gameCopy, playerCopy);
-        });
+        }));
     }
 
 
@@ -135,9 +136,9 @@ public class AIDecisionMaker {
         // 2. отфильтровать по принципу достаточно ли юнитов для захвата +
         // 3. построить узлы по оставшимся +
         // 4. применить решение для копий игры и игрока +
-
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        achievableCells.forEach(cell -> {
+        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size());
+        achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 final Position position = game.getBoard().getPositionByCell(cell);
                 final List<Unit> unitsForCapture = new ArrayList<>(); //TODO:
@@ -150,7 +151,7 @@ public class AIDecisionMaker {
 
                 createCatchCellDecisions(currentNode, gameCopy, playerCopy);
             }
-        });
+        }));
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = player.getCopy();
         createCatchCellNullDecision(currentNode, gameCopy, playerCopy);
