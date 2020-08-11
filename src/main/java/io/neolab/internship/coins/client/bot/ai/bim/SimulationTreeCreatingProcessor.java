@@ -148,13 +148,8 @@ public class SimulationTreeCreatingProcessor {
      * @param player - игрок
      * @return true, если игрок ходит первым, false - иначе
      */
-    static boolean isFirstPlayer(final @NotNull IGame game, final @NotNull Player player) {
-        for (final Player item : game.getPlayers()) {
-            if (item.getId() < player.getId()) {
-                return false;
-            }
-        }
-        return true;
+    public static boolean isFirstPlayer(final @NotNull IGame game, final @NotNull Player player) {
+        return game.getPlayers().get(0).getId() == player.getId();
     }
 
     /**
