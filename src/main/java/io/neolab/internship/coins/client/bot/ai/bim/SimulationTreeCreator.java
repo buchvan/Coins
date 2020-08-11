@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -158,8 +159,25 @@ public class SimulationTreeCreator {
 //                exception.printStackTrace();
 //            }
 //        }));
-        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
-        game.getRacesPool().forEach(race -> executorService.execute(() -> {
+        final int capacity = Math.min(game.getRacesPool().size(), 3);
+        final Set<Race> races = Collections.synchronizedSet(new HashSet<>(capacity));
+        if (game.getRacesPool().contains(Race.ELF)) {
+            races.add(Race.ELF);
+        }
+        if (game.getRacesPool().contains(Race.UNDEAD)) {
+            races.add(Race.UNDEAD);
+        }
+        if (game.getRacesPool().contains(Race.AMPHIBIAN)) {
+            races.add(Race.AMPHIBIAN);
+        }
+        for (final Race race : game.getRacesPool()) {
+            if (races.size() >= capacity) {
+                break;
+            }
+            races.add(race);
+        }
+        final ExecutorService executorService = Executors.newFixedThreadPool(races.size());
+        races.forEach(race -> executorService.execute(() -> {
             final Action newAction = new ChangeRaceAction(race);
             try {
                 AILogger.printLogChangeRace(currentDepth, race, player);
