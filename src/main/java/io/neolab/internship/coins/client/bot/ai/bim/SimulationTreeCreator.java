@@ -281,7 +281,7 @@ public class SimulationTreeCreator {
             }
             if (wasCurrentPlayer && !isChangeRaceBranchesCreated) {
                 gameCopy.incrementCurrentRound();
-                createDeclineRaceBranches(currentDepth, gameCopy, game.getPlayers().get(0), edges);
+                createDeclineRaceBranches(currentDepth, gameCopy, gameCopy.getPlayers().get(0), edges);
             }
             return;
         }
