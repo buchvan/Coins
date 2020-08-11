@@ -79,46 +79,52 @@ public class SimulationTreeCreator {
     /**
      * Создать ветви с уходом в упадок игрока
      *
-     * @param game   - игра
-     * @param player - игрок
-     * @param edges  - дуги от родителя
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param player       - игрок
+     * @param edges        - дуги от родителя
      */
     private void createDeclineRaceBranches(final int currentDepth,
                                            final @NotNull IGame game, final @NotNull Player player,
                                            final @NotNull List<Edge> edges) {
         final boolean isPossible = game.getRacesPool().size() > 0;
-        final ExecutorService executorService = Executors.newFixedThreadPool(isPossible ? 2 : 1);
-        if (isPossible) {
-            executorService.execute(() -> {
-                final boolean isDeclineRace = true;
-                final Action newAction = new DeclineRaceAction(isDeclineRace);
-                try {
-                    AILogger.printLogDeclineRace(currentDepth, player, isDeclineRace);
-                    edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
-                } catch (final CoinsException exception) {
-                    exception.printStackTrace();
-                }
-            });
+        final boolean isFirstChoice = game.getCurrentRound() == 1;
+        final ExecutorService executorService = Executors.newFixedThreadPool(isPossible && !isFirstChoice ? 2 : 1);
+        if (isPossible && !isFirstChoice) {
+            executorService.execute(() -> createDeclineRaceNode(currentDepth, game, player, edges, true));
         }
-        executorService.execute(() -> {
-            final boolean isDeclineRace = false;
-            final Action newAction = new DeclineRaceAction(isDeclineRace);
-            try {
-                AILogger.printLogDeclineRace(currentDepth, player, isDeclineRace);
-                edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
-            } catch (final CoinsException exception) {
-                exception.printStackTrace();
-            }
-        });
+        executorService.execute(() -> createDeclineRaceNode(currentDepth, game, player, edges, false));
         ExecutorServiceProcessor.executeExecutorService(executorService);
+    }
+
+    /**
+     * Создать узел с упадком расы
+     *
+     * @param currentDepth  - текущая глубина
+     * @param game          - игра
+     * @param player        - игрок
+     * @param edges         - список рёбер
+     * @param isDeclineRace - это упадок?
+     */
+    private void createDeclineRaceNode(final int currentDepth,
+                                       final @NotNull IGame game, final @NotNull Player player,
+                                       final @NotNull List<Edge> edges, final boolean isDeclineRace) {
+        final Action newAction = new DeclineRaceAction(isDeclineRace);
+        try {
+            AILogger.printLogDeclineRace(currentDepth, player, isDeclineRace);
+            edges.add(new Edge(player, newAction, createSubtree(currentDepth, game, player, newAction)));
+        } catch (final CoinsException exception) {
+            exception.printStackTrace();
+        }
     }
 
     /**
      * Создать ветви с изменением расы игрока
      *
-     * @param game   - игра
-     * @param player - игрок
-     * @param edges  - дуги от родителя
+     * @param currentDepth   - текущая глубина
+     * @param game           - игра
+     * @param player         - игрок
+     * @param edges          - дуги от родителя
      */
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
@@ -176,21 +182,27 @@ public class SimulationTreeCreator {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
-        createDeclineRaceBranches(1, gameCopy, playerCopy, edges);
+        if (gameCopy.getCurrentRound() == 0) {
+            createChangeRaceBranches(1, gameCopy, playerCopy, edges);
+        } else {
+            createDeclineRaceBranches(1, gameCopy, playerCopy, edges);
+        }
         return SimulationTreeCreatingProcessor.createNodeTree(0, gameCopy, edges);
     }
 
     /**
      * Создать поддерево симуляционного дерева игры
      *
-     * @param game   - игра в текущем состоянии
-     * @param player - игрок
-     * @param action - действие, привёдшее к данному узлу
+     * @param currentDepth   - текущая глубина
+     * @param game           - игра в текущем состоянии
+     * @param player         - игрок
+     * @param action         - действие, привёдшее к данному узлу
      * @return узел с оценённым данным действием
      */
     private @NotNull NodeTree createSubtree(final int currentDepth,
                                             final @NotNull IGame game, final @NotNull Player player,
-                                            final @NotNull Action action) throws CoinsException {
+                                            final @NotNull Action action)
+            throws CoinsException {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         switch (action.getType()) {
             case DECLINE_RACE:
@@ -250,12 +262,30 @@ public class SimulationTreeCreator {
                                          final @NotNull IGame game, final @NotNull Player player,
                                          final @NotNull Action action, final @NotNull List<Edge> edges)
             throws CoinsException {
-
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         updateGame(gameCopy, playerCopy, action);
-        createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges,
-                Collections.synchronizedSet(new HashSet<>()));
+        if (gameCopy.getCurrentRound() == 0) {
+            boolean wasCurrentPlayer = false;
+            boolean isChangeRaceBranchesCreated = false;
+            for (final Player item : gameCopy.getPlayers()) {
+                if (item.equals(playerCopy)) {
+                    wasCurrentPlayer = true;
+                    continue;
+                }
+                if (wasCurrentPlayer) {
+                    createChangeRaceBranches(currentDepth, gameCopy, item, edges);
+                    isChangeRaceBranchesCreated = true;
+                    break;
+                }
+            }
+            if (wasCurrentPlayer && !isChangeRaceBranchesCreated) {
+                gameCopy.incrementCurrentRound();
+                createDeclineRaceBranches(currentDepth, gameCopy, game.getPlayers().get(0), edges);
+            }
+            return;
+        }
+        createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
     }
 
     /**
@@ -387,7 +417,9 @@ public class SimulationTreeCreator {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         GameLoopProcessor.makeAllUnitsSomeState(playerCopy, AvailabilityType.AVAILABLE);
         try {
-            edges.add(new Edge(player, newAction, createSubtree(currentDepth, gameCopy, playerCopy, newAction)));
+            edges.add(new Edge(
+                    player, newAction, createSubtree(currentDepth, gameCopy,
+                    playerCopy, newAction)));
         } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
@@ -459,8 +491,9 @@ public class SimulationTreeCreator {
                                               final @NotNull IGame game, final @NotNull Player player,
                                               final @NotNull List<Edge> edges) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        final List<List<Pair<Cell, Integer>>> distributions = AIDistributionProcessor.getDistributions(controlledCells,
-                player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+        final List<List<Pair<Cell, Integer>>> distributions =
+                AIDistributionProcessor.getDistributions(controlledCells,
+                        player.getUnitsByState(AvailabilityType.AVAILABLE).size());
         AIDistributionProcessor.distributionsNumberReduce(distributions, player);
         if (distributions.size() == 0) {
             createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
@@ -498,7 +531,8 @@ public class SimulationTreeCreator {
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         try {
             updateGame(gameCopy, playerCopy, action);
-            edges.add(new Edge(player, action, createSubtree(currentDepth, gameCopy, playerCopy, action)));
+            edges.add(new Edge(
+                    player, action, createSubtree(currentDepth, gameCopy, playerCopy, action)));
         } catch (final CoinsException exception) {
             exception.printStackTrace();
         }
