@@ -121,10 +121,10 @@ public class SimulationTreeCreator {
     /**
      * Создать ветви с изменением расы игрока
      *
-     * @param currentDepth   - текущая глубина
-     * @param game           - игра
-     * @param player         - игрок
-     * @param edges          - дуги от родителя
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param player       - игрок
+     * @param edges        - дуги от родителя
      */
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
@@ -193,10 +193,10 @@ public class SimulationTreeCreator {
     /**
      * Создать поддерево симуляционного дерева игры
      *
-     * @param currentDepth   - текущая глубина
-     * @param game           - игра в текущем состоянии
-     * @param player         - игрок
-     * @param action         - действие, привёдшее к данному узлу
+     * @param currentDepth - текущая глубина
+     * @param game         - игра в текущем состоянии
+     * @param player       - игрок
+     * @param action       - действие, привёдшее к данному узлу
      * @return узел с оценённым данным действием
      */
     private @NotNull NodeTree createSubtree(final int currentDepth,
@@ -369,26 +369,7 @@ public class SimulationTreeCreator {
                 final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                 final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond().getFirst();
                 final Cell cell = unitsToPairTiredUnitsToCell.getSecond().getSecond();
-                int capacity = (units.size() - tiredUnitsCount + 1) / 2;
-                capacity = capacity == 0 ? 1 : capacity;
-                final Set<Integer> indexes = new HashSet<>(capacity);
-                for (int i = tiredUnitsCount; i <= units.size(); i++) {
-                    if (RandomGenerator.isYes()) {
-                        indexes.add(i);
-                    }
-                    if (indexes.size() >= capacity) {
-                        i = units.size();
-                    }
-                }
-                if (indexes.size() < capacity) {
-                    for (int i = tiredUnitsCount; i <= units.size(); i++) {
-                        indexes.add(i);
-                        if (indexes.size() >= capacity) {
-                            i = units.size();
-                        }
-                    }
-                }
-                indexes.forEach(i ->
+                AIDistributionProcessor.getIndexes(units, tiredUnitsCount).forEach(i ->
                         createCatchCellNode(currentDepth, i, game, player, cell,
                                 Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
 //                for (int i = tiredUnitsCount; i <= units.size(); i++) {
@@ -494,13 +475,15 @@ public class SimulationTreeCreator {
         final List<List<Pair<Cell, Integer>>> distributions =
                 AIDistributionProcessor.getDistributions(controlledCells,
                         player.getUnitsByState(AvailabilityType.AVAILABLE).size());
-        AIDistributionProcessor.distributionsNumberReduce(distributions, player);
-        if (distributions.size() == 0) {
+        final Set<List<Pair<Cell, Integer>>> actualDistributions =
+                AIDistributionProcessor
+                        .distributionsNumberReduce(distributions, game.getOwnToCells().get(player).size());
+        if (actualDistributions.size() == 0) {
             createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
             return;
         }
-        final ExecutorService executorService = Executors.newFixedThreadPool(distributions.size());
-        distributions.forEach(distribution ->
+        final ExecutorService executorService = Executors.newFixedThreadPool(actualDistributions.size());
+        actualDistributions.forEach(distribution ->
                 executorService.execute(() ->
                         createDistributionUnitsNode(currentDepth, game, player, edges, distribution)));
         ExecutorServiceProcessor.executeExecutorService(executorService);
