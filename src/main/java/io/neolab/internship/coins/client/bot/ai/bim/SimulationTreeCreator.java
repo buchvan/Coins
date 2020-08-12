@@ -29,18 +29,18 @@ import java.util.concurrent.Executors;
 import static io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatingProcessor.*;
 
 public class SimulationTreeCreator {
-    private final int maxDepth;
+    private int maxDepth;
     private final @NotNull FunctionType functionType;
 
     @Contract(pure = true)
-    public SimulationTreeCreator(final int maxDepth, final @NotNull FunctionType functionType) {
-        this.maxDepth = maxDepth;
+    public SimulationTreeCreator(final @NotNull FunctionType functionType) {
         this.functionType = functionType;
     }
 
     /**
      * Выйти на новую глубину
      *
+     * @param currentDepth  - текущая глубина
      * @param game          - игра
      * @param currentPlayer - текущий игрок
      * @return пару (новая глубина, следующий в очереди игрок)
@@ -58,28 +58,57 @@ public class SimulationTreeCreator {
                 continue;
             }
             if (wasCurrentPlayer) {
-                final int newDepth = currentDepth + 1;
-                if (!isFirstPlayer(game, currentPlayer) && maxDepth % 2 != 1) {
-                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
-                } else if (isFirstPlayer(game, currentPlayer) && maxDepth % 2 != 0) {
-                    updateGameBeforeNewDepth(newDepth, game, currentPlayer, player);
-                }
-                if (newDepth > maxDepth) {
-                    return new Pair<>(newDepth, null);
-                }
-                return new Pair<>(newDepth, player);
+                return reachNewDepthsInThisRound(currentDepth, game, player);
             }
         }
         if (wasCurrentPlayer) {
-            final int newDepth = currentDepth + 1;
-            final Player nextPlayer = getNextPlayerFromBeginList(game);
-            updateGameBeforeNewDepth(newDepth, game, currentPlayer, nextPlayer);
-            if (newDepth > maxDepth) {
-                return new Pair<>(newDepth, null);
-            }
-            return new Pair<>(newDepth, nextPlayer);
+            return reachNewDepthsInNewRound(currentDepth, game, currentPlayer);
         }
         throw new CoinsException(CoinsErrorCode.PLAYER_NOT_FOUND);
+    }
+
+    /**
+     * Выйти на новую глубину в пределах того же раунда
+     *
+     * @param currentDepth  - текущая глубина
+     * @param game          - игра
+     * @param nextPlayer    - следующий игрок
+     * @return пару (новая глубина, следующий в очереди игрок)
+     */
+    @Contract("_, _, _ -> new")
+    private @NotNull Pair<@NotNull Integer, @Nullable Player> reachNewDepthsInThisRound(final int currentDepth,
+                                                                                        final @NotNull IGame game,
+                                                                                        final @NotNull
+                                                                                                Player nextPlayer) {
+        final int newDepth = currentDepth + 1;
+        if (newDepth > maxDepth) {
+            updateCoins(game);
+            return new Pair<>(newDepth, null);
+        }
+        return new Pair<>(newDepth, nextPlayer);
+    }
+
+    /**
+     * Выйти на новую глубину в пределах уже следующего раунда
+     *
+     * @param currentDepth  - текущая глубина
+     * @param game          - игра
+     * @param currentPlayer - текущий игрок
+     * @return пару (новая глубина, следующий в очереди игрок)
+     */
+    @Contract("_, _, _ -> new")
+    private @NotNull Pair<@NotNull Integer, @Nullable Player> reachNewDepthsInNewRound(final int currentDepth,
+                                                                                       final @NotNull IGame game,
+                                                                                       final @NotNull
+                                                                                               Player currentPlayer) {
+        final int newDepth = currentDepth + 1;
+        final Player nextPlayer = getNextPlayerFromBeginList(game);
+        if (newDepth > maxDepth) {
+            updateCoins(game);
+            return new Pair<>(newDepth, null);
+        }
+        updateGameBeforeNewDepth(newDepth, game, currentPlayer, nextPlayer);
+        return new Pair<>(newDepth, nextPlayer);
     }
 
     /**
@@ -174,9 +203,10 @@ public class SimulationTreeCreator {
      * @param player - игрок 1
      * @return корень на созданное дерево
      */
-    public @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player) {
+    public @NotNull NodeTree createTree(final @NotNull IGame game, final @NotNull Player player, final int tempDepth) {
+        this.maxDepth = tempDepth;
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
-        if (game.getCurrentRound() == 0) {
+        if (isBeforeGame(game)) {
             createChangeRaceBranches(1, game, player, edges);
         } else {
             createDeclineRaceBranches(1, game, player, edges);
@@ -259,27 +289,38 @@ public class SimulationTreeCreator {
         final IGame gameCopy = game.getCopy();
         final Player playerCopy = getPlayerCopy(gameCopy, player);
         updateGame(gameCopy, playerCopy, action);
-        if (gameCopy.getCurrentRound() == 0) {
-            boolean wasCurrentPlayer = false;
-            boolean isChangeRaceBranchesCreated = false;
-            for (final Player item : gameCopy.getPlayers()) {
-                if (item.equals(playerCopy)) {
-                    wasCurrentPlayer = true;
-                    continue;
-                }
-                if (wasCurrentPlayer) {
-                    createChangeRaceBranches(currentDepth, gameCopy, item, edges);
-                    isChangeRaceBranchesCreated = true;
-                    break;
-                }
-            }
-            if (wasCurrentPlayer && !isChangeRaceBranchesCreated) {
-                gameCopy.incrementCurrentRound();
-                createDeclineRaceBranches(currentDepth, gameCopy, gameCopy.getPlayers().get(0), edges);
-            }
+        if (!isBeforeGame(game)) {
+            createCatchCellsNodes(
+                    currentDepth, gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
             return;
+        } // else
+        boolean wasCurrentPlayer = false;
+        boolean isChangeRaceBranchesCreated = false;
+        for (final Player item : gameCopy.getPlayers()) {
+            if (item.equals(playerCopy)) {
+                wasCurrentPlayer = true;
+                continue;
+            }
+            if (wasCurrentPlayer) {
+                createChangeRaceBranches(currentDepth, gameCopy, item, edges);
+                isChangeRaceBranchesCreated = true;
+                break;
+            }
         }
-        createCatchCellsNodes(currentDepth, gameCopy, playerCopy, edges, Collections.synchronizedSet(new HashSet<>()));
+        if (wasCurrentPlayer && !isChangeRaceBranchesCreated) {
+            gameCopy.incrementCurrentRound();
+            createDeclineRaceBranches(currentDepth, gameCopy, gameCopy.getPlayers().get(0), edges);
+        }
+    }
+
+    /**
+     * Игра началась?
+     *
+     * @param game - игра
+     * @return true, если да, началась, false - иначе
+     */
+    private boolean isBeforeGame(final @NotNull IGame game) {
+        return game.getCurrentRound() == 0;
     }
 
     /**
@@ -322,7 +363,6 @@ public class SimulationTreeCreator {
     private void createDistributionUnitsSubtree(final int currentDepth,
                                                 final @NotNull IGame game, final @NotNull Player player,
                                                 final @NotNull List<Edge> edges) throws CoinsException {
-
         final Pair<Integer, Player> pair = reachNewDepths(currentDepth, game, player);
         final int newDepth = pair.getFirst();
         final Player nextPlayer = pair.getSecond();
@@ -352,15 +392,7 @@ public class SimulationTreeCreator {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
             achievableCells.removeAll(prevCatchCells);
             for (final Cell achievableCell : achievableCells) {
-                if (player.getRace() == Race.ELF
-                        && achievableCell.getType() != CellType.WATER
-                        && game.getOwnToCells().get(player)
-                        .stream()
-                        .noneMatch(cell ->
-                                cell.getType() == achievableCell.getType())
-                        || player.getRace() == Race.AMPHIBIAN && achievableCell.getType() == CellType.WATER
-                        || player.getRace() == Race.MUSHROOM && achievableCell.getType() == CellType.MUSHROOM
-                        || RandomGenerator.isYes()) {
+                if (isCellBeneficial(game, player, achievableCell) || RandomGenerator.isYes()) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {
@@ -375,15 +407,30 @@ public class SimulationTreeCreator {
                 AIDistributionProcessor.getIndexes(units, tiredUnitsCount).forEach(i ->
                         createCatchCellNode(currentDepth, i, game, player, cell,
                                 Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-//                for (int i = tiredUnitsCount; i <= units.size(); i++) {
-//                    createCatchCellNode(currentDepth, i, game, player, cell,
-//                            Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells);
-//                }
             });
         }
         if (unitsToPairTiredUnitsToCellList.isEmpty()) {
             createCatchCellEndNode(currentDepth, game, player, edges);
         }
+    }
+
+    /**
+     * Клетка выгодна игроку?
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @param cell   - клетка
+     * @return true, если выгодна, false - иначе
+     */
+    private boolean isCellBeneficial(final @NotNull IGame game, final @NotNull Player player,
+                                     final @NotNull Cell cell) {
+        return player.getRace() == Race.ELF
+                && game.getOwnToCells().get(player)
+                .stream()
+                .noneMatch(controlledCell ->
+                        controlledCell.getType() == cell.getType())
+                || player.getRace() == Race.AMPHIBIAN && cell.getType() == CellType.WATER
+                || player.getRace() == Race.MUSHROOM && cell.getType() == CellType.MUSHROOM;
     }
 
     /**
