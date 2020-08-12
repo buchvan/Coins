@@ -23,6 +23,8 @@ import java.util.*;
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private static final long TIMEOUT_MILLIS = 500;
+    private final int maxDepth;
+    private static final int ROUND_DEPTH = 2;
     private @Nullable NodeTree tree;
     private final @NotNull SimulationTreeCreator treeCreator;
     private final @NotNull FunctionType functionType;
@@ -30,7 +32,8 @@ public class SmartBot implements IBot {
 
     @Contract(pure = true)
     public SmartBot(final int maxDepth, final @NotNull FunctionType functionType) {
-        this.treeCreator = new SimulationTreeCreator(maxDepth, functionType);
+        this.maxDepth = maxDepth;
+        this.treeCreator = new SimulationTreeCreator(functionType);
         this.functionType = functionType;
     }
 
@@ -68,7 +71,7 @@ public class SmartBot implements IBot {
 
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
-        tree = treeCreator.createTree(game, player);
+        tree = treeCreator.createTree(game, player, maxDepth);
         try {
             Thread.sleep(TIMEOUT_MILLIS);
         } catch (final InterruptedException e) {
@@ -90,24 +93,32 @@ public class SmartBot implements IBot {
     public @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) {
         final boolean isChoiceBeforeGame = game.getCurrentRound() == 0;
         if (isChoiceBeforeGame) {
-            tree = treeCreator.createTree(game, player);
-            try {
-                Thread.sleep(TIMEOUT_MILLIS);
-            } catch (final InterruptedException e) {
-                LOGGER.error("Error!", e);
-                clearTree();
-                return simpleBot.chooseRace(player, game);
-            }
+            return chooseRaceBeforeGame(game, player);
         }
         if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
             return simpleBot.chooseRace(player, game);
         }
         final Action action = AIProcessor.getAction(tree, player, functionType);
-        if (isChoiceBeforeGame) {
+        tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
+        final Race race = ((ChangeRaceAction) action).getNewRace();
+        LOGGER.debug("Smart bot choice race: {} ", race);
+        return race;
+    }
+
+    private @NotNull Race chooseRaceBeforeGame(final @NotNull IGame game, final @NotNull Player player) {
+        tree = treeCreator.createTree(game, player, ROUND_DEPTH);
+        try {
+            Thread.sleep(TIMEOUT_MILLIS);
+        } catch (final InterruptedException e) {
+            LOGGER.error("Error!", e);
             clearTree();
-        } else {
-            tree = SimulationTreeCreatingProcessor.updateTree(tree, action);
+            return simpleBot.chooseRace(player, game);
         }
+        if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
+            return simpleBot.chooseRace(player, game);
+        }
+        final Action action = AIProcessor.getAction(tree, player, functionType);
+        clearTree();
         final Race race = ((ChangeRaceAction) action).getNewRace();
         LOGGER.debug("Smart bot choice race: {} ", race);
         return race;
