@@ -155,27 +155,26 @@ public class MinMaxProcessor {
      */
     private static boolean getMaxPercent(final @NotNull NodeTree nodeTree, final @NotNull Player player,
                                          final @NotNull Player currentPlayer) {
-        return nodeTree.getEdges().isEmpty()
-                ? Objects.requireNonNull(nodeTree.getWinsCount()).get(player) == 1
-                : getDefaultPercent(nodeTree.getEdges(), player, currentPlayer);
-    }
-
-    private static boolean getDefaultPercent(final @NotNull List<Edge> edges, final @NotNull Player player,
-                                             final @NotNull Player currentPlayer) {
+        final List<Edge> edges = nodeTree.getEdges();
+        if (edges.isEmpty()) {
+            return Objects.requireNonNull(nodeTree.getWinsCount()).get(player) == 1;
+        }
         if (player == currentPlayer) {
-            boolean isWin = false;
             for (final Edge edge : edges) {
-                isWin = isWin || getMaxPercent(edge.getTo(), player,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player);
+                if (getMaxPercent(edge.getTo(), player,
+                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player)) {
+                    return true;
+                }
             }
-            return isWin;
+            return false;
         }
-        boolean isWin = true;
         for (final Edge edge : edges) {
-            isWin = isWin && getMinPercent(edge.getTo(), player,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player);
+            if (getMinPercent(edge.getTo(), player,
+                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player)) {
+                return false;
+            }
         }
-        return isWin;
+        return true;
     }
 
     /**
@@ -186,9 +185,26 @@ public class MinMaxProcessor {
      */
     private static boolean getMinPercent(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
                                          final @NotNull Player currentPlayer) {
-        return nodeTree.getEdges().isEmpty()
-                ? Objects.requireNonNull(nodeTree.getWinsCount()).get(opponent) == 0
-                : getDefaultPercent(nodeTree.getEdges(), opponent, currentPlayer);
+        final List<Edge> edges = nodeTree.getEdges();
+        if (edges.isEmpty()) {
+            return Objects.requireNonNull(nodeTree.getWinsCount()).get(opponent) == 0;
+        }
+        if (opponent == currentPlayer) {
+            for (final Edge edge : edges) {
+                if (getMaxPercent(edge.getTo(), opponent,
+                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        for (final Edge edge : edges) {
+            if (getMinPercent(edge.getTo(), opponent,
+                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

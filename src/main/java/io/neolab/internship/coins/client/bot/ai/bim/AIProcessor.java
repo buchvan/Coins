@@ -107,7 +107,8 @@ public class AIProcessor {
      * @return выгодное значение с точки зрения отношения числа побед к общему числу случаев,
      * которое повлечёт за собой данное действие
      */
-    private static @NotNull Action getAdvantageousPercentAction(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+    private static @NotNull Action getAdvantageousPercentAction(final @NotNull NodeTree nodeTree,
+                                                                final @NotNull Player player,
                                                                 final double value) {
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
