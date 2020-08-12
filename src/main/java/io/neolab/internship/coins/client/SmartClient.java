@@ -62,7 +62,6 @@ public class SmartClient extends Client {
                 default:
                     throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
             }
-
             client.startClient();
         } catch (final CoinsException | IOException exception) {
             LOGGER.error("Error!", exception);

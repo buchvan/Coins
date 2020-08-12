@@ -91,7 +91,7 @@ public class AIProcessor {
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
                         ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, player)
                         : MinMaxProcessor.minMaxValueAlgorithm(
-                                nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
+                        nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             default:
                 return null;
         }

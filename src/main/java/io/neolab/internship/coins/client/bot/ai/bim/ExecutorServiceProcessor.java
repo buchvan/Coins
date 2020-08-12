@@ -6,8 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorServiceProcessor {
-    public static final long TIMEOUT_MILLIS = Long.MAX_VALUE; //Note: если делать параллельный прогон нескольких игр,
-    // то стоит данное значение намного увеличить
+    public static final long TIMEOUT_MILLIS = Long.MAX_VALUE; //TODO: если делать параллельный прогон нескольких игр,
+    //TODO то стоит данное значение намного увеличить
 
     /**
      * Выполнить ExecutorService

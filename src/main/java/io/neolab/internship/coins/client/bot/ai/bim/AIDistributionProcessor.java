@@ -16,10 +16,12 @@ public class AIDistributionProcessor {
      *
      * @param units           - список юнитов
      * @param tiredUnitsCount - число уставших юнитов
+     * @param depth           - глубина дерева
      * @return подмножество индексов из отрезка [tiredUnitsCount; units.size()]
      */
     static @NotNull Set<Integer> getIndexes(final @NotNull List<Unit> units, final int tiredUnitsCount,
-                                            final int denominator) {
+                                            final int depth) {
+        final int denominator = (int) Math.pow(2, depth - 1);
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
         final Set<Integer> indexes = new HashSet<>(capacity);
@@ -75,7 +77,7 @@ public class AIDistributionProcessor {
     /**
      * Сократить число распределений
      *
-     * @param distributions - список распределений
+     * @param distributions        - список распределений
      * @param controlledCellsCount - число подконтрольных клеток
      * @return какое-то множество распределений
      */

@@ -70,9 +70,9 @@ public class SimulationTreeCreator {
     /**
      * Выйти на новую глубину в пределах того же раунда
      *
-     * @param currentDepth  - текущая глубина
-     * @param game          - игра
-     * @param nextPlayer    - следующий игрок
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param nextPlayer   - следующий игрок
      * @return пару (новая глубина, следующий в очереди игрок)
      */
     @Contract("_, _, _ -> new")
@@ -388,6 +388,7 @@ public class SimulationTreeCreator {
                                        final @NotNull List<Edge> edges,
                                        final @NotNull Set<Cell> prevCatchCells) {
         final List<Triplet<List<Unit>, Integer, Cell>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
+        boolean isWasCapture = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
             achievableCells.removeAll(prevCatchCells);
@@ -400,16 +401,29 @@ public class SimulationTreeCreator {
                     }
                 }
             }
-            unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
+            for (final Triplet<List<Unit>, Integer, Cell> unitsToPairTiredUnitsToCell : unitsToPairTiredUnitsToCellList) {
                 final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                 final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
                 final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-                AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
-                        createCatchCellNode(currentDepth, i, game, player, cell,
-                                Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-            });
+                if (RandomGenerator.isYes() && currentDepth < 4
+                        || isCellBeneficial(game, player, cell)
+                        || currentDepth >= 4 && RandomGenerator.isYes()) {
+                    isWasCapture = true;
+                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
+                            createCatchCellNode(currentDepth, i, game, player, cell,
+                                    Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+                }
+            }
+//            unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
+//                final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+//                final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
+//                final Cell cell = unitsToPairTiredUnitsToCell.getThird();
+//                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
+//                            createCatchCellNode(currentDepth, i, game, player, cell,
+//                                    Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
+//            });
         }
-        if (unitsToPairTiredUnitsToCellList.isEmpty()) {
+        if (!isWasCapture) {
             createCatchCellEndNode(currentDepth, game, player, edges);
         }
     }
