@@ -134,6 +134,10 @@ public class MinMaxProcessor {
                 RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
 
+    /**
+     * @param edgeToPercent - отображение (ребро -> ответ на вопрос: ведёт ли это ребро к "победе"?)
+     * @return все рёбра со значением true. Если таковых нет, то просто все рёбра
+     */
     private static @NotNull List<Edge> getProfitableEdgesPercent(final @NotNull Map<Edge, Boolean> edgeToPercent) {
         final List<Edge> profitableEdges = new LinkedList<>();
         for (final Map.Entry<Edge, Boolean> entry : edgeToPercent.entrySet()) {
@@ -229,18 +233,20 @@ public class MinMaxProcessor {
      *
      * @param nodeTree - корень дерева
      * @param player   - думающий игрок
-     * @param opponent - оппонент игрока
      * @return действие, максимизирующее доход игрока
      */
-    static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                                final @NotNull Player opponent) {
+    static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToValue.put(edge, getMaxValue(edge.getTo(), player, opponent, player)));
+        edges.forEach(edge -> edgeToValue.put(edge, getMaxValue(edge.getTo(), player, player)));
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
     }
 
+    /**
+     * @param edgeToValue - отображение (ребро -> число монет)
+     * @return все рёбра с максимальным среди всех значений этого отображения числом монет
+     */
     private static @NotNull List<Edge> getProfitableEdgesMaxValue(final @NotNull Map<Edge, Integer> edgeToValue) {
         final List<Edge> profitableEdges = new LinkedList<>();
         int maxValue = -1;
@@ -258,36 +264,48 @@ public class MinMaxProcessor {
         return profitableEdges;
     }
 
+    /**
+     * @param nodeTree      - корень дерева
+     * @param player        - думающий игрок
+     * @param currentPlayer - игрок, который ходит на данном этапе
+     * @return максимальное число монет по всем рёбрам, выходящим из данного корня
+     */
     private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                   final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+                                   final @NotNull Player currentPlayer) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(player).getFirst()
-                : getDefaultValue(nodeTree.getEdges(), player, opponent, currentPlayer);
+                : getDefaultValue(nodeTree.getEdges(), player, currentPlayer);
     }
 
     private static int getDefaultValue(final @NotNull List<Edge> edges, final @NotNull Player player,
-                                       final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+                                       final @NotNull Player currentPlayer) {
         if (player == currentPlayer) {
             int maxValue = -1;
             for (final Edge edge : edges) {
-                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player, opponent,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent));
+                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player,
+                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
             }
             return maxValue;
         }
         int minValue = Integer.MAX_VALUE;
         for (final Edge edge : edges) {
-            minValue = Math.min(minValue, getMinValue(edge.getTo(), player, opponent,
+            minValue = Math.min(minValue, getMinValue(edge.getTo(), player,
                     edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
         }
         return minValue;
     }
 
-    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                   final @NotNull Player opponent, final @NotNull Player currentPlayer) {
+    /**
+     * @param nodeTree      - корень дерева
+     * @param opponent      - оппонент игрока
+     * @param currentPlayer - игрок, который ходит на данном этапе
+     * @return минимальное число монет по всем рёбрам, выходящим из данного корня
+     */
+    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
+                                   final @NotNull Player currentPlayer) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond()
-                : getDefaultValue(nodeTree.getEdges(), player, opponent, currentPlayer);
+                : getDefaultValue(nodeTree.getEdges(), opponent, currentPlayer);
     }
 
     /**
@@ -302,11 +320,15 @@ public class MinMaxProcessor {
                                                 final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToValue.put(edge, getMinValue(edge.getTo(), player, opponent, player)));
+        edges.forEach(edge -> edgeToValue.put(edge, getMinValue(edge.getTo(), opponent, player)));
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMinValue(edgeToValue)).getAction());
     }
 
+    /**
+     * @param edgeToValue - отображение (ребро -> число монет)
+     * @return все рёбра с минимальным среди всех значений этого отображения числом монет
+     */
     private static @NotNull List<Edge> getProfitableEdgesMinValue(final @NotNull Map<Edge, Integer> edgeToValue) {
         final List<Edge> profitableEdges = new LinkedList<>();
         int minValue = Integer.MAX_VALUE;

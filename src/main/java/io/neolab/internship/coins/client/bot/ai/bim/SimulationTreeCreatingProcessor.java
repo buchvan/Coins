@@ -125,10 +125,10 @@ public class SimulationTreeCreatingProcessor {
                     winners.add(item);
                 }
             }
-            final Map<Player, Integer> map = new HashMap<>(game.getPlayers().size());
-            game.getPlayers().forEach(player -> map.put(player, winners.contains(player) ? 1 : 0));
-            AILogger.printLogNewTerminalNodePercent(map);
-            return new NodeTree(new LinkedList<>(), map, 1, null);
+            final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player -> winsCount.put(player, winners.contains(player) ? 1 : 0));
+            AILogger.printLogNewTerminalNodePercent(winsCount);
+            return new NodeTree(new LinkedList<>(), winsCount, 1, null);
         } // else
         if (isValueFunctionType(functionType)) {
             final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
