@@ -40,43 +40,73 @@ public class SimulationTreeCreatingProcessor {
     @SuppressWarnings("all")
     static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
                                             final @NotNull List<Edge> edges, final @NotNull FunctionType functionType) {
-        int casesCount = 0;
         if (isPercentFunctionType(functionType)) {
-            final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
-            game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
-            synchronized (edges) {
-                for (final Edge edge : edges) {
-                    Objects.requireNonNull(edge.getTo().getWinsCount()).forEach((key, value) ->
-                            winsCount.replace(key, winsCount.get(key) + value));
-                    casesCount += edge.getTo().getCasesCount();
-                }
-            }
-            AILogger.printLogCreatedNewNode(currentDepth, edges);
-            return new NodeTree(edges, winsCount, casesCount, null);
-        } // else
+            return createNodeTreePercent(currentDepth, game, edges);
+        }
         if (isValueFunctionType(functionType)) {
-            final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
-                    new HashMap<>(game.getPlayers().size());
-            game.getPlayers().forEach(player1 -> playerToMaxAndMinCoinsCount.put(player1,
-                    new Pair<>(-1, Integer.MAX_VALUE)));
-            synchronized (edges) {
-                for (final Edge edge : edges) {
-                    Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).forEach((key, value) ->
-                            playerToMaxAndMinCoinsCount.replace(key,
-                                    new Pair<>(
-                                            Math.max(playerToMaxAndMinCoinsCount.get(key).getFirst(), value.getFirst()),
-                                            Math.min(playerToMaxAndMinCoinsCount.get(key).getSecond(), value.getSecond()
-                                            )
-                                    )
-                            )
-                    );
-                    casesCount += edge.getTo().getCasesCount();
-                }
-            }
-            AILogger.printLogCreatedNewNode(currentDepth, edges);
-            return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount);
+            return createNodeTreeValue(currentDepth, game, edges);
         }
         return null;
+    }
+
+    /**
+     * Создать узел дерева с информацией о кол-ве побед игрока
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param edges        - дуги к потомкам
+     * @return узел дерева с информацией о кол-ве побед игрока
+     */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Contract("_, _, _ -> new")
+    private static @NotNull NodeTree createNodeTreePercent(final int currentDepth, final @NotNull IGame game,
+                                                           final @NotNull List<Edge> edges) {
+        final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
+        int casesCount = 0;
+        game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
+        synchronized (edges) {
+            for (final Edge edge : edges) {
+                Objects.requireNonNull(edge.getTo().getWinsCount()).forEach((key, value) ->
+                        winsCount.replace(key, winsCount.get(key) + value));
+                casesCount += edge.getTo().getCasesCount();
+            }
+        }
+        AILogger.printLogCreatedNewNode(currentDepth, edges);
+        return new NodeTree(edges, winsCount, casesCount, null);
+    }
+
+    /**
+     * Создать узел дерева с информацией о числе монет игрока
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param edges        - дуги к потомкам
+     * @return узел дерева с информацией о числе монет игрока
+     */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Contract("_, _, _ -> new")
+    private static @NotNull NodeTree createNodeTreeValue(final int currentDepth, final @NotNull IGame game,
+                                                         final @NotNull List<Edge> edges) {
+        int casesCount = 0;
+        final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
+                new HashMap<>(game.getPlayers().size());
+        game.getPlayers().forEach(player1 -> playerToMaxAndMinCoinsCount.put(player1,
+                new Pair<>(-1, Integer.MAX_VALUE)));
+        synchronized (edges) {
+            for (final Edge edge : edges) {
+                Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).forEach((key, value) ->
+                        playerToMaxAndMinCoinsCount.replace(key,
+                                new Pair<>(
+                                        Math.max(playerToMaxAndMinCoinsCount.get(key).getFirst(), value.getFirst()),
+                                        Math.min(playerToMaxAndMinCoinsCount.get(key).getSecond(), value.getSecond())
+                                )
+                        )
+                );
+                casesCount += edge.getTo().getCasesCount();
+            }
+        }
+        AILogger.printLogCreatedNewNode(currentDepth, edges);
+        return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount);
     }
 
     /**
@@ -112,33 +142,55 @@ public class SimulationTreeCreatingProcessor {
     @SuppressWarnings("all")
     static @NotNull NodeTree createTerminalNode(final @NotNull IGame game, final @NotNull FunctionType functionType) {
         if (isPercentFunctionType(functionType)) {
-            final List<Player> winners = new LinkedList<>();
-            int maxCoinsCount = 0;
-            for (final Player item : game.getPlayers()) {
-                if (item.getCoins() > maxCoinsCount) {
-                    maxCoinsCount = item.getCoins();
-                    winners.clear();
-                    winners.add(item);
-                    continue;
-                }
-                if (item.getCoins() == maxCoinsCount) {
-                    winners.add(item);
-                }
-            }
-            final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
-            game.getPlayers().forEach(player -> winsCount.put(player, winners.contains(player) ? 1 : 0));
-            AILogger.printLogNewTerminalNodePercent(winsCount);
-            return new NodeTree(new LinkedList<>(), winsCount, 1, null);
-        } // else
+            return createTerminalNodePercent(game);
+        }
         if (isValueFunctionType(functionType)) {
-            final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
-                    new HashMap<>(game.getPlayers().size());
-            game.getPlayers().forEach(player1 ->
-                    playerToMaxAndMinCoinsCount.put(player1, new Pair<>(player1.getCoins(), player1.getCoins())));
-            AILogger.printLogNewTerminalNodeValue(playerToMaxAndMinCoinsCount);
-            return new NodeTree(new LinkedList<>(), null, 1, playerToMaxAndMinCoinsCount);
+            return createTerminalNodeValue(game);
         }
         return null;
+    }
+
+    /**
+     * Создать терминальный узел с информацией о кол-ве побед каждого игрока
+     *
+     * @param game - игра
+     * @return терминальный узел с информацией о кол-ве побед каждого игрока
+     */
+    @Contract("_ -> new")
+    private static @NotNull NodeTree createTerminalNodePercent(final @NotNull IGame game) {
+        final List<Player> winners = new LinkedList<>();
+        int maxCoinsCount = 0;
+        for (final Player item : game.getPlayers()) {
+            if (item.getCoins() > maxCoinsCount) {
+                maxCoinsCount = item.getCoins();
+                winners.clear();
+                winners.add(item);
+                continue;
+            }
+            if (item.getCoins() == maxCoinsCount) {
+                winners.add(item);
+            }
+        }
+        final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
+        game.getPlayers().forEach(player -> winsCount.put(player, winners.contains(player) ? 1 : 0));
+        AILogger.printLogNewTerminalNodePercent(winsCount);
+        return new NodeTree(new LinkedList<>(), winsCount, 1, null);
+    }
+
+    /**
+     * Создать терминальный узел с информацией о числе монет каждого игрока
+     *
+     * @param game - игра
+     * @return терминальный узел с информацией о числе монет каждого игрока
+     */
+    @Contract("_ -> new")
+    private static @NotNull NodeTree createTerminalNodeValue(final @NotNull IGame game) {
+        final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
+                new HashMap<>(game.getPlayers().size());
+        game.getPlayers().forEach(player1 ->
+                playerToMaxAndMinCoinsCount.put(player1, new Pair<>(player1.getCoins(), player1.getCoins())));
+        AILogger.printLogNewTerminalNodeValue(playerToMaxAndMinCoinsCount);
+        return new NodeTree(new LinkedList<>(), null, 1, playerToMaxAndMinCoinsCount);
     }
 
     /**
@@ -171,37 +223,16 @@ public class SimulationTreeCreatingProcessor {
                            final @NotNull Action action) throws CoinsException {
         switch (action.getType()) {
             case DECLINE_RACE:
-                GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
-                        game.getPlayerToAchievableCells().get(player),
-                        game.getOwnToCells().get(player), isGameLoggedOn);
-                GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+                updateGameAfterDeclineRace(game, player);
                 return;
             case CHANGE_RACE:
-                game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-                changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool(), isGameLoggedOn);
-                GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
-                        game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player),
-                        isGameLoggedOn);
+                updateGameAfterChangeRace(game, player, action);
                 return;
             case CATCH_CELL:
-                final CatchCellAction catchCellAction = (CatchCellAction) action;
-                final IBoard board = game.getBoard();
-                final Cell captureCell =
-                        board.getCellByPosition(
-                                Objects.requireNonNull(
-                                        catchCellAction.getResolution()).getFirst());
-                final List<Unit> units = catchCellAction.getResolution().getSecond();
-                pretendToCell(player, Objects.requireNonNull(captureCell), units, board, game.getGameFeatures(),
-                        game.getOwnToCells(), game.getFeudalToCells(),
-                        game.getPlayerToTransitCells().get(player),
-                        game.getPlayerToAchievableCells().get(player), isGameLoggedOn);
+                updateGameAfterCatchCell(game, player, action);
                 return;
             case DISTRIBUTION_UNITS:
-                final DistributionUnitsAction distributionUnitsAction = (DistributionUnitsAction) action;
-                distributionUnits(player, game.getOwnToCells().get(player),
-                        game.getFeudalToCells().get(player),
-                        distributionUnitsAction.getResolutions(),
-                        game.getBoard(), isGameLoggedOn);
+                updateGameAfterDistributionUnits(game, player, action);
                 return;
             default:
                 throw new CoinsException(CoinsErrorCode.ACTION_TYPE_NOT_FOUND);
@@ -209,14 +240,70 @@ public class SimulationTreeCreatingProcessor {
     }
 
     /**
-     * Игрок имеет право первого хода?
+     * Обновить состояние игры исходя после создания узла с уходом в упадок (или нет)
      *
      * @param game   - игра
      * @param player - игрок
-     * @return true, если игрок ходит первым, false - иначе
      */
-    static boolean isFirstPlayer(final @NotNull IGame game, final @NotNull Player player) {
-        return game.getPlayers().get(0).getId() == player.getId();
+    private static void updateGameAfterDeclineRace(final @NotNull IGame game, final @NotNull Player player) {
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
+                game.getPlayerToAchievableCells().get(player),
+                game.getOwnToCells().get(player), isGameLoggedOn);
+        GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+    }
+
+    /**
+     * Обновить состояние игры исходя из совершённого действия смены расы
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @param action - совершённое действие
+     */
+    private static void updateGameAfterChangeRace(final @NotNull IGame game, final @NotNull Player player,
+                                                  final @NotNull Action action) {
+        game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
+        changeRace(player, ((ChangeRaceAction) action).getNewRace(), game.getRacesPool(), isGameLoggedOn);
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
+                game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player),
+                isGameLoggedOn);
+    }
+
+    /**
+     * Обновить состояние игры исходя из совершённого действия захвата клетки
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @param action - совершённое действие
+     */
+    private static void updateGameAfterCatchCell(final @NotNull IGame game, final @NotNull Player player,
+                                                 final @NotNull Action action) {
+        final CatchCellAction catchCellAction = (CatchCellAction) action;
+        final IBoard board = game.getBoard();
+        final Cell captureCell =
+                board.getCellByPosition(
+                        Objects.requireNonNull(
+                                catchCellAction.getResolution()).getFirst());
+        final List<Unit> units = catchCellAction.getResolution().getSecond();
+        pretendToCell(player, Objects.requireNonNull(captureCell), units, board, game.getGameFeatures(),
+                game.getOwnToCells(), game.getFeudalToCells(),
+                game.getPlayerToTransitCells().get(player),
+                game.getPlayerToAchievableCells().get(player), isGameLoggedOn);
+    }
+
+    /**
+     * Обновить состояние игры исходя из совершённого действия распределения юнитов
+     *
+     * @param game   - игра
+     * @param player - игрок
+     * @param action - совершённое действие
+     */
+    private static void updateGameAfterDistributionUnits(final @NotNull IGame game, final @NotNull Player player,
+                                                         final @NotNull Action action) {
+        final DistributionUnitsAction distributionUnitsAction = (DistributionUnitsAction) action;
+        distributionUnits(player, game.getOwnToCells().get(player),
+                game.getFeudalToCells().get(player),
+                distributionUnitsAction.getResolutions(),
+                game.getBoard(), isGameLoggedOn);
     }
 
     /**
@@ -266,6 +353,18 @@ public class SimulationTreeCreatingProcessor {
     }
 
     /**
+     * Обновить число монет
+     *
+     * @param game - игра
+     */
+    static void updateCoins(final @NotNull IGame game) {
+        game.getPlayers().forEach(item -> // обновление числа монет у каждого игрока
+                GameLoopProcessor.updateCoinsCount(
+                        item, game.getFeudalToCells().get(item),
+                        game.getGameFeatures(), game.getBoard(), isGameLoggedOn));
+    }
+
+    /**
      * Взять ссылку на игрока из скопированной игры
      *
      * @param gameCopy - копия игры
@@ -291,7 +390,6 @@ public class SimulationTreeCreatingProcessor {
     static @Nullable Triplet<List<Unit>, Integer, Cell> getUnitsToPairTiredUnitsToCell(
             final @NotNull IGame game, final @NotNull Player player, final @NotNull Cell achievableCell,
             final @NotNull Set<Cell> prevCatchCells) {
-
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> catchingCellNeighboringCells =
                 new LinkedList<>(
