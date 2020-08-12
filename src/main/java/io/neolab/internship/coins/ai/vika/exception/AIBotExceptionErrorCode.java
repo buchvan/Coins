@@ -4,7 +4,8 @@ import org.jetbrains.annotations.NotNull;
 
 public enum AIBotExceptionErrorCode {
 
-    DECISION_NOT_EXISTS("Decision doesnt exists!");
+    DECISION_NOT_EXISTS("Decision doesnt exists!"),
+    NO_FOUND_PLAYER("Player was not found");
 
     private final @NotNull String message;
 
