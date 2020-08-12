@@ -19,7 +19,7 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final int GAME_AMOUNT = 3;
+    private static final int GAME_AMOUNT = 1;
     private static final int PLAYERS_AMOUNT = 2;
     private static final int SMART_BOT_MAX_DEPTH = 2;
     private static int winCounter = 0;
@@ -63,7 +63,7 @@ public class GameStatistic {
 
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
-        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MIN_MAX_VALUE), players.get(0)));
+        botToPlayer.add(new Pair<>(new SmartBot(SMART_BOT_MAX_DEPTH, FunctionType.MAX_PERCENT), players.get(0)));
 //        for (int i = 1; i < PLAYERS_AMOUNT - 1; i++) {
 //            botToPlayer.add(new Pair<>(new SimpleBot(), players.get(i)));
 //        }

@@ -90,7 +90,7 @@ public class AIProcessor {
             case MIN_MAX_VALUE:
                 opponent = MinMaxProcessor.getSomeOpponent(nodeTree, player);
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
-                        ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, opponent, player)
+                        ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, player, opponent)
                         : MinMaxProcessor.minMaxValueAlgorithm(
                         nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             default:
