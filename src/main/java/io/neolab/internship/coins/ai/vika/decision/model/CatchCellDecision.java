@@ -16,7 +16,7 @@ public class CatchCellDecision extends Decision {
         this.resolution = resolution;
     }
 
-    public @Nullable Pair<Position, List<Unit>> getResolution() {
+    public @Nullable Pair<Position, List<Unit>> getDecision() {
         return resolution;
     }
 
@@ -26,12 +26,12 @@ public class CatchCellDecision extends Decision {
         if (!(o instanceof CatchCellDecision)) return false;
         if (!super.equals(o)) return false;
         final CatchCellDecision that = (CatchCellDecision) o;
-        return Objects.equals(getResolution(), that.getResolution());
+        return Objects.equals(getDecision(), that.getDecision());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getResolution());
+        return Objects.hash(super.hashCode(), getDecision());
     }
 
     @Override

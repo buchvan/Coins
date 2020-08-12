@@ -21,7 +21,7 @@ import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
 
-public class AIDecisionSimulationProcessor {
+class AIDecisionSimulationProcessor {
     static void simulateDistributionUnitsDecision(final DistributionUnitsDecision decision, final Player player, final IGame game) {
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -48,29 +48,29 @@ public class AIDecisionSimulationProcessor {
      */
     static void simulateCatchCellDecision(final @NotNull Player player, final @NotNull IGame game,
                                           @NotNull final CatchCellDecision decision) {
-        if (decision.getResolution() != null) {
+        if (decision.getDecision() != null) {
             final GameFeatures gameFeatures = game.getGameFeatures();
             final IBoard board = game.getBoard();
 
             final Map<Player, List<Cell>> ownToCells = game.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player);
-            final Position captureCellPosition = decision.getResolution().getFirst();
+            final Position captureCellPosition = decision.getDecision().getFirst();
             final Cell captureCell = board.getCellByPosition(captureCellPosition);
             final boolean isControlled = controlledCells.contains(captureCell);
 
-            final List<Unit> unitsForCapture = decision.getResolution().getSecond();
+            final List<Unit> unitsForCapture = decision.getDecision().getSecond();
 
             final Map<Player, Set<Cell>> feudalToCells = game.getFeudalToCells();
 
             final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
             final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
             if (isControlled) {
-                final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
+                final int tiredUnitsCount = Objects.requireNonNull(captureCell).getType().getCatchDifficulty();
                 enterToCell(player, captureCell, ownToCells.get(player), feudalToCells.get(player),
                         unitsForCapture, tiredUnitsCount, board);
                 return;
             }
-            final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+            final List<Cell> neighboringCells = getAllNeighboringCells(board, Objects.requireNonNull(captureCell));
             neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
             final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
             final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
@@ -98,7 +98,7 @@ public class AIDecisionSimulationProcessor {
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
 
         final List<Race> racesPool = game.getRacesPool();
-        final Race newRace = decision.getNewRace();
+        final Race newRace = decision.getDecision();
         final Race oldRace = player.getRace();
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);

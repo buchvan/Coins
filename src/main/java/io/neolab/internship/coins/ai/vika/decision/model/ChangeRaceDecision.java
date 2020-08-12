@@ -14,7 +14,7 @@ public class ChangeRaceDecision extends Decision {
         this.newRace = newRace;
     }
 
-    public @NotNull Race getNewRace() {
+    public @NotNull Race getDecision() {
         return newRace;
     }
 
@@ -24,12 +24,12 @@ public class ChangeRaceDecision extends Decision {
         if (!(o instanceof ChangeRaceDecision)) return false;
         if (!super.equals(o)) return false;
         final ChangeRaceDecision that = (ChangeRaceDecision) o;
-        return getNewRace() == that.getNewRace();
+        return getDecision() == that.getDecision();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getNewRace());
+        return Objects.hash(super.hashCode(), getDecision());
     }
 
     @Override
