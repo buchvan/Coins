@@ -58,7 +58,7 @@ public class Cell implements Serializable {
     @Contract(pure = true)
     @JsonIgnore
     public @NotNull  Cell getCopy() {
-        return new Cell(this.id, this.type, new LinkedList<>(this.units), null, this.race);
+        return new Cell(this.id, this.type, this.units, null, this.race);
     }
 
     public int getId() {

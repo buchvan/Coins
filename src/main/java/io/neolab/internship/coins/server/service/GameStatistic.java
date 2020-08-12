@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -17,6 +18,7 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
  */
 public class GameStatistic {
+    // Самый худший случай для глубины 4 - примерно 30 секунд, для глубины 3 - примерно 7 секунд
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final int GAME_AMOUNT = 1;
@@ -24,7 +26,7 @@ public class GameStatistic {
     private static final int BOT1_MAX_DEPTH = 4;
     private static final FunctionType BOT1_TYPE = FunctionType.MAX_VALUE;
     private static final int BOT2_MAX_DEPTH = 3;
-    private static final FunctionType BOT2_TYPE = FunctionType.MIN_VALUE;
+    private static final FunctionType BOT2_TYPE = FunctionType.MIN_PERCENT;
     private static int winCounter = 0;
 
 //    private static void play() throws InterruptedException {
@@ -67,9 +69,10 @@ public class GameStatistic {
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
         botToPlayer.add(new Pair<>(new SmartBot(BOT1_MAX_DEPTH, BOT1_TYPE), players.get(0)));
-        botToPlayer.add(new Pair<>(
-                new SmartBot(BOT2_MAX_DEPTH, BOT2_TYPE),
-                players.get(players.size() - 1)));
+        botToPlayer.add(new Pair<>(new SimpleBot(), players.get(players.size() - 1)));
+//        botToPlayer.add(new Pair<>(
+//                new SmartBot(BOT2_MAX_DEPTH, BOT2_TYPE),
+//                players.get(players.size() - 1)));
         return botToPlayer;
     }
 
