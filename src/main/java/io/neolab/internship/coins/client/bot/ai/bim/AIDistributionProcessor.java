@@ -18,8 +18,9 @@ public class AIDistributionProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @return подмножество индексов из отрезка [tiredUnitsCount; units.size()]
      */
-    static @NotNull Set<Integer> getIndexes(final @NotNull List<Unit> units, final int tiredUnitsCount) {
-        int capacity = (units.size() - tiredUnitsCount + 1) / 2;
+    static @NotNull Set<Integer> getIndexes(final @NotNull List<Unit> units, final int tiredUnitsCount,
+                                            final int denominator) {
+        int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
         final Set<Integer> indexes = new HashSet<>(capacity);
         for (int i = tiredUnitsCount; i <= units.size(); i++) {

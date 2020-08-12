@@ -404,7 +404,7 @@ public class SimulationTreeCreator {
                 final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                 final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
                 final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-                AIDistributionProcessor.getIndexes(units, tiredUnitsCount).forEach(i ->
+                AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
                         createCatchCellNode(currentDepth, i, game, player, cell,
                                 Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
             });
