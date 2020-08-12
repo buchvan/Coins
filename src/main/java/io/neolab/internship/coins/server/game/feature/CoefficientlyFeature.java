@@ -31,7 +31,9 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return super.equals(o);
+        if (!super.equals(o)) return false;
+        final CoefficientlyFeature that = (CoefficientlyFeature) o;
+        return coefficient == that.coefficient;
     }
 
     @Override
