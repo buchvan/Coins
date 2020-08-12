@@ -47,16 +47,19 @@ public class AIDecisionMaker {
 
     //TODO
     public Race getChooseRaceDecision(final Player player, final IGame game) {
+        createChangeRaceDecisions(currentNode, game, player);
         return null;
     }
 
     //TODO
     public Pair<Position, List<Unit>> getChooseCaptureCellDecision(final Player player, final IGame game) {
+        createCatchCellDecisions(currentNode, game, player);
         return null;
     }
 
     //TODO
     public Map<Position, List<Unit>> getDistributionUnitsDecision(final Player player, final IGame game) {
+        createDistributionUnitsDecisions(currentNode, game, player);
         return null;
     }
 

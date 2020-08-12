@@ -456,8 +456,10 @@ public class GameLoopProcessor {
                                         final @NotNull Set<Cell> feudalCells,
                                         final @NotNull GameFeatures gameFeatures,
                                         final @NotNull IBoard board) {
+        final Map<CellType, Boolean> cellTypeMet = new HashMap<>(CellType.values().length);
+        Arrays.stream(CellType.values()).forEach(cellType -> cellTypeMet.put(cellType, false));
         feudalCells.forEach(cell -> {
-            updateCoinsCountByCellWithFeatures(player, gameFeatures, cell);
+            updateCoinsCountByCellWithFeatures(player, gameFeatures, cell, cellTypeMet);
             player.increaseCoins(cell.getType().getCoinYield());
             GameLogger.printPlayerCoinsCountByCellUpdatingLog(player, board.getPositionByCell(cell));
         });
@@ -473,10 +475,8 @@ public class GameLoopProcessor {
      */
     private static void updateCoinsCountByCellWithFeatures(final @NotNull Player player,
                                                            final @NotNull GameFeatures gameFeatures,
-                                                           final @NotNull Cell cell) {
-
-        final Map<CellType, Boolean> cellTypeMet = new HashMap<>(CellType.values().length);
-        Arrays.stream(CellType.values()).forEach(cellType -> cellTypeMet.put(cellType, false));
+                                                           final @NotNull Cell cell,
+                                                           final Map<CellType, Boolean> cellTypeMet) {
         gameFeatures.getFeaturesByRaceAndCellType(player.getRace(), cell.getType())
                 .forEach(feature -> {
                     if (feature.getType() == FeatureType.CHANGING_RECEIVED_COINS_NUMBER_FROM_CELL) {

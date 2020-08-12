@@ -122,7 +122,7 @@ public class Game implements IGame, Serializable {
                 getCopyPlayerToCellsSet(this.playerToAchievableCells, false, this.board, board, players);
 
         return new Game(board, this.currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                playerToAchievableCells, this.gameFeatures.getCopy(), new LinkedList<>(this.racesPool), players);
+                playerToAchievableCells, this.gameFeatures, new LinkedList<>(this.racesPool), players);
     }
 
     /**
@@ -152,7 +152,7 @@ public class Game implements IGame, Serializable {
                     final int unitListSize = unitList.size();
                     playerCopy.getUnitStateToUnits().values().forEach(units ->
                             unitList.addAll(units.stream()
-                                    .filter(unitList::contains)
+                                    .filter(cell.getUnits()::contains)
                                     .collect(Collectors.toList())));
                     cell.getUnits().subList(0, unitListSize).clear();
                 });
