@@ -3,7 +3,7 @@ package io.neolab.internship.coins.server.service;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
-import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
+import io.neolab.internship.coins.client.bot.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LoggerFile;

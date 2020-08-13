@@ -3,7 +3,6 @@ package io.neolab.internship.coins.client.bot;
 import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
 import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatingProcessor;
 import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreator;
-import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
 import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
 import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
 import io.neolab.internship.coins.server.game.IGame;

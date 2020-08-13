@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.client;
 
 import io.neolab.internship.coins.client.bot.SmartBot;
-import io.neolab.internship.coins.client.bot.ai.bim.model.FunctionType;
+import io.neolab.internship.coins.client.bot.FunctionType;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import org.jetbrains.annotations.NotNull;
