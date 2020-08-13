@@ -68,6 +68,11 @@ public class AIProcessor {
                                             final @NotNull FunctionType functionType) {
         final Player opponent;
         switch (functionType) {
+            case MAX_VALUE_DIFFERENCE:
+                return getAdvantageousValueDifferenceAction(nodeTree, player,
+                        MinMaxProcessor.getValueDifference(nodeTree, player));
+            case MIN_MAX_VALUE_DIFFERENCE:
+                return MinMaxProcessor.maxMinValueDifferenceAlgorithm(nodeTree, player);
             case MAX_PERCENT:
                 return getAdvantageousPercentAction(nodeTree, player,
                         MinMaxProcessor.getPercent(nodeTree, player, functionType));
@@ -146,6 +151,26 @@ public class AIProcessor {
                         .filter(edge ->
                                 Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).get(player)
                                         .getSecond() == value)
+                        .collect(Collectors.toList()))
+                        .getAction());
+    }
+
+    /**
+     * Взять выгодное с точки зрения разности чисел монет
+     *
+     * @param nodeTree     - корень дерева
+     * @param player       - игрок
+     * @param value        - выгодное значение (число монет)
+     * @return выгодное значение с точки зрения разности чисел монет,
+     * которое повлечёт за собой данное действие
+     */
+    private static @NotNull Action getAdvantageousValueDifferenceAction(final @NotNull NodeTree nodeTree,
+                                                                        final @NotNull Player player,
+                                                                        final int value) {
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(nodeTree.getEdges().stream()
+                        .filter(edge ->
+                                Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).get(player) == value)
                         .collect(Collectors.toList()))
                         .getAction());
     }

@@ -263,7 +263,7 @@ public class MinMaxProcessor {
      */
     private static @NotNull List<Edge> getProfitableEdgesMaxValue(final @NotNull Map<Edge, Integer> edgeToValue) {
         final List<Edge> profitableEdges = new LinkedList<>();
-        int maxValue = -1;
+        int maxValue = Integer.MIN_VALUE;
         for (final Map.Entry<Edge, Integer> entry : edgeToValue.entrySet()) {
             if (entry.getValue() > maxValue) {
                 maxValue = entry.getValue();
@@ -358,5 +358,52 @@ public class MinMaxProcessor {
             }
         }
         return profitableEdges;
+    }
+
+    /**
+     * Поиск действия, максимизирующего отрыв игрока (по числу монет)
+     *
+     * @param nodeTree - корень дерева
+     * @param player   - думающий игрок
+     * @return действие, максимизирующее отрыв игрока (по числу монет)
+     */
+    static @NotNull Action maxMinValueDifferenceAlgorithm(final @NotNull NodeTree nodeTree,
+                                                          final @NotNull Player player) {
+        final List<Edge> edges = nodeTree.getEdges();
+        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        edges.forEach(edge -> edgeToValue.put(edge, getValueDifference(edge.getTo(), player, player)));
+        return Objects.requireNonNull(
+                RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
+    }
+
+    /**
+     * @param nodeTree      - корень дерева
+     * @param player        - думающий игрок
+     * @param currentPlayer - игрок, который ходит на данном этапе
+     * @return максимальное число монет по всем рёбрам, выходящим из данного корня
+     */
+    private static int getValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player,
+                                             final @NotNull Player currentPlayer) {
+        return nodeTree.getEdges().isEmpty()
+                ? Objects.requireNonNull(nodeTree.getPlayerToValueDifference()).get(player)
+                : getDefaultValueDifference(nodeTree.getEdges(), player, currentPlayer);
+    }
+
+    private static int getDefaultValueDifference(final @NotNull List<Edge> edges, final @NotNull Player player,
+                                       final @NotNull Player currentPlayer) {
+        if (player == currentPlayer) {
+            int maxValue = Integer.MIN_VALUE;
+            for (final Edge edge : edges) {
+                maxValue = Math.max(maxValue, getValueDifference(edge.getTo(), player,
+                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+            }
+            return maxValue;
+        }
+        int minValue = Integer.MAX_VALUE;
+        for (final Edge edge : edges) {
+            minValue = Math.min(minValue, getValueDifference(edge.getTo(), player,
+                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+        }
+        return minValue;
     }
 }
