@@ -11,6 +11,9 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
@@ -28,30 +31,39 @@ public class GameStatistic {
     private static final int BOT2_MAX_DEPTH = 3;
     private static final FunctionType BOT2_TYPE = FunctionType.MIN_PERCENT;
     private static int winCounter = 0;
+    private static final boolean isParallel = false;
 
-//    private static void play() throws InterruptedException {
-//        final List<Player> players = initPlayers();
-//        initStatisticMap(players);
-//        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
-//        for (int i = 0; i < GAME_AMOUNT; i++) {
-//            final int index = i;
-//            executorService.execute(() -> {
-//                final List<Player> playersCopy = new LinkedList<>();
-//                players.forEach(player -> playersCopy.add(player.getCopy()));
-//                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
-//                final List<Player> winners = selfPlayByBotToPlayers(index, botToPlayer);
-//                synchronized (playersStatistic) {
-//                    for (final Player winner : winners) {
-//                        winCounter++;
-//                        int currentWinAmount = playersStatistic.get(winner);
-//                        playersStatistic.put(winner, ++currentWinAmount);
-//                    }
-//                }
-//            });
-//        }
-//        executorService.shutdown();
-//        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-//    }
+    private static void play() throws InterruptedException {
+        final List<Player> players = initPlayers();
+        initStatisticMap(players);
+        if (isParallel) {
+            playParallel(players);
+            return;
+        }
+        playNotParallel(players);
+    }
+
+    private static void playParallel(final @NotNull List<Player> players) throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
+        for (int i = 0; i < GAME_AMOUNT; i++) {
+            final int index = i;
+            executorService.execute(() -> {
+                final List<Player> playersCopy = new LinkedList<>();
+                players.forEach(player -> playersCopy.add(player.getCopy()));
+                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
+                final List<Player> winners = selfPlayByBotToPlayers(index, botToPlayer);
+                synchronized (playersStatistic) {
+                    for (final Player winner : winners) {
+                        winCounter++;
+                        int currentWinAmount = playersStatistic.get(winner);
+                        playersStatistic.put(winner, ++currentWinAmount);
+                    }
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
 
     /**
      * Иннициализация тестовых игроков
@@ -97,9 +109,7 @@ public class GameStatistic {
         }
     }
 
-    private static void playNotParallel() {
-        final List<Player> players = initPlayers();
-        initStatisticMap(players);
+    private static void playNotParallel(final @NotNull List<Player> players) {
         for (int i = 0; i < GAME_AMOUNT; i++) {
             final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(players);
             final List<Player> winners = selfPlayByBotToPlayers(i, botToPlayer);
@@ -121,9 +131,8 @@ public class GameStatistic {
         });
     }
 
-    public static void main(final String[] args) {
-//        play();
-        playNotParallel();
+    public static void main(final String[] args) throws InterruptedException {
+        play();
         collectStatistic();
     }
 }
