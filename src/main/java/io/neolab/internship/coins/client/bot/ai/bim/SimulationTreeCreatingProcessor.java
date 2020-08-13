@@ -37,9 +37,12 @@ public class SimulationTreeCreatingProcessor {
      * @return узел дерева
      */
     @Contract("_, _, _, _ -> new")
-    @SuppressWarnings("all")
+    @SuppressWarnings("ConstantConditions")
     static @NotNull NodeTree createNodeTree(final int currentDepth, final @NotNull IGame game,
                                             final @NotNull List<Edge> edges, final @NotNull FunctionType functionType) {
+        if (isValueDifferenceFunctionType(functionType)) {
+            return createNodeTreeDifferenceValue(currentDepth, game, edges);
+        }
         if (isPercentFunctionType(functionType)) {
             return createNodeTreePercent(currentDepth, game, edges);
         }
@@ -61,8 +64,8 @@ public class SimulationTreeCreatingProcessor {
     @Contract("_, _, _ -> new")
     private static @NotNull NodeTree createNodeTreePercent(final int currentDepth, final @NotNull IGame game,
                                                            final @NotNull List<Edge> edges) {
-        final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
         int casesCount = 0;
+        final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
         synchronized (edges) {
             for (final Edge edge : edges) {
@@ -72,7 +75,7 @@ public class SimulationTreeCreatingProcessor {
             }
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
-        return new NodeTree(edges, winsCount, casesCount, null);
+        return new NodeTree(edges, winsCount, casesCount, null, null);
     }
 
     /**
@@ -106,7 +109,36 @@ public class SimulationTreeCreatingProcessor {
             }
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
-        return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount);
+        return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount, null);
+    }
+
+    /**
+     * Создать узел дерева с информацией о минимальной разности чисел монет игроков
+     *
+     * @param currentDepth - текущая глубина
+     * @param game         - игра
+     * @param edges        - дуги к потомкам
+     * @return узел дерева с информацией о минимальной разности чисел монет игроков
+     */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Contract("_, _, _ -> new")
+    private static @NotNull NodeTree createNodeTreeDifferenceValue(final int currentDepth, final @NotNull IGame game,
+                                                                   final @NotNull List<Edge> edges) {
+        int casesCount = 0;
+        final Map<Player, Integer> playerToValueDifference =
+                new HashMap<>(game.getPlayers().size());
+        game.getPlayers().forEach(player1 -> playerToValueDifference.put(player1, null));
+        synchronized (edges) {
+            for (final Edge edge : edges) {
+                Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).forEach((key, value) ->
+                        playerToValueDifference.replace(key,
+                                Math.min(playerToValueDifference.getOrDefault(key, value), value))
+                );
+                casesCount += edge.getTo().getCasesCount();
+            }
+        }
+        AILogger.printLogCreatedNewNode(currentDepth, edges);
+        return new NodeTree(edges, null, casesCount, null, playerToValueDifference);
     }
 
     /**
@@ -132,6 +164,16 @@ public class SimulationTreeCreatingProcessor {
     }
 
     /**
+     * @param functionType - тип функции бота
+     * @return true, если бот ориентируется на разность чисел монет, false - иначе
+     */
+    @Contract(pure = true)
+    private static boolean isValueDifferenceFunctionType(final @NotNull FunctionType functionType) {
+        return functionType == FunctionType.MAX_VALUE_DIFFERENCE
+                || functionType == FunctionType.MIN_MAX_VALUE_DIFFERENCE;
+    }
+
+    /**
      * Создать терминальный узел
      *
      * @param game         - игра в текущем состоянии
@@ -139,8 +181,11 @@ public class SimulationTreeCreatingProcessor {
      * @return терминальный узел с оценённым данным действием
      */
     @Contract("_, _ -> new")
-    @SuppressWarnings("all")
+    @SuppressWarnings("ConstantConditions")
     static @NotNull NodeTree createTerminalNode(final @NotNull IGame game, final @NotNull FunctionType functionType) {
+        if (isValueDifferenceFunctionType(functionType)) {
+            return createTerminalNodeValueDifference(game);
+        }
         if (isPercentFunctionType(functionType)) {
             return createTerminalNodePercent(game);
         }
@@ -174,7 +219,7 @@ public class SimulationTreeCreatingProcessor {
         final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player -> winsCount.put(player, winners.contains(player) ? 1 : 0));
         AILogger.printLogNewTerminalNodePercent(winsCount);
-        return new NodeTree(new LinkedList<>(), winsCount, 1, null);
+        return new NodeTree(new LinkedList<>(), winsCount, 1, null, null);
     }
 
     /**
@@ -190,7 +235,32 @@ public class SimulationTreeCreatingProcessor {
         game.getPlayers().forEach(player1 ->
                 playerToMaxAndMinCoinsCount.put(player1, new Pair<>(player1.getCoins(), player1.getCoins())));
         AILogger.printLogNewTerminalNodeValue(playerToMaxAndMinCoinsCount);
-        return new NodeTree(new LinkedList<>(), null, 1, playerToMaxAndMinCoinsCount);
+        return new NodeTree(new LinkedList<>(), null, 1,
+                playerToMaxAndMinCoinsCount, null);
+    }
+
+    /**
+     * Создать терминальный узел с информацией о минимальной разности чисел монет игроков
+     *
+     * @param game - игра
+     * @return терминальный узел с информацией о минимальной разности чисел монет игроков
+     */
+    @Contract("_ -> new")
+    private static @NotNull NodeTree createTerminalNodeValueDifference(final @NotNull IGame game) {
+        final Map<Player, Integer> playerToValueDifference =
+                new HashMap<>(game.getPlayers().size());
+        game.getPlayers().forEach(player ->
+                game.getPlayers().forEach(player1 -> {
+                    if (!player1.equals(player)) {
+                        final int valueDifference = player.getCoins() - player1.getCoins();
+                        playerToValueDifference.put(player,
+                                Math.min(playerToValueDifference.getOrDefault(player, valueDifference),
+                                        valueDifference));
+                    }
+                }));
+        AILogger.printLogNewTerminalNodeValueDifference(playerToValueDifference);
+        return new NodeTree(new LinkedList<>(), null, 1,
+                null, playerToValueDifference);
     }
 
     /**
