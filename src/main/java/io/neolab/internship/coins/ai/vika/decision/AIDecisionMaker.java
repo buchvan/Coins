@@ -101,12 +101,6 @@ public class AIDecisionMaker {
      */
     private static DecisionAndWin getBestDecisionByGameTree(
             final Player player, final IGame game, @NotNull final DecisionType decisionType) throws AIBotException {
-        //add is opponent checking
-        //add finish tree creating
-        roundTreeCreationCounter++;
-        if (isDecisionTreeCreationFinished()) {
-            return null;
-        }
         switch (decisionType) {
             case DECLINE_RACE: {
                 return createDeclineRaceDecision(game, player);
@@ -132,7 +126,7 @@ public class AIDecisionMaker {
      * @param player - игрок
      * @return - информации о лучшем решении и соответствующем значении монет для этого решения
      */
-    private static DecisionAndWin createDeclineRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
+    private static @NotNull DecisionAndWin createDeclineRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final boolean[] declineRaceTypes = {true, false};
         for (final boolean declineRaceType : declineRaceTypes) {
@@ -174,7 +168,7 @@ public class AIDecisionMaker {
      * @param player - игрок
      * @return - информации о лучшем решении и соответствующем значении монет для этого решения
      */
-    private static DecisionAndWin createChangeRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
+    private static @NotNull DecisionAndWin createChangeRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Race> availableRaces = game.getRacesPool();
         final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
@@ -205,7 +199,7 @@ public class AIDecisionMaker {
      * @param player - игрок
      * @return - информации о лучшем решении и соответствующем значении монет для этого решения
      */
-    private static DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
+    private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         // + 1 for null catch cell decision
@@ -255,8 +249,8 @@ public class AIDecisionMaker {
      * @param player - игрок
      * @return - информации о лучшем решении и соответствующем значении монет для этого решения
      */
-    private static DecisionAndWin createDistributionUnitsDecision(@NotNull final IGame game,
-                                                                  @NotNull final Player player) {
+    private static @NotNull DecisionAndWin createDistributionUnitsDecision(@NotNull final IGame game,
+                                                                           @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Unit> playerUnits = new LinkedList<>();
@@ -280,10 +274,14 @@ public class AIDecisionMaker {
                     final Decision decision = new DistributionUnitsDecision(resolutions);
                     simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
                     updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
-                    final Player nextPlayer = getNextPlayer(gameCopy, playerCopy.getId());
-                    final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(nextPlayer,
-                            gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
-                    decisionAndWins.add(new DecisionAndWin(decision, winCollector));
+                    if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
+                        decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
+                    } else {
+                        final Player nextPlayer = getNextPlayer(gameCopy, playerCopy.getId());
+                        final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(nextPlayer,
+                                gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
+                        decisionAndWins.add(new DecisionAndWin(decision, winCollector));
+                    }
                 } catch (final AIBotException e) {
                     e.printStackTrace();
                 }
@@ -391,8 +389,16 @@ public class AIDecisionMaker {
                 .orElseThrow(() -> new AIBotException(AIBotExceptionErrorCode.NO_FOUND_PLAYER));
     }
 
-    private static boolean isDecisionTreeCreationFinished() {
-        return MAX_DEPTH > roundTreeCreationCounter;
+    /**
+     * Закончено ли построение всего дерева решений: последний игрок совершил последний ход
+     *
+     * @param game            - игра
+     * @param currentPlayerId - id теущего игрока
+     * @return - закончено ли построение дерева
+     */
+    private static boolean isDecisionTreeCreationFinished(final IGame game, final int currentPlayerId) {
+        final List<Player> players = game.getPlayers();
+        return MAX_DEPTH == roundTreeCreationCounter && players.get(players.size() - 1).getId() == currentPlayerId;
     }
 
     /**
