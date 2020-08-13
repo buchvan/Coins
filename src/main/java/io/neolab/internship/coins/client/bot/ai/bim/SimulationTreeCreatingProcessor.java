@@ -125,14 +125,20 @@ public class SimulationTreeCreatingProcessor {
     private static @NotNull NodeTree createNodeTreeDifferenceValue(final int currentDepth, final @NotNull IGame game,
                                                                    final @NotNull List<Edge> edges) {
         int casesCount = 0;
-        final Map<Player, Integer> playerToValueDifference =
-                new HashMap<>(game.getPlayers().size());
-        game.getPlayers().forEach(player1 -> playerToValueDifference.put(player1, null));
+        final Map<Player, Integer> playerToValueDifference = new HashMap<>(game.getPlayers().size());
         synchronized (edges) {
             for (final Edge edge : edges) {
-                Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).forEach((key, value) ->
-                        playerToValueDifference.replace(key,
-                                Math.min(playerToValueDifference.getOrDefault(key, value), value))
+                Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).forEach((key, value) -> {
+                            if (playerToValueDifference.containsKey(key)) {
+                                playerToValueDifference.replace(key,
+                                        Math.min(playerToValueDifference.get(key),
+                                                value));
+                            } else {
+                                playerToValueDifference.put(key,
+                                        Math.min(playerToValueDifference.getOrDefault(key, value),
+                                                value));
+                            }
+                        }
                 );
                 casesCount += edge.getTo().getCasesCount();
             }
@@ -230,8 +236,7 @@ public class SimulationTreeCreatingProcessor {
      */
     @Contract("_ -> new")
     private static @NotNull NodeTree createTerminalNodeValue(final @NotNull IGame game) {
-        final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount =
-                new HashMap<>(game.getPlayers().size());
+        final Map<Player, Pair<Integer, Integer>> playerToMaxAndMinCoinsCount = new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player1 ->
                 playerToMaxAndMinCoinsCount.put(player1, new Pair<>(player1.getCoins(), player1.getCoins())));
         AILogger.printLogNewTerminalNodeValue(playerToMaxAndMinCoinsCount);
@@ -247,15 +252,20 @@ public class SimulationTreeCreatingProcessor {
      */
     @Contract("_ -> new")
     private static @NotNull NodeTree createTerminalNodeValueDifference(final @NotNull IGame game) {
-        final Map<Player, Integer> playerToValueDifference =
-                new HashMap<>(game.getPlayers().size());
+        final Map<Player, Integer> playerToValueDifference = new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player ->
                 game.getPlayers().forEach(player1 -> {
                     if (!player1.equals(player)) {
                         final int valueDifference = player.getCoins() - player1.getCoins();
-                        playerToValueDifference.put(player,
-                                Math.min(playerToValueDifference.getOrDefault(player, valueDifference),
-                                        valueDifference));
+                        if (playerToValueDifference.containsKey(player)) {
+                            playerToValueDifference.replace(player,
+                                    Math.min(playerToValueDifference.get(player),
+                                            valueDifference));
+                        } else {
+                            playerToValueDifference.put(player,
+                                    Math.min(playerToValueDifference.getOrDefault(player, valueDifference),
+                                            valueDifference));
+                        }
                     }
                 }));
         AILogger.printLogNewTerminalNodeValueDifference(playerToValueDifference);
