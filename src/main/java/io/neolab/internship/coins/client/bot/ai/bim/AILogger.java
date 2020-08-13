@@ -123,4 +123,19 @@ class AILogger {
                     LOGGER.debug("--- {} -> {}", player.getNickname(), pair));
         }
     }
+
+    /**
+     * Вывод лога о создании нового терминального узла
+     *
+     * @param playerToValueDifference - отображение игрока в минимальную разность между его
+     *                                числом монет и числом монет остальных
+     */
+    static void printLogNewTerminalNodeValueDifference(final @NotNull Map<Player, Integer> playerToValueDifference) {
+        if (isLoggedOn) {
+            LOGGER.debug("!!!!!!!!!!!!!!!!!!!");
+            LOGGER.debug("Created new terminal node:");
+            playerToValueDifference.forEach((player, integer) ->
+                    LOGGER.debug("--- {} -> {}", player.getNickname(), integer));
+        }
+    }
 }
