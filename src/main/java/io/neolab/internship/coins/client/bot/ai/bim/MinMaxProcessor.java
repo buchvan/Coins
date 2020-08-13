@@ -71,7 +71,7 @@ public class MinMaxProcessor {
      * @param nodeTree     - корень дерева
      * @param player       - игрок
      * @param functionType - тип бота игрока
-     * @return процент, соответствующий типу бота: отношение числа побед к общему числу случаев
+     * @return число монет, соответствующее типу бота
      */
     static int getValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
                         final @NotNull FunctionType functionType) {
@@ -93,6 +93,20 @@ public class MinMaxProcessor {
             default:
                 return -1;
         }
+    }
+
+    /**
+     * @param nodeTree - корень дерева
+     * @param player   - игрок
+     * @return максимальная разность числа монет (максимальный отрыв)
+     */
+    static int getValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
+        return nodeTree.getEdges().stream()
+                .map(edge ->
+                        Objects.requireNonNull(
+                                edge.getTo().getPlayerToValueDifference()).get(player))
+                .max(Integer::compareTo)
+                .orElseThrow();
     }
 
     /**
