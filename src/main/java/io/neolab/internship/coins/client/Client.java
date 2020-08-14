@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.client;
 
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
@@ -60,7 +61,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public @NotNull Answer getAnswer(final @NotNull PlayerQuestion playerQuestion) throws CoinsException {
+    public @NotNull Answer getAnswer(final @NotNull PlayerQuestion playerQuestion) throws CoinsException, AIBotException {
         switch (playerQuestion.getPlayerQuestionType()) {
             case CATCH_CELL: {
                 LOGGER.info("Catch cell question: {} ", playerQuestion);
@@ -89,7 +90,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void processMessage(final @NotNull ServerMessage serverMessage) throws CoinsException, IOException {
+    public void processMessage(final @NotNull ServerMessage serverMessage) throws CoinsException, IOException, AIBotException {
         LOGGER.info("Input message: {} ", serverMessage);
         switch (serverMessage.getServerMessageType()) {
             case NICKNAME: {
@@ -176,7 +177,7 @@ public class Client implements IClient {
             while (true) {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
-        } catch (final CoinsException | IOException exception) {
+        } catch (final CoinsException | IOException | AIBotException exception) {
             if (!(exception instanceof CoinsException) ||
                     ((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
                 LOGGER.error("Error", exception);

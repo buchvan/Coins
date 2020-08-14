@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.client.bot;
 
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -20,13 +21,13 @@ public interface IBot {
      * @param game   - объект, хранящий всю метаинформацию об игре
      * @return true - если идти в упадок, false - иначе
      */
-    boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game);
+    boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) throws AIBotException;
 
     /**
      * @param game - объект, хранящий всю метаинформацию об игре
      * @return выбранную расу
      */
-    @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game);
+    @NotNull Race chooseRace(final @NotNull Player player, final @NotNull IGame game) throws AIBotException;
 
     /**
      * Выбрать клетку для захвата
@@ -35,7 +36,7 @@ public interface IBot {
      * @param game            - объект, хранящий всю метаинформацию об игре
      * @return пару: выбранная для захвата клетка, список юнитов для её захвата
      */
-    @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player, final @NotNull IGame game);
+    @Nullable Pair<Position, List<Unit>> chooseCatchingCell(final @NotNull Player player, final @NotNull IGame game) throws AIBotException;
 
     /**
      * Выбрать клетки для защиты
@@ -44,5 +45,5 @@ public interface IBot {
      * @param game   - объект, хранящий всю метаинформацию об игре
      * @return отображение выбранных для защиты клеток в списки юнитов для их защиты
      */
-    @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game);
+    @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) throws AIBotException;
 }

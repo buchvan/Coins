@@ -14,10 +14,13 @@ import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
@@ -35,6 +38,8 @@ public class AIDecisionMaker {
     private static int roundTreeCreationCounter = 0;
     //игрок, относительно которого принимается решение
     private static int playerId = 0;
+
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(AIDecisionMaker.class);
 
     /**
      * Возвращает лучшее решение об упадке расы боту
@@ -153,6 +158,12 @@ public class AIDecisionMaker {
                     e.printStackTrace();
                 }
             });
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            } catch (final InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -178,13 +189,25 @@ public class AIDecisionMaker {
                 final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
                 final Decision changeRaceDecision = new ChangeRaceDecision(race);
                 simulateChangeRaceDecision(playerCopy, gameCopy, (ChangeRaceDecision) changeRaceDecision);
-                final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
-                        DecisionType.CATCH_CELL)).getWinCollector();
-                decisionAndWins.add(new DecisionAndWin(changeRaceDecision, winCollector));
+                if (gameCopy.getCurrentRound() == 0) {
+                    final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(
+                            playerCopy, gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
+                    decisionAndWins.add(new DecisionAndWin(changeRaceDecision, winCollector));
+                } else {
+                    final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(
+                            playerCopy, gameCopy, DecisionType.CATCH_CELL)).getWinCollector();
+                    decisionAndWins.add(new DecisionAndWin(changeRaceDecision, winCollector));
+                }
             } catch (final AIBotException e) {
                 e.printStackTrace();
             }
         }));
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
         if (isOpponent(player)) {
             //отдельная целевая функция
             return getBestDecision(decisionAndWins);
@@ -208,7 +231,7 @@ public class AIDecisionMaker {
         achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 final Position position = game.getBoard().getPositionByCell(cell);
-                final List<Unit> unitsForCapture = new ArrayList<>(); //TODO:
+                final List<Unit> unitsForCapture = player.getUnitsByState(AvailabilityType.AVAILABLE);
                 final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
                 final IGame gameCopy = game.getCopy();
                 try {
@@ -222,6 +245,12 @@ public class AIDecisionMaker {
                 }
             }
         }));
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
         executorService.execute(() -> {
             final IGame gameCopy = game.getCopy();
             try {
@@ -286,6 +315,12 @@ public class AIDecisionMaker {
                     e.printStackTrace();
                 }
             });
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            } catch (final InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -301,6 +336,7 @@ public class AIDecisionMaker {
      * @return - лучшее решение
      */
     private static DecisionAndWin getBestDecision(@NotNull final List<DecisionAndWin> decisionAndWins) {
+        LOGGER.info("BEST DECISIONS: {}", decisionAndWins);
         decisionAndWins.sort(Comparator.comparingInt(o -> o.getWinCollector().getCoinsAmount()));
         final int maxCoinsAmount = decisionAndWins.get(0).getWinCollector().getCoinsAmount();
         final List<DecisionAndWin> bestDecisions = decisionAndWins

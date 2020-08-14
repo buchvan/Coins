@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.ai.vika.AIBot;
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -28,7 +30,7 @@ class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
+    private static @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
 
 
@@ -44,12 +46,19 @@ class SelfPlay {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
-            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
+            //game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
+            AIBotAndSimpleBotToPlayers(game);
             gameLoop(game);
             GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
             GameLogger.printErrorLog(exception);
         }
+    }
+
+    private static void AIBotAndSimpleBotToPlayers(final IGame game) {
+        List<Player> players = game.getPlayers();
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
     }
 
     /**
@@ -88,17 +97,28 @@ class SelfPlay {
     private static void gameLoop(final @NotNull IGame game) {
         GameLogger.printStartGameChoiceLog();
         simpleBotToPlayer.forEach(pair ->
+        {
+            try {
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
-                        game.getRacesPool()));
+                        game.getRacesPool());
+            } catch (final AIBotException e) {
+                e.printStackTrace();
+            }
+        });
         GameLogger.printStartGame();
-        while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
+        while (game.getCurrentRound() < ROUNDS_COUNT) {
+            // Непосредственно игровой цикл
             game.incrementCurrentRound();
             GameLogger.printRoundBeginLog(game.getCurrentRound());
             simpleBotToPlayer.forEach(pair -> {
                 GameLogger.printNextPlayerLog(pair.getSecond());
-                playerRoundProcess(pair.getSecond(), pair.getFirst(),
-                        game); // Раунд игрока. Все свои решения он принимает здесь
+                try {
+                    playerRoundProcess(pair.getSecond(), pair.getFirst(),
+                            game); // Раунд игрока. Все свои решения он принимает здесь
+                } catch (final AIBotException e) {
+                    e.printStackTrace();
+                }
             });
             simpleBotToPlayer.forEach(pair -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
@@ -117,7 +137,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws AIBotException {
         GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
         if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
             // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
@@ -136,7 +156,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void declineRaceProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws AIBotException {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
         GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
@@ -150,7 +170,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws AIBotException {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
@@ -286,7 +306,7 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void distributionUnits(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                          final @NotNull IGame game) {
+                                          final @NotNull IGame game) throws AIBotException {
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
