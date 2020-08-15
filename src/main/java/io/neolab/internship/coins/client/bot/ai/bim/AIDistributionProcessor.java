@@ -123,22 +123,5 @@ public class AIDistributionProcessor {
 //                iterator2.remove();
 //            }
 //        }
-
-//        --------
-
-//        final Iterator<List<Pair<Cell, Integer>>> iterator = distributions.listIterator();
-//        while (iterator.hasNext()) {
-//            boolean flag = false;
-//            final List<Pair<Cell, Integer>> item = iterator.next();
-//            for (final Pair<Cell, Integer> pair : item) {
-//                if (pair.getSecond() == player.getUnitsByState(AvailabilityType.AVAILABLE).size()) {
-//                    flag = true;
-//                    break;
-//                }
-//            }
-//            if (!flag) {
-//                iterator.remove();
-//            }
-//        }
     }
 }
