@@ -21,7 +21,7 @@ import java.util.*;
 
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    private static final long TIMEOUT_MILLIS = 500;
+    private static final long TIMEOUT_MILLIS = 100;
     private final int maxDepth;
     private static final int ROUND_DEPTH = 2;
     private @Nullable NodeTree tree;

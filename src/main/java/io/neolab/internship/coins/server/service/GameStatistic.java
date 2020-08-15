@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.FunctionType;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -26,7 +25,7 @@ public class GameStatistic {
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final int GAME_AMOUNT = 1;
     private static final int PLAYERS_AMOUNT = 2;
-    private static final int BOT1_MAX_DEPTH = 2;
+    private static final int BOT1_MAX_DEPTH = 3;
     private static final FunctionType BOT1_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
     private static final int BOT2_MAX_DEPTH = 2;
     private static final FunctionType BOT2_TYPE = FunctionType.MIN_VALUE;
