@@ -152,7 +152,6 @@ public class MinMaxProcessor {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
@@ -254,7 +253,6 @@ public class MinMaxProcessor {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
@@ -277,7 +275,6 @@ public class MinMaxProcessor {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
     }
@@ -367,7 +364,6 @@ public class MinMaxProcessor {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMinValue(edgeToValue)).getAction());
     }
@@ -412,7 +408,6 @@ public class MinMaxProcessor {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
     }

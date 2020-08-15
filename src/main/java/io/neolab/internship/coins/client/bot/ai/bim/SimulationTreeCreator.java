@@ -123,25 +123,24 @@ public class SimulationTreeCreator {
                                            final @NotNull List<Edge> edges) {
         final boolean isPossible = game.getRacesPool().size() > 0;
         final boolean isFirstChoice = game.getCurrentRound() == 1;
-        if (isPossible && !isFirstChoice) {
-            final List<RecursiveAction> recursiveActions = new ArrayList<>(2);
-            recursiveActions.add(new RecursiveAction() {
-                @Override
-                protected void compute() {
-                    createDeclineRaceNode(currentDepth, game, player, edges, true);
-                }
-            });
-            recursiveActions.add(new RecursiveAction() {
-                @Override
-                protected void compute() {
-                    createDeclineRaceNode(currentDepth, game, player, edges, false);
-                }
-            });
-            RecursiveAction.invokeAll(recursiveActions);
-            recursiveActions.forEach(RecursiveAction::join);
+        if (!isPossible || isFirstChoice) {
+            createDeclineRaceNode(currentDepth, game, player, edges, false);
             return;
         }
-        createDeclineRaceNode(currentDepth, game, player, edges, false);
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(2);
+        recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                createDeclineRaceNode(currentDepth, game, player, edges, true);
+            }
+        });
+        recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                createDeclineRaceNode(currentDepth, game, player, edges, false);
+            }
+        });
+        RecursiveAction.invokeAll(recursiveActions);
     }
 
     /**
@@ -207,7 +206,6 @@ public class SimulationTreeCreator {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(RecursiveAction::join);
     }
 
     /**
@@ -417,27 +415,30 @@ public class SimulationTreeCreator {
                     }
                 }
             });
-            final List<RecursiveTask<Boolean>> recursiveTasks = new ArrayList<>(unitsToPairTiredUnitsToCellList.size());
+            final List<RecursiveAction> recursiveActions = new ArrayList<>(unitsToPairTiredUnitsToCellList.size());
             unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell ->
-                    recursiveTasks.add(new RecursiveTask<>() {
+                    recursiveActions.add(new RecursiveAction() {
                         @Override
-                        protected Boolean compute() {
+                        protected void compute() {
                             final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
                             final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
                             final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-//                            if (currentDepth < 4 || isCellBeneficial(game, player, cell) || RandomGenerator.isYes()) {
-                            AIDistributionProcessor.getIndexes(units, tiredUnitsCount, currentDepth).forEach(i ->
-                                    createCatchCellNode(currentDepth, i, game, player, cell,
+                            final Set<Integer> indexes =
+                                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth);
+                            final List<RecursiveAction> recursiveActions1 = new ArrayList<>(indexes.size());
+                            indexes.forEach(index -> recursiveActions1.add(new RecursiveAction() {
+                                @Override
+                                protected void compute() {
+                                    createCatchCellNode(currentDepth, index, game, player, cell,
                                             Collections.synchronizedList(new LinkedList<>(units)),
-                                            edges, prevCatchCells));
-                            return true;
-//                            }
+                                            edges, prevCatchCells);
+                                }
+                            }));
+                            RecursiveAction.invokeAll(recursiveActions1);
                         }
                     }));
-            RecursiveTask.invokeAll(recursiveTasks);
-            for (final RecursiveTask<Boolean> recursiveTask : recursiveTasks) {
-                isWasCapture = isWasCapture || recursiveTask.join();
-            }
+            isWasCapture = !recursiveActions.isEmpty();
+            RecursiveAction.invokeAll(recursiveActions);
         }
         if (!isWasCapture) {
             createCatchCellEndNode(currentDepth, game, player, edges);
@@ -570,7 +571,6 @@ public class SimulationTreeCreator {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-        recursiveActions.forEach(ForkJoinTask::join);
     }
 
     /**
