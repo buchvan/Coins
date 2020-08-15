@@ -9,6 +9,7 @@ import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.RecursiveAction;
 
 public class MinMaxProcessor {
 
@@ -143,7 +144,15 @@ public class MinMaxProcessor {
     static @NotNull Action maxMinPercentAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToPercent.put(edge, getMaxPercent(edge.getTo(), player, player)));
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
+        edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                edgeToPercent.put(edge, getMaxPercent(edge.getTo(), player, player));
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
@@ -237,7 +246,15 @@ public class MinMaxProcessor {
                                                   final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToPercent.put(edge, getMinPercent(edge.getTo(), opponent, player)));
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
+        edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                edgeToPercent.put(edge, getMinPercent(edge.getTo(), opponent, player));
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesPercent(edgeToPercent)).getAction());
     }
@@ -252,7 +269,15 @@ public class MinMaxProcessor {
     static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToValue.put(edge, getMaxValue(edge.getTo(), player, player)));
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
+        edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                edgeToValue.put(edge, getMaxValue(edge.getTo(), player, player));
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
     }
@@ -334,7 +359,15 @@ public class MinMaxProcessor {
                                                 final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToValue.put(edge, getMinValue(edge.getTo(), opponent, player)));
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
+        edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                edgeToValue.put(edge, getMinValue(edge.getTo(), opponent, player));
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMinValue(edgeToValue)).getAction());
     }
@@ -371,7 +404,15 @@ public class MinMaxProcessor {
                                                           final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
-        edges.forEach(edge -> edgeToValue.put(edge, getValueDifference(edge.getTo(), player, player)));
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
+        edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                edgeToValue.put(edge, getValueDifference(edge.getTo(), player, player));
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
         return Objects.requireNonNull(
                 RandomGenerator.chooseItemFromList(getProfitableEdgesMaxValue(edgeToValue)).getAction());
     }
@@ -383,14 +424,14 @@ public class MinMaxProcessor {
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
     private static int getValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                             final @NotNull Player currentPlayer) {
+                                          final @NotNull Player currentPlayer) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToValueDifference()).get(player)
                 : getDefaultValueDifference(nodeTree.getEdges(), player, currentPlayer);
     }
 
     private static int getDefaultValueDifference(final @NotNull List<Edge> edges, final @NotNull Player player,
-                                       final @NotNull Player currentPlayer) {
+                                                 final @NotNull Player currentPlayer) {
         if (player == currentPlayer) {
             int maxValue = Integer.MIN_VALUE;
             for (final Edge edge : edges) {
