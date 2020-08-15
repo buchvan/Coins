@@ -23,8 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatingProcessor.*;
 
@@ -125,10 +124,21 @@ public class SimulationTreeCreator {
         final boolean isPossible = game.getRacesPool().size() > 0;
         final boolean isFirstChoice = game.getCurrentRound() == 1;
         if (isPossible && !isFirstChoice) {
-            final ExecutorService executorService = Executors.newFixedThreadPool(2);
-            executorService.execute(() -> createDeclineRaceNode(currentDepth, game, player, edges, true));
-            executorService.execute(() -> createDeclineRaceNode(currentDepth, game, player, edges, false));
-            ExecutorServiceProcessor.executeExecutorService(executorService);
+            final List<RecursiveAction> recursiveActions = new ArrayList<>(2);
+            recursiveActions.add(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    createDeclineRaceNode(currentDepth, game, player, edges, true);
+                }
+            });
+            recursiveActions.add(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    createDeclineRaceNode(currentDepth, game, player, edges, false);
+                }
+            });
+            RecursiveAction.invokeAll(recursiveActions);
+            recursiveActions.forEach(RecursiveAction::join);
             return;
         }
         createDeclineRaceNode(currentDepth, game, player, edges, false);
@@ -183,17 +193,21 @@ public class SimulationTreeCreator {
 //            }
 //            races.add(race);
 //        }
-        final ExecutorService executorService = Executors.newFixedThreadPool(game.getRacesPool().size());
-        game.getRacesPool().forEach(race -> executorService.execute(() -> {
-            final Action newAction = new ChangeRaceAction(race);
-            try {
-                AILogger.printLogChangeRace(currentDepth, race, player);
-                edges.add(new Edge(player.getId(), newAction, createSubtree(currentDepth, game, player, newAction)));
-            } catch (final CoinsException exception) {
-                exception.printStackTrace();
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(game.getRacesPool().size());
+        game.getRacesPool().forEach(race -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                final Action newAction = new ChangeRaceAction(race);
+                try {
+                    AILogger.printLogChangeRace(currentDepth, race, player);
+                    edges.add(new Edge(player.getId(), newAction, createSubtree(currentDepth, game, player, newAction)));
+                } catch (final CoinsException exception) {
+                    exception.printStackTrace();
+                }
             }
         }));
-        ExecutorServiceProcessor.executeExecutorService(executorService);
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(RecursiveAction::join);
     }
 
     /**
@@ -391,8 +405,10 @@ public class SimulationTreeCreator {
         boolean isWasCapture = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-            achievableCells.removeAll(prevCatchCells);
-            for (final Cell achievableCell : achievableCells) {
+            synchronized (prevCatchCells) {
+                achievableCells.removeAll(prevCatchCells);
+            }
+            achievableCells.forEach(achievableCell -> {
                 if (isCellBeneficial(game, player, achievableCell) || RandomGenerator.isYes()) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
@@ -400,28 +416,28 @@ public class SimulationTreeCreator {
                         unitsToPairTiredUnitsToCellList.add(triplet);
                     }
                 }
+            });
+            final List<RecursiveTask<Boolean>> recursiveTasks = new ArrayList<>(unitsToPairTiredUnitsToCellList.size());
+            unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell ->
+                    recursiveTasks.add(new RecursiveTask<>() {
+                        @Override
+                        protected Boolean compute() {
+                            final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+                            final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
+                            final Cell cell = unitsToPairTiredUnitsToCell.getThird();
+//                            if (currentDepth < 4 || isCellBeneficial(game, player, cell) || RandomGenerator.isYes()) {
+                            AIDistributionProcessor.getIndexes(units, tiredUnitsCount, currentDepth).forEach(i ->
+                                    createCatchCellNode(currentDepth, i, game, player, cell,
+                                            Collections.synchronizedList(new LinkedList<>(units)),
+                                            edges, prevCatchCells));
+                            return true;
+//                            }
+                        }
+                    }));
+            RecursiveTask.invokeAll(recursiveTasks);
+            for (final RecursiveTask<Boolean> recursiveTask : recursiveTasks) {
+                isWasCapture = isWasCapture || recursiveTask.join();
             }
-            for (final Triplet<List<Unit>, Integer, Cell> unitsToPairTiredUnitsToCell : unitsToPairTiredUnitsToCellList) {
-                final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-                final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
-                final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-                if (RandomGenerator.isYes() && currentDepth < 4
-                        || isCellBeneficial(game, player, cell)
-                        || currentDepth >= 4 && RandomGenerator.isYes()) {
-                    isWasCapture = true;
-                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
-                            createCatchCellNode(currentDepth, i, game, player, cell,
-                                    Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-                }
-            }
-//            unitsToPairTiredUnitsToCellList.forEach(unitsToPairTiredUnitsToCell -> {
-//                final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-//                final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
-//                final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-//                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth).forEach(i ->
-//                            createCatchCellNode(currentDepth, i, game, player, cell,
-//                                    Collections.synchronizedList(new LinkedList<>(units)), edges, prevCatchCells));
-//            });
         }
         if (!isWasCapture) {
             createCatchCellEndNode(currentDepth, game, player, edges);
@@ -546,11 +562,15 @@ public class SimulationTreeCreator {
             createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
             return;
         }
-        final ExecutorService executorService = Executors.newFixedThreadPool(actualDistributions.size());
-        actualDistributions.forEach(distribution ->
-                executorService.execute(() ->
-                        createDistributionUnitsNode(currentDepth, game, player, edges, distribution)));
-        ExecutorServiceProcessor.executeExecutorService(executorService);
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(actualDistributions.size());
+        actualDistributions.forEach(distribution -> recursiveActions.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                createDistributionUnitsNode(currentDepth, game, player, edges, distribution);
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions);
+        recursiveActions.forEach(ForkJoinTask::join);
     }
 
     /**
