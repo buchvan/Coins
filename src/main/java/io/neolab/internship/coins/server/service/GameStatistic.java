@@ -10,7 +10,6 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -39,6 +38,7 @@ public class GameStatistic {
         private final @NotNull Map<Pair<Race, CellType>, Integer> capturesNumber = new HashMap<>();
         private final @NotNull List<Race> firstRaces = new ArrayList<>(GAME_AMOUNT);
         private final @NotNull List<Race> lastRaces = new ArrayList<>(GAME_AMOUNT);
+        private long maxTime = 0;
 
         int getWinAmount() {
             return winAmount;
@@ -78,19 +78,29 @@ public class GameStatistic {
             lastRaces.add(lastRace);
         }
 
-        @Contract(value = "null -> false", pure = true)
+        long getMaxTime() {
+            return maxTime;
+        }
+
+        void updateMaxTime(final long time) {
+            maxTime = Math.max(maxTime, time);
+        }
+
         @Override
         public boolean equals(final Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             final Statistic statistic = (Statistic) o;
             return winAmount == statistic.winAmount &&
-                    capturesNumber.equals(statistic.capturesNumber);
+                    maxTime == statistic.maxTime &&
+                    capturesNumber.equals(statistic.capturesNumber) &&
+                    firstRaces.equals(statistic.firstRaces) &&
+                    lastRaces.equals(statistic.lastRaces);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(winAmount, capturesNumber);
+            return Objects.hash(winAmount, capturesNumber, firstRaces, lastRaces, maxTime);
         }
 
         @Override
@@ -98,6 +108,9 @@ public class GameStatistic {
             return "Statistic{" +
                     "winAmount=" + winAmount +
                     ", capturesNumber=" + capturesNumber +
+                    ", firstRaces=" + firstRaces +
+                    ", lastRaces=" + lastRaces +
+                    ", maxTime=" + maxTime +
                     '}';
         }
     }

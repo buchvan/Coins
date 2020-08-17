@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LogCleaner;
@@ -93,10 +94,12 @@ class SelfPlay {
      */
     private static void gameLoop(final @NotNull IGame game, final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
         GameLogger.printStartGameChoiceLog();
-        botPlayerPairs.forEach(pair ->
-                GameAnswerProcessor.changeRace(pair.getSecond(),
-                        pair.getFirst().chooseRace(pair.getSecond(), game),
-                        game.getRacesPool(), true));
+        botPlayerPairs.forEach(pair -> {
+            final long firstTime = System.currentTimeMillis();
+            final Race race = pair.getFirst().chooseRace(pair.getSecond(), game);
+            playerStatistic.get(pair.getSecond()).updateMaxTime(System.currentTimeMillis() - firstTime);
+            GameAnswerProcessor.changeRace(pair.getSecond(), race, game.getRacesPool(), true);
+        });
         botPlayerPairs.forEach(pair ->
                 SelfPlay.playerStatistic.get(pair.getSecond())
                         .addFirstRace(Objects.requireNonNull(pair.getSecond().getRace())));
@@ -128,9 +131,14 @@ class SelfPlay {
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
         GameLoopProcessor.playerRoundBeginUpdate(player, true);  // активация данных игрока в начале раунда
-        if (game.getRacesPool().size() > 0 && bot.declineRaceChoose(player, game)) {
-            // В случае ответа "ДА" от бота на вопрос: "Идти в упадок?"
-            declineRaceProcess(player, bot, game); // Уход в упадок
+        if (game.getRacesPool().size() > 0) {
+            final long firstTime = System.currentTimeMillis();
+            final boolean isDeclineRace = bot.declineRaceChoose(player, game);
+            playerStatistic.get(player).updateMaxTime(System.currentTimeMillis() - firstTime);
+            if (isDeclineRace) {
+                // В случае ответа "ДА" от бота на вопрос: "Идти в упадок?"
+                declineRaceProcess(player, bot, game); // Уход в упадок
+            }
         }
         cellCaptureProcess(player, bot, game); // Завоёвывание клеток
         distributionUnits(player, bot, game); // Распределение войск
@@ -148,7 +156,10 @@ class SelfPlay {
                                            final @NotNull IGame game) {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, bot.chooseRace(player, game), game.getRacesPool(), true);
+        final long firstTime = System.currentTimeMillis();
+        final Race newRace = bot.chooseRace(player, game);
+        playerStatistic.get(player).updateMaxTime(System.currentTimeMillis() - firstTime);
+        GameAnswerProcessor.changeRace(player, newRace, game.getRacesPool(), true);
     }
 
     /**
@@ -168,7 +179,9 @@ class SelfPlay {
         GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, true);
         while (true) {
             /* Пока есть что захватывать и какими войсками захватывать */
+            final long firstTime = System.currentTimeMillis();
             final Pair<Position, List<Unit>> catchingCellToUnitsList = bot.chooseCatchingCell(player, game);
+            playerStatistic.get(player).updateMaxTime(System.currentTimeMillis() - firstTime);
             if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
                 break;
             }
@@ -298,7 +311,9 @@ class SelfPlay {
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
+        final long firstTime = System.currentTimeMillis();
         final Map<Position, List<Unit>> distributionUnits = bot.distributionUnits(player, game);
+        playerStatistic.get(player).updateMaxTime(System.currentTimeMillis() - firstTime);
         distributionUnits.forEach((position, units) -> {
             GameLogger.printCellDefendingLog(player, units.size(), position);
             GameLoopProcessor.protectCell(player,
