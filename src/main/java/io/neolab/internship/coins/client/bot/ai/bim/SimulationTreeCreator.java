@@ -16,6 +16,7 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
+import io.neolab.internship.coins.utils.RandomGenerator;
 import io.neolab.internship.coins.utils.Triplet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -404,7 +405,7 @@ public class SimulationTreeCreator {
                 achievableCells.removeAll(prevCatchCells);
             }
             achievableCells.forEach(achievableCell -> {
-                if (maxDepth <= 2 || (isCellBeneficial(game, player, achievableCell))) {
+                if (maxDepth <= 2 || isCellBeneficial(game, player, achievableCell)) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {

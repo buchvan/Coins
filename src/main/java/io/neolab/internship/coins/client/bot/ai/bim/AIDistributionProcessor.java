@@ -23,10 +23,9 @@ public class AIDistributionProcessor {
         final int denominator = (int) Math.pow(2, depth - 1);
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
-        final Set<Integer> indexes = new HashSet<>(Math.max(capacity, 3));
+        final Set<Integer> indexes = new HashSet<>(Math.max(capacity, 2));
         indexes.add(tiredUnitsCount);
         indexes.add(units.size());
-        indexes.add((tiredUnitsCount + units.size()) / 2);
         for (int i = tiredUnitsCount + 1; i < units.size(); i++) {
             if (indexes.size() >= capacity) {
                 i = units.size();
