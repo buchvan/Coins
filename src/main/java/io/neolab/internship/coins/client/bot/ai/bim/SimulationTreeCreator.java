@@ -16,7 +16,6 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
-import io.neolab.internship.coins.utils.RandomGenerator;
 import io.neolab.internship.coins.utils.Triplet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -175,25 +174,23 @@ public class SimulationTreeCreator {
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
-//        final int capacity = Math.min(game.getRacesPool().size(), 3);
-//        final Set<Race> races = Collections.synchronizedSet(new HashSet<>(capacity));
-//        if (game.getRacesPool().contains(Race.ELF)) {
-//            races.add(Race.ELF);
-//        }
-//        if (game.getRacesPool().contains(Race.UNDEAD)) {
-//            races.add(Race.UNDEAD);
-//        }
-//        if (game.getRacesPool().contains(Race.AMPHIBIAN)) {
-//            races.add(Race.AMPHIBIAN);
-//        }
-//        for (final Race race : game.getRacesPool()) {
-//            if (races.size() >= capacity) {
-//                break;
-//            }
-//            races.add(race);
-//        }
-        final List<RecursiveAction> recursiveActions = new ArrayList<>(game.getRacesPool().size());
-        game.getRacesPool().forEach(race -> recursiveActions.add(new RecursiveAction() {
+        final List<Race> races;
+        if (isBeforeGame(game)) {
+            races = new ArrayList<>(3);
+            game.getRacesPool().forEach(race -> {
+                if (race == Race.UNDEAD) {
+                    races.add(Race.UNDEAD);
+                } else if (race == Race.ORC) {
+                    races.add(Race.ORC);
+                } else if (race == Race.AMPHIBIAN) {
+                    races.add(Race.AMPHIBIAN);
+                }
+            });
+        } else {
+            races = game.getRacesPool();
+        }
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(races.size());
+        races.forEach(race -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
                 final Action newAction = new ChangeRaceAction(race);
@@ -407,7 +404,7 @@ public class SimulationTreeCreator {
                 achievableCells.removeAll(prevCatchCells);
             }
             achievableCells.forEach(achievableCell -> {
-                if (isCellBeneficial(game, player, achievableCell) || RandomGenerator.isYes()) {
+                if (maxDepth <= 2 || (isCellBeneficial(game, player, achievableCell))) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {
@@ -430,8 +427,7 @@ public class SimulationTreeCreator {
                                 @Override
                                 protected void compute() {
                                     createCatchCellNode(currentDepth, index, game, player, cell,
-                                            Collections.synchronizedList(new LinkedList<>(units)),
-                                            edges, prevCatchCells);
+                                            new LinkedList<>(units), edges, prevCatchCells);
                                 }
                             }));
                             RecursiveAction.invokeAll(recursiveActions1);
@@ -455,13 +451,17 @@ public class SimulationTreeCreator {
      */
     private boolean isCellBeneficial(final @NotNull IGame game, final @NotNull Player player,
                                      final @NotNull Cell cell) {
-        return player.getRace() == Race.ELF
+        return player.getRace() == Race.ELF && cell.getType() != CellType.WATER
                 && game.getOwnToCells().get(player)
                 .stream()
                 .noneMatch(controlledCell ->
                         controlledCell.getType() == cell.getType())
                 || player.getRace() == Race.AMPHIBIAN && cell.getType() == CellType.WATER
-                || player.getRace() == Race.MUSHROOM && cell.getType() == CellType.MUSHROOM;
+                || player.getRace() == Race.MUSHROOM && cell.getType() == CellType.MUSHROOM
+                || player.getRace() == Race.GNOME
+                && cell.getType() != CellType.WATER && cell.getType() != CellType.MOUNTAIN
+                || player.getRace() == Race.UNDEAD
+                || player.getRace() == Race.ORC;
     }
 
     /**
@@ -553,14 +553,14 @@ public class SimulationTreeCreator {
                                               final @NotNull IGame game, final @NotNull Player player,
                                               final @NotNull List<Edge> edges) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        final List<List<Pair<Cell, Integer>>> distributions =
+        final List<Map<Cell, Integer>> distributions =
                 AIDistributionProcessor.getDistributions(controlledCells,
                         player.getUnitsByState(AvailabilityType.AVAILABLE).size());
-        final Set<List<Pair<Cell, Integer>>> actualDistributions =
+        final Set<Map<Cell, Integer>> actualDistributions =
                 AIDistributionProcessor
                         .distributionsNumberReduce(distributions, game.getOwnToCells().get(player).size());
         if (actualDistributions.size() == 0) {
-            createDistributionUnitsNode(currentDepth, game, player, edges, new LinkedList<>());
+            createDistributionUnitsNode(currentDepth, game, player, edges, new HashMap<>(0));
             return;
         }
         final List<RecursiveAction> recursiveActions = new ArrayList<>(actualDistributions.size());
@@ -584,13 +584,13 @@ public class SimulationTreeCreator {
     private void createDistributionUnitsNode(final int currentDepth,
                                              final @NotNull IGame game, final @NotNull Player player,
                                              final @NotNull List<Edge> edges,
-                                             final @NotNull List<Pair<Cell, Integer>> distribution) {
-        final Map<Position, List<Unit>> resolution = new HashMap<>();
-        distribution.forEach(pair -> {
+                                             final @NotNull Map<Cell, Integer> distribution) {
+        final Map<Position, List<Unit>> resolution = new HashMap<>(distribution.size());
+        distribution.forEach((cell, integer) -> {
             final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
             final List<Unit> units = new LinkedList<>(availableUnits.subList(
-                    0, pair.getSecond())); // список юнитов, которое игрок хочет распределить в эту клетку
-            resolution.put(game.getBoard().getPositionByCell(pair.getFirst()), units);
+                    0, integer)); // список юнитов, которое игрок хочет распределить в эту клетку
+            resolution.put(game.getBoard().getPositionByCell(cell), units);
             availableUnits.removeAll(units);
         });
         final Action action = new DistributionUnitsAction(resolution);

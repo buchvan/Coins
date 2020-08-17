@@ -2,7 +2,6 @@ package io.neolab.internship.coins.client.bot.ai.bim;
 
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.utils.Pair;
 import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -24,16 +23,16 @@ public class AIDistributionProcessor {
         final int denominator = (int) Math.pow(2, depth - 1);
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
-        final Set<Integer> indexes = new HashSet<>(capacity);
+        final Set<Integer> indexes = new HashSet<>(Math.max(capacity, 3));
         indexes.add(tiredUnitsCount);
         indexes.add(units.size());
         indexes.add((tiredUnitsCount + units.size()) / 2);
-        for (int i = tiredUnitsCount; i <= units.size(); i++) {
-            if (RandomGenerator.isYes()) {
-                indexes.add(i);
-            }
+        for (int i = tiredUnitsCount + 1; i < units.size(); i++) {
             if (indexes.size() >= capacity) {
                 i = units.size();
+            }
+            if (RandomGenerator.isYes()) {
+                indexes.add(i);
             }
         }
         if (indexes.size() < capacity) {
@@ -55,20 +54,20 @@ public class AIDistributionProcessor {
      * @return список распределений. Распределение - это список пар (клетка, число юнитов, распределённых в неё)
      */
     @Contract(pure = true)
-    static @NotNull List<List<Pair<Cell, Integer>>> getDistributions(final @NotNull List<Cell> cells,
+    static @NotNull List<Map<Cell, Integer>> getDistributions(final @NotNull List<Cell> cells,
                                                                      final int n) {
-        final List<List<Pair<Cell, Integer>>> distributions = new LinkedList<>();
+        final List<Map<Cell, Integer>> distributions = new LinkedList<>();
         if (!cells.isEmpty()) {
             final Cell cell = cells.get(0);
             for (int i = n; i >= 0; i--) {
                 final List<Cell> otherCells = new LinkedList<>(cells);
                 otherCells.remove(cell);
-                final List<List<Pair<Cell, Integer>>> miniDistributions = getDistributions(otherCells, n - i);
+                final List<Map<Cell, Integer>> miniDistributions = getDistributions(otherCells, n - i);
                 if (i > 0) {
                     final int unitsToCell = i;
-                    miniDistributions.forEach(miniDistribution -> miniDistribution.add(new Pair<>(cell, unitsToCell)));
-                    final List<Pair<Cell, Integer>> distribution = new LinkedList<>();
-                    distribution.add(new Pair<>(cell, unitsToCell));
+                    miniDistributions.forEach(miniDistribution -> miniDistribution.put(cell, unitsToCell));
+                    final Map<Cell, Integer> distribution = new HashMap<>(1);
+                    distribution.put(cell, unitsToCell);
                     miniDistributions.add(distribution);
                 }
                 distributions.addAll(miniDistributions);
@@ -84,13 +83,13 @@ public class AIDistributionProcessor {
      * @param controlledCellsCount - число подконтрольных клеток
      * @return какое-то множество распределений
      */
-    static @NotNull Set<List<Pair<Cell, Integer>>> distributionsNumberReduce(
-            final @NotNull List<List<Pair<Cell, Integer>>> distributions, final int controlledCellsCount) {
+    static @NotNull Set<Map<Cell, Integer>> distributionsNumberReduce(
+            final @NotNull List<Map<Cell, Integer>> distributions, final int controlledCellsCount) {
         if (controlledCellsCount == 0) {
             return new HashSet<>(0);
         }
-        final Set<List<Pair<Cell, Integer>>> actualDistributions = new HashSet<>(controlledCellsCount);
-        for (final List<Pair<Cell, Integer>> distribution : distributions) {
+        final Set<Map<Cell, Integer>> actualDistributions = new HashSet<>(controlledCellsCount);
+        for (final Map<Cell, Integer> distribution : distributions) {
             if (RandomGenerator.isYes()) {
                 actualDistributions.add(distribution);
             }
@@ -99,7 +98,7 @@ public class AIDistributionProcessor {
             }
         }
         if (actualDistributions.size() < controlledCellsCount) {
-            for (final List<Pair<Cell, Integer>> distribution : distributions) {
+            for (final Map<Cell, Integer> distribution : distributions) {
                 actualDistributions.add(distribution);
                 if (actualDistributions.size() >= controlledCellsCount) {
                     break;
