@@ -41,33 +41,6 @@ public class SmartBot implements IBot {
         tree = null;
     }
 
-//    /**
-//     * Обновление симуляционного дерева игры после выбора до начала игры
-//     *
-//     * @param tree - дерево
-//     * @param game - игра
-//     * @return ссылку на новый корень
-//     */
-//    private static @NotNull NodeTree updateTreeAfterChoiceBeforeGame(@NotNull NodeTree tree,
-//                                                                     final @NotNull IGame game) {
-//        while (!tree.getEdges().isEmpty() && tree.getEdges().get(0).getAction() instanceof ChangeRaceAction) {
-//            final NodeTree tempPointer = tree;
-//            final Player currentPlayer = game.getPlayers().stream()
-//                    .filter(player1 ->
-//                            player1.getId() == Objects.requireNonNull(
-//                                    tempPointer.getEdges().get(0).getPlayer()).getId())
-//                    .findAny()
-//                    .orElseThrow();
-//            for (final Edge edge : tree.getEdges()) {
-//                final ChangeRaceAction changeRaceAction = (ChangeRaceAction) edge.getAction();
-//                if (currentPlayer.getRace() == Objects.requireNonNull(changeRaceAction).getNewRace()) {
-//                    tree = SimulationTreeCreatingProcessor.updateTree(tree, changeRaceAction);
-//                }
-//            }
-//        }
-//        return tree;
-//    }
-
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         tree = treeCreator.createTree(game, player, maxDepth);
