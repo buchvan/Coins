@@ -23,10 +23,9 @@ public class AIDistributionProcessor {
         final int denominator = (int) Math.pow(2, depth - 1);
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
-        final Set<Integer> indexes = new HashSet<>(Math.max(capacity, 2));
+        final Set<Integer> indexes = new HashSet<>(capacity);
         indexes.add(tiredUnitsCount);
-        indexes.add(units.size());
-        for (int i = tiredUnitsCount + 1; i < units.size(); i++) {
+        for (int i = tiredUnitsCount + 1; i <= units.size(); i++) {
             if (indexes.size() >= capacity) {
                 i = units.size();
             }
@@ -53,22 +52,19 @@ public class AIDistributionProcessor {
      * @return список распределений. Распределение - это список пар (клетка, число юнитов, распределённых в неё)
      */
     @Contract(pure = true)
-    static @NotNull List<Map<Cell, Integer>> getDistributions(final @NotNull List<Cell> cells,
-                                                                     final int n) {
+    static @NotNull List<Map<Cell, Integer>> getDistributions(final @NotNull List<Cell> cells, final int n) {
         final List<Map<Cell, Integer>> distributions = new LinkedList<>();
         if (!cells.isEmpty()) {
             final Cell cell = cells.get(0);
-            for (int i = n; i >= 0; i--) {
+            for (int i = n; i >= 1; i--) {
                 final List<Cell> otherCells = new LinkedList<>(cells);
                 otherCells.remove(cell);
                 final List<Map<Cell, Integer>> miniDistributions = getDistributions(otherCells, n - i);
-                if (i > 0) {
-                    final int unitsToCell = i;
-                    miniDistributions.forEach(miniDistribution -> miniDistribution.put(cell, unitsToCell));
-                    final Map<Cell, Integer> distribution = new HashMap<>(1);
-                    distribution.put(cell, unitsToCell);
-                    miniDistributions.add(distribution);
-                }
+                final int unitsToCell = i;
+                miniDistributions.forEach(miniDistribution -> miniDistribution.put(cell, unitsToCell));
+                final Map<Cell, Integer> distribution = new HashMap<>();
+                distribution.put(cell, unitsToCell);
+                miniDistributions.add(distribution);
                 distributions.addAll(miniDistributions);
             }
         }
