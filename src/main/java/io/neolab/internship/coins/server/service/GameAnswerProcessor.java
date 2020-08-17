@@ -126,7 +126,7 @@ public class GameAnswerProcessor {
      * @param player    - игрок, который решил идти в упадок
      * @param racesPool - пул всех доступных рас
      */
-    static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
+    public static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
                            final @NotNull List<Race> racesPool) {
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
@@ -210,15 +210,15 @@ public class GameAnswerProcessor {
      * @param transitCells    - транзитные клетки игрока
      * @param achievableCells - множество достижимых клеток
      */
-    private static void pretendToCell(final @NotNull Player player,
-                                      final @NotNull Cell captureCell,
-                                      final @NotNull List<Unit> units,
-                                      final @NotNull IBoard board,
-                                      final @NotNull GameFeatures gameFeatures,
-                                      final @NotNull Map<Player, List<Cell>> ownToCells,
-                                      final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                                      final @NotNull List<Cell> transitCells,
-                                      final @NotNull Set<Cell> achievableCells) {
+    public static void pretendToCell(final @NotNull Player player,
+                                     final @NotNull Cell captureCell,
+                                     final @NotNull List<Unit> units,
+                                     final @NotNull IBoard board,
+                                     final @NotNull GameFeatures gameFeatures,
+                                     final @NotNull Map<Player, List<Cell>> ownToCells,
+                                     final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                                     final @NotNull List<Cell> transitCells,
+                                     final @NotNull Set<Cell> achievableCells) {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
@@ -279,7 +279,7 @@ public class GameAnswerProcessor {
      *                        -> юниты, которые игрок хочет распределить в клетку
      * @param board           - борда
      */
-    private static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
+    public static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
                                          final @NotNull Set<Cell> feudalCells,
                                          final @NotNull Map<Position, List<Unit>> resolutions,
                                          final @NotNull IBoard board) {

@@ -136,8 +136,6 @@ public class AIDecisionMaker {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final boolean[] declineRaceTypes = {true, false};
         for (final boolean declineRaceType : declineRaceTypes) {
-            //final ExecutorService executorService = Executors.newFixedThreadPool(2);
-            //executorService.execute(() -> {
             final Decision declineRaceDecision = new DeclineRaceDecision(declineRaceType);
             LOGGER.info("DECLINE RACE DECISION: {}", declineRaceDecision);
             try {
@@ -160,13 +158,6 @@ public class AIDecisionMaker {
             } catch (final AIBotException e) {
                 e.printStackTrace();
             }
-            // });
-            //executorService.shutdown();
-            // try {
-            //     executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            // } catch (final InterruptedException e) {
-            //     e.printStackTrace();
-            // }
         }
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -185,8 +176,7 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createChangeRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Race> availableRaces = game.getRacesPool();
-        // final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
-        availableRaces.forEach(race -> /*executorService.execute(() -> */ {
+        availableRaces.forEach(race -> {
                     final IGame gameCopy = game.getCopy();
                     try {
                         final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
@@ -219,14 +209,7 @@ public class AIDecisionMaker {
                         e.printStackTrace();
                     }
                 }
-                /*)*/
         );
-        // executorService.shutdown();
-        //try {
-        //   executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        //} catch (final InterruptedException e) {
-        //    e.printStackTrace();
-        //}
         if (isOpponent(player)) {
             //отдельная целевая функция
             return getBestDecision(decisionAndWins);
@@ -243,16 +226,14 @@ public class AIDecisionMaker {
      */
     private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
-        final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
+        final Set<Cell> achievableCells = new HashSet<>();
+        achievableCells.addAll(game.getPlayerToAchievableCells().get(player));
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
-        LOGGER.info("ACHIEVABLE CELLS: {}", achievableCells);
-        // + 1 for null catch cell decision
-        //final ExecutorService executorService = Executors.newFixedThreadPool(
-        //    achievableCells.size() + 1);
-        achievableCells.forEach(cell -> /*executorService.execute(() ->*/ {
+        LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
+        achievableCells.forEach(cell -> {
                     if (checkCellCaptureOpportunity(cell, player, game)) {
                         final Position position = game.getBoard().getPositionByCell(cell);
-                        final List<Unit> unitsForCapture = player.getUnitsByState(AvailabilityType.AVAILABLE);
+                        final List<Unit> unitsForCapture = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
                         final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
                         LOGGER.info("CATCH CELL DECISION: {}", decision);
                         final IGame gameCopy = game.getCopy();
@@ -267,20 +248,12 @@ public class AIDecisionMaker {
                         }
                     }
                 }
-                /*)*/
         );
-        // executorService.shutdown();
-        // try {
-        //     executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        // } catch (final InterruptedException e) {
-        //     e.printStackTrace();
-        // }
-        // executorService.execute(() -> {
         final IGame gameCopy = game.getCopy();
         try {
             final Player playerCopy = getPlayerCopy(game, player.getId());
             final Decision decision = new CatchCellDecision(null);
-            simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+            //simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
             final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
                     DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
@@ -288,7 +261,6 @@ public class AIDecisionMaker {
         } catch (final AIBotException e) {
             e.printStackTrace();
         }
-        //  });
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -317,8 +289,6 @@ public class AIDecisionMaker {
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
-            // final ExecutorService executorService = Executors.newFixedThreadPool(combination.size());
-            // executorService.execute(() -> {
             final IGame gameCopy = game.getCopy();
             try {
                 final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
@@ -346,14 +316,6 @@ public class AIDecisionMaker {
                 e.printStackTrace();
             }
         }
-        //);
-        // executorService.shutdown();
-        // try {
-        //   executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        // } catch (final InterruptedException e) {
-        //     e.printStackTrace();
-        // }
-        // }
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
