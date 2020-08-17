@@ -226,8 +226,7 @@ public class AIDecisionMaker {
      */
     private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
-        final Set<Cell> achievableCells = new HashSet<>();
-        achievableCells.addAll(game.getPlayerToAchievableCells().get(player));
+        final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
         achievableCells.forEach(cell -> {
@@ -253,7 +252,7 @@ public class AIDecisionMaker {
         try {
             final Player playerCopy = getPlayerCopy(game, player.getId());
             final Decision decision = new CatchCellDecision(null);
-            //simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+            simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
             final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
                     DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
@@ -352,7 +351,6 @@ public class AIDecisionMaker {
     private static boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
                                                        @NotNull final IGame game) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
         final List<Unit> playerAvailableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.contains(cell)) {
             return playerAvailableUnits.size() >= cell.getType().getCatchDifficulty();
