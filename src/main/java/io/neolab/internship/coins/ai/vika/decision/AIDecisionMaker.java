@@ -228,6 +228,7 @@ public class AIDecisionMaker {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
         achievableCells.forEach(cell -> {
                     if (checkCellCaptureOpportunity(cell, player, game)) {

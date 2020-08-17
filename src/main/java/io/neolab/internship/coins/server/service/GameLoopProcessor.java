@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.client.bot.SimpleBot;
+import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -15,6 +17,8 @@ import io.neolab.internship.coins.utils.ListProcessor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -22,6 +26,9 @@ import java.util.*;
  * Процессор, содержащий все основные функции, обновляющие игровые сущности (с выводами логов)
  */
 public class GameLoopProcessor {
+
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameLoopProcessor.class);
 
     /**
      * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
@@ -63,7 +70,9 @@ public class GameLoopProcessor {
         } else {
             controlledCells.forEach(controlledCell -> {
                 achievableCells.add(controlledCell);
+                LOGGER.info("CELL FOR NEIGHBORING: {}", controlledCell);
                 final List<Cell> neighboringCells = getAllNeighboringCells(board, controlledCell);
+                LOGGER.info("NEIGHBORING CELLS: {}", neighboringCells);
                 achievableCells.addAll(neighboringCells); // добавляем всех соседей каждой клетки, занятой игроком
                 neighboringCells.forEach(neighboringCell -> updateNeighboringCellsIfNecessary(board, neighboringCell));
             });
