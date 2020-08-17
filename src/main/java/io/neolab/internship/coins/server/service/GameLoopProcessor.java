@@ -27,9 +27,6 @@ import java.util.*;
  */
 public class GameLoopProcessor {
 
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GameLoopProcessor.class);
-
     /**
      * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
@@ -70,9 +67,7 @@ public class GameLoopProcessor {
         } else {
             controlledCells.forEach(controlledCell -> {
                 achievableCells.add(controlledCell);
-                LOGGER.info("CELL FOR NEIGHBORING: {}", controlledCell);
                 final List<Cell> neighboringCells = getAllNeighboringCells(board, controlledCell);
-                LOGGER.info("NEIGHBORING CELLS: {}", neighboringCells);
                 achievableCells.addAll(neighboringCells); // добавляем всех соседей каждой клетки, занятой игроком
                 neighboringCells.forEach(neighboringCell -> updateNeighboringCellsIfNecessary(board, neighboringCell));
             });

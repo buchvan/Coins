@@ -229,7 +229,7 @@ public class GameAnswerProcessor {
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
-        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
+        final List<Cell> neighboringCells = new LinkedList<>(getAllNeighboringCells(board, captureCell));
         neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
