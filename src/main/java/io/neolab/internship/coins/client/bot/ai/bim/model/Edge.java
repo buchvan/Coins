@@ -38,13 +38,12 @@ public class Edge {
         if (o == null || getClass() != o.getClass()) return false;
         final Edge edge = (Edge) o;
         return playerId == edge.playerId &&
-                Objects.equals(action, edge.action) &&
-                to.equals(edge.to);
+                Objects.equals(action, edge.action);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(playerId, action, to);
+        return Objects.hash(playerId, action);
     }
 
     @Override
