@@ -25,6 +25,9 @@ public class AIDistributionProcessor {
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
         final Set<Integer> indexes = new HashSet<>(capacity);
+        indexes.add(tiredUnitsCount);
+        indexes.add(units.size());
+        indexes.add((tiredUnitsCount + units.size()) / 2);
         for (int i = tiredUnitsCount; i <= units.size(); i++) {
             if (RandomGenerator.isYes()) {
                 indexes.add(i);
@@ -84,7 +87,7 @@ public class AIDistributionProcessor {
     static @NotNull Set<List<Pair<Cell, Integer>>> distributionsNumberReduce(
             final @NotNull List<List<Pair<Cell, Integer>>> distributions, final int controlledCellsCount) {
         if (controlledCellsCount == 0) {
-            return new HashSet<>();
+            return new HashSet<>(0);
         }
         final Set<List<Pair<Cell, Integer>>> actualDistributions = new HashSet<>(controlledCellsCount);
         for (final List<Pair<Cell, Integer>> distribution : distributions) {
