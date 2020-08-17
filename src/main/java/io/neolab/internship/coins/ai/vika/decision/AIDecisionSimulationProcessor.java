@@ -27,12 +27,12 @@ class AIDecisionSimulationProcessor {
      */
     static void simulateDeclineRaceDecision(final @NotNull Player player, final @NotNull IGame game,
                                             @NotNull final DeclineRaceDecision decision) {
+        GameLoopProcessor.playerRoundBeginUpdate(player);
         if (decision.isDeclineRace()) {
             game.getOwnToCells().get(player).clear();
             GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
                     game.getPlayerToAchievableCells().get(player),
                     game.getOwnToCells().get(player));
-            GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
         }
     }
 
@@ -47,8 +47,6 @@ class AIDecisionSimulationProcessor {
                                            @NotNull final ChangeRaceDecision decision) {
         game.getOwnToCells().get(player).clear();
         changeRace(player, decision.getDecision(), game.getRacesPool());
-        GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
-                game.getPlayerToAchievableCells().get(player), game.getOwnToCells().get(player));
     }
 
 
