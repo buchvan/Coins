@@ -23,6 +23,7 @@ import static io.neolab.internship.coins.server.service.GameLoopProcessor.*;
 
 class AIDecisionSimulationProcessor {
     static void simulateDistributionUnitsDecision(final DistributionUnitsDecision decision, final Player player, final IGame game) {
+        GameLoopProcessor.playerRoundBeginUpdate(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
@@ -36,7 +37,7 @@ class AIDecisionSimulationProcessor {
                     Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
         });
         loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
-
+        GameLoopProcessor.playerRoundEndUpdate(player);
     }
 
     /**
@@ -48,12 +49,14 @@ class AIDecisionSimulationProcessor {
      */
     static void simulateCatchCellDecision(final @NotNull Player player, final @NotNull IGame game,
                                           @NotNull final CatchCellDecision decision) {
+        GameLoopProcessor.playerRoundBeginUpdate(player);
         if (decision.getDecision() != null) {
             final GameFeatures gameFeatures = game.getGameFeatures();
             final IBoard board = game.getBoard();
 
             final Map<Player, List<Cell>> ownToCells = game.getOwnToCells();
             final List<Cell> controlledCells = ownToCells.get(player);
+
             final Position captureCellPosition = decision.getDecision().getFirst();
             final Cell captureCell = board.getCellByPosition(captureCellPosition);
             final boolean isControlled = controlledCells.contains(captureCell);
@@ -82,6 +85,7 @@ class AIDecisionSimulationProcessor {
             }
             achievableCells.addAll(getAllNeighboringCells(board, captureCell));
         }
+        GameLoopProcessor.playerRoundEndUpdate(player);
     }
 
     /**
@@ -93,6 +97,7 @@ class AIDecisionSimulationProcessor {
      */
     static void simulateChangeRaceDecision(final @NotNull Player player, final @NotNull IGame game,
                                            @NotNull final ChangeRaceDecision decision) {
+        GameLoopProcessor.playerRoundBeginUpdate(player);
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
@@ -102,7 +107,6 @@ class AIDecisionSimulationProcessor {
         final Race oldRace = player.getRace();
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
-
         if (oldRace != null) {
             racesPool.add(oldRace);
         }
@@ -113,6 +117,7 @@ class AIDecisionSimulationProcessor {
             player.getUnitStateToUnits().get(AvailabilityType.AVAILABLE).add(new Unit());
             i++;
         }
+        GameLoopProcessor.playerRoundEndUpdate(player);
     }
 
 
@@ -125,9 +130,11 @@ class AIDecisionSimulationProcessor {
      */
     static void simulateDeclineRaceDecision(final @NotNull Player player, final @NotNull IGame game,
                                             @NotNull final DeclineRaceDecision decision) {
+        GameLoopProcessor.playerRoundBeginUpdate(player);
         if (decision.isDeclineRace()) {
             game.getOwnToCells().get(player).clear();
         }
+        GameLoopProcessor.playerRoundEndUpdate(player);
     }
 
 

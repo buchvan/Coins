@@ -18,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.ai.vika.decision.AIDecisionSimulationProcessor.*;
@@ -141,6 +139,7 @@ public class AIDecisionMaker {
             //final ExecutorService executorService = Executors.newFixedThreadPool(2);
             //executorService.execute(() -> {
             final Decision declineRaceDecision = new DeclineRaceDecision(declineRaceType);
+            LOGGER.info("DECLINE RACE DECISION: {}", declineRaceDecision);
             try {
                 final IGame gameCopy = game.getCopy();
                 final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
@@ -157,6 +156,7 @@ public class AIDecisionMaker {
                                     DecisionType.CATCH_CELL)).getWinCollector();
                     decisionAndWins.add(new DecisionAndWin(declineRaceDecision, winCollector));
                 }
+                LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
             } catch (final AIBotException e) {
                 e.printStackTrace();
             }
@@ -185,18 +185,19 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createChangeRaceDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Race> availableRaces = game.getRacesPool();
-        final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
+        // final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
         availableRaces.forEach(race -> /*executorService.execute(() -> */ {
                     final IGame gameCopy = game.getCopy();
                     try {
                         final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
                         final Decision changeRaceDecision = new ChangeRaceDecision(race);
+                        LOGGER.info("CHANGE RACE DECISION: {}", changeRaceDecision);
                         simulateChangeRaceDecision(playerCopy, gameCopy, (ChangeRaceDecision) changeRaceDecision);
-                        if (gameCopy.getCurrentRound() == 0) {
+                        if (roundTreeCreationCounter == 0) {
                             final List<Player> players = gameCopy.getPlayers();
-                            final Player nextPlayer = getNextPlayer(gameCopy, playerCopy.getId());
                             //все игроки выбрали расу, можно приступать к игровому циклу
                             if (getPlayerIndexFromGame(players, playerCopy.getId()) + 1 == players.size()) {
+                                roundTreeCreationCounter++;
                                 final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(
                                         getNextPlayer(gameCopy, playerCopy.getId()),
                                         gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
@@ -213,6 +214,7 @@ public class AIDecisionMaker {
                                     playerCopy, gameCopy, DecisionType.CATCH_CELL)).getWinCollector();
                             decisionAndWins.add(new DecisionAndWin(changeRaceDecision, winCollector));
                         }
+                        LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
                     } catch (final AIBotException e) {
                         e.printStackTrace();
                     }
@@ -242,6 +244,8 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        LOGGER.info("ACHIEVABLE CELLS: {}", achievableCells);
         // + 1 for null catch cell decision
         //final ExecutorService executorService = Executors.newFixedThreadPool(
         //    achievableCells.size() + 1);
@@ -250,6 +254,7 @@ public class AIDecisionMaker {
                         final Position position = game.getBoard().getPositionByCell(cell);
                         final List<Unit> unitsForCapture = player.getUnitsByState(AvailabilityType.AVAILABLE);
                         final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
+                        LOGGER.info("CATCH CELL DECISION: {}", decision);
                         final IGame gameCopy = game.getCopy();
                         try {
                             final Player playerCopy = getPlayerCopy(game, player.getId());
@@ -276,6 +281,7 @@ public class AIDecisionMaker {
             final Player playerCopy = getPlayerCopy(game, player.getId());
             final Decision decision = new CatchCellDecision(null);
             simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+            LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
             final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
                     DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
             decisionAndWins.add(new DecisionAndWin(decision, winCollector));
@@ -283,6 +289,7 @@ public class AIDecisionMaker {
             e.printStackTrace();
         }
         //  });
+        LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
             return getBestDecision(decisionAndWins);
@@ -301,11 +308,14 @@ public class AIDecisionMaker {
                                                                            @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        LOGGER.info("Start create distribution units decisions...");
+        LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
         final List<Unit> playerUnits = new LinkedList<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         final List<List<Pair<Cell, Integer>>> combinations = getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
+        LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
             // final ExecutorService executorService = Executors.newFixedThreadPool(combination.size());
             // executorService.execute(() -> {
@@ -320,11 +330,13 @@ public class AIDecisionMaker {
                                         playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
 
                 final Decision decision = new DistributionUnitsDecision(resolutions);
+                LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
                 simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
                 updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
                 if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
                     decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                 } else {
+                    roundTreeCreationCounter++;
                     final Player nextPlayer = getNextPlayer(gameCopy, playerCopy.getId());
                     final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(nextPlayer,
                             gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
@@ -342,6 +354,7 @@ public class AIDecisionMaker {
         //     e.printStackTrace();
         // }
         // }
+        LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
             return getBestDecision(decisionAndWins);
@@ -377,6 +390,7 @@ public class AIDecisionMaker {
     private static boolean checkCellCaptureOpportunity(@NotNull final Cell cell, @NotNull final Player player,
                                                        @NotNull final IGame game) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
         final List<Unit> playerAvailableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         if (controlledCells.contains(cell)) {
             return playerAvailableUnits.size() >= cell.getType().getCatchDifficulty();
@@ -398,6 +412,10 @@ public class AIDecisionMaker {
     @NotNull
     private static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
                                                                                    final int remainingUnitsAmount) {
+        LOGGER.info("Start distribution units combinations generation...");
+        LOGGER.info("CELLS: {}", cellForDistribution);
+        LOGGER.info("REMAINING UNITS AMOUNT: {}", remainingUnitsAmount);
+
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
         if (remainingUnitsAmount <= 0) {
             return combinations;
@@ -477,7 +495,7 @@ public class AIDecisionMaker {
     private static Player getNextPlayer(@NotNull final IGame game, final int currentPlayerId) {
         final List<Player> players = game.getPlayers();
         final int currentPlayerIndex = getPlayerIndexFromGame(players, currentPlayerId);
-        final int nextPlayerIndex = currentPlayerIndex + 1 > players.size() ? 0 : currentPlayerIndex + 1;
+        final int nextPlayerIndex = currentPlayerIndex + 1 == players.size() ? 0 : currentPlayerIndex + 1;
         if (nextPlayerIndex == 0) {
             roundTreeCreationCounter++;
         }
