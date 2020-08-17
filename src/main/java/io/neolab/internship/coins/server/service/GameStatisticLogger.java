@@ -62,6 +62,10 @@ public class GameStatisticLogger {
         LOGGER.info(stringBuilder.toString());
     }
 
+    private static void printMaxTime(final long maxTime) {
+        LOGGER.info("Max time: {}", maxTime);
+    }
+
     /**
      * Запись в лог полной статистики об игроке
      */
@@ -74,5 +78,6 @@ public class GameStatisticLogger {
         statistic.getCapturesNumber().forEach(GameStatisticLogger::printPlayerCapturesNumberLog);
         printPlayerRaceList("First races: ", statistic.getFirstRaces());
         printPlayerRaceList("Last races: ", statistic.getLastRaces());
+        printMaxTime(statistic.getMaxTime());
     }
 }
