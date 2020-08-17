@@ -29,6 +29,8 @@ class SelfPlay {
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
+    private static Map<Player, GameStatistic.Statistic> playerStatistic;
+
 
     /**
      * Игра сама с собой (self play)
@@ -43,7 +45,11 @@ class SelfPlay {
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
             final List<Pair<IBot, Player>> botPlayerPairs = new LinkedList<>();
-            game.getPlayers().forEach(player -> botPlayerPairs.add(new Pair<>(new SimpleBot(), player)));
+            SelfPlay.playerStatistic = new HashMap<>(game.getPlayers().size());
+            game.getPlayers().forEach(player -> {
+                botPlayerPairs.add(new Pair<>(new SimpleBot(), player));
+                SelfPlay.playerStatistic.put(player, new GameStatistic.Statistic());
+            });
             gameLoop(game, botPlayerPairs);
             GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
@@ -58,10 +64,15 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    static @NotNull List<Player> selfPlayByBotToPlayers(final int index,
-                                                        final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
+    @SuppressWarnings("SameParameterValue")
+    static @NotNull List<Player> selfPlayByBotToPlayersWithStatistic(final int index,
+                                                                     final @NotNull List<Pair<IBot, Player>>
+                                                                             botPlayerPairs,
+                                                                     final @NotNull Map<Player, GameStatistic.Statistic>
+                                                                             playerStatistic) {
         try (final LoggerFile ignored = new LoggerFile("self-play-" + index)) {
             LogCleaner.clean();
+            SelfPlay.playerStatistic = playerStatistic;
             final List<Player> players = new LinkedList<>();
             botPlayerPairs.forEach(pair -> players.add(pair.getSecond()));
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, players);
@@ -86,6 +97,9 @@ class SelfPlay {
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
                         game.getRacesPool(), true));
+        botPlayerPairs.forEach(pair ->
+                SelfPlay.playerStatistic.get(pair.getSecond())
+                        .addFirstRace(Objects.requireNonNull(pair.getSecond().getRace())));
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
             game.incrementCurrentRound();
@@ -107,9 +121,9 @@ class SelfPlay {
     /**
      * Раунд в исполнении игрока
      *
-     * @param player    - игрок, который исполняет раунд
-     * @param bot - бот игрока
-     * @param game      - объект, хранящий всю метаинформацию об игре
+     * @param player - игрок, который исполняет раунд
+     * @param bot    - бот игрока
+     * @param game   - объект, хранящий всю метаинформацию об игре
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
@@ -126,9 +140,9 @@ class SelfPlay {
     /**
      * Процесс упадка: потеря контроля над всеми клетками с сохранением от них дохода, выбор новой расы
      *
-     * @param player    - игрок, который решил идти в упадок
-     * @param bot - бот игрока
-     * @param game      - объект, хранящий всю метаинформацию об игре
+     * @param player - игрок, который решил идти в упадок
+     * @param bot    - бот игрока
+     * @param game   - объект, хранящий всю метаинформацию об игре
      */
     private static void declineRaceProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
@@ -140,9 +154,9 @@ class SelfPlay {
     /**
      * Метод для завоёвывания клеток игроком
      *
-     * @param player    - игрок, проводящий завоёвывание
-     * @param bot - бот игрока
-     * @param game      - объект, хранящий всю метаинформацию об игре
+     * @param player - игрок, проводящий завоёвывание
+     * @param bot    - бот игрока
+     * @param game   - объект, хранящий всю метаинформацию об игре
      */
     private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot bot,
                                            final @NotNull IGame game) {
@@ -205,6 +219,8 @@ class SelfPlay {
             GameLogger.printCatchCellNotCapturedLog(player);
             return false;
         }
+        SelfPlay.playerStatistic.get(player)
+                .incrementCapturesNumber(Objects.requireNonNull(player.getRace()), catchingCell.getType());
         final int tiredUnitsCount = unitsCountNeededToCatch - bonusAttack;
         final List<Cell> neighboringCells = new LinkedList<>(
                 GameLoopProcessor.getAllNeighboringCells(board, catchingCell));
@@ -269,9 +285,9 @@ class SelfPlay {
     /**
      * Метод для распределения юнитов игроком
      *
-     * @param player    - игрок, делающий выбор
-     * @param bot - бот игрока
-     * @param game      - объект, хранящий всю метаинформацию об игре
+     * @param player - игрок, делающий выбор
+     * @param bot    - бот игрока
+     * @param game   - объект, хранящий всю метаинформацию об игре
      */
     private static void distributionUnits(final @NotNull Player player, final @NotNull IBot bot,
                                           final @NotNull IGame game) {
