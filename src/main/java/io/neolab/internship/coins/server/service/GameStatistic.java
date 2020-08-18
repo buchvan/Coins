@@ -12,9 +12,7 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.RecursiveAction;
 
 /**
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
@@ -47,11 +45,11 @@ public class GameStatistic {
             return capturesNumber;
         }
 
-        void incrementWinAmount() {
+        synchronized void incrementWinAmount() {
             winAmount++;
         }
 
-        void incrementCapturesNumber(final @NotNull Race race, final @NotNull CellType cellType) {
+        synchronized void incrementCapturesNumber(final @NotNull Race race, final @NotNull CellType cellType) {
             final Pair<Race, CellType> pair = new Pair<>(race, cellType);
             final Integer number = capturesNumber.get(pair);
             if (number != null) {
@@ -65,7 +63,7 @@ public class GameStatistic {
             return firstRaces;
         }
 
-        void addFirstRace(final @NotNull Race lastRace) {
+        synchronized void addFirstRace(final @NotNull Race lastRace) {
             firstRaces.add(lastRace);
         }
 
@@ -73,7 +71,7 @@ public class GameStatistic {
             return lastRaces;
         }
 
-        void addLastRace(final @NotNull Race lastRace) {
+        synchronized void addLastRace(final @NotNull Race lastRace) {
             lastRaces.add(lastRace);
         }
 
@@ -81,7 +79,7 @@ public class GameStatistic {
             return maxTime;
         }
 
-        void updateMaxTime(final long time) {
+        synchronized void updateMaxTime(final long time) {
             maxTime = Math.max(maxTime, time);
         }
 
@@ -114,7 +112,7 @@ public class GameStatistic {
         }
     }
 
-    private static void play() throws InterruptedException {
+    private static void play() {
         final List<Player> players = initPlayers();
         initStatisticMap(players);
         if (isParallel) {
@@ -124,29 +122,35 @@ public class GameStatistic {
         playNotParallel(players);
     }
 
-    private static void playParallel(final @NotNull List<Player> players) throws InterruptedException {
-        final ExecutorService executorService = Executors.newFixedThreadPool(GAME_AMOUNT);
+    private static void playParallel(final @NotNull List<Player> players) {
+        final List<RecursiveAction> recursiveActions = new ArrayList<>(GAME_AMOUNT);
         for (int i = 0; i < GAME_AMOUNT; i++) {
             final int index = i;
-            executorService.execute(() -> {
-                final List<Player> playersCopy = new LinkedList<>();
-                players.forEach(player -> playersCopy.add(player.getCopy()));
-                final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
-                final List<Player> winners =
-                        SelfPlay.selfPlayByBotToPlayersWithStatistic(index, botToPlayer, playersStatistic);
-                synchronized (playersStatistic) {
-                    players.forEach(player ->
-                            playersStatistic.get(player).addLastRace(Objects.requireNonNull(player.getRace())));
-                    for (final Player winner : winners) {
-                        winCounter++;
-                        playersStatistic.get(winner).incrementWinAmount();
-                    }
+            recursiveActions.add(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    final List<Player> playersCopy = new LinkedList<>();
+                    players.forEach(player -> playersCopy.add(player.getCopy()));
+                    playAndUpdateStatistic(index, playersCopy);
                 }
             });
         }
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        RecursiveAction.invokeAll(recursiveActions);
     }
+
+    private static void playAndUpdateStatistic(final int index, final @NotNull List<Player> playersCopy) {
+        final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(playersCopy);
+        final List<Player> winners =
+                SelfPlay.selfPlayByBotToPlayersWithStatistic(index, botToPlayer, playersStatistic);
+        playersCopy.forEach(player ->
+                playersStatistic.get(player).addLastRace(Objects.requireNonNull(player.getRace())));
+        for (final Player winner : winners) {
+            winCounter++;
+            playersStatistic.get(winner).incrementWinAmount();
+        }
+    }
+
+
 
     /**
      * Иннициализация тестовых игроков
@@ -189,15 +193,7 @@ public class GameStatistic {
 
     private static void playNotParallel(final @NotNull List<Player> players) {
         for (int i = 0; i < GAME_AMOUNT; i++) {
-            final List<Pair<IBot, Player>> botToPlayer = initBotPlayerPair(players);
-            final List<Player> winners =
-                    SelfPlay.selfPlayByBotToPlayersWithStatistic(i, botToPlayer, playersStatistic);
-            players.forEach(player ->
-                    playersStatistic.get(player).addLastRace(Objects.requireNonNull(player.getRace())));
-            for (final Player winner : winners) {
-                winCounter++;
-                playersStatistic.get(winner).incrementWinAmount();
-            }
+            playAndUpdateStatistic(i, players);
             toDefault(players);
         }
     }
@@ -211,7 +207,7 @@ public class GameStatistic {
         });
     }
 
-    public static void main(final String[] args) throws InterruptedException {
+    public static void main(final String[] args) {
         play();
         collectStatistic();
     }
