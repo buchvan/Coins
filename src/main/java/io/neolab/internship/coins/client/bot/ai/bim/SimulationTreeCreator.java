@@ -185,16 +185,18 @@ public class SimulationTreeCreator {
                     races.add(Race.ORC);
                 } else if (race == Race.AMPHIBIAN) {
                     races.add(Race.AMPHIBIAN);
+                } else if (race == Race.ELF) {
+                    races.add(Race.ELF);
                 }
             });
-        } else if (game.getCurrentRound() > 6) {
+        } else if (game.getCurrentRound() > 7) {
             races = new LinkedList<>();
             game.getRacesPool().forEach(race -> {
                 if (race == Race.ELF) {
                     races.add(Race.ELF);
                 } else if (race == Race.MUSHROOM) {
                     races.add(Race.MUSHROOM);
-                } else if (race == Race.UNDEAD) {
+                } else if (race == Race.AMPHIBIAN) {
                     races.add(Race.UNDEAD);
                 } else if (race == Race.GNOME) {
                     races.add(Race.GNOME);
@@ -418,7 +420,7 @@ public class SimulationTreeCreator {
                 achievableCells.removeAll(prevCatchCells);
             }
             achievableCells.forEach(achievableCell -> {
-                if (maxDepth <= 2 || (isCellBeneficial(game, player, achievableCell) && RandomGenerator.isYes())) {
+                if (maxDepth <= 2 || isCellBeneficial(game, player, achievableCell)) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {
@@ -470,8 +472,9 @@ public class SimulationTreeCreator {
                 .stream()
                 .noneMatch(controlledCell ->
                         controlledCell.getType() == cell.getType())
-                || player.getRace() == Race.AMPHIBIAN && cell.getType() == CellType.WATER
-                || player.getRace() == Race.MUSHROOM && cell.getType() == CellType.MUSHROOM
+                && (cell.getType() != CellType.MOUNTAIN || RandomGenerator.isYes())
+                || player.getRace() == Race.AMPHIBIAN && (cell.getType() == CellType.WATER || RandomGenerator.isYes())
+                || player.getRace() == Race.MUSHROOM && (cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.GNOME && cell.getType() != CellType.WATER
                 || player.getRace() == Race.UNDEAD && RandomGenerator.isYes()
                 || player.getRace() == Race.ORC && RandomGenerator.isYes();

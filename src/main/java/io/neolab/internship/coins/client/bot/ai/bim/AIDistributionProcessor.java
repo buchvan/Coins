@@ -56,15 +56,19 @@ public class AIDistributionProcessor {
         final List<Map<Cell, Integer>> distributions = new LinkedList<>();
         if (!cells.isEmpty()) {
             final Cell cell = cells.get(0);
-            for (int i = n; i >= 1; i--) {
+            for (int i = n; i >= 0; i--) {
                 final List<Cell> otherCells = new LinkedList<>(cells);
                 otherCells.remove(cell);
+                if (otherCells.isEmpty()) {
+                    final Map<Cell, Integer> distribution = new HashMap<>();
+                    distribution.put(cell, i);
+                    distributions.add(distribution);
+                    i = 0;
+                    continue;
+                }
                 final List<Map<Cell, Integer>> miniDistributions = getDistributions(otherCells, n - i);
                 final int unitsToCell = i;
                 miniDistributions.forEach(miniDistribution -> miniDistribution.put(cell, unitsToCell));
-                final Map<Cell, Integer> distribution = new HashMap<>();
-                distribution.put(cell, unitsToCell);
-                miniDistributions.add(distribution);
                 distributions.addAll(miniDistributions);
             }
         }
