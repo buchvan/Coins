@@ -253,21 +253,18 @@ public class SimulationTreeCreatingProcessor {
     @Contract("_ -> new")
     private static @NotNull NodeTree createTerminalNodeValueDifference(final @NotNull IGame game) {
         final Map<Player, Integer> playerToValueDifference = new HashMap<>(game.getPlayers().size());
-        game.getPlayers().forEach(player ->
-                game.getPlayers().forEach(player1 -> {
-                    if (!player1.equals(player)) {
-                        final int valueDifference = player.getCoins() - player1.getCoins();
-                        if (playerToValueDifference.containsKey(player)) {
-                            playerToValueDifference.replace(player,
-                                    Math.min(playerToValueDifference.get(player),
-                                            valueDifference));
-                        } else {
-                            playerToValueDifference.put(player,
-                                    Math.min(playerToValueDifference.getOrDefault(player, valueDifference),
-                                            valueDifference));
-                        }
+        game.getPlayers().forEach(player -> {
+            int minValueDifference = Integer.MAX_VALUE;
+            for (final Player player1 : game.getPlayers()) {
+                if (!player1.equals(player)) {
+                    final int valueDifference = player.getCoins() - player1.getCoins();
+                    if (valueDifference < minValueDifference) {
+                        minValueDifference = valueDifference;
                     }
-                }));
+                }
+            }
+            playerToValueDifference.put(player, minValueDifference);
+        });
         AILogger.printLogNewTerminalNodeValueDifference(playerToValueDifference);
         return new NodeTree(new LinkedList<>(), null, 1,
                 null, playerToValueDifference);

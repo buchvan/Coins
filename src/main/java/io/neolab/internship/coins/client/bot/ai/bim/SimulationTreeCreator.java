@@ -177,7 +177,7 @@ public class SimulationTreeCreator {
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
         final List<Race> races;
-        if (isBeforeGame(game)) {
+        if (maxDepth > 3 && isBeforeGame(game)) {
             races = new LinkedList<>();
             game.getRacesPool().forEach(race -> {
                 if (race == Race.UNDEAD) {
@@ -190,7 +190,7 @@ public class SimulationTreeCreator {
                     races.add(Race.ELF);
                 }
             });
-        } else if (game.getCurrentRound() > 7) {
+        } else if (maxDepth > 3 && game.getCurrentRound() > 7) {
             races = new LinkedList<>();
             game.getRacesPool().forEach(race -> {
                 if (race == Race.ELF) {
@@ -256,7 +256,7 @@ public class SimulationTreeCreator {
         final List<Edge> edges = Collections.synchronizedList(new LinkedList<>());
         switch (action.getType()) {
             case DECLINE_RACE:
-                createDeclineRaceSubtree(currentDepth, game, player, (DeclineRaceAction) action, edges);
+                createDeclineRaceSubtree(currentDepth, game, player, action, edges);
                 break;
             case CHANGE_RACE:
                 createChangeRaceSubtree(currentDepth, game, player, action, edges);
@@ -285,9 +285,9 @@ public class SimulationTreeCreator {
      */
     private void createDeclineRaceSubtree(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
-                                          final @NotNull DeclineRaceAction action,
+                                          final @NotNull Action action,
                                           final @NotNull List<Edge> edges) throws CoinsException {
-        if (action.isDeclineRace()) {
+        if (((DeclineRaceAction) action).isDeclineRace()) {
             createChangeRaceBranches(currentDepth, game, player, edges);
             return;
         }
@@ -397,7 +397,6 @@ public class SimulationTreeCreator {
                     SimulationTreeCreatingProcessor.createTerminalNode(game, functionType)));
             return;
         }
-        GameLoopProcessor.playerRoundEndUpdate(player, isGameLoggedOn);
         createDeclineRaceBranches(newDepth, game, nextPlayer, edges);
     }
 
@@ -433,7 +432,7 @@ public class SimulationTreeCreator {
                 achievableCells.removeAll(prevCatchCells);
             }
             achievableCells.forEach(achievableCell -> {
-                if (maxDepth <= 2 || isCellBeneficial(game, player, achievableCell)) {
+                if (maxDepth <= 3 || isCellBeneficial(game, player, achievableCell)) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {
@@ -508,15 +507,15 @@ public class SimulationTreeCreator {
      */
     private boolean isCellBeneficial(final @NotNull IGame game, final @NotNull Player player,
                                      final @NotNull Cell cell) {
-        return player.getRace() == Race.ELF && cell.getType() != CellType.WATER
+        return player.getRace() == Race.ELF && ((cell.getType() != CellType.WATER || RandomGenerator.isYes())
                 && game.getOwnToCells().get(player)
                 .stream()
                 .noneMatch(controlledCell ->
                         controlledCell.getType() == cell.getType())
-                && (cell.getType() != CellType.MOUNTAIN || RandomGenerator.isYes())
+                && (cell.getType() != CellType.MOUNTAIN || RandomGenerator.isYes()) || cell.getType() == CellType.LAND)
                 || player.getRace() == Race.AMPHIBIAN && (cell.getType() == CellType.WATER || RandomGenerator.isYes())
                 || player.getRace() == Race.MUSHROOM && (cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
-                || player.getRace() == Race.GNOME && cell.getType() != CellType.WATER
+                || player.getRace() == Race.GNOME && (cell.getType() != CellType.WATER || RandomGenerator.isYes())
                 || player.getRace() == Race.UNDEAD
                 && (cell.getType() == CellType.LAND || cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.ORC && RandomGenerator.isYes();
