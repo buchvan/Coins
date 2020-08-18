@@ -9,6 +9,7 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
@@ -416,6 +417,18 @@ public class SimulationTreeCreator {
         boolean isWasCapture = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
+            final Set<Cell> factorizedCells = new HashSet<>();
+            synchronized (prevCatchCells) {
+                achievableCells.removeAll(prevCatchCells);
+            }
+            achievableCells.forEach(achievableCell -> {
+                if (factorizedCells.stream().anyMatch(cell ->
+                        isFromOneCluster(cell, achievableCell, game.getBoard()))) {
+                    prevCatchCells.add(achievableCell);
+                } else {
+                    factorizedCells.add(achievableCell);
+                }
+            });
             synchronized (prevCatchCells) {
                 achievableCells.removeAll(prevCatchCells);
             }
@@ -458,6 +471,34 @@ public class SimulationTreeCreator {
     }
 
     /**
+     * Клетки из одного кластера?
+     *
+     * @param cell1 - первая клетка
+     * @param cell2 - вторая клетка
+     * @param board - борда
+     * @return true, если клетки из одного кластера, false - иначе
+     */
+    private boolean isFromOneCluster(final @NotNull Cell cell1, final @NotNull Cell cell2,
+                                     final @NotNull IBoard board) {
+        if (cell1.getType() != cell2.getType()
+                || cell1.getUnits().size() != cell2.getUnits().size()
+                || cell1.getRace() != cell2.getRace()) {
+            return false;
+        }
+        final List<Cell> neighboringCells1 = board.getNeighboringCells(cell1);
+        final List<Cell> neighboringCells2 = board.getNeighboringCells(cell2);
+        for (final Cell neighboringCell1 : Objects.requireNonNull(neighboringCells1)) {
+            if (Objects.requireNonNull(neighboringCells2)
+                    .stream().noneMatch(neighboringCell2 ->
+                            neighboringCell2.getType() == neighboringCell1.getType()
+                                    || neighboringCell2.getUnits().size() == neighboringCell1.getUnits().size())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Клетка выгодна игроку?
      *
      * @param game   - игра
@@ -476,7 +517,8 @@ public class SimulationTreeCreator {
                 || player.getRace() == Race.AMPHIBIAN && (cell.getType() == CellType.WATER || RandomGenerator.isYes())
                 || player.getRace() == Race.MUSHROOM && (cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.GNOME && cell.getType() != CellType.WATER
-                || player.getRace() == Race.UNDEAD && RandomGenerator.isYes()
+                || player.getRace() == Race.UNDEAD
+                && (cell.getType() == CellType.LAND || cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.ORC && RandomGenerator.isYes();
     }
 
