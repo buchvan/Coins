@@ -425,10 +425,7 @@ public class SimulationTreeCreatingProcessor {
      * @param game - игра
      */
     static void updateGameEndRound(final @NotNull IGame game) {
-        game.getPlayers().forEach(item -> // обновление числа монет у каждого игрока
-                GameLoopProcessor.updateCoinsCount(
-                        item, game.getFeudalToCells().get(item),
-                        game.getGameFeatures(), game.getBoard(), isGameLoggedOn));
+        updateCoins(game);
         game.incrementCurrentRound();
     }
 
