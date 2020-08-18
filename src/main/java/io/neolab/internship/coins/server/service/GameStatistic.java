@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.FunctionType;
 import io.neolab.internship.coins.server.game.board.CellType;
@@ -27,9 +26,9 @@ public class GameStatistic {
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
     private static final int BOT1_MAX_DEPTH = 3;
-    private static final FunctionType BOT1_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
-    private static final int BOT2_MAX_DEPTH = 2;
-    private static final FunctionType BOT2_TYPE = FunctionType.MAX_VALUE_DIFFERENCE;
+    private static final FunctionType BOT1_TYPE = FunctionType.MIN_VALUE;
+    private static final int BOT2_MAX_DEPTH = 1;
+    private static final FunctionType BOT2_TYPE = FunctionType.MIN_VALUE;
     private static int winCounter = 0;
     private static final boolean isParallel = false;
 
@@ -165,8 +164,7 @@ public class GameStatistic {
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
         final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
         botToPlayer.add(new Pair<>(new SmartBot(BOT1_MAX_DEPTH, BOT1_TYPE), players.get(0)));
-        botToPlayer.add(new Pair<>(new SimpleBot(), players.get(players.size() - 1)));
-//        botToPlayer.add(new Pair<>(new SmartBot(BOT2_MAX_DEPTH, BOT2_TYPE), players.get(players.size() - 1)));
+        botToPlayer.add(new Pair<>(new SmartBot(BOT2_MAX_DEPTH, BOT2_TYPE), players.get(players.size() - 1)));
         return botToPlayer;
     }
 
