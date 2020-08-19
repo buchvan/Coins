@@ -115,7 +115,7 @@ class GameValidator {
         }
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures,
-                Objects.requireNonNull(cellForAttempt));
+                Objects.requireNonNull(cellForAttempt), true);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);

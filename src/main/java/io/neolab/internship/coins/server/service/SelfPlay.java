@@ -46,8 +46,7 @@ class SelfPlay {
             LogCleaner.clean();
             final IGame game = GameInitializer.gameInit(BOARD_SIZE_X, BOARD_SIZE_Y, PLAYERS_COUNT);
             GameLogger.printGameCreatedLog(game);
-            //game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
-            AIBotAndSimpleBotToPlayers(game);
+            game.getPlayers().forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
             gameLoop(game);
             GameFinalizer.finalization(game.getPlayers());
         } catch (final CoinsException | IOException exception) {
@@ -101,11 +100,13 @@ class SelfPlay {
             try {
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
-                        game.getRacesPool());
+                        game.getRacesPool(), false);
             } catch (final AIBotException e) {
                 e.printStackTrace();
             }
         });
+        simpleBotToPlayer.clear();
+        AIBotAndSimpleBotToPlayers(game);
         GameLogger.printStartGame();
         while (game.getCurrentRound() < ROUNDS_COUNT) {
             // Непосредственно игровой цикл
@@ -138,14 +139,14 @@ class SelfPlay {
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
                                            final @NotNull IGame game) throws AIBotException {
-        GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
+        GameLoopProcessor.playerRoundBeginUpdate(player, false);  // активация данных игрока в начале раунда
         if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
             // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRaceProcess(player, simpleBot, game); // Уход в упадок
         }
         cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
         distributionUnits(player, simpleBot, game); // Распределение войск
-        GameLoopProcessor.playerRoundEndUpdate(player); // "затухание" (дезактивация) данных игрока в конце раунда
+        GameLoopProcessor.playerRoundEndUpdate(player, false); // "затухание" (дезактивация) данных игрока в конце раунда
     }
 
     /**
@@ -159,7 +160,7 @@ class SelfPlay {
                                            final @NotNull IGame game) throws AIBotException {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
+        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool(), false);
     }
 
     /**
@@ -176,7 +177,7 @@ class SelfPlay {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
             /* Пока есть что захватывать и какими войсками захватывать */
@@ -232,7 +233,7 @@ class SelfPlay {
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
-        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
+        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell, false);
         final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!isCellCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
@@ -245,7 +246,7 @@ class SelfPlay {
         GameLoopProcessor.catchCell(player, catchingCell, neighboringCells,
                 GameLoopProcessor.getTiredUnits(units, tiredUnitsCount),
                 GameLoopProcessor.getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures,
-                ownToCells, feudalToCells, transitCells);
+                ownToCells, feudalToCells, transitCells, false);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -272,7 +273,7 @@ class SelfPlay {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
-        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board);
+        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board, false);
         return true;
     }
 

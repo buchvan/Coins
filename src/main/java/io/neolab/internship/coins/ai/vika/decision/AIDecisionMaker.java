@@ -49,9 +49,11 @@ public class AIDecisionMaker {
      * @param game   - игра
      * @return - решение
      */
-    public static Decision getDeclineRaceDecision(final Player player, final IGame game) {
+    public static Decision getDeclineRaceDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
-        return Objects.requireNonNull(executeBestDeclineRaceDecision(player, game));
+        LOGGER.info("PLAYER ID: {}", player.getId());
+        //return Objects.requireNonNull(executeBestDeclineRaceDecision(player, game));
+        return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.DECLINE_RACE).getDecision());
     }
 
     /**
@@ -61,9 +63,11 @@ public class AIDecisionMaker {
      * @param game   - игра
      * @return - решение
      */
-    public static Decision getChooseRaceDecision(final Player player, final IGame game) {
+    public static Decision getChooseRaceDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
-        return Objects.requireNonNull(executeBestChangeRaceDecision(player, game));
+        LOGGER.info("PLAYER ID: {}", player.getId());
+        //return Objects.requireNonNull(executeBestChangeRaceDecision(player, game));
+        return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.CHANGE_RACE).getDecision());
     }
 
 
@@ -74,9 +78,11 @@ public class AIDecisionMaker {
      * @param game   - игра
      * @return - решение
      */
-    public static Decision getChooseCaptureCellDecision(final Player player, final IGame game) {
+    public static Decision getChooseCaptureCellDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
-        return Objects.requireNonNull(executeBestCatchCellDecision(player, game));
+        LOGGER.info("PLAYER ID: {}", player.getId());
+        //return Objects.requireNonNull(executeBestCatchCellDecision(player, game));
+        return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.CATCH_CELL).getDecision());
     }
 
     /**
@@ -86,9 +92,11 @@ public class AIDecisionMaker {
      * @param game   - игра
      * @return - решение
      */
-    public static Decision getDistributionUnitsDecision(final Player player, final IGame game) {
+    public static Decision getDistributionUnitsDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
-        return Objects.requireNonNull(executeBestDistributionUnitsDecision(player, game));
+        LOGGER.info("PLAYER ID: {}", player.getId());
+        //return Objects.requireNonNull(executeBestDistributionUnitsDecision(player, game));
+        return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.DISTRIBUTION_UNITS).getDecision());
     }
 
     private static Decision executeBestDeclineRaceDecision(final Player player, final IGame game) {
@@ -180,7 +188,7 @@ public class AIDecisionMaker {
     private static Decision executeBestCatchCellDecision(final Player player, final IGame game) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
         final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size());
@@ -239,7 +247,7 @@ public class AIDecisionMaker {
                     LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
                     simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
                     updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
-                    if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
+                    /*if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
                         decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                     } else {
                         roundTreeCreationCounter++;
@@ -247,7 +255,7 @@ public class AIDecisionMaker {
                         final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(nextPlayer,
                                 gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
                         decisionAndWins.add(new DecisionAndWin(decision, winCollector));
-                    }
+                    }*/
                 } catch (final AIBotException e) {
                     e.printStackTrace();
                 }
@@ -397,7 +405,7 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game, @NotNull final Player player) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
         achievableCells.forEach(cell -> {
@@ -409,9 +417,11 @@ public class AIDecisionMaker {
                         final IGame gameCopy = game.getCopy();
                         try {
                             final Player playerCopy = getPlayerCopy(game, player.getId());
+                            LOGGER.info("CONTROLLED CELLS BEFORE CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
                             simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+                            LOGGER.info("CONTROLLED CELLS AFTER CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
                             final WinCollector winCollector = Objects.requireNonNull(
-                                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
+                                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
                             decisionAndWins.add(new DecisionAndWin(decision, winCollector));
                         } catch (final AIBotException e) {
                             e.printStackTrace();
@@ -419,7 +429,7 @@ public class AIDecisionMaker {
                     }
                 }
         );
-        final IGame gameCopy = game.getCopy();
+        /*final IGame gameCopy = game.getCopy();
         try {
             final Player playerCopy = getPlayerCopy(game, player.getId());
             final Decision decision = new CatchCellDecision(null);
@@ -431,6 +441,7 @@ public class AIDecisionMaker {
         } catch (final AIBotException e) {
             e.printStackTrace();
         }
+         */
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -459,6 +470,7 @@ public class AIDecisionMaker {
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
+            LOGGER.info("DISTRIBUTION UNITS COMBINATION: {}", combination);
             final IGame gameCopy = game.getCopy();
             try {
                 final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
@@ -473,7 +485,9 @@ public class AIDecisionMaker {
                 LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
                 simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
                 updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
-                if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
+                decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
+               /* if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
+                    LOGGER.info("DECISION TREE CREATION FINISHED");
                     decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                 } else {
                     roundTreeCreationCounter++;
@@ -481,7 +495,7 @@ public class AIDecisionMaker {
                     final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(nextPlayer,
                             gameCopy, DecisionType.DECLINE_RACE)).getWinCollector();
                     decisionAndWins.add(new DecisionAndWin(decision, winCollector));
-                }
+                }*/
             } catch (final AIBotException e) {
                 e.printStackTrace();
             }
@@ -495,6 +509,47 @@ public class AIDecisionMaker {
     }
 
     /**
+     * Рекурсивная функция, которая возвращает всевозможные комбинации для клеток и количества юнитов,
+     * которые туда отправляются
+     *
+     * @param cellForDistribution  - клетки, для которых нужно решить сколько юнитов туда отправлять
+     * @param remainingUnitsAmount - оставшееся количество юнитов
+     * @return - всевозможные комбинации клетка->количество юнитов для нее
+     */
+    @NotNull
+    private static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
+                                                                                   final int remainingUnitsAmount) {
+        LOGGER.info("Start distribution units combinations generation...");
+        LOGGER.info("CELLS: {}", cellForDistribution);
+        LOGGER.info("REMAINING UNITS AMOUNT: {}", remainingUnitsAmount);
+
+        final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
+        if (remainingUnitsAmount <= 0 || cellForDistribution.size() == 0) {
+            return combinations;
+        }
+        for (int i = 0; i < remainingUnitsAmount; i++) {
+            final List<Cell> cellForDistributionCopy = new LinkedList<>(cellForDistribution);
+            for (final Cell cell : cellForDistributionCopy) {
+                final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
+                currentCombination.add(new Pair<>(cell, i));
+                cellForDistributionCopy.remove(cell);
+                final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
+                        getDistributionUnitsCombination(new LinkedList<>(cellForDistributionCopy),
+                                remainingUnitsAmount - i);
+                if (remainingCellCombinations.size() > 0) {
+                    for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
+                        if (remainingCellCombination.size() > 0) {
+                            currentCombination.addAll(remainingCellCombination);
+                        }
+                    }
+                }
+                combinations.add(currentCombination);
+            }
+        }
+        return combinations;
+    }
+
+    /**
      * Выбирает решение, приносящее максимально число монет
      *
      * @param decisionAndWins - информации о решении и соответствующем значении монет для этого решения
@@ -502,6 +557,7 @@ public class AIDecisionMaker {
      */
     private static DecisionAndWin getBestDecision(@NotNull final List<DecisionAndWin> decisionAndWins) {
         LOGGER.info("BEST DECISIONS: {}", decisionAndWins);
+        LOGGER.info("BEST DECISIONS SIZE: {}", decisionAndWins.size());
         decisionAndWins.sort(Comparator.comparingInt(o -> o.getWinCollector().getCoinsAmount()));
         final int maxCoinsAmount = decisionAndWins.get(0).getWinCollector().getCoinsAmount();
         final List<DecisionAndWin> bestDecisions = decisionAndWins
@@ -528,43 +584,8 @@ public class AIDecisionMaker {
         }
         final GameFeatures features = game.getGameFeatures();
         return playerAvailableUnits.size() >=
-                getUnitsCountNeededToCatchCell(features, cell)
+                getUnitsCountNeededToCatchCell(features, cell, false)
                         + getBonusAttackToCatchCell(player, features, cell);
-    }
-
-    /**
-     * Рекурсивная функция, которая возвращает всевозможные комбинации для клеток и количества юнитов,
-     * которые туда отправляются
-     *
-     * @param cellForDistribution  - клетки, для которых нужно решить сколько юнитов туда отправлять
-     * @param remainingUnitsAmount - оставшееся количество юнитов
-     * @return - всевозможные комбинации клетка->количество юнитов для нее
-     */
-    @NotNull
-    private static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
-                                                                                   final int remainingUnitsAmount) {
-        LOGGER.info("Start distribution units combinations generation...");
-        LOGGER.info("CELLS: {}", cellForDistribution);
-        LOGGER.info("REMAINING UNITS AMOUNT: {}", remainingUnitsAmount);
-
-        final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
-        if (remainingUnitsAmount <= 0) {
-            return combinations;
-        }
-        for (int i = 0; i < remainingUnitsAmount; i++) {
-            for (final Cell cell : cellForDistribution) {
-                final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
-                currentCombination.add(new Pair<>(cell, i));
-                cellForDistribution.remove(cell);
-                final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
-                        getDistributionUnitsCombination(cellForDistribution, remainingUnitsAmount - i);
-                for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
-                    currentCombination.addAll(remainingCellCombination);
-                }
-                combinations.add(currentCombination);
-            }
-        }
-        return combinations;
     }
 
     /**
@@ -603,7 +624,7 @@ public class AIDecisionMaker {
      */
     private static boolean isDecisionTreeCreationFinished(final IGame game, final int currentPlayerId) {
         final List<Player> players = game.getPlayers();
-        return MAX_DEPTH == roundTreeCreationCounter && players.get(players.size() - 1).getId() == currentPlayerId;
+        return /*MAX_DEPTH == roundTreeCreationCounter &&*/ players.get(players.size() - 1).getId() == currentPlayerId;
     }
 
     /**

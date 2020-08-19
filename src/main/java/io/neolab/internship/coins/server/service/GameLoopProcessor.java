@@ -1,7 +1,5 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.client.bot.SimpleBot;
-import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -17,8 +15,6 @@ import io.neolab.internship.coins.utils.ListProcessor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -33,9 +29,11 @@ public class GameLoopProcessor {
      *
      * @param player - игрок, чьи данные нужно обновить
      */
-    public static void playerRoundBeginUpdate(final @NotNull Player player) {
+    public static void playerRoundBeginUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
-        GameLogger.printRoundBeginUpdateLog(player);
+        if (isLoggingTurnOn) {
+            GameLogger.printRoundBeginUpdateLog(player);
+        }
     }
 
     /**
@@ -44,9 +42,11 @@ public class GameLoopProcessor {
      *
      * @param player - игрок, чьи данные нужно обновить согласно методу
      */
-    public static void playerRoundEndUpdate(final @NotNull Player player) {
+    public static void playerRoundEndUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
         makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
-        GameLogger.printRoundEndUpdateLog(player);
+        if (isLoggingTurnOn) {
+            GameLogger.printRoundEndUpdateLog(player);
+        }
     }
 
     /**
@@ -59,7 +59,8 @@ public class GameLoopProcessor {
      */
     public static void updateAchievableCells(final @NotNull Player player, final @NotNull IBoard board,
                                              final @NotNull Set<Cell> achievableCells,
-                                             final @NotNull List<Cell> controlledCells) {
+                                             final @NotNull List<Cell> controlledCells,
+                                             final boolean isLoggingTurnOn) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
@@ -72,7 +73,9 @@ public class GameLoopProcessor {
                 neighboringCells.forEach(neighboringCell -> updateNeighboringCellsIfNecessary(board, neighboringCell));
             });
         }
-        GameLogger.printUpdateAchievableCellsLog(player, achievableCells);
+        if (isLoggingTurnOn) {
+            GameLogger.printUpdateAchievableCellsLog(player, achievableCells);
+        }
     }
 
     /**
@@ -129,16 +132,19 @@ public class GameLoopProcessor {
      * @param board           - борда
      */
     public static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
-                            final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
-                            final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board) {
+                                   final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
+                                   final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board,
+                                   final boolean isLoggingTurOn) {
         final List<Cell> achievableCells = new LinkedList<>(GameLoopProcessor.getAllNeighboringCells(board, targetCell));
         achievableCells.add(targetCell);
         final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
         final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
-        withdrawUnits(achievableCells, controlledCells, feudalCells, tiredUnits, achievableUnits);
+        withdrawUnits(achievableCells, controlledCells, feudalCells, isLoggingTurOn, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
-        GameLogger.printAfterCellEnteringLog(player, targetCell);
+        if (isLoggingTurOn) {
+            GameLogger.printAfterCellEnteringLog(player, targetCell);
+        }
     }
 
     /**
@@ -171,7 +177,8 @@ public class GameLoopProcessor {
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
-                                              final @NotNull Cell catchingCell) {
+                                                     final @NotNull Cell catchingCell,
+                                                     final boolean isLoggingTurnOn) {
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         final Player defendingPlayer = catchingCell.getFeudal();
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
@@ -180,13 +187,17 @@ public class GameLoopProcessor {
 
             if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                 unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
-                GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer, catchingCell);
+                if (isLoggingTurnOn) {
+                    GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer, catchingCell);
+                }
             }
         }
         if (!catchingCell.getUnits().isEmpty()) { // если в захватываемой клетке есть юниты
             unitsCountNeededToCatch += catchingCell.getUnits().size() + 1;
         }
-        GameLogger.printCatchCellCountNeededLog(unitsCountNeededToCatch);
+        if (isLoggingTurnOn) {
+            GameLogger.printCatchCellCountNeededLog(unitsCountNeededToCatch);
+        }
         return unitsCountNeededToCatch;
     }
 
@@ -199,8 +210,8 @@ public class GameLoopProcessor {
      * @return бонус атаки (в числе юнитов) игрока player при захвате клетки catchingCell
      */
     public static int getBonusAttackToCatchCell(final @NotNull Player player,
-                                         final @NotNull GameFeatures gameFeatures,
-                                         final @NotNull Cell catchingCell) {
+                                                final @NotNull GameFeatures gameFeatures,
+                                                final @NotNull Cell catchingCell) {
         int bonusAttack = 0;
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
                 player.getRace(), catchingCell.getType())) { // Смотрим все особенности агрессора
@@ -229,15 +240,16 @@ public class GameLoopProcessor {
      *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
      */
     public static void catchCell(final @NotNull Player player,
-                          final @NotNull Cell catchingCell,
-                          final @NotNull List<Cell> neighboringCells,
-                          final @NotNull List<Unit> tiredUnits,
-                          final @NotNull List<Unit> units,
-                          final @NotNull GameFeatures gameFeatures,
-                          final @NotNull Map<Player, List<Cell>> ownToCells,
-                          final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                          final @NotNull List<Cell> transitCells) {
-        withdrawUnits(neighboringCells, ownToCells.get(player), feudalToCells.get(player), tiredUnits, units);
+                                 final @NotNull Cell catchingCell,
+                                 final @NotNull List<Cell> neighboringCells,
+                                 final @NotNull List<Unit> tiredUnits,
+                                 final @NotNull List<Unit> units,
+                                 final @NotNull GameFeatures gameFeatures,
+                                 final @NotNull Map<Player, List<Cell>> ownToCells,
+                                 final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                                 final @NotNull List<Cell> transitCells,
+                                 final boolean isLoggingTurOn) {
+        withdrawUnits(neighboringCells, ownToCells.get(player), feudalToCells.get(player), isLoggingTurOn, tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
         depriveCellFeudalAndOwner(catchingCell, defendingPlayer, ownToCells.get(defendingPlayer),
                 feudalToCells.get(defendingPlayer));
@@ -253,7 +265,9 @@ public class GameLoopProcessor {
         }
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
-        GameLogger.printCapturedCellLog(player);
+        if (isLoggingTurOn) {
+            GameLogger.printCapturedCellLog(player);
+        }
     }
 
     /**
@@ -266,23 +280,30 @@ public class GameLoopProcessor {
      */
     @SafeVarargs
     private static void withdrawUnits(final @NotNull List<Cell> cells, final @NotNull List<Cell> controlledCells,
-                                      final @NotNull Set<Cell> feudalCells, final @NotNull List<Unit>... units) {
+                                      final @NotNull Set<Cell> feudalCells,
+                                      final boolean isLoggingTurOn, final @NotNull List<Unit>... units) {
+        //TODO
+        System.out.println("WITHDRAW UNITS: " + controlledCells);
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
+        System.out.println("WITHDRAW UNITS: " + controlledCells);
         loseCells(cells, controlledCells, feudalCells);
-        GameLogger.printAfterWithdrawCellsLog(cells);
+        if (isLoggingTurOn) {
+            GameLogger.printAfterWithdrawCellsLog(cells);
+        }
     }
 
     /**
      * Потерять клетки, на которых нет юнитов игрока
      *
-     * @param cells       - клетки, которые необходимо проверить на то, потеряны ли они
+     * @param cells           - клетки, которые необходимо проверить на то, потеряны ли они
      * @param controlledCells - подконтрольные клетки игрока
-     * @param feudalCells - клетки, приносящие монеты игроку
+     * @param feudalCells     - клетки, приносящие монеты игроку
      */
     public static void loseCells(final @NotNull List<Cell> cells,
                                  final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
+        System.out.println("CONTROLLED CELL IN LOSE CELL START: " + controlledCells);
         final Iterator<Cell> iterator = cells.iterator();
         final List<Cell> lostCells = new LinkedList<>();
         while (iterator.hasNext()) {
@@ -293,7 +314,10 @@ public class GameLoopProcessor {
             }
         }
         feudalCells.removeAll(lostCells);
+        System.out.println("CONTROLLED CELL BEFORE LOSE CELL: " + controlledCells);
         controlledCells.removeAll(lostCells);
+        //TODO
+        System.out.println("CONTROLLED CELL AFTER LOSE CELL: " + controlledCells);
     }
 
     /**

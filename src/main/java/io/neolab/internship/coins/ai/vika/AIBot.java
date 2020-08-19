@@ -31,7 +31,7 @@ public class AIBot implements IBot {
 
 
     @Override
-    public boolean declineRaceChoose(@NotNull final Player player, @NotNull final IGame game) {
+    public boolean declineRaceChoose(@NotNull final Player player, @NotNull final IGame game) throws AIBotException {
         final boolean choice;
         final DeclineRaceDecision decision = (DeclineRaceDecision) getDeclineRaceDecision(player, game);
         choice = Objects.requireNonNull(decision).isDeclineRace();
@@ -40,7 +40,7 @@ public class AIBot implements IBot {
     }
 
     @Override
-    public @NotNull Race chooseRace(@NotNull final Player player, @NotNull final IGame game) {
+    public @NotNull Race chooseRace(@NotNull final Player player, @NotNull final IGame game) throws AIBotException {
         LOGGER.debug("AI bot will choose race");
         final Race race;
         final ChangeRaceDecision decision = (ChangeRaceDecision) getChooseRaceDecision(player, game);
@@ -51,23 +51,23 @@ public class AIBot implements IBot {
 
     @Override
     public @Nullable Pair<Position, List<Unit>> chooseCatchingCell(@NotNull final Player player,
-                                                                   @NotNull final IGame game) {
+                                                                   @NotNull final IGame game) throws AIBotException {
         LOGGER.debug("AI bot will capture of cells");
         final Pair<Position, List<Unit>> captureCell;
         final CatchCellDecision decision = (CatchCellDecision) getChooseCaptureCellDecision(player, game);
         captureCell = Objects.requireNonNull(decision).getDecision();
-        LOGGER.debug("Resolution of AI bot: ");
+        LOGGER.debug("Resolution of AI bot: {}", captureCell);
         return captureCell;
     }
 
     @Override
-    public @NotNull Map<Position, List<Unit>> distributionUnits(@NotNull final Player player, @NotNull final IGame game) {
+    public @NotNull Map<Position, List<Unit>> distributionUnits(@NotNull final Player player, @NotNull final IGame game) throws AIBotException {
         LOGGER.debug("AI bot distributes units");
         final Map<Position, List<Unit>> resolution;
         final DistributionUnitsDecision distributionUnitsDecision = (DistributionUnitsDecision)
                 getDistributionUnitsDecision(player, game);
         resolution = Objects.requireNonNull(distributionUnitsDecision).getResolutions();
-        LOGGER.debug("AI bot distributed units: ");
+        LOGGER.debug("AI bot distributed units: {}", resolution);
         return Objects.requireNonNull(resolution);
     }
 }

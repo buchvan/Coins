@@ -9,7 +9,6 @@ import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
-import io.neolab.internship.coins.utils.AvailabilityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -18,6 +17,7 @@ import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
 class AIDecisionSimulationProcessor {
 
+    private static final boolean isLoggingTurnOn = false;
     /**
      * Симулирует принятое решение об упадке расы для копий игровых сущностей
      *
@@ -27,12 +27,12 @@ class AIDecisionSimulationProcessor {
      */
     static void simulateDeclineRaceDecision(final @NotNull Player player, final @NotNull IGame game,
                                             @NotNull final DeclineRaceDecision decision) {
-        GameLoopProcessor.playerRoundBeginUpdate(player);
+        GameLoopProcessor.playerRoundBeginUpdate(player, isLoggingTurnOn);
         if (decision.isDeclineRace()) {
             game.getOwnToCells().get(player).clear();
             GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
                     game.getPlayerToAchievableCells().get(player),
-                    game.getOwnToCells().get(player));
+                    game.getOwnToCells().get(player), isLoggingTurnOn);
         }
     }
 
@@ -46,7 +46,7 @@ class AIDecisionSimulationProcessor {
     static void simulateChangeRaceDecision(final @NotNull Player player, final @NotNull IGame game,
                                            @NotNull final ChangeRaceDecision decision) {
         game.getOwnToCells().get(player).clear();
-        changeRace(player, decision.getDecision(), game.getRacesPool());
+        changeRace(player, decision.getDecision(), game.getRacesPool(), isLoggingTurnOn);
     }
 
 
@@ -64,7 +64,7 @@ class AIDecisionSimulationProcessor {
         pretendToCell(player, Objects.requireNonNull(captureCell), decision.getDecision().getSecond(),
                 board, game.getGameFeatures(), game.getOwnToCells(), game.getFeudalToCells(),
                 game.getPlayerToTransitCells().get(player),
-                game.getPlayerToAchievableCells().get(player));
+                game.getPlayerToAchievableCells().get(player), isLoggingTurnOn);
     }
 
     static void simulateDistributionUnitsDecision(final DistributionUnitsDecision decision, final Player player,
@@ -73,7 +73,7 @@ class AIDecisionSimulationProcessor {
                 game.getFeudalToCells().get(player),
                 decision.getResolutions(),
                 game.getBoard());
-        GameLoopProcessor.playerRoundEndUpdate(player);
+        GameLoopProcessor.playerRoundEndUpdate(player, isLoggingTurnOn);
     }
 
 

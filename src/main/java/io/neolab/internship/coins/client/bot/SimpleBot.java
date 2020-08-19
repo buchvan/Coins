@@ -43,7 +43,7 @@ public class SimpleBot implements IBot {
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
             final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-            GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+            GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, true);
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
             /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
@@ -59,7 +59,7 @@ public class SimpleBot implements IBot {
             final int unitsCountNeededToCatchCell =
                     controlledCells.contains(catchingCell)
                             ? catchingCell.getType().getCatchDifficulty()
-                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
+                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell, true);
             final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
             final Pair<Position, List<Unit>> resolution =
                     remainingUnitsCount >= 0

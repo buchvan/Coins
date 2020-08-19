@@ -30,7 +30,7 @@
             <appender name="FILE-${logFileName}"
                       class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-                <file>${LOG_DIRECTORY}/${PROJECT__NAME}_${logFileName}.log.gz</file>
+                <file>${LOG_DIRECTORY}/${PROJECT__NAME}_${logFileName}.log</file>
 
                 <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
                     <charset>UTF-8</charset>
