@@ -32,6 +32,7 @@ public class AIBot implements IBot {
 
     @Override
     public boolean declineRaceChoose(@NotNull final Player player, @NotNull final IGame game) throws AIBotException {
+        LOGGER.debug("AI bot will decline race");
         final boolean choice;
         final DeclineRaceDecision decision = (DeclineRaceDecision) getDeclineRaceDecision(player, game);
         choice = Objects.requireNonNull(decision).isDeclineRace();
@@ -62,7 +63,7 @@ public class AIBot implements IBot {
 
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(@NotNull final Player player, @NotNull final IGame game) throws AIBotException {
-        LOGGER.debug("AI bot distributes units");
+        LOGGER.debug("AI bot will distribute units");
         final Map<Position, List<Unit>> resolution;
         final DistributionUnitsDecision distributionUnitsDecision = (DistributionUnitsDecision)
                 getDistributionUnitsDecision(player, game);

@@ -40,6 +40,9 @@ public class AIDecisionMaker {
     private static int playerId = 0;
     private static int nodesCounter = 0;
 
+    private static final int MAX_CATCH_CELL =1;
+    private static  int currentCatchCell = 0;
+
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(AIDecisionMaker.class);
 
     /**
@@ -51,6 +54,7 @@ public class AIDecisionMaker {
      */
     public static Decision getDeclineRaceDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
+        currentCatchCell = 0;
         LOGGER.info("PLAYER ID: {}", player.getId());
         //return Objects.requireNonNull(executeBestDeclineRaceDecision(player, game));
         return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.DECLINE_RACE).getDecision());
@@ -65,6 +69,7 @@ public class AIDecisionMaker {
      */
     public static Decision getChooseRaceDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
+        currentCatchCell = 0;
         LOGGER.info("PLAYER ID: {}", player.getId());
         //return Objects.requireNonNull(executeBestChangeRaceDecision(player, game));
         return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.CHANGE_RACE).getDecision());
@@ -80,6 +85,7 @@ public class AIDecisionMaker {
      */
     public static Decision getChooseCaptureCellDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
+        currentCatchCell = 0;
         LOGGER.info("PLAYER ID: {}", player.getId());
         //return Objects.requireNonNull(executeBestCatchCellDecision(player, game));
         return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.CATCH_CELL).getDecision());
@@ -94,6 +100,7 @@ public class AIDecisionMaker {
      */
     public static Decision getDistributionUnitsDecision(final Player player, final IGame game) throws AIBotException {
         playerId = player.getId();
+        currentCatchCell = 0;
         LOGGER.info("PLAYER ID: {}", player.getId());
         //return Objects.requireNonNull(executeBestDistributionUnitsDecision(player, game));
         return Objects.requireNonNull(getBestDecisionByGameTree(player, game, DecisionType.DISTRIBUTION_UNITS).getDecision());
@@ -191,7 +198,7 @@ public class AIDecisionMaker {
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
-        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size());
+        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size() + 1);
         achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 final Position position = game.getBoard().getPositionByCell(cell);
@@ -210,6 +217,18 @@ public class AIDecisionMaker {
                 }
             }
         }));
+        final IGame gameCopy = game.getCopy();
+        try {
+            final Player playerCopy = getPlayerCopy(game, player.getId());
+            final Decision decision = new CatchCellDecision(null);
+            //simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+            LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
+            final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
+                    DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
+            decisionAndWins.add(new DecisionAndWin(decision, winCollector));
+        } catch (final AIBotException e) {
+            e.printStackTrace();
+        }
         executorService.shutdown();
         try {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -247,6 +266,7 @@ public class AIDecisionMaker {
                     LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
                     simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
                     updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
+                    decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                     /*if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {
                         decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                     } else {
@@ -408,32 +428,32 @@ public class AIDecisionMaker {
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
-        achievableCells.forEach(cell -> {
-                    if (checkCellCaptureOpportunity(cell, player, game)) {
-                        final Position position = game.getBoard().getPositionByCell(cell);
-                        final List<Unit> unitsForCapture = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-                        final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
-                        LOGGER.info("CATCH CELL DECISION: {}", decision);
-                        final IGame gameCopy = game.getCopy();
-                        try {
-                            final Player playerCopy = getPlayerCopy(game, player.getId());
-                            LOGGER.info("CONTROLLED CELLS BEFORE CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
-                            simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
-                            LOGGER.info("CONTROLLED CELLS AFTER CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
-                            final WinCollector winCollector = Objects.requireNonNull(
-                                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
-                            decisionAndWins.add(new DecisionAndWin(decision, winCollector));
-                        } catch (final AIBotException e) {
-                            e.printStackTrace();
+            achievableCells.forEach(cell -> {
+                        if (checkCellCaptureOpportunity(cell, player, game)) {
+                            final Position position = game.getBoard().getPositionByCell(cell);
+                            final List<Unit> unitsForCapture = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+                            final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
+                            LOGGER.info("CATCH CELL DECISION: {}", decision);
+                            final IGame gameCopy = game.getCopy();
+                            try {
+                                final Player playerCopy = getPlayerCopy(game, player.getId());
+                                LOGGER.info("CONTROLLED CELLS BEFORE CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
+                                simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+                                LOGGER.info("CONTROLLED CELLS AFTER CATCH: {} BY PLAYER {}", gameCopy.getOwnToCells().get(playerCopy), playerCopy);
+                                final WinCollector winCollector = Objects.requireNonNull(
+                                        getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
+                                decisionAndWins.add(new DecisionAndWin(decision, winCollector));
+                            } catch (final AIBotException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-        );
-        /*final IGame gameCopy = game.getCopy();
+            );
+        final IGame gameCopy = game.getCopy();
         try {
             final Player playerCopy = getPlayerCopy(game, player.getId());
             final Decision decision = new CatchCellDecision(null);
-            simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+            //simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
             final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
                     DecisionType.DISTRIBUTION_UNITS)).getWinCollector();
@@ -441,7 +461,6 @@ public class AIDecisionMaker {
         } catch (final AIBotException e) {
             e.printStackTrace();
         }
-         */
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         if (isOpponent(player)) {
             //отдельная целевая функция
@@ -466,6 +485,13 @@ public class AIDecisionMaker {
         final List<Unit> playerUnits = new LinkedList<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+        if(controlledCells.size() == 0) {
+            LOGGER.info("NO CONTROLLED CELLS DISTRIBUTION");
+            final List<DecisionAndWin> emptyDecisionList = new LinkedList<>();
+            emptyDecisionList.add(new DecisionAndWin(new DistributionUnitsDecision(new HashMap<>()),
+                    new WinCollector(player.getCoins())));
+            return getBestDecision(emptyDecisionList);
+        }
         final List<List<Pair<Cell, Integer>>> combinations = getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
