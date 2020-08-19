@@ -21,7 +21,6 @@ import java.util.*;
 
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
-    private static final long TIMEOUT_MILLIS = 100;
     private final int maxDepth;
     private static final int ROUND_DEPTH = 2;
     private @Nullable NodeTree tree;
@@ -44,13 +43,6 @@ public class SmartBot implements IBot {
     @Override
     public boolean declineRaceChoose(final @NotNull Player player, final @NotNull IGame game) {
         tree = treeCreator.createTree(game, player, maxDepth);
-        try {
-            Thread.sleep(TIMEOUT_MILLIS);
-        } catch (final InterruptedException e) {
-            LOGGER.error("Error!", e);
-            clearTree();
-            return simpleBot.declineRaceChoose(player, game);
-        }
         if (tree.getEdges().isEmpty()) {
             return simpleBot.declineRaceChoose(player, game);
         }
@@ -79,13 +71,6 @@ public class SmartBot implements IBot {
 
     private @NotNull Race chooseRaceBeforeGame(final @NotNull IGame game, final @NotNull Player player) {
         tree = treeCreator.createTree(game, player, ROUND_DEPTH);
-        try {
-            Thread.sleep(TIMEOUT_MILLIS);
-        } catch (final InterruptedException e) {
-            LOGGER.error("Error!", e);
-            clearTree();
-            return simpleBot.chooseRace(player, game);
-        }
         if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
             return simpleBot.chooseRace(player, game);
         }
