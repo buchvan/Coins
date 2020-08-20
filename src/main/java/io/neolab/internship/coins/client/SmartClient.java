@@ -37,6 +37,9 @@ public class SmartClient extends Client {
             System.out.println("--- 4. MAX_VALUE");
             System.out.println("--- 5. MIN_VALUE");
             System.out.println("--- 6. MIN_MAX_VALUE");
+            System.out.println("--- 7. MIN_MAX_VALUE_DIFFERENCE");
+            System.out.println("--- 8. MIN_MAX_VALUE_DIFFERENCE");
+            System.out.println();
             final int choose = Integer.parseInt(keyboardReader.readLine());
             System.out.println("Enter max depth of bot: ");
             final int botMaxDepth = Integer.parseInt(keyboardReader.readLine());
@@ -65,6 +68,14 @@ public class SmartClient extends Client {
                 case 6:
                     client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(),
                             FunctionType.MIN_MAX_VALUE, botMaxDepth);
+                    break;
+                case 7:
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(),
+                            FunctionType.MAX_VALUE_DIFFERENCE, botMaxDepth);
+                    break;
+                case 8:
+                    client = new SmartClient(clientConfig.getHost(), clientConfig.getPort(),
+                            FunctionType.MIN_MAX_VALUE_DIFFERENCE, botMaxDepth);
                     break;
                 default:
                     throw new CoinsException(CoinsErrorCode.MESSAGE_TYPE_NOT_FOUND);
