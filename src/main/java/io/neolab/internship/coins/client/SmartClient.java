@@ -37,7 +37,7 @@ public class SmartClient extends Client {
             System.out.println("--- 4. MAX_VALUE");
             System.out.println("--- 5. MIN_VALUE");
             System.out.println("--- 6. MIN_MAX_VALUE");
-            System.out.println("--- 7. MIN_MAX_VALUE_DIFFERENCE");
+            System.out.println("--- 7. MAX_VALUE_DIFFERENCE");
             System.out.println("--- 8. MIN_MAX_VALUE_DIFFERENCE");
             System.out.println();
             final int choose = Integer.parseInt(keyboardReader.readLine());
