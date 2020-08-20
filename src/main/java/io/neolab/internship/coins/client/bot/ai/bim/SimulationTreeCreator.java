@@ -408,29 +408,16 @@ public class SimulationTreeCreator {
      * @param edges          - список дуг от общего родителя
      * @param prevCatchCells - предыдущие захваченные клетки
      */
-    private void createCatchCellsNodes(final int currentDepth,
-                                       final @NotNull IGame game, final @NotNull Player player,
-                                       final @NotNull List<Edge> edges,
-                                       final @NotNull Set<Cell> prevCatchCells) {
-        final List<Triplet<List<Unit>, Integer, Cell>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
+    private void createCatchCellsNodes(final int currentDepth, final @NotNull IGame game, final @NotNull Player player,
+                                       final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells) {
         boolean isWasCapture = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
             final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-            final Set<Cell> factorizedCells = new HashSet<>();
             synchronized (prevCatchCells) {
                 achievableCells.removeAll(prevCatchCells);
             }
-            achievableCells.forEach(achievableCell -> {
-                if (factorizedCells.stream().anyMatch(cell ->
-                        isFromOneCluster(cell, achievableCell, game.getBoard()))) {
-                    prevCatchCells.add(achievableCell);
-                } else {
-                    factorizedCells.add(achievableCell);
-                }
-            });
-            synchronized (prevCatchCells) {
-                achievableCells.removeAll(prevCatchCells);
-            }
+            factorizeByClusters(game, achievableCells);
+            final List<Triplet<List<Unit>, Integer, Cell>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
             achievableCells.forEach(achievableCell -> {
                 if (maxDepth <= 3 || isCellBeneficial(game, player, achievableCell)) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
@@ -445,20 +432,8 @@ public class SimulationTreeCreator {
                     recursiveActions.add(new RecursiveAction() {
                         @Override
                         protected void compute() {
-                            final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
-                            final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
-                            final Cell cell = unitsToPairTiredUnitsToCell.getThird();
-                            final Set<Integer> indexes =
-                                    AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth);
-                            final List<RecursiveAction> recursiveActions1 = new ArrayList<>(indexes.size());
-                            indexes.forEach(index -> recursiveActions1.add(new RecursiveAction() {
-                                @Override
-                                protected void compute() {
-                                    createCatchCellNode(currentDepth, index, game, player, cell,
-                                            new LinkedList<>(units), edges, prevCatchCells);
-                                }
-                            }));
-                            RecursiveAction.invokeAll(recursiveActions1);
+                            createCatchCellNodesByAllPossibleUnits(currentDepth, game, player,
+                                    edges, prevCatchCells, unitsToPairTiredUnitsToCell);
                         }
                     }));
             isWasCapture = !recursiveActions.isEmpty();
@@ -466,6 +441,26 @@ public class SimulationTreeCreator {
         }
         if (!isWasCapture) {
             createCatchCellEndNode(currentDepth, game, player, edges);
+        }
+    }
+
+    /**
+     * Факторизовать множество доступных клеток по отношению принадлежности к кластеру
+     *
+     * @param game            - игра
+     * @param achievableCells - множество доступных клеток
+     */
+    private void factorizeByClusters(final @NotNull IGame game, final @NotNull Set<Cell> achievableCells) {
+        final Set<Cell> factorizedCells = new HashSet<>(achievableCells.size());
+        final Iterator<Cell> iterator = achievableCells.iterator();
+        while (iterator.hasNext()) {
+            final Cell achievableCell = iterator.next();
+            if (factorizedCells.stream().anyMatch(cell ->
+                    isFromOneCluster(cell, achievableCell, game.getBoard()))) {
+                iterator.remove();
+            } else {
+                factorizedCells.add(achievableCell);
+            }
         }
     }
 
@@ -519,6 +514,38 @@ public class SimulationTreeCreator {
                 || player.getRace() == Race.UNDEAD
                 && (cell.getType() == CellType.LAND || cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.ORC && RandomGenerator.isYes();
+    }
+
+    /**
+     * Создать узлы с захватом клетки для всевозможных кол-в юнитов
+     *
+     * @param currentDepth                - текущая глубина
+     * @param game                        - игра
+     * @param player                      - игрок
+     * @param edges                       - список дуг от общего родителя
+     * @param prevCatchCells              - предыдущие захваченные клетки
+     * @param unitsToPairTiredUnitsToCell - Список доступных юнитов, число уставших юнитов и сама клетка
+     */
+    private void createCatchCellNodesByAllPossibleUnits(final int currentDepth,
+                                                        final @NotNull IGame game, final @NotNull Player player,
+                                                        final @NotNull List<Edge> edges,
+                                                        final @NotNull Set<Cell> prevCatchCells,
+                                                        final @NotNull Triplet<List<Unit>, Integer, Cell>
+                                                                unitsToPairTiredUnitsToCell) {
+        final List<Unit> units = unitsToPairTiredUnitsToCell.getFirst();
+        final int tiredUnitsCount = unitsToPairTiredUnitsToCell.getSecond();
+        final Cell cell = unitsToPairTiredUnitsToCell.getThird();
+        final Set<Integer> indexes =
+                AIDistributionProcessor.getIndexes(units, tiredUnitsCount, maxDepth);
+        final List<RecursiveAction> recursiveActions1 = new ArrayList<>(indexes.size());
+        indexes.forEach(index -> recursiveActions1.add(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                createCatchCellNode(currentDepth, index, game, player, cell,
+                        new LinkedList<>(units), edges, prevCatchCells);
+            }
+        }));
+        RecursiveAction.invokeAll(recursiveActions1);
     }
 
     /**

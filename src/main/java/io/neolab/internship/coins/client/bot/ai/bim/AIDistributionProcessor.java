@@ -105,24 +105,5 @@ public class AIDistributionProcessor {
             }
         }
         return actualDistributions;
-
-//        final int removeDistributionsNumber = distributions.size() - distributions.size() / 5;
-//        final Iterator<List<Pair<Cell, Integer>>> iterator1 = distributions.listIterator();
-//        int i = 0;
-//        while (iterator1.hasNext() && i < removeDistributionsNumber) {
-//            if (RandomGenerator.isYes()) {
-//                i++;
-//                iterator1.next();
-//                iterator1.remove();
-//            }
-//        }
-//        if (distributions.size() > 0 && i < removeDistributionsNumber) {
-//            final Iterator<List<Pair<Cell, Integer>>> iterator2 = distributions.listIterator();
-//            while (iterator2.hasNext() && i < removeDistributionsNumber) {
-//                i++;
-//                iterator2.next();
-//                iterator2.remove();
-//            }
-//        }
     }
 }
