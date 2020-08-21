@@ -465,16 +465,9 @@ public class SimulationTreeCreatingProcessor {
             final @NotNull IGame game, final @NotNull Player player, final @NotNull Cell achievableCell,
             final @NotNull Set<Cell> prevCatchCells) {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        final List<Cell> catchingCellNeighboringCells =
-                new LinkedList<>(
-                        Objects.requireNonNull(game.getBoard().getNeighboringCells(
-                                Objects.requireNonNull(achievableCell))));
-        catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         final List<Unit> units =
-                Collections.synchronizedList(new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE)));
-        AIProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
-                achievableCell, controlledCells);
-        units.removeIf(unit -> achievableCell.getUnits().contains(unit));
+                getAvailableForCaptureCellUnits(game, player, achievableCell, controlledCells,
+                        getCatchingCellNeighboringCells(game, achievableCell, controlledCells));
         final int tiredUnitsCount;
         if (controlledCells.contains(achievableCell)) {
             tiredUnitsCount = achievableCell.getType().getCatchDifficulty();
@@ -491,5 +484,48 @@ public class SimulationTreeCreatingProcessor {
         return units.size() >= tiredUnitsCount
                 ? new Triplet<>(units, tiredUnitsCount, achievableCell)
                 : null;
+    }
+
+    /**
+     * Взять соседние с клеткой и подконтрольные игроку клетки
+     *
+     * @param game            - игра
+     * @param cell            - клетка
+     * @param controlledCells - список подконтрольных клеток
+     * @return список соседних с cell и подконтрольных игроку клеток
+     */
+    private static @NotNull List<Cell> getCatchingCellNeighboringCells(final @NotNull IGame game,
+                                                                       final @NotNull Cell cell,
+                                                                       final @NotNull List<Cell> controlledCells) {
+        final List<Cell> catchingCellNeighboringCells =
+                new LinkedList<>(
+                        Objects.requireNonNull(game.getBoard().getNeighboringCells(
+                                Objects.requireNonNull(cell))));
+        catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+        return catchingCellNeighboringCells;
+    }
+
+    /**
+     * Взять доступные для захвата клетки юниты
+     *
+     * @param game                         - игра
+     * @param player                       - игрок
+     * @param cell                         - захватываемая клетка
+     * @param controlledCells              - список подконтрольных клеток игрока
+     * @param catchingCellNeighboringCells - список соседних с cell и подконтрольных игроку клеток
+     * @return список юнитов, доступных для захвата клетки cell
+     */
+    private static @NotNull List<Unit> getAvailableForCaptureCellUnits(final @NotNull IGame game,
+                                                                       final @NotNull Player player,
+                                                                       final @NotNull Cell cell,
+                                                                       final @NotNull List<Cell> controlledCells,
+                                                                       final @NotNull List<Cell>
+                                                                               catchingCellNeighboringCells) {
+        final List<Unit> units =
+                Collections.synchronizedList(new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE)));
+        AIProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
+                cell, controlledCells);
+        units.removeIf(unit -> cell.getUnits().contains(unit));
+        return units;
     }
 }
