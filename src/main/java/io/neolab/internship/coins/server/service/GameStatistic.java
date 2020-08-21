@@ -18,15 +18,14 @@ import java.util.concurrent.RecursiveAction;
  * Класс, обеспечивающий сбор стастистики(процент побед и поражений)
  */
 public class GameStatistic {
-    // Самый худший случай для глубины 4 - примерно 30 секунд, для глубины 3 - примерно 7 секунд
 
     private static final @NotNull Map<Player, Statistic> playersStatistic = new HashMap<>();
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
     private static final int BOT1_MAX_DEPTH = 3;
     private static final FunctionType BOT1_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
-    private static final int BOT2_MAX_DEPTH = 2;
-    private static final FunctionType BOT2_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
+    private static final int BOT2_MAX_DEPTH = 1;
+    private static final FunctionType BOT2_TYPE = FunctionType.MAX_VALUE;
     private static int winCounter = 0;
     private static final boolean isParallel = false;
 

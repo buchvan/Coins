@@ -6,6 +6,7 @@ import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
 import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
 import io.neolab.internship.coins.exceptions.CoinsErrorCode;
 import io.neolab.internship.coins.exceptions.CoinsException;
+import io.neolab.internship.coins.server.game.Game;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.CellType;
@@ -176,13 +177,19 @@ public class SimulationTreeCreator {
     private void createChangeRaceBranches(final int currentDepth,
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
-        final List<Race> races;
-        if (maxDepth > 2 && isBeforeGame(game)) {
-            races = getRacesForChoiceInBeforeGame(game);
-        } else if (maxDepth > 2) {
-            races = getRacesForChoiceInGameEnd(game);
-        } else {
-            races = game.getRacesPool();
+        final List<Race> races = new LinkedList<>(game.getRacesPool());
+        races.remove(Race.GNOME);
+        if (maxDepth > 3) {
+            if (isBeforeGame(game)) {
+                if (RandomGenerator.isYes()) {
+                    races.remove(Race.ELF);
+                }
+                if (RandomGenerator.isYes()) {
+                    races.remove(Race.MUSHROOM);
+                }
+            } else if (game.getCurrentRound() == Game.ROUNDS_COUNT) {
+                races.remove(Race.ORC);
+            }
         }
         final List<RecursiveAction> recursiveActions = new ArrayList<>(races.size());
         races.forEach(race -> recursiveActions.add(new RecursiveAction() {
@@ -199,56 +206,6 @@ public class SimulationTreeCreator {
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
-    }
-
-    /**
-     * Взять расы для выбора до начала игры
-     *
-     * @param game - игра
-     * @return список рас
-     */
-    private @NotNull List<Race> getRacesForChoiceInBeforeGame(final @NotNull IGame game) {
-        final List<Race> races = new ArrayList<>(5);
-        game.getRacesPool().forEach(race -> {
-            if (race == Race.UNDEAD) {
-                races.add(Race.UNDEAD);
-            } else if (race == Race.GNOME && RandomGenerator.isYes()) {
-                races.add(Race.GNOME);
-            } else if (race == Race.ORC) {
-                races.add(Race.ORC);
-            } else if (race == Race.AMPHIBIAN) {
-                races.add(Race.AMPHIBIAN);
-            } else if (race == Race.ELF && RandomGenerator.isYes()) {
-                races.add(Race.ELF);
-            }
-        });
-        return races;
-    }
-
-    /**
-     * Взять расы для выбора в конце игры
-     *
-     * @param game - игра
-     * @return список рас
-     */
-    private @NotNull List<Race> getRacesForChoiceInGameEnd(final @NotNull IGame game) {
-        final List<Race> races = new ArrayList<>(6);
-        game.getRacesPool().forEach(race -> {
-            if (race == Race.ELF) {
-                races.add(Race.ELF);
-            } else if (race == Race.MUSHROOM) {
-                races.add(Race.MUSHROOM);
-            } else if (race == Race.AMPHIBIAN) {
-                races.add(Race.AMPHIBIAN);
-            } else if (race == Race.GNOME && RandomGenerator.isYes()) {
-                races.add(Race.GNOME);
-            } else if (race == Race.ORC && RandomGenerator.isYes()) {
-                races.add(Race.ORC);
-            } else if (race == Race.UNDEAD) {
-                races.add(Race.UNDEAD);
-            }
-        });
-        return races;
     }
 
     /**
