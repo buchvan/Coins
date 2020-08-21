@@ -266,7 +266,7 @@ public class GameAnswerProcessor {
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
         distributionUnits(player, controlledCells, feudalCells,
-                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board);
+                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board, true);
     }
 
 
@@ -283,15 +283,22 @@ public class GameAnswerProcessor {
     public static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
                                          final @NotNull Set<Cell> feudalCells,
                                          final @NotNull Map<Position, List<Unit>> resolutions,
-                                         final @NotNull IBoard board) {
-        GameLogger.printBeginUnitsDistributionLog(player);
+                                         final @NotNull IBoard board,
+                                         final boolean isLoggingTurnOn) {
+        if(isLoggingTurnOn) {
+            GameLogger.printBeginUnitsDistributionLog(player);
+        }
         makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         resolutions.forEach((position, units) -> {
-            GameLogger.printCellDefendingLog(player, units.size(), position);
+            if(isLoggingTurnOn) {
+                GameLogger.printCellDefendingLog(player, units.size(), position);
+            }
             GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units);
         });
         loseCells(controlledCells, controlledCells, feudalCells);
-        GameLogger.printAfterDistributedUnitsLog(player);
+        if(isLoggingTurnOn) {
+            GameLogger.printAfterDistributedUnitsLog(player);
+        }
     }
 }

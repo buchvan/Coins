@@ -15,9 +15,10 @@ import java.util.Objects;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
 
-class AIDecisionSimulationProcessor {
+public class AIDecisionSimulationProcessor {
 
     private static final boolean isLoggingTurnOn = false;
+
     /**
      * Симулирует принятое решение об упадке расы для копий игровых сущностей
      *
@@ -72,9 +73,19 @@ class AIDecisionSimulationProcessor {
         distributionUnits(player, game.getOwnToCells().get(player),
                 game.getFeudalToCells().get(player),
                 decision.getResolutions(),
-                game.getBoard());
+                game.getBoard(), isLoggingTurnOn);
         GameLoopProcessor.playerRoundEndUpdate(player, isLoggingTurnOn);
     }
 
+    /**
+     * Обновляет монеты игрока
+     *
+     * @param game   - игра
+     * @param player - игрок
+     */
+    static void updateDecisionNodeCoinsAmount(@NotNull final IGame game, final Player player) {
+        GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
+                game.getGameFeatures(), game.getBoard());
+    }
 
 }
