@@ -178,31 +178,9 @@ public class SimulationTreeCreator {
                                           final @NotNull List<Edge> edges) {
         final List<Race> races;
         if (maxDepth > 3 && isBeforeGame(game)) {
-            races = new LinkedList<>();
-            game.getRacesPool().forEach(race -> {
-                if (race == Race.UNDEAD) {
-                    races.add(Race.UNDEAD);
-                } else if (race == Race.ORC) {
-                    races.add(Race.ORC);
-                } else if (race == Race.AMPHIBIAN) {
-                    races.add(Race.AMPHIBIAN);
-                } else if (race == Race.ELF) {
-                    races.add(Race.ELF);
-                }
-            });
+            races = getRacesForChoiceInBeforeGame(game);
         } else if (maxDepth > 3 && game.getCurrentRound() > 7) {
-            races = new LinkedList<>();
-            game.getRacesPool().forEach(race -> {
-                if (race == Race.ELF) {
-                    races.add(Race.ELF);
-                } else if (race == Race.MUSHROOM) {
-                    races.add(Race.MUSHROOM);
-                } else if (race == Race.AMPHIBIAN) {
-                    races.add(Race.UNDEAD);
-                } else if (race == Race.GNOME) {
-                    races.add(Race.GNOME);
-                }
-            });
+            races = getRacesForChoiceInGameEnd(game);
         } else {
             races = game.getRacesPool();
         }
@@ -213,13 +191,58 @@ public class SimulationTreeCreator {
                 final Action newAction = new ChangeRaceAction(race);
                 try {
                     AILogger.printLogChangeRace(currentDepth, race, player);
-                    edges.add(new Edge(player.getId(), newAction, createSubtree(currentDepth, game, player, newAction)));
+                    edges.add(new Edge(player.getId(), newAction,
+                            createSubtree(currentDepth, game, player, newAction)));
                 } catch (final CoinsException exception) {
                     exception.printStackTrace();
                 }
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
+    }
+
+    /**
+     * Взять расы для выбора до начала игры
+     *
+     * @param game - игра
+     * @return список рас
+     */
+    private @NotNull List<Race> getRacesForChoiceInBeforeGame(final @NotNull IGame game) {
+        final List<Race> races = new LinkedList<>();
+        game.getRacesPool().forEach(race -> {
+            if (race == Race.UNDEAD) {
+                races.add(Race.UNDEAD);
+            } else if (race == Race.ORC) {
+                races.add(Race.ORC);
+            } else if (race == Race.AMPHIBIAN) {
+                races.add(Race.AMPHIBIAN);
+            } else if (race == Race.ELF) {
+                races.add(Race.ELF);
+            }
+        });
+        return races;
+    }
+
+    /**
+     * Взять расы для выбора в конце игры
+     *
+     * @param game - игра
+     * @return список рас
+     */
+    private @NotNull List<Race> getRacesForChoiceInGameEnd(final @NotNull IGame game) {
+        final List<Race> races = new LinkedList<>();
+        game.getRacesPool().forEach(race -> {
+            if (race == Race.ELF) {
+                races.add(Race.ELF);
+            } else if (race == Race.MUSHROOM) {
+                races.add(Race.MUSHROOM);
+            } else if (race == Race.AMPHIBIAN) {
+                races.add(Race.UNDEAD);
+            } else if (race == Race.GNOME) {
+                races.add(Race.GNOME);
+            }
+        });
+        return races;
     }
 
     /**
@@ -479,14 +502,16 @@ public class SimulationTreeCreator {
                 || cell1.getRace() != cell2.getRace()) {
             return false;
         }
-        final List<Cell> neighboringCells1 = board.getNeighboringCells(cell1);
-        final List<Cell> neighboringCells2 = board.getNeighboringCells(cell2);
-        for (final Cell neighboringCell1 : Objects.requireNonNull(neighboringCells1)) {
-            if (Objects.requireNonNull(neighboringCells2)
-                    .stream().noneMatch(neighboringCell2 ->
-                            neighboringCell2.getType() == neighboringCell1.getType()
-                                    || neighboringCell2.getUnits().size() == neighboringCell1.getUnits().size())) {
-                return false;
+        if (maxDepth <= 2) {
+            final List<Cell> neighboringCells1 = board.getNeighboringCells(cell1);
+            final List<Cell> neighboringCells2 = board.getNeighboringCells(cell2);
+            for (final Cell neighboringCell1 : Objects.requireNonNull(neighboringCells1)) {
+                if (Objects.requireNonNull(neighboringCells2)
+                        .stream().noneMatch(neighboringCell2 ->
+                                neighboringCell2.getType() == neighboringCell1.getType()
+                                        || neighboringCell2.getUnits().size() == neighboringCell1.getUnits().size())) {
+                    return false;
+                }
             }
         }
         return true;
