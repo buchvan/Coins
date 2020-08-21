@@ -208,7 +208,7 @@ public class SimulationTreeCreator {
      * @return список рас
      */
     private @NotNull List<Race> getRacesForChoiceInBeforeGame(final @NotNull IGame game) {
-        final List<Race> races = new LinkedList<>();
+        final List<Race> races = new ArrayList<>(4);
         game.getRacesPool().forEach(race -> {
             if (race == Race.UNDEAD) {
                 races.add(Race.UNDEAD);
@@ -230,7 +230,7 @@ public class SimulationTreeCreator {
      * @return список рас
      */
     private @NotNull List<Race> getRacesForChoiceInGameEnd(final @NotNull IGame game) {
-        final List<Race> races = new LinkedList<>();
+        final List<Race> races = new ArrayList<>(4);
         game.getRacesPool().forEach(race -> {
             if (race == Race.ELF) {
                 races.add(Race.ELF);
@@ -435,11 +435,7 @@ public class SimulationTreeCreator {
                                        final @NotNull List<Edge> edges, final @NotNull Set<Cell> prevCatchCells) {
         boolean isWasCapture = false;
         if (!player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty()) {
-            final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
-            synchronized (prevCatchCells) {
-                achievableCells.removeAll(prevCatchCells);
-            }
-            factorizeByClusters(game, achievableCells);
+            final Set<Cell> achievableCells = getAndUpdateAchievableCells(game, player, prevCatchCells);
             final List<Triplet<List<Unit>, Integer, Cell>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
             achievableCells.forEach(achievableCell -> {
                 if (maxDepth <= 3 || isCellBeneficial(game, player, achievableCell)) {
@@ -465,6 +461,25 @@ public class SimulationTreeCreator {
         if (!isWasCapture) {
             createCatchCellEndNode(currentDepth, game, player, edges);
         }
+    }
+
+    /**
+     * Взять и обновить достижимых для захвата клетки
+     *
+     * @param game           - игра
+     * @param player         - игрок
+     * @param prevCatchCells - предыдущие захваченные клетки
+     * @return обновлённое множество достижимых клеток
+     */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private @NotNull Set<Cell> getAndUpdateAchievableCells(final @NotNull IGame game, final @NotNull Player player,
+                                                           final @NotNull Set<Cell> prevCatchCells) {
+        final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
+        synchronized (prevCatchCells) {
+            achievableCells.removeAll(prevCatchCells);
+        }
+        factorizeByClusters(game, achievableCells);
+        return achievableCells;
     }
 
     /**
