@@ -42,10 +42,8 @@ public class SmartClient extends Client {
             final int botType = Integer.parseInt(keyboardReader.readLine());
             System.out.println("Enter max depth of bot: ");
             final int botMaxDepth = Integer.parseInt(keyboardReader.readLine());
-            final Client client =
-                    new SmartClient(clientConfig.getHost(), clientConfig.getPort(),
-                            FunctionType.values()[botType - 1], botMaxDepth);
-            client.startClient();
+            new SmartClient(clientConfig.getHost(), clientConfig.getPort(),
+                    FunctionType.values()[botType - 1], botMaxDepth).startClient();
         } catch (final CoinsException | IOException | NullPointerException exception) {
             LOGGER.error("Error!", exception);
         }
