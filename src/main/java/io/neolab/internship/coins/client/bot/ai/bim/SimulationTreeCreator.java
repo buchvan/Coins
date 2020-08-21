@@ -177,9 +177,9 @@ public class SimulationTreeCreator {
                                           final @NotNull IGame game, final @NotNull Player player,
                                           final @NotNull List<Edge> edges) {
         final List<Race> races;
-        if (maxDepth > 3 && isBeforeGame(game)) {
+        if (maxDepth > 2 && isBeforeGame(game)) {
             races = getRacesForChoiceInBeforeGame(game);
-        } else if (maxDepth > 3 && game.getCurrentRound() > 7) {
+        } else if (maxDepth > 2) {
             races = getRacesForChoiceInGameEnd(game);
         } else {
             races = game.getRacesPool();
@@ -208,15 +208,17 @@ public class SimulationTreeCreator {
      * @return список рас
      */
     private @NotNull List<Race> getRacesForChoiceInBeforeGame(final @NotNull IGame game) {
-        final List<Race> races = new ArrayList<>(4);
+        final List<Race> races = new ArrayList<>(5);
         game.getRacesPool().forEach(race -> {
             if (race == Race.UNDEAD) {
                 races.add(Race.UNDEAD);
+            } else if (race == Race.GNOME && RandomGenerator.isYes()) {
+                races.add(Race.GNOME);
             } else if (race == Race.ORC) {
                 races.add(Race.ORC);
             } else if (race == Race.AMPHIBIAN) {
                 races.add(Race.AMPHIBIAN);
-            } else if (race == Race.ELF) {
+            } else if (race == Race.ELF && RandomGenerator.isYes()) {
                 races.add(Race.ELF);
             }
         });
@@ -230,16 +232,20 @@ public class SimulationTreeCreator {
      * @return список рас
      */
     private @NotNull List<Race> getRacesForChoiceInGameEnd(final @NotNull IGame game) {
-        final List<Race> races = new ArrayList<>(4);
+        final List<Race> races = new ArrayList<>(6);
         game.getRacesPool().forEach(race -> {
             if (race == Race.ELF) {
                 races.add(Race.ELF);
             } else if (race == Race.MUSHROOM) {
                 races.add(Race.MUSHROOM);
             } else if (race == Race.AMPHIBIAN) {
-                races.add(Race.UNDEAD);
-            } else if (race == Race.GNOME) {
+                races.add(Race.AMPHIBIAN);
+            } else if (race == Race.GNOME && RandomGenerator.isYes()) {
                 races.add(Race.GNOME);
+            } else if (race == Race.ORC && RandomGenerator.isYes()) {
+                races.add(Race.ORC);
+            } else if (race == Race.UNDEAD) {
+                races.add(Race.UNDEAD);
             }
         });
         return races;
@@ -517,17 +523,13 @@ public class SimulationTreeCreator {
                 || cell1.getRace() != cell2.getRace()) {
             return false;
         }
-        if (maxDepth <= 2) {
+        if (maxDepth <= 3) {
             final List<Cell> neighboringCells1 = board.getNeighboringCells(cell1);
             final List<Cell> neighboringCells2 = board.getNeighboringCells(cell2);
-            for (final Cell neighboringCell1 : Objects.requireNonNull(neighboringCells1)) {
-                if (Objects.requireNonNull(neighboringCells2)
-                        .stream().noneMatch(neighboringCell2 ->
-                                neighboringCell2.getType() == neighboringCell1.getType()
-                                        || neighboringCell2.getUnits().size() == neighboringCell1.getUnits().size())) {
-                    return false;
-                }
-            }
+            return Objects.requireNonNull(neighboringCells1).stream().noneMatch(neighboringCell1 ->
+                    Objects.requireNonNull(neighboringCells2).stream().noneMatch(neighboringCell2 ->
+                            neighboringCell2.getType() == neighboringCell1.getType()
+                                    || neighboringCell2.getUnits().size() == neighboringCell1.getUnits().size()));
         }
         return true;
     }
@@ -550,7 +552,7 @@ public class SimulationTreeCreator {
                 && (cell.getType() != CellType.MOUNTAIN || RandomGenerator.isYes()) || cell.getType() == CellType.LAND)
                 || player.getRace() == Race.AMPHIBIAN && (cell.getType() == CellType.WATER || RandomGenerator.isYes())
                 || player.getRace() == Race.MUSHROOM && (cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
-                || player.getRace() == Race.GNOME && (cell.getType() != CellType.WATER || RandomGenerator.isYes())
+                || player.getRace() == Race.GNOME && RandomGenerator.isYes()
                 || player.getRace() == Race.UNDEAD
                 && (cell.getType() == CellType.LAND || cell.getType() == CellType.MUSHROOM || RandomGenerator.isYes())
                 || player.getRace() == Race.ORC && RandomGenerator.isYes();

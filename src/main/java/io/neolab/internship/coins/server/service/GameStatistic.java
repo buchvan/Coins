@@ -26,7 +26,7 @@ public class GameStatistic {
     private static final int BOT1_MAX_DEPTH = 3;
     private static final FunctionType BOT1_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
     private static final int BOT2_MAX_DEPTH = 2;
-    private static final FunctionType BOT2_TYPE = FunctionType.MIN_VALUE;
+    private static final FunctionType BOT2_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
     private static int winCounter = 0;
     private static final boolean isParallel = false;
 
