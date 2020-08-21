@@ -60,19 +60,16 @@ public class SimulationTreeCreatingProcessor {
      * @param edges        - дуги к потомкам
      * @return узел дерева с информацией о кол-ве побед игрока
      */
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Contract("_, _, _ -> new")
     private static @NotNull NodeTree createNodeTreePercent(final int currentDepth, final @NotNull IGame game,
                                                            final @NotNull List<Edge> edges) {
         int casesCount = 0;
         final Map<Player, Integer> winsCount = new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player1 -> winsCount.put(player1, 0));
-        synchronized (edges) {
-            for (final Edge edge : edges) {
-                Objects.requireNonNull(edge.getTo().getWinsCount()).forEach((key, value) ->
-                        winsCount.replace(key, winsCount.get(key) + value));
-                casesCount += edge.getTo().getCasesCount();
-            }
+        for (final Edge edge : edges) {
+            Objects.requireNonNull(edge.getTo().getWinsCount()).forEach((key, value) ->
+                    winsCount.replace(key, winsCount.get(key) + value));
+            casesCount += edge.getTo().getCasesCount();
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
         return new NodeTree(edges, winsCount, casesCount, null, null);
@@ -86,7 +83,6 @@ public class SimulationTreeCreatingProcessor {
      * @param edges        - дуги к потомкам
      * @return узел дерева с информацией о числе монет игрока
      */
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Contract("_, _, _ -> new")
     private static @NotNull NodeTree createNodeTreeValue(final int currentDepth, final @NotNull IGame game,
                                                          final @NotNull List<Edge> edges) {
@@ -95,18 +91,16 @@ public class SimulationTreeCreatingProcessor {
                 new HashMap<>(game.getPlayers().size());
         game.getPlayers().forEach(player1 -> playerToMaxAndMinCoinsCount.put(player1,
                 new Pair<>(-1, Integer.MAX_VALUE)));
-        synchronized (edges) {
-            for (final Edge edge : edges) {
-                Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).forEach((key, value) ->
-                        playerToMaxAndMinCoinsCount.replace(key,
-                                new Pair<>(
-                                        Math.max(playerToMaxAndMinCoinsCount.get(key).getFirst(), value.getFirst()),
-                                        Math.min(playerToMaxAndMinCoinsCount.get(key).getSecond(), value.getSecond())
-                                )
-                        )
-                );
-                casesCount += edge.getTo().getCasesCount();
-            }
+        for (final Edge edge : edges) {
+            Objects.requireNonNull(edge.getTo().getPlayerToMaxAndMinCoinsCount()).forEach((key, value) ->
+                    playerToMaxAndMinCoinsCount.replace(key,
+                            new Pair<>(
+                                    Math.max(playerToMaxAndMinCoinsCount.get(key).getFirst(), value.getFirst()),
+                                    Math.min(playerToMaxAndMinCoinsCount.get(key).getSecond(), value.getSecond())
+                            )
+                    )
+            );
+            casesCount += edge.getTo().getCasesCount();
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
         return new NodeTree(edges, null, casesCount, playerToMaxAndMinCoinsCount, null);
@@ -120,28 +114,25 @@ public class SimulationTreeCreatingProcessor {
      * @param edges        - дуги к потомкам
      * @return узел дерева с информацией о минимальной разности чисел монет игроков
      */
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Contract("_, _, _ -> new")
     private static @NotNull NodeTree createNodeTreeDifferenceValue(final int currentDepth, final @NotNull IGame game,
                                                                    final @NotNull List<Edge> edges) {
         int casesCount = 0;
         final Map<Player, Integer> playerToValueDifference = new HashMap<>(game.getPlayers().size());
-        synchronized (edges) {
-            for (final Edge edge : edges) {
-                Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).forEach((key, value) -> {
-                            if (playerToValueDifference.containsKey(key)) {
-                                playerToValueDifference.replace(key,
-                                        Math.min(playerToValueDifference.get(key),
-                                                value));
-                            } else {
-                                playerToValueDifference.put(key,
-                                        Math.min(playerToValueDifference.getOrDefault(key, value),
-                                                value));
-                            }
+        for (final Edge edge : edges) {
+            Objects.requireNonNull(edge.getTo().getPlayerToValueDifference()).forEach((key, value) -> {
+                        if (playerToValueDifference.containsKey(key)) {
+                            playerToValueDifference.replace(key,
+                                    Math.min(playerToValueDifference.get(key),
+                                            value));
+                        } else {
+                            playerToValueDifference.put(key,
+                                    Math.min(playerToValueDifference.getOrDefault(key, value),
+                                            value));
                         }
-                );
-                casesCount += edge.getTo().getCasesCount();
-            }
+                    }
+            );
+            casesCount += edge.getTo().getCasesCount();
         }
         AILogger.printLogCreatedNewNode(currentDepth, edges);
         return new NodeTree(edges, null, casesCount, null, playerToValueDifference);

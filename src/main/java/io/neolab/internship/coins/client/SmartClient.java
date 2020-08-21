@@ -11,10 +11,10 @@ import java.io.InputStreamReader;
 
 public class SmartClient extends Client {
     /**
-     * Для создания необходимо принять адрес и номер порта
-     *
-     * @param ip   - ip адрес клиента
-     * @param port - порт соединения
+     * @param ip               - ip адрес клиента
+     * @param port             - порт соединения
+     * @param botFunctionType  - тип бота для клиента
+     * @param smartBotMaxDepth - максимальная глубина бота для клиента
      */
     private SmartClient(final @NotNull String ip, final int port, final @NotNull FunctionType botFunctionType,
                         final int smartBotMaxDepth)
