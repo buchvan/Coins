@@ -138,7 +138,8 @@ public class AIDecisionMaker {
      * @return - лучшее решение
      */
     private static Decision executeBestDeclineRaceDecision(final Player player, final IGame game) {
-        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        final int DECLINE_RACE_THREADS_AMOUNT = 2;
+        final ExecutorService executorService = Executors.newFixedThreadPool(DECLINE_RACE_THREADS_AMOUNT);
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final boolean[] declineRaceTypes = {true, false};
         for (final boolean declineRaceType : declineRaceTypes) {
@@ -211,9 +212,10 @@ public class AIDecisionMaker {
     private static Decision executeBestChangeRaceDecision(final Player player, final IGame game) {
         final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<Race> availableRaces = game.getRacesPool();
-        final ExecutorService executorService = Executors.newFixedThreadPool(availableRaces.size());
-        availableRaces.forEach(race -> executorService.execute(
-                () -> addChangeRaceDecision(race, decisionAndWins, player, game)
+        final int CHANGE_RACE_THREADS_AMOUNT = availableRaces.size();
+        final ExecutorService executorService = Executors.newFixedThreadPool(CHANGE_RACE_THREADS_AMOUNT);
+        availableRaces.forEach(race -> executorService.execute(() ->
+                addChangeRaceDecision(race, decisionAndWins, player, game)
         ));
         completeExecutorService(executorService);
         return getBestDecision(decisionAndWins).getDecision();
@@ -290,7 +292,8 @@ public class AIDecisionMaker {
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
-        final ExecutorService executorService = Executors.newFixedThreadPool(achievableCells.size() + 1);
+        final int CATCH_CELL_THREADS_AMOUNT = achievableCells.size() + 1;
+        final ExecutorService executorService = Executors.newFixedThreadPool(CATCH_CELL_THREADS_AMOUNT);
         achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 addCatchCellDecision(cell, decisionAndWins, player, game);
@@ -393,11 +396,11 @@ public class AIDecisionMaker {
         final List<List<Pair<Cell, Integer>>> combinations = getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
-        final ExecutorService executorService = Executors.newFixedThreadPool(combinations.size());
+        final int DISTRIBUTION_UNITS_THREADS_AMOUNT = combinations.size();
+        final ExecutorService executorService = Executors.newFixedThreadPool(DISTRIBUTION_UNITS_THREADS_AMOUNT);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
-            executorService.execute(() -> {
-                addDistributionUnitsDecision(combination, player, game, decisionAndWins, playerUnits);
-            });
+            executorService.execute(() ->
+                    addDistributionUnitsDecision(combination, player, game, decisionAndWins, playerUnits));
         }
         completeExecutorService(executorService);
         return getBestDecision(decisionAndWins).getDecision();
