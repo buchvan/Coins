@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.client.bot.ai.bim.model;
 
 import io.neolab.internship.coins.client.bot.ai.bim.model.action.Action;
+import io.neolab.internship.coins.server.game.player.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,19 +9,19 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class Edge {
-    private final int playerId;
+    private final @Nullable Player player;
     private final @Nullable Action action;
     private final @NotNull NodeTree to;
 
     @Contract(pure = true)
-    public Edge(final int playerId, @Nullable final Action action, @NotNull final NodeTree to) {
-        this.playerId = playerId;
+    public Edge(final @Nullable Player player, @Nullable final Action action, @NotNull final NodeTree to) {
+        this.player = player;
         this.action = action;
         this.to = to;
     }
 
-    public int getPlayerId() {
-        return playerId;
+    public @Nullable Player getPlayer() {
+        return player;
     }
 
     public @Nullable Action getAction() {
@@ -37,13 +38,14 @@ public class Edge {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Edge edge = (Edge) o;
-        return playerId == edge.playerId &&
-                Objects.equals(action, edge.action);
+        return Objects.equals(player, edge.player) &&
+                Objects.equals(action, edge.action) &&
+                to.equals(edge.to);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(playerId, action);
+        return Objects.hash(player, action, to);
     }
 
     @Override
