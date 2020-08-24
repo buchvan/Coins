@@ -20,7 +20,7 @@ public class AIDistributionProcessor {
      */
     static @NotNull Set<Integer> getIndexes(final @NotNull List<Unit> units, final int tiredUnitsCount,
                                             final int depth) {
-        final int denominator = (int) Math.pow(2, depth - 1);
+        final int denominator = depth < 3 ? 1 : (int) Math.pow(2, depth - 1);
         int capacity = (units.size() - tiredUnitsCount + 1) / denominator;
         capacity = capacity == 0 ? 1 : capacity;
         final Set<Integer> indexes = new HashSet<>(capacity);
