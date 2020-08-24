@@ -412,6 +412,14 @@ public class AIDecisionMaker {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         LOGGER.info("Start create distribution units decisions...");
         LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
+        if (controlledCells.size() == 0) {
+            LOGGER.info("NO CONTROLLED CELLS DISTRIBUTION");
+            //final List<DecisionAndWin> emptyDecisionList = new LinkedList<>();
+            final List<DecisionAndWin> emptyDecisionList = Collections.synchronizedList(new LinkedList<>());
+            emptyDecisionList.add(new DecisionAndWin(new DistributionUnitsDecision(new HashMap<>()),
+                    new WinCollector(player.getCoins())));
+            return getBestDecision(emptyDecisionList).getDecision();
+        }
         final List<Unit> playerUnits = new LinkedList<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
@@ -423,7 +431,7 @@ public class AIDecisionMaker {
         for (final List<Pair<Cell, Integer>> combination : combinations) {
             executorService.execute(() -> {
                 final int currentNode = 0;
-                addDistributionUnitsDecision(combination, player, game, decisionAndWins, playerUnits, currentNode);
+                addDistributionUnitsDecision(combination, player, game, decisionAndWins, new LinkedList<>(playerUnits), currentNode);
             });
         }
         completeExecutorService(executorService);
@@ -444,7 +452,7 @@ public class AIDecisionMaker {
         final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         LOGGER.info("Start create distribution units decisions...");
-        LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
+        LOGGER.info("CONTROLLED CELLS SIZE: {}", controlledCells.size());
         final List<Unit> playerUnits = new LinkedList<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
@@ -461,7 +469,7 @@ public class AIDecisionMaker {
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
             LOGGER.info("DISTRIBUTION UNITS COMBINATION: {}", combination);
-            addDistributionUnitsDecision(combination, player, game, decisionAndWins, playerUnits, currentNode);
+            addDistributionUnitsDecision(combination, player, game, decisionAndWins, new LinkedList<>(playerUnits), currentNode);
         }
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
         return getBestDecision(decisionAndWins);
@@ -518,11 +526,12 @@ public class AIDecisionMaker {
         LOGGER.info("BEST DECISIONS: {}", decisionAndWins);
         LOGGER.info("BEST DECISIONS SIZE: {}", decisionAndWins.size());
         decisionAndWins.sort(Comparator.comparingInt(o -> o.getWinCollector().getCoinsAmount()));
-        final int maxCoinsAmount = decisionAndWins.get(0).getWinCollector().getCoinsAmount();
+        final int maxCoinsAmount = decisionAndWins.get(decisionAndWins.size() -1).getWinCollector().getCoinsAmount();
         final List<DecisionAndWin> bestDecisions = decisionAndWins
                 .stream()
                 .filter(decisionTreeNode -> decisionTreeNode.getWinCollector().getCoinsAmount() == maxCoinsAmount)
                 .collect(Collectors.toList());
+        LOGGER.info("BEST DECISIONS: {}", bestDecisions);
         return chooseItemFromList(bestDecisions);
     }
 

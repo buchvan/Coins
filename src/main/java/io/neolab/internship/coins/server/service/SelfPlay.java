@@ -319,9 +319,8 @@ class SelfPlay {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
         LOGGER.info("CONTROLLED CELLS SIZE after freeTransitCells: " + game.getOwnToCells().get(player));
-        GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
-        LOGGER.info("CONTROLLED CELLS SIZE after loseCells: " + game.getOwnToCells().get(player));
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
+        LOGGER.info("CONTROLLED CELLS SIZE after loseCells: " + game.getOwnToCells().get(player));
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
@@ -329,19 +328,17 @@ class SelfPlay {
         LOGGER.info("BEFORE DISTRIBUTION...");
         LOGGER.info("CONTROLLED CELLS SIZE: " + controlledCells.size());
         LOGGER.info("AVAILABLE UNITS SIZE: " + availableUnits.size());
-        if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
-            final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
-            distributionUnits.forEach((position, units) -> {
-                GameLogger.printCellDefendingLog(player, units.size(), position);
-                GameLoopProcessor.protectCell(player,
-                        Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
-            });
-            loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
-        }
+        final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+        distributionUnits.forEach((position, units) -> {
+            GameLogger.printCellDefendingLog(player, units.size(), position);
+            GameLoopProcessor.protectCell(player,
+                    Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
+        });
+        loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         GameLogger.printAfterDistributedUnitsLog(player);
     }
 
     public static void main(final String[] args) {
-            selfPlay();
+        selfPlay();
     }
 }

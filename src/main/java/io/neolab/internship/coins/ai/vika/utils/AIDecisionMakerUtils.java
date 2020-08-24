@@ -55,14 +55,11 @@ public class AIDecisionMakerUtils {
     @NotNull
     public static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
                                                                                   final int remainingUnitsAmount) {
-        LOGGER.info("Start distribution units combinations generation...");
-        LOGGER.info("CELLS: {}", cellForDistribution);
-        LOGGER.info("REMAINING UNITS AMOUNT: {}", remainingUnitsAmount);
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
-        if (remainingUnitsAmount <= 0 || cellForDistribution.size() == 0) {
+        if (remainingUnitsAmount <= 0 || cellForDistribution.isEmpty()) {
             return combinations;
         }
-        for (int i = 0; i < remainingUnitsAmount; i++) {
+        for (int i = 0; i <= remainingUnitsAmount; i++) {
             final List<Cell> cellForDistributionCopy = new LinkedList<>(cellForDistribution);
             for (final Cell cell : cellForDistributionCopy) {
                 final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();

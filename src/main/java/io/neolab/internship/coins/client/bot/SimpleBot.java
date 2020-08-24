@@ -1,12 +1,12 @@
 package io.neolab.internship.coins.client.bot;
 
 import io.neolab.internship.coins.server.game.IGame;
-import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.player.Race;
-import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
+import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
+import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
@@ -122,14 +122,16 @@ public class SimpleBot implements IBot {
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
         List<Unit> units = new LinkedList<>();
-        while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
-            final Cell protectedCell = RandomGenerator.chooseItemFromList(
-                    game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
-            units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
-                    availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
-            distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
-            availableUnits.removeAll(units);
-            units = new LinkedList<>();
+        if (!game.getOwnToCells().get(player).isEmpty()) {
+            while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
+                final Cell protectedCell = RandomGenerator.chooseItemFromList(
+                        game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
+                units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
+                        availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
+                distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
+                availableUnits.removeAll(units);
+                units = new LinkedList<>();
+            }
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;

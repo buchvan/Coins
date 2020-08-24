@@ -8,10 +8,7 @@ import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
@@ -22,11 +19,10 @@ public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
+    private static final @NotNull List<Integer> aiBotCoins = new LinkedList<>();
     private static final int GAME_AMOUNT = 100;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
-    private static int isZeroCoinsByAIBot = 0;
-
 
     private static void play() {
         final List<Player> players = initPlayers();
@@ -37,8 +33,8 @@ public class GameStatistic {
             winners = selfPlayByBotToPlayers(simpleBotToPlayer);
             for (final Player winner : winners) {
                 winCounter++;
-                if(winner.getCoins() == 0 && winner.equals(simpleBotToPlayer.get(1).getSecond())){
-                    isZeroCoinsByAIBot++;
+                if(winner.equals(simpleBotToPlayer.get(1).getSecond())){
+                    aiBotCoins.add(winner.getCoins());
                 }
                 int currentWinAmount = playersStatistic.get(winner);
                 playersStatistic.put(winner, ++currentWinAmount);
@@ -101,6 +97,8 @@ public class GameStatistic {
     public static void main(final String[] args) {
         play();
         collectStatistic();
-        System.out.println(isZeroCoinsByAIBot);
+        aiBotCoins.sort(Comparator.comparingInt(Integer::intValue));
+        aiBotCoins.forEach(System.out::println);
+        System.out.println("MEDIANA: " + ((double)(aiBotCoins.get(50) + aiBotCoins.get(51))) / 2);
     }
 }
