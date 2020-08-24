@@ -148,7 +148,7 @@ public class MinMaxProcessor {
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
-                edgeToPercent.put(edge, getMaxPercent(edge.getTo(), player, player));
+                edgeToPercent.put(edge, getMaxPercent(edge.getTo(), player));
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
@@ -176,27 +176,23 @@ public class MinMaxProcessor {
     /**
      * @param nodeTree      - корень дерева
      * @param player        - думающий игрок
-     * @param currentPlayer - игрок, который ходит на данном этапе
      * @return true, если есть последовательность действий, при которой игрок побеждает, false - если нет
      */
-    private static boolean getMaxPercent(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                         final @NotNull Player currentPlayer) {
+    private static boolean getMaxPercent(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
         if (edges.isEmpty()) {
             return Objects.requireNonNull(nodeTree.getWinsCount()).get(player) == 1;
         }
-        if (player == currentPlayer) {
+        if (player == edges.get(0).getPlayer()) {
             for (final Edge edge : edges) {
-                if (getMaxPercent(edge.getTo(), player,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player)) {
+                if (getMaxPercent(edge.getTo(), player)) {
                     return true;
                 }
             }
             return false;
         }
         for (final Edge edge : edges) {
-            if (getMinPercent(edge.getTo(), player,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player)) {
+            if (getMinPercent(edge.getTo(), player)) {
                 return false;
             }
         }
@@ -206,27 +202,23 @@ public class MinMaxProcessor {
     /**
      * @param nodeTree      - корень дерева
      * @param opponent      - оппонент
-     * @param currentPlayer - игрок, который ходит на данном этапе
      * @return true, если есть последовательность действий, при которой оппонент проигрывает, false - если нет
      */
-    private static boolean getMinPercent(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
-                                         final @NotNull Player currentPlayer) {
+    private static boolean getMinPercent(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         if (edges.isEmpty()) {
             return Objects.requireNonNull(nodeTree.getWinsCount()).get(opponent) == 0;
         }
-        if (opponent == currentPlayer) {
+        if (opponent == edges.get(0).getPlayer()) {
             for (final Edge edge : edges) {
-                if (getMaxPercent(edge.getTo(), opponent,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent)) {
+                if (getMaxPercent(edge.getTo(), opponent)) {
                     return false;
                 }
             }
             return true;
         }
         for (final Edge edge : edges) {
-            if (getMinPercent(edge.getTo(), opponent,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : opponent)) {
+            if (getMinPercent(edge.getTo(), opponent)) {
                 return true;
             }
         }
@@ -237,19 +229,17 @@ public class MinMaxProcessor {
      * Поиск действия, минимизирующего вероятность выигрыша оппонента
      *
      * @param nodeTree - корень дерева
-     * @param player   - игрок
      * @param opponent - оппонент игрока
      * @return действие, минимизирующее вероятность выигрыша оппонента
      */
-    static @NotNull Action minMaxPercentAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                                  final @NotNull Player opponent) {
+    static @NotNull Action minMaxPercentAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
-                edgeToPercent.put(edge, getMinPercent(edge.getTo(), opponent, player));
+                edgeToPercent.put(edge, getMinPercent(edge.getTo(), opponent));
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
@@ -271,7 +261,7 @@ public class MinMaxProcessor {
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
-                edgeToValue.put(edge, getMaxValue(edge.getTo(), player, player));
+                edgeToValue.put(edge, getMaxValue(edge.getTo(), player));
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
@@ -303,30 +293,25 @@ public class MinMaxProcessor {
     /**
      * @param nodeTree      - корень дерева
      * @param player        - думающий игрок
-     * @param currentPlayer - игрок, который ходит на данном этапе
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
-    private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                   final @NotNull Player currentPlayer) {
+    private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(player).getFirst()
-                : getDefaultValue(nodeTree.getEdges(), player, currentPlayer);
+                : getDefaultValue(nodeTree.getEdges(), player);
     }
 
-    private static int getDefaultValue(final @NotNull List<Edge> edges, final @NotNull Player player,
-                                       final @NotNull Player currentPlayer) {
-        if (player == currentPlayer) {
+    private static int getDefaultValue(final @NotNull List<Edge> edges, final @NotNull Player player) {
+        if (player == edges.get(0).getPlayer()) {
             int maxValue = -1;
             for (final Edge edge : edges) {
-                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+                maxValue = Math.max(maxValue, getMaxValue(edge.getTo(), player));
             }
             return maxValue;
         }
         int minValue = Integer.MAX_VALUE;
         for (final Edge edge : edges) {
-            minValue = Math.min(minValue, getMinValue(edge.getTo(), player,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+            minValue = Math.min(minValue, getMinValue(edge.getTo(), player));
         }
         return minValue;
     }
@@ -334,33 +319,29 @@ public class MinMaxProcessor {
     /**
      * @param nodeTree      - корень дерева
      * @param opponent      - оппонент игрока
-     * @param currentPlayer - игрок, который ходит на данном этапе
      * @return минимальное число монет по всем рёбрам, выходящим из данного корня
      */
-    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player opponent,
-                                   final @NotNull Player currentPlayer) {
+    private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToMaxAndMinCoinsCount()).get(opponent).getSecond()
-                : getDefaultValue(nodeTree.getEdges(), opponent, currentPlayer);
+                : getDefaultValue(nodeTree.getEdges(), opponent);
     }
 
     /**
      * Поиск действия, минимизирующего доход оппонента игрока
      *
      * @param nodeTree - корень дерева
-     * @param player   - думающий игрок
      * @param opponent - оппонент игрока
      * @return действие, минимизирующее доход оппонента игрока
      */
-    static @NotNull Action minMaxValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                                final @NotNull Player opponent) {
+    static @NotNull Action minMaxValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
         final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
-                edgeToValue.put(edge, getMinValue(edge.getTo(), opponent, player));
+                edgeToValue.put(edge, getMinValue(edge.getTo(), opponent));
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
@@ -404,7 +385,7 @@ public class MinMaxProcessor {
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
             protected void compute() {
-                edgeToValue.put(edge, getValueDifference(edge.getTo(), player, player));
+                edgeToValue.put(edge, getMaxValueDifference(edge.getTo(), player));
             }
         }));
         RecursiveAction.invokeAll(recursiveActions);
@@ -415,30 +396,25 @@ public class MinMaxProcessor {
     /**
      * @param nodeTree      - корень дерева
      * @param player        - думающий игрок
-     * @param currentPlayer - игрок, который ходит на данном этапе
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
-    private static int getValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player,
-                                          final @NotNull Player currentPlayer) {
+    private static int getMaxValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         return nodeTree.getEdges().isEmpty()
                 ? Objects.requireNonNull(nodeTree.getPlayerToValueDifference()).get(player)
-                : getDefaultValueDifference(nodeTree.getEdges(), player, currentPlayer);
+                : getDefaultValueDifference(nodeTree.getEdges(), player);
     }
 
-    private static int getDefaultValueDifference(final @NotNull List<Edge> edges, final @NotNull Player player,
-                                                 final @NotNull Player currentPlayer) {
-        if (player == currentPlayer) {
+    private static int getDefaultValueDifference(final @NotNull List<Edge> edges, final @NotNull Player player) {
+        if (player == edges.get(0).getPlayer()) {
             int maxValue = Integer.MIN_VALUE;
             for (final Edge edge : edges) {
-                maxValue = Math.max(maxValue, getValueDifference(edge.getTo(), player,
-                        edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+                maxValue = Math.max(maxValue, getMaxValueDifference(edge.getTo(), player));
             }
             return maxValue;
         }
         int minValue = Integer.MAX_VALUE;
         for (final Edge edge : edges) {
-            minValue = Math.min(minValue, getValueDifference(edge.getTo(), player,
-                    edge.getPlayerId() == currentPlayer.getId() ? currentPlayer : player));
+            minValue = Math.min(minValue, getMaxValueDifference(edge.getTo(), player));
         }
         return minValue;
     }

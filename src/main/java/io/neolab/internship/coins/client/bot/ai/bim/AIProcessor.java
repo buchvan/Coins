@@ -84,7 +84,7 @@ public class AIProcessor {
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
                         ? MinMaxProcessor.maxMinPercentAlgorithm(nodeTree, player)
                         : MinMaxProcessor.minMaxPercentAlgorithm(
-                        nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
+                        nodeTree, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             case MAX_VALUE:
                 return getAdvantageousValueAction(nodeTree, player,
                         MinMaxProcessor.getValue(nodeTree, player, functionType), functionType);
@@ -96,7 +96,7 @@ public class AIProcessor {
                 return MinMaxProcessor.isFirstPlayer(nodeTree, player)
                         ? MinMaxProcessor.maxMinValueAlgorithm(nodeTree, player)
                         : MinMaxProcessor.minMaxValueAlgorithm(
-                        nodeTree, player, MinMaxProcessor.getSomeOpponent(nodeTree, player));
+                        nodeTree, MinMaxProcessor.getSomeOpponent(nodeTree, player));
             default:
                 return null;
         }
