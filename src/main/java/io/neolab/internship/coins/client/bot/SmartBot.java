@@ -70,7 +70,7 @@ public class SmartBot implements IBot {
     }
 
     private @NotNull Race chooseRaceBeforeGame(final @NotNull IGame game, final @NotNull Player player) {
-        tree = treeCreator.createTree(game, player, ROUND_DEPTH);
+        tree = treeCreator.createTree(game, player, ROUND_DEPTH - game.getPlayers().indexOf(player));
         if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
             return simpleBot.chooseRace(player, game);
         }
