@@ -143,7 +143,7 @@ public class MinMaxProcessor {
      */
     static @NotNull Action maxMinPercentAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
-        final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
+        final Map<Edge, Boolean> edgeToPercent = Collections.synchronizedMap(new HashMap<>(edges.size()));
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
@@ -174,8 +174,8 @@ public class MinMaxProcessor {
     }
 
     /**
-     * @param nodeTree      - корень дерева
-     * @param player        - думающий игрок
+     * @param nodeTree - корень дерева
+     * @param player   - думающий игрок
      * @return true, если есть последовательность действий, при которой игрок побеждает, false - если нет
      */
     private static boolean getMaxPercent(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
@@ -200,8 +200,8 @@ public class MinMaxProcessor {
     }
 
     /**
-     * @param nodeTree      - корень дерева
-     * @param opponent      - оппонент
+     * @param nodeTree - корень дерева
+     * @param opponent - оппонент
      * @return true, если есть последовательность действий, при которой оппонент проигрывает, false - если нет
      */
     private static boolean getMinPercent(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
@@ -234,7 +234,7 @@ public class MinMaxProcessor {
      */
     static @NotNull Action minMaxPercentAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
-        final Map<Edge, Boolean> edgeToPercent = new HashMap<>(edges.size());
+        final Map<Edge, Boolean> edgeToPercent = Collections.synchronizedMap(new HashMap<>(edges.size()));
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
@@ -256,7 +256,7 @@ public class MinMaxProcessor {
      */
     static @NotNull Action maxMinValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
-        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        final Map<Edge, Integer> edgeToValue = Collections.synchronizedMap(new HashMap<>(edges.size()));
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
@@ -291,8 +291,8 @@ public class MinMaxProcessor {
     }
 
     /**
-     * @param nodeTree      - корень дерева
-     * @param player        - думающий игрок
+     * @param nodeTree - корень дерева
+     * @param player   - думающий игрок
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
     private static int getMaxValue(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
@@ -317,8 +317,8 @@ public class MinMaxProcessor {
     }
 
     /**
-     * @param nodeTree      - корень дерева
-     * @param opponent      - оппонент игрока
+     * @param nodeTree - корень дерева
+     * @param opponent - оппонент игрока
      * @return минимальное число монет по всем рёбрам, выходящим из данного корня
      */
     private static int getMinValue(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
@@ -336,7 +336,7 @@ public class MinMaxProcessor {
      */
     static @NotNull Action minMaxValueAlgorithm(final @NotNull NodeTree nodeTree, final @NotNull Player opponent) {
         final List<Edge> edges = nodeTree.getEdges();
-        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        final Map<Edge, Integer> edgeToValue = Collections.synchronizedMap(new HashMap<>(edges.size()));
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
@@ -380,7 +380,7 @@ public class MinMaxProcessor {
     static @NotNull Action maxMinValueDifferenceAlgorithm(final @NotNull NodeTree nodeTree,
                                                           final @NotNull Player player) {
         final List<Edge> edges = nodeTree.getEdges();
-        final Map<Edge, Integer> edgeToValue = new HashMap<>(edges.size());
+        final Map<Edge, Integer> edgeToValue = Collections.synchronizedMap(new HashMap<>(edges.size()));
         final List<RecursiveAction> recursiveActions = new ArrayList<>(edges.size());
         edges.forEach(edge -> recursiveActions.add(new RecursiveAction() {
             @Override
@@ -394,8 +394,8 @@ public class MinMaxProcessor {
     }
 
     /**
-     * @param nodeTree      - корень дерева
-     * @param player        - думающий игрок
+     * @param nodeTree - корень дерева
+     * @param player   - думающий игрок
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
     private static int getMaxValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
