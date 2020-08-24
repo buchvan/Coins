@@ -23,6 +23,7 @@ import java.util.*;
  */
 public class GameLoopProcessor {
 
+
     /**
      * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
@@ -326,10 +327,15 @@ public class GameLoopProcessor {
      * @param player - игрок, подсписок доступных юнитов которого нужно сделать недоступными
      * @param units  - список доступных юнитов, которых необходимо сделать недоступными
      */
+    //TODO: sout
     private static void makeAvailableUnitsToNotAvailable(final @NotNull Player player,
                                                          final @NotNull List<Unit> units) {
+        System.out.println("NOT AVAILABLE: BEFORE" + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).addAll(units);
+        System.out.println("NOT AVAILABLE: AFTER" + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+        System.out.println("AVAILABLE BEFORE: " + player.getUnitsByState(AvailabilityType.AVAILABLE));
         player.getUnitsByState(AvailabilityType.AVAILABLE).removeAll(units);
+        System.out.println("AVAILABLE AFTER: " + player.getUnitsByState(AvailabilityType.AVAILABLE));
     }
 
     /**

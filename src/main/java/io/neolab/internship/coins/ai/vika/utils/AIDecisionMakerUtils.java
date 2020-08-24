@@ -98,7 +98,7 @@ public class AIDecisionMakerUtils {
                 .stream()
                 .filter(player -> player.getId() == currentPlayerId)
                 .findFirst()
-                .orElseThrow(() -> new AIBotException(AIBotExceptionErrorCode.NO_FOUND_PLAYER));
+               .orElseThrow();
     }
 
     public static int getPlayerIndexFromGame(final List<Player> players, final int currentPlayerId) {

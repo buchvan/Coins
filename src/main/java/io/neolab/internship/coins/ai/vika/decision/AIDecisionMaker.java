@@ -104,8 +104,8 @@ public class AIDecisionMaker {
      * @throws AIBotException - тип решения не найден
      */
     private static DecisionAndWin getBestDecisionByGameTree(final Player player, final IGame game,
-                                                            @NotNull final DecisionType decisionType, final int currentNode)
-            throws AIBotException {
+                                                            @NotNull final DecisionType decisionType,
+                                                            final int currentNode) throws AIBotException {
         LOGGER.info("Current node: {}", currentNode);
         LOGGER.info("DECISION TYPE: {}", decisionType);
         switch (decisionType) {
@@ -350,11 +350,16 @@ public class AIDecisionMaker {
         currentNode++;
         final Position position = game.getBoard().getPositionByCell(cell);
         final List<Unit> unitsForCapture = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+        LOGGER.info("UNITS AMOUNT: {}", unitsForCapture.size());
         final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
         LOGGER.info("CATCH CELL DECISION: {}", decision);
+        LOGGER.info("AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.AVAILABLE));
+        LOGGER.info("NOT AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         final IGame gameCopy = game.getCopy();
         try {
-            final Player playerCopy = getPlayerCopy(game, player.getId());
+            final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
+            LOGGER.info("AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.AVAILABLE));
+            LOGGER.info("NOT AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
             simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             final WinCollector winCollector = Objects.requireNonNull(
                     getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.CATCH_CELL, currentNode))
@@ -377,7 +382,7 @@ public class AIDecisionMaker {
         currentNode++;
         final IGame gameCopy = game.getCopy();
         try {
-            final Player playerCopy = getPlayerCopy(game, player.getId());
+            final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
             final Decision decision = new CatchCellDecision(null);
             LOGGER.info("CATCH CELL NULL DECISION: {}", decision);
             final WinCollector winCollector = Objects.requireNonNull(getBestDecisionByGameTree(playerCopy, gameCopy,
