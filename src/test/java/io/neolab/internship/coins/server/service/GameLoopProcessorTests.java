@@ -33,7 +33,7 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testPlayerRoundBeginUpdateNull() {
-        GameLoopProcessor.playerRoundBeginUpdate(null);
+        GameLoopProcessor.playerRoundBeginUpdate(null, false);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Unit unit2 = new Unit();
         player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).add(unit2);
 
-        GameLoopProcessor.playerRoundBeginUpdate(player);
+        GameLoopProcessor.playerRoundBeginUpdate(player, false);
 
         assertTrue(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).isEmpty());
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).contains(unit1));
@@ -56,7 +56,7 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testPlayerRoundEndUpdateNull() {
-        GameLoopProcessor.playerRoundEndUpdate(null);
+        GameLoopProcessor.playerRoundEndUpdate(null, false);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Unit unit2 = new Unit();
         player.getUnitsByState(AvailabilityType.AVAILABLE).add(unit2);
 
-        GameLoopProcessor.playerRoundEndUpdate(player);
+        GameLoopProcessor.playerRoundEndUpdate(player, false);
 
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
         assertTrue(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).contains(unit1));
@@ -80,27 +80,31 @@ public class GameLoopProcessorTests extends TestUtils {
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull1() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(null, board, new HashSet<>(), new LinkedList<>());
+        GameLoopProcessor.updateAchievableCells(null, board, new HashSet<>(),
+                new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull2() {
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), null, new HashSet<>(), new LinkedList<>());
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), null, new HashSet<>(),
+                new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull3() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, null, new LinkedList<>());
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, null,
+                new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull4() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, new HashSet<>(), null);
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, new HashSet<>(),
+                null, false);
     }
 
     @Test
@@ -111,7 +115,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final List<Cell> controlledCells = new LinkedList<>();
         final Cell someCell = getCellFromBoardByCellType(CellType.LAND, board);
         controlledCells.add(someCell);
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
         assertNotNull(board.getNeighboringCells(someCell));
         assertTrue(achievableCells.containsAll(Objects.requireNonNull(board.getNeighboringCells(someCell))));
         assertEquals(
@@ -126,7 +130,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
         final Set<Cell> achievableCells = new HashSet<>();
         final List<Cell> controlledCells = new LinkedList<>();
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
         assertTrue(achievableCells.containsAll(board.getEdgeCells()));
         assertEquals(board.getEdgeCells().size(), achievableCells.size());
     }
@@ -134,13 +138,13 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testGetUnitsNeededToCatchNull1() {
-        GameLoopProcessor.getUnitsCountNeededToCatchCell(null, new Cell(CellType.LAND));
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(null, new Cell(CellType.LAND), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testGetUnitsNeededToCatchNull2() {
-        GameLoopProcessor.getUnitsCountNeededToCatchCell(new GameFeatures(), null);
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(new GameFeatures(), null, false);
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -175,7 +179,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell = new Cell(CellType.LAND);
         cell.setRace(Race.ORC);
         cell.getUnits().add(new Unit());
-        final int actual = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, cell);
+        final int actual = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, cell, false);
 
         assertEquals(cell.getType().getCatchDifficulty() + bonusDefense + 1 + 1, actual);
     }
@@ -253,19 +257,19 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull1() {
-        GameLoopProcessor.freeTransitCells(null, new LinkedList<>(), new LinkedList<>());
+        GameLoopProcessor.freeTransitCells(null, new LinkedList<>(), new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull2() {
-        GameLoopProcessor.freeTransitCells(new Player("F1"), null, new LinkedList<>());
+        GameLoopProcessor.freeTransitCells(new Player("F1"), null, new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull3() {
-        GameLoopProcessor.freeTransitCells(new Player("F1"), new LinkedList<>(), null);
+        GameLoopProcessor.freeTransitCells(new Player("F1"), new LinkedList<>(), null, false);
     }
 
     @Test
@@ -276,7 +280,7 @@ public class GameLoopProcessorTests extends TestUtils {
 
         final List<Cell> controlledCells = new LinkedList<>(transitCells);
         addCellsToList(controlledCells, new Cell(CellType.WATER), new Cell(CellType.LAND));
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         assertTrue(transitCells.isEmpty());
     }
 
@@ -290,7 +294,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         final List<Cell> expected = new LinkedList<>();
         addCellsToList(expected, cell1, cell2);
         assertEquals(expected, controlledCells);
@@ -305,7 +309,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         assertTrue(transitCells.isEmpty());
     }
 
@@ -318,7 +322,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         final List<Cell> expected = new LinkedList<>();
         addCellsToList(expected, cell1, cell2);
         assertEquals(expected, controlledCells);

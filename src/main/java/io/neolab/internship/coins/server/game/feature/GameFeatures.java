@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,6 +11,7 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -21,39 +21,26 @@ public class GameFeatures implements Serializable {
     @JsonProperty
     @JsonSerialize(keyUsing = PairRaceCellTypeSerializer.class)
     @JsonDeserialize(keyUsing = PairRaceCellTypeKeyDeserializer.class)
-    private final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures; // (раса, тип клетки) ->
+    private final @NotNull Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures; // (раса, тип клетки) ->
     // список соответствующих им особенностей
 
     public GameFeatures() {
         this(new HashMap<>());
     }
 
+    @Contract(pure = true)
     @JsonCreator
-    public GameFeatures(@JsonProperty("raceCellTypeFeatures") final Map<Pair<Race, CellType>, List<Feature>>
+    public GameFeatures(@JsonProperty("raceCellTypeFeatures") final @NotNull Map<Pair<Race, CellType>, List<Feature>>
                                 raceCellTypeFeatures) {
         this.raceCellTypeFeatures = raceCellTypeFeatures;
     }
 
-    @Contract(pure = true)
-    @JsonIgnore
-    public @NotNull GameFeatures getCopy() {
-        final Map<Pair<Race, CellType>, List<Feature>> raceCellTypeFeatures =
-                new HashMap<>(this.raceCellTypeFeatures.size());
-        this.raceCellTypeFeatures.forEach((raceCellTypePair, features) -> {
-            final List<Feature> featureList = new LinkedList<>();
-            features.forEach(feature -> featureList.add(feature.getCopy()));
-            raceCellTypeFeatures.put(
-                    new Pair<>(raceCellTypePair.getFirst(),
-                    raceCellTypePair.getSecond()), featureList);
-        });
-        return new GameFeatures(raceCellTypeFeatures);
-    }
-
-    public Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
+    public @NotNull Map<Pair<Race, CellType>, List<Feature>> getRaceCellTypeFeatures() {
         return raceCellTypeFeatures;
     }
 
-    public List<Feature> getFeaturesByRaceAndCellType(final Race race, final CellType cellType) {
+    public @NotNull List<Feature> getFeaturesByRaceAndCellType(final @Nullable Race race,
+                                                               final @NotNull CellType cellType) {
         return getRaceCellTypeFeatures().getOrDefault(new Pair<>(race, cellType), Collections.emptyList());
     }
 

@@ -93,7 +93,7 @@ public class Board implements IBoard, Serializable {
     @Override
     public @NotNull IBoard getCopy() {
         final BidiMap<Position, Cell> positionToCellMap = new DualHashBidiMap<>();
-        this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position.getCopy(), cell.getCopy()));
+        this.positionToCellMap.forEach((position, cell) -> positionToCellMap.put(position, cell.getCopy()));
 
         final List<Cell> edgeCells = new LinkedList<>();
         this.edgeCells.forEach(cell -> edgeCells.add(positionToCellMap.get(getPositionByCell(cell))));

@@ -117,21 +117,23 @@ public class GameAnswerProcessor {
         LOGGER.debug("Change race answer: {} ", changeRaceAnswer);
         GameValidator.validateChangeRaceAnswer(changeRaceAnswer, racesPool);
         LOGGER.debug("Answer is valid");
-        changeRace(player, Objects.requireNonNull(changeRaceAnswer).getNewRace(), racesPool);
+        changeRace(player, Objects.requireNonNull(changeRaceAnswer).getNewRace(), racesPool, true);
     }
 
     /**
      * Сменить расу игроку
      *
      * @param player    - игрок, который решил идти в упадок
+     * @param newRace - новая раса
      * @param racesPool - пул всех доступных рас
+     * @param isLoggedOn - включено логгирование?
      */
-    static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
-                           final @NotNull List<Race> racesPool) {
+    public static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
+                                  final @NotNull List<Race> racesPool, final boolean isLoggedOn) {
         Arrays.stream(AvailabilityType.values())
                 .forEach(availabilityType ->
                         player.getUnitStateToUnits().get(availabilityType).clear()); // Чистим у игрока юниты
-        chooseRace(player, racesPool, newRace);
+        chooseRace(player, racesPool, newRace, isLoggedOn);
     }
 
     /**
@@ -139,13 +141,15 @@ public class GameAnswerProcessor {
      *
      * @param player    - игрок, выбирающий новую расу
      * @param racesPool - пул всех доступных рас
+     * @param newRace - новая раса
+     * @param isLoggedOn - включено логгирование?
      */
     private static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
-                                  final @NotNull Race newRace) {
+                                   final @NotNull Race newRace, final boolean isLoggedOn) {
         final Race oldRace = player.getRace();
         racesPool.remove(newRace); // Удаляем выбранную игроком расу из пула
         player.setRace(newRace);
-        if(oldRace != null) {
+        if (oldRace != null) {
             racesPool.add(oldRace);
         }
 
@@ -156,7 +160,9 @@ public class GameAnswerProcessor {
             i++;
         }
 
-        GameLogger.printChooseRaceLog(player, newRace);
+        if (isLoggedOn) {
+            GameLogger.printChooseRaceLog(player, newRace);
+        }
     }
 
     /**
@@ -194,7 +200,7 @@ public class GameAnswerProcessor {
         final Cell captureCell = Objects.requireNonNull(board.getCellByPosition(resolution.getFirst()));
         final List<Unit> units = resolution.getSecond();
         pretendToCell(player, captureCell, units, board, gameFeatures,
-                ownToCells, feudalToCells, transitCells, achievableCells);
+                ownToCells, feudalToCells, transitCells, achievableCells, true);
     }
 
     /**
@@ -209,37 +215,37 @@ public class GameAnswerProcessor {
      * @param feudalToCells   - множества клеток для каждого феодала
      * @param transitCells    - транзитные клетки игрока
      * @param achievableCells - множество достижимых клеток
+     * @param isLoggedOn - включено логгирование?
      */
-    private static void pretendToCell(final @NotNull Player player,
-                                      final @NotNull Cell captureCell,
-                                      final @NotNull List<Unit> units,
-                                      final @NotNull IBoard board,
-                                      final @NotNull GameFeatures gameFeatures,
-                                      final @NotNull Map<Player, List<Cell>> ownToCells,
-                                      final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                                      final @NotNull List<Cell> transitCells,
-                                      final @NotNull Set<Cell> achievableCells) {
+    public static void pretendToCell(final @NotNull Player player,
+                                     final @NotNull Cell captureCell,
+                                     final @NotNull List<Unit> units,
+                                     final @NotNull IBoard board,
+                                     final @NotNull GameFeatures gameFeatures,
+                                     final @NotNull Map<Player, List<Cell>> ownToCells,
+                                     final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                                     final @NotNull List<Cell> transitCells,
+                                     final @NotNull Set<Cell> achievableCells,
+                                     final boolean isLoggedOn) {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(captureCell);
         if (isControlled) {
             final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
             enterToCell(player, captureCell, ownToCells.get(player), feudalToCells.get(player),
-                    units, tiredUnitsCount, board);
+                    units, tiredUnitsCount, board, isLoggedOn);
             return;
         }
-        GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
-        GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
-        final List<Cell> neighboringCells = getAllNeighboringCells(board, captureCell);
-        neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
-        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell);
-        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
-        catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
-                units, gameFeatures, ownToCells, feudalToCells, transitCells);
-        if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
-            achievableCells.clear();
-            achievableCells.add(captureCell);
+        if (isLoggedOn) {
+            GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
+            GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
         }
-        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        final List<Cell> neighboringCells = new LinkedList<>(getAllNeighboringCells(board, captureCell));
+        neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
+        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell, isLoggedOn);
+        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell, isLoggedOn);
+        catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
+                units, gameFeatures, ownToCells, feudalToCells, transitCells, isLoggedOn);
+        updateAchievableCellsAfterCatchCell(board, captureCell, controlledCells, achievableCells);
     }
 
     /**
@@ -249,7 +255,7 @@ public class GameAnswerProcessor {
      * @param player          - игрок
      * @param board           - борда
      * @param controlledCells - список подконтрольных игроку клеток
-     * @param feudalCells - клетки, приносящие монетки игроку
+     * @param feudalCells     - клетки, приносящие монетки игроку
      * @throws CoinsException в случае если ответ невалиден
      */
     private static void distributionUnitsProcess(final @Nullable Answer answer, final @NotNull Player player,
@@ -265,7 +271,8 @@ public class GameAnswerProcessor {
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
         distributionUnits(player, controlledCells, feudalCells,
-                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board);
+                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()),
+                board, true);
     }
 
 
@@ -274,23 +281,29 @@ public class GameAnswerProcessor {
      *
      * @param player          - игрок, делающий выбор
      * @param controlledCells - подконтрольные клетки игрока
-     * @param feudalCells - клетки, приносящие монетки игроку
+     * @param feudalCells     - клетки, приносящие монетки игроку
      * @param resolutions     - мапа: клетка, в которую игрок хочет распределить войска
      *                        -> юниты, которые игрок хочет распределить в клетку
      * @param board           - борда
+     * @param isLoggedOn - включено логгирование?
      */
-    private static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
+    public static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
                                          final @NotNull Set<Cell> feudalCells,
                                          final @NotNull Map<Position, List<Unit>> resolutions,
-                                         final @NotNull IBoard board) {
-        GameLogger.printBeginUnitsDistributionLog(player);
-        makeAllUnitsSomeState(player,
-                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
+                                         final @NotNull IBoard board, final boolean isLoggedOn) {
+        if (isLoggedOn) {
+            GameLogger.printBeginUnitsDistributionLog(player);
+        }
         resolutions.forEach((position, units) -> {
-            GameLogger.printCellDefendingLog(player, units.size(), position);
-            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units);
+            if (isLoggedOn) {
+                GameLogger.printCellDefendingLog(player, units.size(), position);
+            }
+            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)),
+                    units, isLoggedOn);
         });
         loseCells(controlledCells, controlledCells, feudalCells);
-        GameLogger.printAfterDistributedUnitsLog(player);
+        if (isLoggedOn) {
+            GameLogger.printAfterDistributedUnitsLog(player);
+        }
     }
 }

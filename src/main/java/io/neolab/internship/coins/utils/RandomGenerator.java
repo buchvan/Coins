@@ -46,7 +46,7 @@ public class RandomGenerator {
      * @param bound - граница подходящего числа
      * @return выбранное число
      */
-    public static int chooseNumber(final int bound) {
+    public static synchronized int chooseNumber(final int bound) {
         return random.nextInt(bound);
     }
 

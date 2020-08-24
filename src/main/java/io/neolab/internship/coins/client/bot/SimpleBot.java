@@ -1,11 +1,12 @@
 package io.neolab.internship.coins.client.bot;
 
+import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
 import io.neolab.internship.coins.server.game.IGame;
+import io.neolab.internship.coins.server.game.board.Cell;
+import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.board.Cell;
-import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
@@ -43,7 +44,7 @@ public class SimpleBot implements IBot {
             final IBoard board = game.getBoard();
             final List<Cell> controlledCells = game.getOwnToCells().get(player);
             final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-            GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+            GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, true);
             final Cell catchingCell = RandomGenerator.chooseItemFromSet(achievableCells);
 
             /* Оставляем только те подконтрольные клетки, через которые можно добраться до catchingCell */
@@ -54,12 +55,13 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+            AIProcessor.removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
                     catchingCell, controlledCells);
             final int unitsCountNeededToCatchCell =
                     controlledCells.contains(catchingCell)
                             ? catchingCell.getType().getCatchDifficulty()
-                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(), catchingCell);
+                            : GameLoopProcessor.getUnitsCountNeededToCatchCell(game.getGameFeatures(),
+                            catchingCell, true);
             final int remainingUnitsCount = units.size() - unitsCountNeededToCatchCell;
             final Pair<Position, List<Unit>> resolution =
                     remainingUnitsCount >= 0
@@ -70,50 +72,9 @@ public class SimpleBot implements IBot {
                             : null;
             LOGGER.debug("Resolution of simple bot: {} ", resolution);
             return resolution;
-        } // else
+        }
         LOGGER.debug("Simple bot will not capture of cells");
         return null;
-    }
-
-    /**
-     * Найти и удалить недоступные для захвата клетки юнитов
-     *
-     * @param board                        - борда
-     * @param units                        - список юнитов
-     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
-     * @param catchingCell                 - захватываемая клетка
-     * @param controlledCells              - контролируемые игроком клетки
-     */
-    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
-                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
-                                                   final @NotNull Cell catchingCell,
-                                                   final @NotNull List<Cell> controlledCells) {
-        final List<Cell> boardEdgeCells = board.getEdgeCells();
-        final Iterator<Unit> iterator = units.iterator();
-        while (iterator.hasNext()) {
-            boolean unitAvailableForCapture = false;
-            final Unit unit = iterator.next();
-            for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                if (neighboringCell.getUnits().contains(unit)) {
-                    unitAvailableForCapture = true;
-                    break;
-                }
-            }
-            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                unitAvailableForCapture = true;
-                for (final Cell controlledCell : controlledCells) {
-                    if (controlledCell.getUnits().contains(unit)) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
-                            unitAvailableForCapture = false;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (!unitAvailableForCapture) {
-                iterator.remove();
-            }
-        }
     }
 
     @Override
@@ -122,14 +83,16 @@ public class SimpleBot implements IBot {
         final Map<Position, List<Unit>> distributionUnits = new HashMap<>();
         final List<Unit> availableUnits = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
         List<Unit> units = new LinkedList<>();
-        while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
-            final Cell protectedCell = RandomGenerator.chooseItemFromList(
-                    game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
-            units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
-                    availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
-            distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
-            availableUnits.removeAll(units);
-            units = new LinkedList<>();
+        if (!game.getOwnToCells().get(player).isEmpty()) {
+            while (availableUnits.size() > 0 && RandomGenerator.isYes()) {
+                final Cell protectedCell = RandomGenerator.chooseItemFromList(
+                        game.getOwnToCells().get(player)); // клетка, в которую игрок хочет распределить войска
+                units.addAll(availableUnits.subList(0, RandomGenerator.chooseNumber(
+                        availableUnits.size()))); // список юнитов, которое игрок хочет распределить в эту клетку
+                distributionUnits.put(game.getBoard().getPositionByCell(protectedCell), units);
+                availableUnits.removeAll(units);
+                units = new LinkedList<>();
+            }
         }
         LOGGER.debug("Simple bot distributed units: {} ", distributionUnits);
         return distributionUnits;
