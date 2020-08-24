@@ -136,7 +136,8 @@ public class AIDecisionMaker {
     private static Decision executeBestDeclineRaceDecision(final Player player, final IGame game) {
         final int DECLINE_RACE_THREADS_AMOUNT = 2;
         final ExecutorService executorService = Executors.newFixedThreadPool(DECLINE_RACE_THREADS_AMOUNT);
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final boolean[] declineRaceTypes = {true, false};
         for (final boolean declineRaceType : declineRaceTypes) {
             final int currentNode = 0;
@@ -157,7 +158,8 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createDeclineRaceDecision(@NotNull final IGame game,
                                                                      @NotNull final Player player,
                                                                      final int currentNode) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final boolean[] declineRaceTypes = {true, false};
         for (final boolean declineRaceType : declineRaceTypes) {
             addDeclineRaceDecision(declineRaceType, decisionAndWins, player, game, currentNode);
@@ -210,10 +212,11 @@ public class AIDecisionMaker {
      * @return - лучшее решение
      */
     private static Decision executeBestChangeRaceDecision(final Player player, final IGame game) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Race> availableRaces = game.getRacesPool();
         final int CHANGE_RACE_THREADS_AMOUNT = availableRaces.size();
-        final ExecutorService executorService = Executors.newFixedThreadPool(CHANGE_RACE_THREADS_AMOUNT);
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
         availableRaces.forEach(race -> executorService.execute(() -> {
                     final int currentNode = 0;
                     addChangeRaceDecision(race, decisionAndWins, player, game, currentNode);
@@ -233,7 +236,8 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createChangeRaceDecision(@NotNull final IGame game,
                                                                     @NotNull final Player player,
                                                                     final int currentNode) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Race> availableRaces = game.getRacesPool();
         availableRaces.forEach(race -> addChangeRaceDecision(race, decisionAndWins, player, game, currentNode));
         return getBestDecision(decisionAndWins);
@@ -291,13 +295,14 @@ public class AIDecisionMaker {
      * @return - лучшее решение
      */
     private static Decision executeBestCatchCellDecision(final Player player, final IGame game) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), false);
         LOGGER.info("CONTROLLED CELLS: {}", game.getOwnToCells().get(player));
         LOGGER.info("ACHIEVABLE CELLS SIZE: {}", achievableCells.size());
         final int CATCH_CELL_THREADS_AMOUNT = achievableCells.size() + 1;
-        final ExecutorService executorService = Executors.newFixedThreadPool(CATCH_CELL_THREADS_AMOUNT);
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
         achievableCells.forEach(cell -> executorService.execute(() -> {
             if (checkCellCaptureOpportunity(cell, player, game)) {
                 final int currentNode = 0;
@@ -320,7 +325,8 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createCatchCellDecision(@NotNull final IGame game,
                                                                    @NotNull final Player player,
                                                                    final int currentNode) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final Set<Cell> achievableCells = new HashSet<>(game.getPlayerToAchievableCells().get(player));
         GameLoopProcessor.updateAchievableCells(player, game.getBoard(), achievableCells,
                 game.getOwnToCells().get(player), false);
@@ -362,7 +368,7 @@ public class AIDecisionMaker {
             LOGGER.info("NOT AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
             simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
             final WinCollector winCollector = Objects.requireNonNull(
-                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.CATCH_CELL, currentNode))
+                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS, currentNode))
                     .getWinCollector();
             decisionAndWins.add(new DecisionAndWin(decision, winCollector));
         } catch (final AIBotException e) {
@@ -401,7 +407,8 @@ public class AIDecisionMaker {
      * @return - лучшее решение
      */
     private static Decision executeBestDistributionUnitsDecision(final Player player, final IGame game) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         LOGGER.info("Start create distribution units decisions...");
         LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
@@ -412,7 +419,7 @@ public class AIDecisionMaker {
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         final int DISTRIBUTION_UNITS_THREADS_AMOUNT = combinations.size();
-        final ExecutorService executorService = Executors.newFixedThreadPool(DISTRIBUTION_UNITS_THREADS_AMOUNT);
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
             executorService.execute(() -> {
                 final int currentNode = 0;
@@ -433,7 +440,8 @@ public class AIDecisionMaker {
     private static @NotNull DecisionAndWin createDistributionUnitsDecision(@NotNull final IGame game,
                                                                            @NotNull final Player player,
                                                                            final int currentNode) {
-        final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
+        final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         LOGGER.info("Start create distribution units decisions...");
         LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
@@ -442,7 +450,8 @@ public class AIDecisionMaker {
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         if (controlledCells.size() == 0) {
             LOGGER.info("NO CONTROLLED CELLS DISTRIBUTION");
-            final List<DecisionAndWin> emptyDecisionList = new LinkedList<>();
+            //final List<DecisionAndWin> emptyDecisionList = new LinkedList<>();
+            final List<DecisionAndWin> emptyDecisionList = Collections.synchronizedList(new LinkedList<>());
             emptyDecisionList.add(new DecisionAndWin(new DistributionUnitsDecision(new HashMap<>()),
                     new WinCollector(player.getCoins())));
             return getBestDecision(emptyDecisionList);
@@ -473,6 +482,7 @@ public class AIDecisionMaker {
         final IGame gameCopy = game.getCopy();
         try {
             final Player playerCopy = getPlayerCopy(gameCopy, player.getId());
+            //final Player playerCopy = player;
             final Map<Position, List<Unit>> resolutions = new HashMap<>();
             combination
                     .forEach(cellUnitsAmountsPair
@@ -481,7 +491,7 @@ public class AIDecisionMaker {
                                     playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
             final Decision decision = new DistributionUnitsDecision(resolutions);
             LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
-            simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, game);
+            simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, gameCopy);
             updateDecisionNodeCoinsAmount(gameCopy, playerCopy);
             decisionAndWins.add(new DecisionAndWin(decision, new WinCollector(playerCopy.getCoins())));
                     /*if (isDecisionTreeCreationFinished(gameCopy, playerCopy.getId())) {

@@ -283,12 +283,9 @@ public class GameLoopProcessor {
     private static void withdrawUnits(final @NotNull List<Cell> cells, final @NotNull List<Cell> controlledCells,
                                       final @NotNull Set<Cell> feudalCells,
                                       final boolean isLoggingTurOn, final @NotNull List<Unit>... units) {
-        //TODO
-        System.out.println("WITHDRAW UNITS: " + controlledCells);
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
-        System.out.println("WITHDRAW UNITS: " + controlledCells);
         loseCells(cells, controlledCells, feudalCells);
         if (isLoggingTurOn) {
             GameLogger.printAfterWithdrawCellsLog(cells);
@@ -304,7 +301,6 @@ public class GameLoopProcessor {
      */
     public static void loseCells(final @NotNull List<Cell> cells,
                                  final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells) {
-        System.out.println("CONTROLLED CELL IN LOSE CELL START: " + controlledCells);
         final Iterator<Cell> iterator = cells.iterator();
         final List<Cell> lostCells = new LinkedList<>();
         while (iterator.hasNext()) {
@@ -315,10 +311,7 @@ public class GameLoopProcessor {
             }
         }
         feudalCells.removeAll(lostCells);
-        System.out.println("CONTROLLED CELL BEFORE LOSE CELL: " + controlledCells);
         controlledCells.removeAll(lostCells);
-        //TODO
-        System.out.println("CONTROLLED CELL AFTER LOSE CELL: " + controlledCells);
     }
 
     /**
@@ -327,15 +320,10 @@ public class GameLoopProcessor {
      * @param player - игрок, подсписок доступных юнитов которого нужно сделать недоступными
      * @param units  - список доступных юнитов, которых необходимо сделать недоступными
      */
-    //TODO: sout
     private static void makeAvailableUnitsToNotAvailable(final @NotNull Player player,
                                                          final @NotNull List<Unit> units) {
-        System.out.println("NOT AVAILABLE: BEFORE" + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).addAll(units);
-        System.out.println("NOT AVAILABLE: AFTER" + player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
-        System.out.println("AVAILABLE BEFORE: " + player.getUnitsByState(AvailabilityType.AVAILABLE));
         player.getUnitsByState(AvailabilityType.AVAILABLE).removeAll(units);
-        System.out.println("AVAILABLE AFTER: " + player.getUnitsByState(AvailabilityType.AVAILABLE));
     }
 
     /**

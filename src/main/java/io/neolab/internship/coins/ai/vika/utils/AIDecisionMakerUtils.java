@@ -58,7 +58,6 @@ public class AIDecisionMakerUtils {
         LOGGER.info("Start distribution units combinations generation...");
         LOGGER.info("CELLS: {}", cellForDistribution);
         LOGGER.info("REMAINING UNITS AMOUNT: {}", remainingUnitsAmount);
-
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
         if (remainingUnitsAmount <= 0 || cellForDistribution.size() == 0) {
             return combinations;
@@ -68,10 +67,11 @@ public class AIDecisionMakerUtils {
             for (final Cell cell : cellForDistributionCopy) {
                 final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
                 currentCombination.add(new Pair<>(cell, i));
-                cellForDistributionCopy.remove(cell);
+                final List<Cell> cells = new LinkedList<>(cellForDistributionCopy);
+                cells.remove(cell);
+               // cellForDistributionCopy.remove(cell);
                 final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
-                        getDistributionUnitsCombination(new LinkedList<>(cellForDistributionCopy),
-                                remainingUnitsAmount - i);
+                        getDistributionUnitsCombination(cells, remainingUnitsAmount - i);
                 if (remainingCellCombinations.size() > 0) {
                     for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
                         if (remainingCellCombination.size() > 0) {

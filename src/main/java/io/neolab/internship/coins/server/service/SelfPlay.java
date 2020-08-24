@@ -17,6 +17,8 @@ import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,6 +28,8 @@ import static io.neolab.internship.coins.server.service.GameLoopProcessor.loseCe
 class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
 
+    //TODO: logger
+    private static Logger LOGGER = LoggerFactory.getLogger(SelfPlay.class);
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
@@ -183,6 +187,7 @@ class SelfPlay {
             /* Пока есть что захватывать и какими войсками захватывать */
             final Pair<Position, List<Unit>> catchingCellToUnitsList = simpleBot.chooseCatchingCell(player, game);
             if (catchingCellToUnitsList == null) { // если игрок не захотел больше захватывать
+                LOGGER.info("CONTROLLED CELLS AFTER CATCH PHASE {} ", controlledCells);
                 break;
             }
             final Cell catchingCell = board
@@ -308,15 +313,22 @@ class SelfPlay {
      */
     private static void distributionUnits(final @NotNull Player player, final @NotNull IBot simpleBot,
                                           final @NotNull IGame game) throws AIBotException {
+        LOGGER.info("CONTROLLED CELLS SIZE BEFORE: " + game.getOwnToCells().get(player));
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        LOGGER.info("CONTROLLED CELLS SIZE after freeTransitCells: " + game.getOwnToCells().get(player));
         GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
+        LOGGER.info("CONTROLLED CELLS SIZE after loseCells: " + game.getOwnToCells().get(player));
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
+        //TODO: sout
+        LOGGER.info("BEFORE DISTRIBUTION...");
+        LOGGER.info("CONTROLLED CELLS SIZE: " + controlledCells.size());
+        LOGGER.info("AVAILABLE UNITS SIZE: " + availableUnits.size());
         if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
             final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
             distributionUnits.forEach((position, units) -> {
@@ -330,6 +342,6 @@ class SelfPlay {
     }
 
     public static void main(final String[] args) {
-        selfPlay();
+            selfPlay();
     }
 }

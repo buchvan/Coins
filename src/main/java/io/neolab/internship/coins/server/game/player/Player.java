@@ -67,19 +67,12 @@ public class Player implements Serializable {
     @JsonIgnore
     //TODO: sout
     public @NotNull Player getCopy() {
-        System.out.println("generate player copy....");
-        System.out.println("AVAILABLE UNITS: " + this.getUnitsByState(AvailabilityType.AVAILABLE));
-        System.out.println("NOT AVAILABLE UNITS: " + this.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
         this.unitStateToUnits.forEach((availabilityType, units) -> {
             final List<Unit> unitList = new LinkedList<>();
             units.forEach(unit -> unitList.add(unit.getCopy()));
             unitStateToUnits.put(availabilityType, unitList);
         });
-        System.out.println("RESULT: ");
-        System.out.println("AVAILABLE UNITS: " + unitStateToUnits.get(AvailabilityType.AVAILABLE));
-        System.out.println("NOT AVAILABLE UNITS: " + unitStateToUnits.get(AvailabilityType.NOT_AVAILABLE));
-        System.out.println("complete copy generation...");
         return new Player(this.id, this.nickname, this.race, unitStateToUnits, this.coins);
     }
 

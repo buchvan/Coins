@@ -1,5 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.ai.vika.AIBot;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -21,9 +22,10 @@ public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
-    private static final int GAME_AMOUNT = 10;
-    private static final int PLAYERS_AMOUNT = 3;
+    private static final int GAME_AMOUNT = 100;
+    private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
+    private static int isZeroCoinsByAIBot = 0;
 
 
     private static void play() {
@@ -35,6 +37,9 @@ public class GameStatistic {
             winners = selfPlayByBotToPlayers(simpleBotToPlayer);
             for (final Player winner : winners) {
                 winCounter++;
+                if(winner.getCoins() == 0 && winner.equals(simpleBotToPlayer.get(1).getSecond())){
+                    isZeroCoinsByAIBot++;
+                }
                 int currentWinAmount = playersStatistic.get(winner);
                 playersStatistic.put(winner, ++currentWinAmount);
             }
@@ -67,7 +72,9 @@ public class GameStatistic {
     }
 
     private static void initBotPlayerPair(final List<Player> players) {
-        players.forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
+        //players.forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
     }
 
     /**
@@ -94,5 +101,6 @@ public class GameStatistic {
     public static void main(final String[] args) {
         play();
         collectStatistic();
+        System.out.println(isZeroCoinsByAIBot);
     }
 }
