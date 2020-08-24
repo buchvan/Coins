@@ -9,6 +9,7 @@ import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -22,10 +23,10 @@ public class GameStatistic {
     private static final @NotNull Map<Player, Statistic> playersStatistic = new HashMap<>();
     private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
-    private static final int BOT1_MAX_DEPTH = 3;
+    private static final int BOT1_MAX_DEPTH = 2;
     private static final FunctionType BOT1_TYPE = FunctionType.MIN_MAX_VALUE_DIFFERENCE;
     private static final int BOT2_MAX_DEPTH = 1;
-    private static final FunctionType BOT2_TYPE = FunctionType.MAX_VALUE;
+    private static final FunctionType BOT2_TYPE = FunctionType.MAX_VALUE_DIFFERENCE;
     private static int winCounter = 0;
     private static final boolean isParallel = false;
 
@@ -82,6 +83,7 @@ public class GameStatistic {
             maxTime = Math.max(maxTime, time);
         }
 
+        @Contract(value = "null -> false", pure = true)
         @Override
         public boolean equals(final Object o) {
             if (this == o) return true;
@@ -128,7 +130,7 @@ public class GameStatistic {
             recursiveActions.add(new RecursiveAction() {
                 @Override
                 protected void compute() {
-                    final List<Player> playersCopy = new LinkedList<>();
+                    final List<Player> playersCopy = new ArrayList<>(players.size());
                     players.forEach(player -> playersCopy.add(player.getCopy()));
                     playAndUpdateStatistic(index, playersCopy);
                 }
@@ -154,7 +156,7 @@ public class GameStatistic {
      */
     private static @NotNull List<Player> initPlayers() {
         int i = 0;
-        final List<Player> playerList = new LinkedList<>();
+        final List<Player> playerList = Collections.synchronizedList(new ArrayList<>(PLAYERS_AMOUNT));
         while (i < PLAYERS_AMOUNT) {
             i++;
             playerList.add(new Player("F" + i));
@@ -163,7 +165,7 @@ public class GameStatistic {
     }
 
     private static @NotNull List<Pair<IBot, Player>> initBotPlayerPair(final List<Player> players) {
-        final List<Pair<IBot, Player>> botToPlayer = new LinkedList<>();
+        final List<Pair<IBot, Player>> botToPlayer = new ArrayList<>(PLAYERS_AMOUNT);
         botToPlayer.add(new Pair<>(new SmartBot(BOT1_MAX_DEPTH, BOT1_TYPE), players.get(0)));
         botToPlayer.add(new Pair<>(new SmartBot(BOT2_MAX_DEPTH, BOT2_TYPE), players.get(players.size() - 1)));
         return botToPlayer;
