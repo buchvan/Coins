@@ -22,7 +22,6 @@ import java.util.*;
 public class SmartBot implements IBot {
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(SimpleBot.class);
     private final int maxDepth;
-    private static final int ROUND_DEPTH = 2;
     private @Nullable NodeTree tree;
     private final @NotNull SimulationTreeCreator treeCreator;
     private final @NotNull FunctionType functionType;
@@ -70,7 +69,8 @@ public class SmartBot implements IBot {
     }
 
     private @NotNull Race chooseRaceBeforeGame(final @NotNull IGame game, final @NotNull Player player) {
-        tree = treeCreator.createTree(game, player, ROUND_DEPTH - game.getPlayers().indexOf(player));
+        tree = treeCreator.createTree(game, player,
+                game.getPlayers().size() - game.getPlayers().indexOf(player));
         if (Objects.requireNonNull(tree).getEdges().isEmpty()) {
             return simpleBot.chooseRace(player, game);
         }
