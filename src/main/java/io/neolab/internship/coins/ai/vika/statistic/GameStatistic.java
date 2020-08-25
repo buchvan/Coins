@@ -21,7 +21,7 @@ public class GameStatistic {
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final @NotNull List<Integer> aiBotCoins = new LinkedList<>();
-    private static final int GAME_AMOUNT = 100;
+    private static final int GAME_AMOUNT = 9;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
 
@@ -34,7 +34,7 @@ public class GameStatistic {
             winners = selfPlayByBotToPlayers(simpleBotToPlayer);
             for (final Player winner : winners) {
                 winCounter++;
-                if(winner.equals(simpleBotToPlayer.get(1).getSecond())){
+                if(winner.equals(simpleBotToPlayer.get(0).getSecond())){
                     aiBotCoins.add(winner.getCoins());
                 }
                 int currentWinAmount = playersStatistic.get(winner);
@@ -100,6 +100,6 @@ public class GameStatistic {
         collectStatistic();
         aiBotCoins.sort(Comparator.comparingInt(Integer::intValue));
         aiBotCoins.forEach(System.out::println);
-        System.out.println("MEDIANA: " + ((double)(aiBotCoins.get(50) + aiBotCoins.get(51))) / 2);
+        System.out.println("MEDIANA: " + aiBotCoins.get(5));
     }
 }

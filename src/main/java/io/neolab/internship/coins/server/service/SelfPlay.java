@@ -11,6 +11,7 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LogCleaner;
@@ -58,8 +59,8 @@ public class SelfPlay {
 
     private static void AIBotAndSimpleBotToPlayers(final IGame game) {
         final List<Player> players = game.getPlayers();
-        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
-        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(0)));
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(1)));
     }
 
     /**
@@ -100,6 +101,11 @@ public class SelfPlay {
         simpleBotToPlayer.forEach(pair ->
         {
             try {
+                if(pair.getFirst() instanceof AIBot) {
+                    GameAnswerProcessor.changeRace(pair.getSecond(),
+                            Race.UNDEAD,
+                            game.getRacesPool(), false);
+                }
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
                         game.getRacesPool(), false);
