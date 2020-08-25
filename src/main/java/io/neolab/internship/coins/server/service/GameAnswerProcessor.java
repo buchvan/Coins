@@ -119,8 +119,10 @@ public class GameAnswerProcessor {
     /**
      * Сменить расу игроку
      *
-     * @param player    - игрок, который решил идти в упадок
-     * @param racesPool - пул всех доступных рас
+     * @param player          - игрок, который решил идти в упадок
+     * @param newRace         - новая раса
+     * @param racesPool       - пул всех доступных рас
+     * @param isLoggingTurnOn - включено логгирование?
      */
     public static void changeRace(final @NotNull Player player, final @NotNull Race newRace,
                                   final @NotNull List<Race> racesPool, final boolean isLoggingTurnOn) {
@@ -133,8 +135,10 @@ public class GameAnswerProcessor {
     /**
      * Выбрать игроку новую расу
      *
-     * @param player    - игрок, выбирающий новую расу
-     * @param racesPool - пул всех доступных рас
+     * @param player          - игрок, выбирающий новую расу
+     * @param racesPool       - пул всех доступных рас
+     * @param newRace         - новая раса
+     * @param isLoggingTurnOn - включено логгирование?
      */
     private static void chooseRace(final @NotNull Player player, final @NotNull List<Race> racesPool,
                                    final @NotNull Race newRace, final boolean isLoggingTurnOn) {
@@ -207,6 +211,7 @@ public class GameAnswerProcessor {
      * @param feudalToCells   - множества клеток для каждого феодала
      * @param transitCells    - транзитные клетки игрока
      * @param achievableCells - множество достижимых клеток
+     * @param isLoggingTurnOn - включено логгирование?
      */
     public static void pretendToCell(final @NotNull Player player,
                                      final @NotNull Cell captureCell,
@@ -226,7 +231,7 @@ public class GameAnswerProcessor {
                     units, tiredUnitsCount, board, isLoggingTurnOn);
             return;
         }
-        if(isLoggingTurnOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(captureCell));
             GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
         }
@@ -285,19 +290,19 @@ public class GameAnswerProcessor {
                                          final @NotNull Map<Position, List<Unit>> resolutions,
                                          final @NotNull IBoard board,
                                          final boolean isLoggingTurnOn) {
-        if(isLoggingTurnOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printBeginUnitsDistributionLog(player);
         }
         makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         resolutions.forEach((position, units) -> {
-            if(isLoggingTurnOn) {
+            if (isLoggingTurnOn) {
                 GameLogger.printCellDefendingLog(player, units.size(), position);
             }
             GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units);
         });
         loseCells(controlledCells, controlledCells, feudalCells);
-        if(isLoggingTurnOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printAfterDistributedUnitsLog(player);
         }
     }

@@ -28,20 +28,20 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client implements IClient {
-    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
+    protected static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-    private final @NotNull String ip; // ip адрес клиента
-    private final @NotNull InetAddress ipAddress;
-    private  final int port; // порт соединения
+    protected final @NotNull String ip; // ip адрес клиента
+    protected final @NotNull InetAddress ipAddress;
+    protected  final int port; // порт соединения
 
-    private Socket socket = null;
-    private BufferedReader keyboardReader = null; // поток чтения с консоли
-    private BufferedReader in = null; // поток чтения из сокета
-    private BufferedWriter out = null; // поток записи в сокет
+    protected Socket socket = null;
+    protected BufferedReader keyboardReader = null; // поток чтения с консоли
+    protected BufferedReader in = null; // поток чтения из сокета
+    protected BufferedWriter out = null; // поток записи в сокет
 
     private @NotNull String nickname = "";
 
-    private final @NotNull IBot simpleBot;
+    private final @NotNull IBot bot;
 
     /**
      * Для создания необходимо принять адрес и номер порта
@@ -54,7 +54,7 @@ public class Client implements IClient {
             this.ip = ip;
             this.ipAddress = InetAddress.getByName(ip);
             this.port = port;
-            this.simpleBot = new SimpleBot();
+            this.bot = new SimpleBot();
         } catch (final UnknownHostException exception) {
             throw new CoinsException(CoinsErrorCode.CLIENT_CREATION_FAILED);
         }
@@ -66,22 +66,22 @@ public class Client implements IClient {
             case CATCH_CELL: {
                 LOGGER.info("Catch cell question: {} ", playerQuestion);
                 return new CatchCellAnswer(
-                        simpleBot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.chooseCatchingCell(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DISTRIBUTION_UNITS: {
                 LOGGER.info("Distribution units question: {} ", playerQuestion);
                 return new DistributionUnitsAnswer(
-                        simpleBot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.distributionUnits(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case DECLINE_RACE: {
                 LOGGER.info("Decline race question: {} ", playerQuestion);
                 return new DeclineRaceAnswer(
-                        simpleBot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.declineRaceChoose(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             case CHANGE_RACE: {
                 LOGGER.info("Change race question: {} ", playerQuestion);
                 return new ChangeRaceAnswer(
-                        simpleBot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
+                        bot.chooseRace(playerQuestion.getPlayer(), playerQuestion.getGame()));
             }
             default: {
                 throw new CoinsException(CoinsErrorCode.QUESTION_TYPE_NOT_FOUND);
@@ -138,7 +138,7 @@ public class Client implements IClient {
     /**
      * Запуск клиента
      */
-    private void startClient() {
+    void startClient() {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
                 socket = new Socket(this.ipAddress, this.port);

@@ -670,11 +670,12 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         final Player player = serverSomething.getPlayer();
-        List<Cell> controlledCells = game.getOwnToCells().get(player);
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
                 controlledCells);
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
-        GameLoopProcessor.makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
+        GameLoopProcessor.makeAllUnitsSomeState(player,
+                AvailabilityType.AVAILABLE);
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
             processDistributionUnits(serverSomething, game);
         }
