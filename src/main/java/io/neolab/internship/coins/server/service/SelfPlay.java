@@ -101,11 +101,6 @@ public class SelfPlay {
         simpleBotToPlayer.forEach(pair ->
         {
             try {
-                if(pair.getFirst() instanceof AIBot) {
-                    GameAnswerProcessor.changeRace(pair.getSecond(),
-                            Race.UNDEAD,
-                            game.getRacesPool(), false);
-                }
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
                         game.getRacesPool(), false);
