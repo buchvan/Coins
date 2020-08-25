@@ -28,11 +28,11 @@ public class GameLoopProcessor {
      * статус каждого юнита игрока - доступен,
      *
      * @param player     - игрок, чьи данные нужно обновить
-     * @param isLoggedOn - включено логгирование?
+     * @param isLoggingTurnOn - включено логгирование?
      */
-    public static void playerRoundBeginUpdate(final @NotNull Player player, final boolean isLoggedOn) {
+    public static void playerRoundBeginUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
         makeAllUnitsSomeState(player, AvailabilityType.AVAILABLE);
-        if (isLoggedOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printRoundBeginUpdateLog(player);
         }
     }
@@ -42,18 +42,18 @@ public class GameLoopProcessor {
      * всех юнитов игрока сделать недоступными
      *
      * @param player     - игрок, чьи данные нужно обновить согласно методу
-     * @param isLoggedOn - включено логгирование?
+     * @param isLoggingTurnOn - включено логгирование?
      */
-    public static void playerRoundEndUpdate(final @NotNull Player player, final boolean isLoggedOn) {
+    public static void playerRoundEndUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
         makeAllUnitsSomeState(player, AvailabilityType.NOT_AVAILABLE);
-        if (isLoggedOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printRoundEndUpdateLog(player);
         }
     }
 
-    static void updateAchievableCellsAfterCatchCell(final @NotNull IBoard board, final @NotNull Cell catchingCell,
-                                                    final @NotNull List<Cell> controlledCells,
-                                                    final @NotNull Set<Cell> achievableCells) {
+    public static void updateAchievableCellsAfterCatchCell(final @NotNull IBoard board, final @NotNull Cell catchingCell,
+                                                           final @NotNull List<Cell> controlledCells,
+                                                           final @NotNull Set<Cell> achievableCells) {
         if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
             achievableCells.clear();
         }
@@ -72,12 +72,12 @@ public class GameLoopProcessor {
      * @param board           - борда
      * @param achievableCells - множество достижимых клеток
      * @param controlledCells - принадлежащие игроку клетки
-     * @param isLoggedOn      - включено логгирование?
+     * @param isLoggingTurnOn      - включено логгирование?
      */
     public static void updateAchievableCells(final @NotNull Player player, final @NotNull IBoard board,
                                              final @NotNull Set<Cell> achievableCells,
                                              final @NotNull List<Cell> controlledCells,
-                                             final boolean isLoggedOn) {
+                                             final boolean isLoggingTurnOn) {
         achievableCells.clear();
         if (controlledCells.isEmpty()) {
             achievableCells.addAll(board.getEdgeCells());
@@ -90,7 +90,7 @@ public class GameLoopProcessor {
                 neighboringCells.forEach(neighboringCell -> updateNeighboringCellsIfNecessary(board, neighboringCell));
             });
         }
-        if (isLoggedOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printUpdateAchievableCellsLog(player, achievableCells);
         }
     }
@@ -102,7 +102,7 @@ public class GameLoopProcessor {
      * @param cell  - клетка, чьих соседей мы ищем
      * @return список всех соседей клетки cell на борде board
      */
-    static @NotNull List<Cell> getAllNeighboringCells(final @NotNull IBoard board, final @NotNull Cell cell) {
+    public static @NotNull List<Cell> getAllNeighboringCells(final @NotNull IBoard board, final @NotNull Cell cell) {
         updateNeighboringCellsIfNecessary(board, cell);
         return Objects.requireNonNull(board.getNeighboringCells(cell));
     }
@@ -147,20 +147,20 @@ public class GameLoopProcessor {
      * @param units           - список юнитов, которых игрок послал в клетку
      * @param tiredUnitsCount - число уставших юнитов
      * @param board           - борда
-     * @param isLoggedOn      - включено логгирование?
+     * @param isLoggingTurOn      - включено логгирование?
      */
-    static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
-                            final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
-                            final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board,
-                            final boolean isLoggedOn) {
+    public static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
+                                   final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
+                                   final @NotNull List<Unit> units, final int tiredUnitsCount, final @NotNull IBoard board,
+                                   final boolean isLoggingTurOn) {
         final List<Cell> achievableCells = new LinkedList<>(GameLoopProcessor.getAllNeighboringCells(board, targetCell));
         achievableCells.add(targetCell);
         final List<Unit> tiredUnits = getTiredUnits(units, tiredUnitsCount);
         final List<Unit> achievableUnits = getRemainingAvailableUnits(units, tiredUnitsCount);
-        withdrawUnits(achievableCells, controlledCells, feudalCells, isLoggedOn, tiredUnits, achievableUnits);
+        withdrawUnits(achievableCells, controlledCells, feudalCells, isLoggingTurOn, tiredUnits, achievableUnits);
         targetCell.getUnits().addAll(achievableUnits); // Вводим в захватываемую клетку оставшиеся доступные юниты
         makeAvailableUnitsToNotAvailable(player, tiredUnits);
-        if (isLoggedOn) {
+        if (isLoggingTurOn) {
             GameLogger.printAfterCellEnteringLog(player, targetCell);
         }
     }
@@ -172,7 +172,7 @@ public class GameLoopProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @return список уставших юнитов
      */
-    static @NotNull List<Unit> getTiredUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
+    public static @NotNull List<Unit> getTiredUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
         return units.subList(0, tiredUnitsCount);
     }
 
@@ -183,7 +183,7 @@ public class GameLoopProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @return список оставшихся доступных юнитов
      */
-    static @NotNull List<Unit> getRemainingAvailableUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
+    public static @NotNull List<Unit> getRemainingAvailableUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
         return units.subList(tiredUnitsCount, units.size());
     }
 
@@ -192,11 +192,12 @@ public class GameLoopProcessor {
      *
      * @param gameFeatures - особенности игры
      * @param catchingCell - захватываемая клетка
-     * @param isLoggedOn   - включено логгирование?
+     * @param isLoggingTurnOn   - включено логгирование?
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
-                                                     final @NotNull Cell catchingCell, final boolean isLoggedOn) {
+                                                     final @NotNull Cell catchingCell,
+                                                     final boolean isLoggingTurnOn) {
         int unitsCountNeededToCatch = catchingCell.getType().getCatchDifficulty();
         final Player defendingPlayer = catchingCell.getFeudal();
         for (final Feature feature : gameFeatures.getFeaturesByRaceAndCellType(
@@ -205,7 +206,7 @@ public class GameLoopProcessor {
 
             if (feature.getType() == FeatureType.DEFENSE_CELL_CHANGING_UNITS_NUMBER) {
                 unitsCountNeededToCatch += ((CoefficientlyFeature) feature).getCoefficient();
-                if (isLoggedOn) {
+                if (isLoggingTurnOn) {
                     GameLogger.printCatchCellDefenseFeatureLog(defendingPlayer, catchingCell);
                 }
             }
@@ -213,7 +214,7 @@ public class GameLoopProcessor {
         if (!catchingCell.getUnits().isEmpty()) { // если в захватываемой клетке есть юниты
             unitsCountNeededToCatch += catchingCell.getUnits().size() + 1;
         }
-        if (isLoggedOn) {
+        if (isLoggingTurnOn) {
             GameLogger.printCatchCellCountNeededLog(unitsCountNeededToCatch);
         }
         return unitsCountNeededToCatch;
@@ -261,19 +262,19 @@ public class GameLoopProcessor {
      * @param feudalToCells    - множества клеток для каждого феодала
      * @param transitCells     - транзитные клетки игрока
      *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
-     * @param isLoggedOn       - включено логгирование?
+     * @param isLoggingTurOn       - включено логгирование?
      */
-    static void catchCell(final @NotNull Player player,
-                          final @NotNull Cell catchingCell,
-                          final @NotNull List<Cell> neighboringCells,
-                          final @NotNull List<Unit> tiredUnits,
-                          final @NotNull List<Unit> units,
-                          final @NotNull GameFeatures gameFeatures,
-                          final @NotNull Map<Player, List<Cell>> ownToCells,
-                          final @NotNull Map<Player, Set<Cell>> feudalToCells,
-                          final @NotNull List<Cell> transitCells,
-                          final boolean isLoggedOn) {
-        withdrawUnits(neighboringCells, ownToCells.get(player), feudalToCells.get(player), isLoggedOn,
+    public static void catchCell(final @NotNull Player player,
+                                 final @NotNull Cell catchingCell,
+                                 final @NotNull List<Cell> neighboringCells,
+                                 final @NotNull List<Unit> tiredUnits,
+                                 final @NotNull List<Unit> units,
+                                 final @NotNull GameFeatures gameFeatures,
+                                 final @NotNull Map<Player, List<Cell>> ownToCells,
+                                 final @NotNull Map<Player, Set<Cell>> feudalToCells,
+                                 final @NotNull List<Cell> transitCells,
+                                 final boolean isLoggingTurOn) {
+        withdrawUnits(neighboringCells, ownToCells.get(player), feudalToCells.get(player), isLoggingTurOn,
                 tiredUnits, units);
         final Player defendingPlayer = catchingCell.getFeudal();
         depriveCellFeudalAndOwner(catchingCell, defendingPlayer, ownToCells.get(defendingPlayer),
@@ -286,11 +287,11 @@ public class GameLoopProcessor {
 
             catchingCellIsFeudalizable =
                     catchingCellIsFeudalizable &&
-                            catchCellCheckFeature(defendingPlayer, feature, isLoggedOn);
+                            catchCellCheckFeature(defendingPlayer, feature, isLoggingTurOn);
         }
         giveCellFeudalAndOwner(player, catchingCell, catchingCellIsFeudalizable,
                 transitCells, ownToCells.get(player), feudalToCells.get(player));
-        if (isLoggedOn) {
+        if (isLoggingTurOn) {
             GameLogger.printCapturedCellLog(player);
         }
     }
@@ -305,13 +306,13 @@ public class GameLoopProcessor {
      */
     @SafeVarargs
     private static void withdrawUnits(final @NotNull List<Cell> cells, final @NotNull List<Cell> controlledCells,
-                                      final @NotNull Set<Cell> feudalCells, final boolean isLoggedOn,
-                                      final @NotNull List<Unit>... units) {
+                                      final @NotNull Set<Cell> feudalCells,
+                                      final boolean isLoggingTurOn, final @NotNull List<Unit>... units) {
         cells.forEach(cell ->
                 cell.getUnits().removeIf(unit ->
                         Arrays.stream(units).anyMatch(unitsList -> unitsList.contains(unit))));
         loseCells(cells, controlledCells, feudalCells);
-        if (isLoggedOn) {
+        if (isLoggingTurOn) {
             GameLogger.printAfterWithdrawCellsLog(cells);
         }
     }
@@ -495,8 +496,8 @@ public class GameLoopProcessor {
      * @param units         - список юнитов, которых игрок хочет направить в клетку
      * @param isLoggedOn    - включено логгирование?
      */
-    static void protectCell(final @NotNull Player player, final @NotNull Cell protectedCell,
-                            final @NotNull List<Unit> units, final boolean isLoggedOn) {
+    public static void protectCell(final @NotNull Player player, final @NotNull Cell protectedCell,
+                                   final @NotNull List<Unit> units, final boolean isLoggedOn) {
         protectedCell.getUnits().addAll(units); // отправить первые unitsCount доступных юнитов
         makeAvailableUnitsToNotAvailable(player, units);
         if (isLoggedOn) {

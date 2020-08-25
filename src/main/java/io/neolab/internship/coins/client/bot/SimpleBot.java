@@ -77,6 +77,47 @@ public class SimpleBot implements IBot {
         return null;
     }
 
+    /**
+     * Найти и удалить недоступные для захвата клетки юнитов
+     *
+     * @param board                        - борда
+     * @param units                        - список юнитов
+     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
+     * @param catchingCell                 - захватываемая клетка
+     * @param controlledCells              - контролируемые игроком клетки
+     */
+    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
+                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
+                                                   final @NotNull Cell catchingCell,
+                                                   final @NotNull List<Cell> controlledCells) {
+        final List<Cell> boardEdgeCells = board.getEdgeCells();
+        final Iterator<Unit> iterator = units.iterator();
+        while (iterator.hasNext()) {
+            boolean unitAvailableForCapture = false;
+            final Unit unit = iterator.next();
+            for (final Cell neighboringCell : catchingCellNeighboringCells) {
+                if (neighboringCell.getUnits().contains(unit)) {
+                    unitAvailableForCapture = true;
+                    break;
+                }
+            }
+            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
+                unitAvailableForCapture = true;
+                for (final Cell controlledCell : controlledCells) {
+                    if (controlledCell.getUnits().contains(unit)) {
+                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
+                            unitAvailableForCapture = false;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!unitAvailableForCapture) {
+                iterator.remove();
+            }
+        }
+    }
+
     @Override
     public @NotNull Map<Position, List<Unit>> distributionUnits(final @NotNull Player player, final @NotNull IGame game) {
         LOGGER.debug("Simple bot distributes units");

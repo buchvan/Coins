@@ -25,6 +25,8 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class GameLoopProcessorTests extends TestUtils {
+
+    private final boolean isLoggingTurnOn = false;
     @BeforeClass
     public static void before() {
         MDC.put("logFileName", testFileName);
@@ -33,7 +35,7 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testPlayerRoundBeginUpdateNull() {
-        GameLoopProcessor.playerRoundBeginUpdate(null, false);
+        GameLoopProcessor.playerRoundBeginUpdate(null, isLoggingTurnOn);
     }
 
     @Test
@@ -45,7 +47,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Unit unit2 = new Unit();
         player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).add(unit2);
 
-        GameLoopProcessor.playerRoundBeginUpdate(player, false);
+        GameLoopProcessor.playerRoundBeginUpdate(player, isLoggingTurnOn);
 
         assertTrue(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).isEmpty());
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).contains(unit1));
@@ -56,7 +58,7 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testPlayerRoundEndUpdateNull() {
-        GameLoopProcessor.playerRoundEndUpdate(null, false);
+        GameLoopProcessor.playerRoundEndUpdate(null, isLoggingTurnOn);
     }
 
     @Test
@@ -68,7 +70,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Unit unit2 = new Unit();
         player.getUnitsByState(AvailabilityType.AVAILABLE).add(unit2);
 
-        GameLoopProcessor.playerRoundEndUpdate(player, false);
+        GameLoopProcessor.playerRoundEndUpdate(player, isLoggingTurnOn);
 
         assertTrue(player.getUnitsByState(AvailabilityType.AVAILABLE).isEmpty());
         assertTrue(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE).contains(unit1));
@@ -80,31 +82,27 @@ public class GameLoopProcessorTests extends TestUtils {
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull1() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(null, board, new HashSet<>(),
-                new LinkedList<>(), false);
+        GameLoopProcessor.updateAchievableCells(null, board, new HashSet<>(), new LinkedList<>(), isLoggingTurnOn);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull2() {
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), null, new HashSet<>(),
-                new LinkedList<>(), false);
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), null, new HashSet<>(), new LinkedList<>(), isLoggingTurnOn);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull3() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, null,
-                new LinkedList<>(), false);
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, null, new LinkedList<>(), isLoggingTurnOn);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateAchievableCellsNull4() throws CoinsException {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
-        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, new HashSet<>(),
-                null, false);
+        GameLoopProcessor.updateAchievableCells(new Player("F1"), board, new HashSet<>(), null, isLoggingTurnOn);
     }
 
     @Test
@@ -115,7 +113,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final List<Cell> controlledCells = new LinkedList<>();
         final Cell someCell = getCellFromBoardByCellType(CellType.LAND, board);
         controlledCells.add(someCell);
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, isLoggingTurnOn);
         assertNotNull(board.getNeighboringCells(someCell));
         assertTrue(achievableCells.containsAll(Objects.requireNonNull(board.getNeighboringCells(someCell))));
         assertEquals(
@@ -130,7 +128,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final IBoard board = new BoardFactory().generateBoard(3, 3);
         final Set<Cell> achievableCells = new HashSet<>();
         final List<Cell> controlledCells = new LinkedList<>();
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, isLoggingTurnOn);
         assertTrue(achievableCells.containsAll(board.getEdgeCells()));
         assertEquals(board.getEdgeCells().size(), achievableCells.size());
     }
@@ -138,13 +136,13 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testGetUnitsNeededToCatchNull1() {
-        GameLoopProcessor.getUnitsCountNeededToCatchCell(null, new Cell(CellType.LAND), false);
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(null, new Cell(CellType.LAND), isLoggingTurnOn);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testGetUnitsNeededToCatchNull2() {
-        GameLoopProcessor.getUnitsCountNeededToCatchCell(new GameFeatures(), null, false);
+        GameLoopProcessor.getUnitsCountNeededToCatchCell(new GameFeatures(), null, isLoggingTurnOn);
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -179,7 +177,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell = new Cell(CellType.LAND);
         cell.setRace(Race.ORC);
         cell.getUnits().add(new Unit());
-        final int actual = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, cell, false);
+        final int actual = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, cell, isLoggingTurnOn);
 
         assertEquals(cell.getType().getCatchDifficulty() + bonusDefense + 1 + 1, actual);
     }

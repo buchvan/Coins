@@ -1,5 +1,7 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.client.bot.ai.bim;
 
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.client.ClientConfigResource;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +23,7 @@ public class SimpleClient extends Client {
             final ClientConfigResource clientConfig = new ClientConfigResource();
             final Client client = new SimpleClient(clientConfig.getHost(), clientConfig.getPort());
             client.startClient();
-        } catch (final CoinsException exception) {
+        } catch (final CoinsException | AIBotException exception) {
             LOGGER.error("Error!", exception);
         }
     }

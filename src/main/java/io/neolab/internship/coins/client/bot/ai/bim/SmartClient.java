@@ -1,5 +1,7 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.client.bot.ai.bim;
 
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.client.ClientConfigResource;
 import io.neolab.internship.coins.client.bot.SmartBot;
 import io.neolab.internship.coins.client.bot.FunctionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -22,7 +24,7 @@ public class SmartClient extends Client {
         super(ip, port, new SmartBot(smartBotMaxDepth, botFunctionType));
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws AIBotException {
         try {
             final ClientConfigResource clientConfig = new ClientConfigResource();
             final BufferedReader keyboardReader =

@@ -19,7 +19,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>io.neolab.internship.coins.client.SmartClient</mainClass>
+                            <mainClass>io.neolab.internship.coins.client.bot.ai.bim.SmartClient</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -47,7 +47,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>io.neolab.internship.coins.client.SmartClient</mainClass>
+                            <mainClass>io.neolab.internship.coins.client.bot.ai.bim.SmartClient</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
