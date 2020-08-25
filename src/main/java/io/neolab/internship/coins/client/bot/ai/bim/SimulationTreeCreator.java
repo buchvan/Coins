@@ -191,7 +191,7 @@ public class SimulationTreeCreator {
                                           final @NotNull List<Edge> edges) {
         final List<Race> races = new LinkedList<>(game.getRacesPool());
         races.remove(Race.GNOME);
-        if (maxDepth > 3) {
+        if (maxDepth > 2) {
             if (isBeforeGame(game)) {
                 if (RandomGenerator.isYes()) {
                     races.remove(Race.ELF);
@@ -413,7 +413,7 @@ public class SimulationTreeCreator {
             final Set<Cell> achievableCells = getAndUpdateAchievableCells(game, player, prevCatchCells);
             final List<Triplet<List<Unit>, Integer, Cell>> unitsToPairTiredUnitsToCellList = new LinkedList<>();
             achievableCells.forEach(achievableCell -> {
-                if (maxDepth < 4 || isCellBeneficial(game, player, achievableCell)) {
+                if (maxDepth < 3 || isCellBeneficial(game, player, achievableCell)) {
                     final Triplet<List<Unit>, Integer, Cell> triplet =
                             getUnitsToPairTiredUnitsToCell(game, player, achievableCell, prevCatchCells);
                     if (triplet != null) {

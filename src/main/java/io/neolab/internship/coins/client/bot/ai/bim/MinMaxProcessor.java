@@ -399,7 +399,7 @@ public class MinMaxProcessor {
      * @return максимальное число монет по всем рёбрам, выходящим из данного корня
      */
     private static int getMaxValueDifference(final @NotNull NodeTree nodeTree, final @NotNull Player player) {
-        return nodeTree.getEdges().isEmpty()
+        return nodeTree.getEdges().isEmpty() || nodeTree.getEdges().get(0).getPlayer() == null
                 ? Objects.requireNonNull(nodeTree.getPlayerToValueDifference()).get(player)
                 : getDefaultValueDifference(nodeTree.getEdges(), player);
     }
