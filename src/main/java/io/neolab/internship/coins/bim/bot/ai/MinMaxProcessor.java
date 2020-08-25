@@ -1,9 +1,9 @@
-package io.neolab.internship.coins.client.bot.ai.bim;
+package io.neolab.internship.coins.bim.bot.ai;
 
-import io.neolab.internship.coins.client.bot.FunctionType;
-import io.neolab.internship.coins.client.bot.ai.bim.model.Edge;
-import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
-import io.neolab.internship.coins.client.bot.ai.bim.model.action.Action;
+import io.neolab.internship.coins.bim.bot.FunctionType;
+import io.neolab.internship.coins.bim.bot.ai.model.Edge;
+import io.neolab.internship.coins.bim.bot.ai.model.NodeTree;
+import io.neolab.internship.coins.bim.bot.ai.model.action.Action;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.utils.RandomGenerator;
 import org.jetbrains.annotations.NotNull;

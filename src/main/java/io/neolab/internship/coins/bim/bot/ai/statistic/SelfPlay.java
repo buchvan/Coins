@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot.ai.bim.statistic;
+package io.neolab.internship.coins.bim.bot.ai.statistic;
 
 import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;

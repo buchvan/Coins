@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot.ai.bim.model.action;
+package io.neolab.internship.coins.bim.bot.ai.model.action;
 
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Unit;

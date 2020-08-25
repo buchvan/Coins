@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot.ai.bim;
+package io.neolab.internship.coins.bim.bot.ai;
 
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Unit;

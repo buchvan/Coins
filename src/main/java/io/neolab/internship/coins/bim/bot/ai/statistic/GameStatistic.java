@@ -1,8 +1,8 @@
-package io.neolab.internship.coins.client.bot.ai.bim.statistic;
+package io.neolab.internship.coins.bim.bot.ai.statistic;
 
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SmartBot;
-import io.neolab.internship.coins.client.bot.FunctionType;
+import io.neolab.internship.coins.bim.bot.SmartBot;
+import io.neolab.internship.coins.bim.bot.FunctionType;
 import io.neolab.internship.coins.server.game.board.CellType;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;

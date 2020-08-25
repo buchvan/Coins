@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot.ai.bim.model.action;
+package io.neolab.internship.coins.bim.bot.ai.model.action;
 
 public enum ActionType {
     DECLINE_RACE,

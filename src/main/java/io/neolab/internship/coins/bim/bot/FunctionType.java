@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.client.bot;
+package io.neolab.internship.coins.bim.bot;
 
 public enum FunctionType {
     /* Учитывается отношение побед к общему числу случаев */

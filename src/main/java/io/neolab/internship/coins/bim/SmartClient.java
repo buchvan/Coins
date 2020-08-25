@@ -1,9 +1,9 @@
-package io.neolab.internship.coins.client.bot.ai.bim;
+package io.neolab.internship.coins.bim;
 
 import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.client.ClientConfigResource;
-import io.neolab.internship.coins.client.bot.SmartBot;
-import io.neolab.internship.coins.client.bot.FunctionType;
+import io.neolab.internship.coins.bim.bot.SmartBot;
+import io.neolab.internship.coins.bim.bot.FunctionType;
 import io.neolab.internship.coins.exceptions.CoinsException;
 import org.jetbrains.annotations.NotNull;
 

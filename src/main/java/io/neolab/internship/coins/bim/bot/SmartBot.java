@@ -1,10 +1,12 @@
-package io.neolab.internship.coins.client.bot;
+package io.neolab.internship.coins.bim.bot;
 
-import io.neolab.internship.coins.client.bot.ai.bim.AIProcessor;
-import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreatingProcessor;
-import io.neolab.internship.coins.client.bot.ai.bim.SimulationTreeCreator;
-import io.neolab.internship.coins.client.bot.ai.bim.model.NodeTree;
-import io.neolab.internship.coins.client.bot.ai.bim.model.action.*;
+import io.neolab.internship.coins.bim.bot.ai.AIProcessor;
+import io.neolab.internship.coins.bim.bot.ai.SimulationTreeCreatingProcessor;
+import io.neolab.internship.coins.bim.bot.ai.SimulationTreeCreator;
+import io.neolab.internship.coins.bim.bot.ai.model.NodeTree;
+import io.neolab.internship.coins.bim.bot.ai.model.action.*;
+import io.neolab.internship.coins.client.bot.IBot;
+import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
