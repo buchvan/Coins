@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +21,6 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
         this.coefficient = coefficient;
     }
 
-    @JsonIgnore
-    public @NotNull CoefficientlyFeature getCopy() {
-        return new CoefficientlyFeature(getType(), coefficient);
-    }
-
     @Override
     public int getCoefficient() {
         return coefficient;
@@ -37,7 +31,9 @@ public class CoefficientlyFeature extends Feature implements ICoefficientlyFeatu
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return super.equals(o);
+        if (!super.equals(o)) return false;
+        final CoefficientlyFeature that = (CoefficientlyFeature) o;
+        return coefficient == that.coefficient;
     }
 
     @Override

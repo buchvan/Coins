@@ -43,6 +43,7 @@ public class Player implements Serializable {
         }
     }
 
+    @Contract(pure = true)
     @JsonCreator
     public Player(@JsonProperty("id") final int id,
                   @NotNull @JsonProperty("nickname") final String nickname,
@@ -52,14 +53,15 @@ public class Player implements Serializable {
         this.id = id;
         this.nickname = nickname;
         this.race = race;
-        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
-        for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
-            final List<Unit> units = new LinkedList<>();
-            for (final Unit unit : entry.getValue()) {
-                units.add(new Unit(unit));
-            }
-            this.unitStateToUnits.put(entry.getKey(), units);
-        }
+        this.unitStateToUnits = unitStateToUnits;
+//        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
+//        for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
+//            final List<Unit> units = new LinkedList<>();
+//            for (final Unit unit : entry.getValue()) {
+//                units.add(new Unit(unit));
+//            }
+//            this.unitStateToUnits.put(entry.getKey(), units);
+//        }
         this.coins = coins;
     }
 
@@ -67,11 +69,8 @@ public class Player implements Serializable {
     @JsonIgnore
     public @NotNull Player getCopy() {
         final Map<AvailabilityType, List<Unit>> unitStateToUnits = new HashMap<>(this.unitStateToUnits.size());
-        this.unitStateToUnits.forEach((availabilityType, units) -> {
-            final List<Unit> unitList = new LinkedList<>();
-            units.forEach(unit -> unitList.add(unit.getCopy()));
-            unitStateToUnits.put(availabilityType, unitList);
-        });
+        this.unitStateToUnits.forEach((availabilityType, units) ->
+                unitStateToUnits.put(availabilityType, new LinkedList<>(units)));
         return new Player(this.id, this.nickname, this.race, unitStateToUnits, this.coins);
     }
 

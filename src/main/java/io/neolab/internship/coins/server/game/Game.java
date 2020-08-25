@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.neolab.internship.coins.common.serialization.deserialize.PlayerKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.serialize.PlayerSerializer;
-import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
@@ -66,11 +65,6 @@ public class Game implements IGame, Serializable {
     @JsonProperty
     private final @NotNull List<Player> players;
 
-    public Game() {
-        this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
-                new LinkedList<>(), new LinkedList<>());
-    }
-
     @Contract(pure = true)
     public Game(final @NotNull IBoard board, final @NotNull Map<Player, Set<Cell>> feudalToCells,
                 final @NotNull Map<Player, List<Cell>> ownToCells,
@@ -122,7 +116,7 @@ public class Game implements IGame, Serializable {
                 getCopyPlayerToCellsSet(this.playerToAchievableCells, false, this.board, board, players);
 
         return new Game(board, this.currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                playerToAchievableCells, this.gameFeatures.getCopy(), new LinkedList<>(this.racesPool), players);
+                playerToAchievableCells, this.gameFeatures, new LinkedList<>(this.racesPool), players);
     }
 
     /**
@@ -152,7 +146,7 @@ public class Game implements IGame, Serializable {
                     final int unitListSize = unitList.size();
                     playerCopy.getUnitStateToUnits().values().forEach(units ->
                             unitList.addAll(units.stream()
-                                    .filter(unitList::contains)
+                                    .filter(cell.getUnits()::contains)
                                     .collect(Collectors.toList())));
                     cell.getUnits().subList(0, unitListSize).clear();
                 });
@@ -259,21 +253,20 @@ public class Game implements IGame, Serializable {
         return players;
     }
 
-    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Game game = (Game) o;
         return currentRound == game.currentRound &&
-                Objects.equals(board, game.board) &&
-                Objects.equals(feudalToCells, game.feudalToCells) &&
-                Objects.equals(ownToCells, game.ownToCells) &&
-                Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
-                Objects.equals(playerToAchievableCells, game.playerToAchievableCells) &&
-                Objects.equals(gameFeatures, game.gameFeatures) &&
-                Objects.equals(racesPool, game.racesPool) &&
-                Objects.equals(players, game.players);
+                board.equals(game.board) &&
+                feudalToCells.equals(game.feudalToCells) &&
+                ownToCells.equals(game.ownToCells) &&
+                playerToTransitCells.equals(game.playerToTransitCells) &&
+                playerToAchievableCells.equals(game.playerToAchievableCells) &&
+                gameFeatures.equals(game.gameFeatures) &&
+                racesPool.equals(game.racesPool) &&
+                players.equals(game.players);
     }
 
     @Override

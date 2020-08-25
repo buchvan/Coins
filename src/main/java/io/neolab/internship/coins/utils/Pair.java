@@ -8,9 +8,9 @@ import java.util.Objects;
 
 public class Pair<T, U> implements Serializable {
     @JsonProperty
-    private T first;
+    private final T first;
     @JsonProperty
-    private U second;
+    private final U second;
 
     @JsonCreator
     public Pair(@JsonProperty("first") final T first,
@@ -23,16 +23,8 @@ public class Pair<T, U> implements Serializable {
         return first;
     }
 
-    public void setFirst(final T first) {
-        this.first = first;
-    }
-
     public U getSecond() {
         return second;
-    }
-
-    public void setSecond(final U second) {
-        this.second = second;
     }
 
     @Override
