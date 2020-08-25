@@ -1,7 +1,6 @@
 package io.neolab.internship.coins.server.game.feature;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

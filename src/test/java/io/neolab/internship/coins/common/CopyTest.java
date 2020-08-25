@@ -11,8 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.MDC;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -42,8 +40,7 @@ public class CopyTest extends TestUtils {
                 actual.getFeudalToCells() == expected.getFeudalToCells() ||
                 actual.getPlayerToTransitCells() == expected.getPlayerToTransitCells() ||
                 actual.getRacesPool() == expected.getRacesPool() ||
-                actual.getPlayerToAchievableCells() == expected.getPlayerToAchievableCells() ||
-                actual.getGameFeatures() == expected.getGameFeatures()) {
+                actual.getPlayerToAchievableCells() == expected.getPlayerToAchievableCells()) {
             fail();
         }
     }
@@ -106,18 +103,6 @@ public class CopyTest extends TestUtils {
                                 }
                             }));
                 }));
-        expected.getGameFeatures().getRaceCellTypeFeatures().forEach((raceCellTypePair, features) ->
-                actual.getGameFeatures().getRaceCellTypeFeatures().forEach((raceCellTypePair1, features1) -> {
-                    if (raceCellTypePair == raceCellTypePair1) {
-                        fail();
-                    }
-                    features.forEach(feature ->
-                            features1.forEach(feature1 -> {
-                                if (feature == feature1) {
-                                    fail();
-                                }
-                            }));
-                }));
     }
 
     @Test
@@ -146,7 +131,7 @@ public class CopyTest extends TestUtils {
         final IBoard actual = expected.getCopy();
         expected.getPositionToCellMap().forEach((position, cell) ->
                 actual.getPositionToCellMap().forEach((position1, cell1) -> {
-                    if (position == position1 || cell == cell1) {
+                    if (cell == cell1) {
                         fail();
                     }
                 }));

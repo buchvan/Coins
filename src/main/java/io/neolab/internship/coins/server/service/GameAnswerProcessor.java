@@ -238,14 +238,10 @@ public class GameAnswerProcessor {
         final List<Cell> neighboringCells = new LinkedList<>(getAllNeighboringCells(board, captureCell));
         neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell, isLoggingTurnOn);
-        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell);
+        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell, isLoggingTurnOn);
         catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
                 units, gameFeatures, ownToCells, feudalToCells, transitCells, isLoggingTurnOn);
-        if (controlledCells.size() == 1) { // если до этого у игрока не было клеток
-            achievableCells.clear();
-            achievableCells.add(captureCell);
-        }
-        achievableCells.addAll(getAllNeighboringCells(board, captureCell));
+        updateAchievableCellsAfterCatchCell(board, captureCell, controlledCells, achievableCells);
     }
 
     /**
@@ -284,6 +280,7 @@ public class GameAnswerProcessor {
      * @param resolutions     - мапа: клетка, в которую игрок хочет распределить войска
      *                        -> юниты, которые игрок хочет распределить в клетку
      * @param board           - борда
+     * @param isLoggingTurnOn - включено логгирование?
      */
     public static void distributionUnits(final @NotNull Player player, final @NotNull List<Cell> controlledCells,
                                          final @NotNull Set<Cell> feudalCells,
@@ -299,7 +296,8 @@ public class GameAnswerProcessor {
             if (isLoggingTurnOn) {
                 GameLogger.printCellDefendingLog(player, units.size(), position);
             }
-            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units);
+            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units,
+                    isLoggingTurnOn);
         });
         loseCells(controlledCells, controlledCells, feudalCells);
         if (isLoggingTurnOn) {

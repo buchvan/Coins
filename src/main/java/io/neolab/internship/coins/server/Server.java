@@ -51,6 +51,7 @@ public class Server implements IServer {
     private int gamesCount;
     private int timeoutMillis;
     private int clientDisconnectAttempts;
+
     private int boardSizeX;
     private int boardSizeY;
 
@@ -495,6 +496,12 @@ public class Server implements IServer {
         for (final ServerSomething serverSomething : gameLobby.gameClients) {
             serverSomething.sendServerMessage(gameOverMessage);
         }
+        gameLobby.gameClients.forEach(client -> {
+            final Player player = client.player;
+            Objects.requireNonNull(player).getUnitStateToUnits().forEach((key, value) -> value.clear());
+            player.setCoins(0);
+            player.setRace(null);
+        });
     }
 
     /**
@@ -672,10 +679,10 @@ public class Server implements IServer {
         final Player player = serverSomething.getPlayer();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
-                controlledCells);
+                controlledCells, true);
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
-                AvailabilityType.AVAILABLE);
+                AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
             processDistributionUnits(serverSomething, game);
         }
@@ -707,8 +714,7 @@ public class Server implements IServer {
         game.getPlayers()
                 .forEach(player ->
                         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
-                                game.getGameFeatures(),
-                                game.getBoard()));
+                                game.getGameFeatures(), game.getBoard(), true));
     }
 
     public static void main(final String[] args) {

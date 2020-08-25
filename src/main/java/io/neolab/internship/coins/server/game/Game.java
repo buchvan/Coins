@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.neolab.internship.coins.common.serialization.deserialize.PlayerKeyDeserializer;
 import io.neolab.internship.coins.common.serialization.serialize.PlayerSerializer;
-import io.neolab.internship.coins.server.game.board.Board;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
@@ -65,11 +64,6 @@ public class Game implements IGame, Serializable {
 
     @JsonProperty
     private final @NotNull List<Player> players;
-
-    public Game() {
-        this(new Board(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new GameFeatures(),
-                new LinkedList<>(), new LinkedList<>());
-    }
 
     @Contract(pure = true)
     public Game(final @NotNull IBoard board, final @NotNull Map<Player, Set<Cell>> feudalToCells,
@@ -259,7 +253,6 @@ public class Game implements IGame, Serializable {
         return players;
     }
 
-    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
