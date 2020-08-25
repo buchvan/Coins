@@ -514,7 +514,7 @@ public class SimulationTreeCreatingProcessor {
                                                                                catchingCellNeighboringCells) {
         final List<Unit> units =
                 Collections.synchronizedList(new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE)));
-        AIProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
+        GameLoopProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), units, catchingCellNeighboringCells,
                 cell, controlledCells);
         units.removeIf(unit -> cell.getUnits().contains(unit));
         return units;

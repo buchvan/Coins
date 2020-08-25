@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.client.bot;
 
-import io.neolab.internship.coins.bim.bot.ai.AIProcessor;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
@@ -55,7 +54,7 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            AIProcessor.removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+            GameLoopProcessor.removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
                     catchingCell, controlledCells);
             final int unitsCountNeededToCatchCell =
                     controlledCells.contains(catchingCell)

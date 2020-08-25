@@ -17,47 +17,6 @@ public class AIProcessor {
     private static final double EPS = 1E-4;
 
     /**
-     * Найти и удалить недоступные для захвата клетки юнитов
-     *
-     * @param board                        - борда
-     * @param units                        - список юнитов
-     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
-     * @param catchingCell                 - захватываемая клетка
-     * @param controlledCells              - контролируемые игроком клетки
-     */
-    public static void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
-                                                         final @NotNull List<Cell> catchingCellNeighboringCells,
-                                                         final @NotNull Cell catchingCell,
-                                                         final @NotNull List<Cell> controlledCells) {
-        final List<Cell> boardEdgeCells = board.getEdgeCells();
-        final Iterator<Unit> iterator = units.iterator();
-        while (iterator.hasNext()) {
-            boolean unitAvailableForCapture = false;
-            final Unit unit = iterator.next();
-            for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                if (neighboringCell.getUnits().contains(unit)) {
-                    unitAvailableForCapture = true;
-                    break;
-                }
-            }
-            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                unitAvailableForCapture = true;
-                for (final Cell controlledCell : controlledCells) {
-                    if (controlledCell.getUnits().contains(unit)) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
-                            unitAvailableForCapture = false;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (!unitAvailableForCapture) {
-                iterator.remove();
-            }
-        }
-    }
-
-    /**
      * @param nodeTree     - узел дерева, в котором мы в данный момент находимся
      * @param player       - игрок
      * @param functionType - тип функции бота
