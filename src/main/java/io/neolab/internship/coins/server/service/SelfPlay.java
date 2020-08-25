@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.ai.vika.AIBot;
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.AIBot;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -11,15 +11,12 @@ import io.neolab.internship.coins.server.game.board.IBoard;
 import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
 import io.neolab.internship.coins.server.game.player.Player;
-import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;

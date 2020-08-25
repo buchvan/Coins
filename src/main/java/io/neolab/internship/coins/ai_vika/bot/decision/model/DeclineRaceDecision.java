@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.ai.vika.decision.model;
+package io.neolab.internship.coins.ai_vika.bot.decision.model;
 
 
 import java.util.Objects;

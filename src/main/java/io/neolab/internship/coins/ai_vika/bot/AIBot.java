@@ -1,10 +1,10 @@
-package io.neolab.internship.coins.ai.vika;
+package io.neolab.internship.coins.ai_vika.bot;
 
-import io.neolab.internship.coins.ai.vika.decision.model.CatchCellDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.ChangeRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.DeclineRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.DistributionUnitsDecision;
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.CatchCellDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.ChangeRaceDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.DeclineRaceDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.DistributionUnitsDecision;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Position;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static io.neolab.internship.coins.ai.vika.decision.AIDecisionMaker.*;
+import static io.neolab.internship.coins.ai_vika.bot.decision.AIDecisionMaker.*;
 
 /**
  * Класс бота с ИИ

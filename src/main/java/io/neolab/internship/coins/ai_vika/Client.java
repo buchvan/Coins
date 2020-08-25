@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.bim;
+package io.neolab.internship.coins.ai_vika;
 
 import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.IClient;

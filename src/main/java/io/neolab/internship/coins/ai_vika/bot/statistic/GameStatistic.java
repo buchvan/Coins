@@ -1,6 +1,6 @@
-package io.neolab.internship.coins.ai.vika.statistic;
+package io.neolab.internship.coins.ai_vika.bot.statistic;
 
-import io.neolab.internship.coins.ai.vika.AIBot;
+import io.neolab.internship.coins.ai_vika.bot.AIBot;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -21,7 +21,7 @@ public class GameStatistic {
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
     private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
     private static final @NotNull List<Integer> aiBotCoins = new LinkedList<>();
-    private static final int GAME_AMOUNT = 9;
+    private static final int GAME_AMOUNT = 21;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
 
@@ -100,6 +100,6 @@ public class GameStatistic {
         collectStatistic();
         aiBotCoins.sort(Comparator.comparingInt(Integer::intValue));
         aiBotCoins.forEach(System.out::println);
-        System.out.println("MEDIANA: " + aiBotCoins.get(5));
+        System.out.println("MEDIANA: " + aiBotCoins.get(11));
     }
 }

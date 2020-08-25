@@ -1,7 +1,6 @@
-package io.neolab.internship.coins.ai.vika.utils;
+package io.neolab.internship.coins.ai_vika.bot.utils;
 
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
-import io.neolab.internship.coins.ai.vika.exception.AIBotExceptionErrorCode;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;

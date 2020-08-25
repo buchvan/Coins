@@ -1,9 +1,9 @@
-package io.neolab.internship.coins.ai.vika.decision;
+package io.neolab.internship.coins.ai_vika.bot.decision;
 
-import io.neolab.internship.coins.ai.vika.decision.model.CatchCellDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.ChangeRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.DeclineRaceDecision;
-import io.neolab.internship.coins.ai.vika.decision.model.DistributionUnitsDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.CatchCellDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.ChangeRaceDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.DeclineRaceDecision;
+import io.neolab.internship.coins.ai_vika.bot.decision.model.DistributionUnitsDecision;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;

@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.ai.vika.AIBot;
+import io.neolab.internship.coins.ai_vika.bot.AIBot;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;

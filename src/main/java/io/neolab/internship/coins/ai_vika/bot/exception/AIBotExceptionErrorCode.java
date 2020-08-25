@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.ai.vika.exception;
+package io.neolab.internship.coins.ai_vika.bot.exception;
 
 import org.jetbrains.annotations.NotNull;
 
