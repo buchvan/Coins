@@ -81,6 +81,9 @@ public class Cell implements Serializable {
         this.feudal = feudal;
     }
 
+
+
+
     public @Nullable Race getRace() {
         return race;
     }

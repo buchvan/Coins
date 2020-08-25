@@ -1,6 +1,7 @@
 package io.neolab.internship.coins.ai.vika.statistic;
 
 import io.neolab.internship.coins.ai.vika.AIBot;
+import io.neolab.internship.coins.ai.vika.utils.ExecutorServiceProcessor;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
@@ -10,6 +11,8 @@ import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotToPlayers;
 
@@ -19,9 +22,9 @@ import static io.neolab.internship.coins.server.service.SelfPlay.selfPlayByBotTo
 public class GameStatistic {
 
     private static final @NotNull Map<Player, Integer> playersStatistic = new HashMap<>();
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>();
-    private static final @NotNull List<Integer> aiBotCoins = new LinkedList<>();
-    private static final int GAME_AMOUNT = 100;
+    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = Collections.synchronizedList(new LinkedList<>());
+    private static final @NotNull List<Integer> aiBotCoins = Collections.synchronizedList(new LinkedList<>());
+    private static final int GAME_AMOUNT = 10;
     private static final int PLAYERS_AMOUNT = 2;
     private static int winCounter = 0;
 
@@ -29,19 +32,23 @@ public class GameStatistic {
         final List<Player> players = initPlayers();
         initBotPlayerPair(players);
         initStatisticMap(players);
-        for (int i = 0; i < GAME_AMOUNT; i++) {
-            final List<Player> winners;
-            winners = selfPlayByBotToPlayers(simpleBotToPlayer);
-            for (final Player winner : winners) {
-                winCounter++;
-                if(winner.equals(simpleBotToPlayer.get(1).getSecond())){
-                    aiBotCoins.add(winner.getCoins());
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.execute(() -> {
+            for (int i = 0; i < GAME_AMOUNT; i++) {
+                final List<Player> winners;
+                winners = selfPlayByBotToPlayers(simpleBotToPlayer);
+                for (final Player winner : winners) {
+                    winCounter++;
+                    if (winner.equals(simpleBotToPlayer.get(1).getSecond())) {
+                        aiBotCoins.add(winner.getCoins());
+                    }
+                    int currentWinAmount = playersStatistic.get(winner);
+                    playersStatistic.put(winner, ++currentWinAmount);
                 }
-                int currentWinAmount = playersStatistic.get(winner);
-                playersStatistic.put(winner, ++currentWinAmount);
+                clearPlayerInfo();
             }
-            clearPlayerInfo();
-        }
+        });
+        ExecutorServiceProcessor.completeExecutorService(executorService);
     }
 
     /**
@@ -68,9 +75,9 @@ public class GameStatistic {
         return playerList;
     }
 
-    private static void initBotPlayerPair(final List<Player> players) {
-        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
-        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
+    private static void initBotPlayerPair(List<Player> players) {
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(1)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(0)));
         //players.forEach(player -> simpleBotToPlayer.add(new Pair<>(new SimpleBot(), player)));
     }
 
@@ -100,6 +107,6 @@ public class GameStatistic {
         collectStatistic();
         aiBotCoins.sort(Comparator.comparingInt(Integer::intValue));
         aiBotCoins.forEach(System.out::println);
-        System.out.println("MEDIANA: " + ((double)(aiBotCoins.get(50) + aiBotCoins.get(51))) / 2);
+        System.out.println("MEDIANA: " + ((double) (aiBotCoins.get(GAME_AMOUNT /2 -1) + aiBotCoins.get((GAME_AMOUNT /2)))) / 2);
     }
 }
