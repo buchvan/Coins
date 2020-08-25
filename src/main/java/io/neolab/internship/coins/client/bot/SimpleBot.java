@@ -3,10 +3,10 @@ package io.neolab.internship.coins.client.bot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
-import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
+import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
@@ -54,7 +54,7 @@ public class SimpleBot implements IBot {
             catchingCellNeighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
 
             final List<Unit> units = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
-            removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
+            GameLoopProcessor.removeNotAvailableForCaptureUnits(board, units, catchingCellNeighboringCells,
                     catchingCell, controlledCells);
             final int unitsCountNeededToCatchCell =
                     controlledCells.contains(catchingCell)

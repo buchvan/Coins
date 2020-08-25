@@ -41,7 +41,7 @@ public class AIDecisionMakerUtils {
         final GameFeatures features = game.getGameFeatures();
         return playerAvailableUnits.size() >=
                 getUnitsCountNeededToCatchCell(features, cell, false)
-                        + getBonusAttackToCatchCell(player, features, cell);
+                        + getBonusAttackToCatchCell(player, features, cell, false);
     }
 
     /**

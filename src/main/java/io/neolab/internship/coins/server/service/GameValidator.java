@@ -116,7 +116,7 @@ class GameValidator {
         //достаточно ли юнитов для захвата клетки
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures,
                 Objects.requireNonNull(cellForAttempt), true);
-        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt);
+        final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, cellForAttempt, true);
         if (!isCellCapturePossible(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
             throw new CoinsException(CoinsErrorCode.ANSWER_VALIDATION_CELL_CAPTURE_IMPOSSIBLE);

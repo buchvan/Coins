@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class ListProcessorTest {
     @SuppressWarnings("ConstantConditions")

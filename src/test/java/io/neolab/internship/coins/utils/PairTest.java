@@ -15,15 +15,6 @@ public class PairTest {
     }
 
     @Test
-    public void testSettersPair() {
-        final Pair<Race, CellType> pair = new Pair<>(Race.ELF, CellType.MUSHROOM);
-        pair.setFirst(Race.ORC);
-        pair.setSecond(CellType.LAND);
-        assertEquals(Race.ORC, pair.getFirst());
-        assertEquals(CellType.LAND, pair.getSecond());
-    }
-
-    @Test
     public void testEqualsPairs() {
         final Pair<Race, CellType> pair1 = new Pair<>(Race.ELF, CellType.MUSHROOM);
         final Pair<Race, CellType> pair2 = new Pair<>(Race.ELF, CellType.MUSHROOM);

@@ -85,7 +85,7 @@ public class AIDecisionSimulationProcessor {
      */
     static void updateDecisionNodeCoinsAmount(@NotNull final IGame game, final Player player) {
         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
-                game.getGameFeatures(), game.getBoard());
+                game.getGameFeatures(), game.getBoard(), false);
     }
 
 }

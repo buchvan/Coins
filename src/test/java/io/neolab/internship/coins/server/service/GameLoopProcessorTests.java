@@ -255,19 +255,19 @@ public class GameLoopProcessorTests extends TestUtils {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull1() {
-        GameLoopProcessor.freeTransitCells(null, new LinkedList<>(), new LinkedList<>());
+        GameLoopProcessor.freeTransitCells(null, new LinkedList<>(), new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull2() {
-        GameLoopProcessor.freeTransitCells(new Player("F1"), null, new LinkedList<>());
+        GameLoopProcessor.freeTransitCells(new Player("F1"), null, new LinkedList<>(), false);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void testFreeTransitCellsNull3() {
-        GameLoopProcessor.freeTransitCells(new Player("F1"), new LinkedList<>(), null);
+        GameLoopProcessor.freeTransitCells(new Player("F1"), new LinkedList<>(), null, false);
     }
 
     @Test
@@ -278,7 +278,7 @@ public class GameLoopProcessorTests extends TestUtils {
 
         final List<Cell> controlledCells = new LinkedList<>(transitCells);
         addCellsToList(controlledCells, new Cell(CellType.WATER), new Cell(CellType.LAND));
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         assertTrue(transitCells.isEmpty());
     }
 
@@ -292,7 +292,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         final List<Cell> expected = new LinkedList<>();
         addCellsToList(expected, cell1, cell2);
         assertEquals(expected, controlledCells);
@@ -307,7 +307,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         assertTrue(transitCells.isEmpty());
     }
 
@@ -320,7 +320,7 @@ public class GameLoopProcessorTests extends TestUtils {
         final Cell cell1 = new Cell(CellType.WATER);
         final Cell cell2 = new Cell(CellType.LAND);
         addCellsToList(controlledCells, cell1, cell2);
-        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
+        GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells, false);
         final List<Cell> expected = new LinkedList<>();
         addCellsToList(expected, cell1, cell2);
         assertEquals(expected, controlledCells);

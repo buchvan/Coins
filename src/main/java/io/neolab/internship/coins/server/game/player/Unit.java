@@ -23,6 +23,7 @@ public class Unit implements Serializable {
         this.id = id;
     }
 
+    @Contract(pure = true)
     public Unit(final @NotNull Unit unit) {
         this.id = unit.id;
     }
