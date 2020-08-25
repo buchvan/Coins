@@ -1,22 +1,35 @@
 package io.neolab.internship.coins.server.game.feature;
 
+import com.fasterxml.jackson.annotation.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 /**
- * Особенность пары раса-тип_клетки (Race-CellType)
+ * Особенность пары (раса, тип_клетки) (Race, CellType)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CoefficientlyFeature.class, name = "CoefficientlyFeature"),
+})
 public class Feature implements IFeature {
-    private final FeatureType type;
+    @JsonProperty
+    private final @NotNull FeatureType type;
 
-    public Feature(final FeatureType type) {
+    @Contract(pure = true)
+    @JsonCreator
+    public Feature(@NotNull @JsonProperty("type") final FeatureType type) {
         this.type = type;
     }
 
     @Override
-    public FeatureType getType() {
+    public @NotNull FeatureType getType() {
         return type;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

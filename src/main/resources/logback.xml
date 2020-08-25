@@ -42,7 +42,7 @@
                 <rollingPolicy
                         class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
                     <!-- daily rollover -->
-                    <fileNamePattern>${LOG_DIRECTORY}${PROJECT__NAME}_${logFileName}.%i.log</fileNamePattern>
+                    <fileNamePattern>${LOG_DIRECTORY}/${PROJECT__NAME}_${logFileName}.%i.log.gz</fileNamePattern>
                     <MinIndex>1</MinIndex>
                     <MaxIndex>10</MaxIndex>
                     <maxHistory>1</maxHistory>

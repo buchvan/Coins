@@ -1,5 +1,13 @@
 package io.neolab.internship.coins.server.game.board;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -7,8 +15,11 @@ import java.util.Objects;
 /**
  * Класс позиция, пара целых чисел
  */
-public class Position {
+public class Position implements Serializable {
+    @JsonProperty
     private final int x;
+
+    @JsonProperty
     private final int y;
 
     /**
@@ -18,7 +29,7 @@ public class Position {
      * @param position - позиция, чьих соседей мы хотим узнать
      * @return список соседних с position позиций
      */
-    public static List<Position> getAllNeighboringPositions(final Position position) {
+    public static @NotNull List<Position> getAllNeighboringPositions(final @NotNull Position position) {
         final List<Position> neighboringPositions = new LinkedList<>();
         int strIndex = -1;
         int colIndex;
@@ -39,13 +50,22 @@ public class Position {
         return neighboringPositions;
     }
 
+    @Contract(pure = true)
     public Position() {
         this(0, 0);
     }
 
-    public Position(final int x, final int y) {
+    @JsonCreator
+    @Contract(pure = true)
+    public Position(@JsonProperty("x") final int x,
+                    @JsonProperty("y") final int y) {
         this.x = x;
         this.y = y;
+    }
+
+    @JsonIgnore
+    public @NotNull Position getCopy() {
+        return new Position(this.x, this.y);
     }
 
     public int getX() {
@@ -56,6 +76,7 @@ public class Position {
         return y;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
