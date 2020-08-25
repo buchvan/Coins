@@ -1,5 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
+import io.neolab.internship.coins.ai.vika.AIBot;
+import io.neolab.internship.coins.ai.vika.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -15,20 +17,22 @@ import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.loseCells;
 
-class SelfPlay {
+public class SelfPlay {
     private static final int ROUNDS_COUNT = 10;
 
     private static final int BOARD_SIZE_X = 3;
     private static final int BOARD_SIZE_Y = 4;
     private static final int PLAYERS_COUNT = 2;
 
-    private static final @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
+    private static @NotNull List<Pair<IBot, Player>> simpleBotToPlayer = new LinkedList<>(); // каждому симплботу
     // соответствует только один игрок, и наоборот
 
 
@@ -52,6 +56,12 @@ class SelfPlay {
         }
     }
 
+    private static void AIBotAndSimpleBotToPlayers(final IGame game) {
+        final List<Player> players = game.getPlayers();
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
+    }
+
     /**
      * Игра сама с собой (self play)
      * - Создание борды
@@ -59,7 +69,7 @@ class SelfPlay {
      * - Игровой цикл
      * - Финализатор (результат игры)
      */
-    static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
+    public static @NotNull List<Player> selfPlayByBotToPlayers(final @NotNull List<Pair<IBot, Player>> botPlayerPairs) {
         try (final LoggerFile ignored = new LoggerFile("self-play")) {
             LogCleaner.clean();
             final List<Player> players = new LinkedList<>();
@@ -88,17 +98,30 @@ class SelfPlay {
     private static void gameLoop(final @NotNull IGame game) {
         GameLogger.printStartGameChoiceLog();
         simpleBotToPlayer.forEach(pair ->
+        {
+            try {
                 GameAnswerProcessor.changeRace(pair.getSecond(),
                         pair.getFirst().chooseRace(pair.getSecond(), game),
-                        game.getRacesPool()));
+                        game.getRacesPool(), false);
+            } catch (final AIBotException e) {
+                e.printStackTrace();
+            }
+        });
+        simpleBotToPlayer.clear();
+        AIBotAndSimpleBotToPlayers(game);
         GameLogger.printStartGame();
-        while (game.getCurrentRound() < ROUNDS_COUNT) { // Непосредственно игровой цикл
+        while (game.getCurrentRound() < ROUNDS_COUNT) {
+            // Непосредственно игровой цикл
             game.incrementCurrentRound();
             GameLogger.printRoundBeginLog(game.getCurrentRound());
             simpleBotToPlayer.forEach(pair -> {
                 GameLogger.printNextPlayerLog(pair.getSecond());
-                playerRoundProcess(pair.getSecond(), pair.getFirst(),
-                        game); // Раунд игрока. Все свои решения он принимает здесь
+                try {
+                    playerRoundProcess(pair.getSecond(), pair.getFirst(),
+                            game); // Раунд игрока. Все свои решения он принимает здесь
+                } catch (final AIBotException e) {
+                    e.printStackTrace();
+                }
             });
             simpleBotToPlayer.forEach(pair -> // обновление числа монет у каждого игрока
                     GameLoopProcessor.updateCoinsCount(
@@ -117,15 +140,15 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void playerRoundProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
-        GameLoopProcessor.playerRoundBeginUpdate(player);  // активация данных игрока в начале раунда
+                                           final @NotNull IGame game) throws AIBotException {
+        GameLoopProcessor.playerRoundBeginUpdate(player, false);  // активация данных игрока в начале раунда
         if (game.getRacesPool().size() > 0 && simpleBot.declineRaceChoose(player, game)) {
             // В случае ответа "ДА" от симплбота на вопрос: "Идти в упадок?"
             declineRaceProcess(player, simpleBot, game); // Уход в упадок
         }
         cellCaptureProcess(player, simpleBot, game); // Завоёвывание клеток
         distributionUnits(player, simpleBot, game); // Распределение войск
-        GameLoopProcessor.playerRoundEndUpdate(player); // "затухание" (дезактивация) данных игрока в конце раунда
+        GameLoopProcessor.playerRoundEndUpdate(player, false); // "затухание" (дезактивация) данных игрока в конце раунда
     }
 
     /**
@@ -136,10 +159,10 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void declineRaceProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws AIBotException {
         GameLogger.printDeclineRaceLog(player);
         game.getOwnToCells().get(player).clear(); // Освобождаем все занятые игроком клетки (юниты остаются там же)
-        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool());
+        GameAnswerProcessor.changeRace(player, simpleBot.chooseRace(player, game), game.getRacesPool(), false);
     }
 
     /**
@@ -150,13 +173,13 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void cellCaptureProcess(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                           final @NotNull IGame game) {
+                                           final @NotNull IGame game) throws AIBotException {
         GameLogger.printBeginCatchCellsLog(player);
         final IBoard board = game.getBoard();
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
-        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells);
+        GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells, false);
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
         while (achievableCells.size() > 0 && availableUnits.size() > 0) {
             /* Пока есть что захватывать и какими войсками захватывать */
@@ -212,7 +235,7 @@ class SelfPlay {
         }
         GameLogger.printCellCatchAttemptLog(player, board.getPositionByCell(catchingCell));
         GameLogger.printCatchCellUnitsQuantityLog(player, units.size());
-        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell);
+        final int unitsCountNeededToCatch = GameLoopProcessor.getUnitsCountNeededToCatchCell(gameFeatures, catchingCell, false);
         final int bonusAttack = GameLoopProcessor.getBonusAttackToCatchCell(player, gameFeatures, catchingCell);
         if (!isCellCatching(units.size() + bonusAttack, unitsCountNeededToCatch)) {
             GameLogger.printCatchCellNotCapturedLog(player);
@@ -225,7 +248,7 @@ class SelfPlay {
         GameLoopProcessor.catchCell(player, catchingCell, neighboringCells,
                 GameLoopProcessor.getTiredUnits(units, tiredUnitsCount),
                 GameLoopProcessor.getRemainingAvailableUnits(units, tiredUnitsCount), gameFeatures,
-                ownToCells, feudalToCells, transitCells);
+                ownToCells, feudalToCells, transitCells, false);
         GameLogger.printAfterCellCatchingLog(player, catchingCell);
         return true;
     }
@@ -252,7 +275,7 @@ class SelfPlay {
             GameLogger.printCellNotEnteredLog(player);
             return false;
         }
-        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board);
+        GameLoopProcessor.enterToCell(player, targetCell, controlledCells, feudalCells, units, tiredUnitsCount, board, false);
         return true;
     }
 
@@ -286,25 +309,22 @@ class SelfPlay {
      * @param game      - объект, хранящий всю метаинформацию об игре
      */
     private static void distributionUnits(final @NotNull Player player, final @NotNull IBot simpleBot,
-                                          final @NotNull IGame game) {
+                                          final @NotNull IGame game) throws AIBotException {
         GameLogger.printBeginUnitsDistributionLog(player);
         final List<Cell> transitCells = game.getPlayerToTransitCells().get(player);
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, transitCells, controlledCells);
-        GameLoopProcessor.loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
         GameLoopProcessor.makeAllUnitsSomeState(player,
                 AvailabilityType.AVAILABLE); // доступными юнитами становятся все имеющиеся у игрока юниты
         final List<Unit> availableUnits = player.getUnitsByState(AvailabilityType.AVAILABLE);
-        if (controlledCells.size() > 0 && availableUnits.size() > 0) { // Если есть куда и какие распределять войска
-            final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
-            distributionUnits.forEach((position, units) -> {
-                GameLogger.printCellDefendingLog(player, units.size(), position);
-                GameLoopProcessor.protectCell(player,
-                        Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
-            });
-            loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
-        }
+        final Map<Position, List<Unit>> distributionUnits = simpleBot.distributionUnits(player, game);
+        distributionUnits.forEach((position, units) -> {
+            GameLogger.printCellDefendingLog(player, units.size(), position);
+            GameLoopProcessor.protectCell(player,
+                    Objects.requireNonNull(game.getBoard().getCellByPosition(position)), units);
+        });
+        loseCells(controlledCells, controlledCells, game.getFeudalToCells().get(player));
         GameLogger.printAfterDistributedUnitsLog(player);
     }
 

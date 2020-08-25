@@ -122,7 +122,7 @@ public class Game implements IGame, Serializable {
                 getCopyPlayerToCellsSet(this.playerToAchievableCells, false, this.board, board, players);
 
         return new Game(board, this.currentRound, feudalToCells, ownToCells, playerToTransitCells,
-                playerToAchievableCells, this.gameFeatures.getCopy(), new LinkedList<>(this.racesPool), players);
+                playerToAchievableCells, this.gameFeatures, new LinkedList<>(this.racesPool), players);
     }
 
     /**
@@ -152,7 +152,7 @@ public class Game implements IGame, Serializable {
                     final int unitListSize = unitList.size();
                     playerCopy.getUnitStateToUnits().values().forEach(units ->
                             unitList.addAll(units.stream()
-                                    .filter(unitList::contains)
+                                    .filter(cell.getUnits()::contains)
                                     .collect(Collectors.toList())));
                     cell.getUnits().subList(0, unitListSize).clear();
                 });
@@ -266,14 +266,14 @@ public class Game implements IGame, Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         final Game game = (Game) o;
         return currentRound == game.currentRound &&
-                Objects.equals(board, game.board) &&
-                Objects.equals(feudalToCells, game.feudalToCells) &&
-                Objects.equals(ownToCells, game.ownToCells) &&
-                Objects.equals(playerToTransitCells, game.playerToTransitCells) &&
-                Objects.equals(playerToAchievableCells, game.playerToAchievableCells) &&
-                Objects.equals(gameFeatures, game.gameFeatures) &&
-                Objects.equals(racesPool, game.racesPool) &&
-                Objects.equals(players, game.players);
+                board.equals(game.board) &&
+                feudalToCells.equals(game.feudalToCells) &&
+                ownToCells.equals(game.ownToCells) &&
+                playerToTransitCells.equals(game.playerToTransitCells) &&
+                playerToAchievableCells.equals(game.playerToAchievableCells) &&
+                gameFeatures.equals(game.gameFeatures) &&
+                racesPool.equals(game.racesPool) &&
+                players.equals(game.players);
     }
 
     @Override

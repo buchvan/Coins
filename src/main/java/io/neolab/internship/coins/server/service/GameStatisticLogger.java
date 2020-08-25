@@ -35,7 +35,7 @@ public class GameStatisticLogger {
     /**
      * Запись в лог полной статистики об игроке
      */
-    static void printPlayerStatisticLog(final @NotNull Player player, final int winAmount, final double percent) {
+    public static void printPlayerStatisticLog(final @NotNull Player player, final int winAmount, final double percent) {
         printPlayerLog(player);
         printPlayerWinAmountLog(winAmount);
         printPLayerWinPercentLog(percent);

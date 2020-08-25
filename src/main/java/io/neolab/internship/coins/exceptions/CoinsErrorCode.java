@@ -23,6 +23,9 @@ public enum CoinsErrorCode {
     GAME_OVER("Game over"),
     CLIENT_CONFIG_LOADING_FAILED("Client configuration loading failed"),
     SERVER_CONFIG_LOADING_FAILED("Server configuration loading failed"),
+    ACTION_TYPE_NOT_FOUND("Action type not found"),
+    PLAYER_NOT_FOUND("Player not found"),
+    LOGIC_ERROR("Logic error"),
     ;
 
     private final @NotNull String message;

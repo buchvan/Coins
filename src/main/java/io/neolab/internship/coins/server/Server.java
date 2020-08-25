@@ -19,6 +19,7 @@ import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.*;
+import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.ClientServerProcessor;
 import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
@@ -32,7 +33,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +51,6 @@ public class Server implements IServer {
     private int gamesCount;
     private int timeoutMillis;
     private int clientDisconnectAttempts;
-
     private int boardSizeX;
     private int boardSizeY;
 
@@ -550,7 +553,7 @@ public class Server implements IServer {
         final Player player = serverSomething.getPlayer();
 
         /* Активация данных игрока в начале раунда */
-        GameLoopProcessor.playerRoundBeginUpdate(player);
+        GameLoopProcessor.playerRoundBeginUpdate(player, true);
 
         if (game.getRacesPool().size() > 0) {
             beginRoundChoice(serverSomething, game);
@@ -559,7 +562,7 @@ public class Server implements IServer {
         distributionUnits(serverSomething, game);
 
         /* "Затухание" (дезактивация) данных игрока в конце раунда */
-        GameLoopProcessor.playerRoundEndUpdate(player);
+        GameLoopProcessor.playerRoundEndUpdate(player, true);
     }
 
     /**
@@ -614,7 +617,7 @@ public class Server implements IServer {
         final Player player = serverSomething.getPlayer();
         final Set<Cell> achievableCells = game.getPlayerToAchievableCells().get(player);
         GameLoopProcessor.updateAchievableCells(
-                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player));
+                player, game.getBoard(), achievableCells, game.getOwnToCells().get(player), true);
         processCaptureCell(serverSomething, game);
     }
 
@@ -667,10 +670,12 @@ public class Server implements IServer {
             throws IOException, CoinsException {
 
         final Player player = serverSomething.getPlayer();
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
         GameLoopProcessor.freeTransitCells(player, game.getPlayerToTransitCells().get(player),
-                game.getOwnToCells().get(player));
-        GameLoopProcessor.loseCells(game.getOwnToCells().get(player), game.getOwnToCells().get(player),
-                game.getFeudalToCells().get(player));
+                controlledCells);
+        controlledCells.forEach(controlledCell -> controlledCell.getUnits().clear());
+        GameLoopProcessor.makeAllUnitsSomeState(player,
+                AvailabilityType.AVAILABLE);
         if (!game.getOwnToCells().get(player).isEmpty()) { // если есть, где распределять войска
             processDistributionUnits(serverSomething, game);
         }

@@ -1,9 +1,10 @@
-package io.neolab.internship.coins.server.service;
+package io.neolab.internship.coins.ai.vika.statistic;
 
 import io.neolab.internship.coins.ai.vika.AIBot;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.server.game.player.Player;
+import io.neolab.internship.coins.server.service.GameStatisticLogger;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
