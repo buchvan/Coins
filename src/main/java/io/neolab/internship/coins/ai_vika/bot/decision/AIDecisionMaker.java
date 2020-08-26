@@ -356,9 +356,16 @@ public class AIDecisionMaker {
      * @param game            - текущее состояние игры
      */
     private static void addCatchCellDecision(final Cell cell, final List<DecisionAndWin> decisionAndWins,
-                                             final Player player, final IGame game, int currentDepth) {
+                                             final Player player, final IGame game, final int currentDepth) {
         final Position position = game.getBoard().getPositionByCell(cell);
         final List<Unit> unitsForCapture = new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE));
+        final List<Cell> controlledCells = game.getOwnToCells().get(player);
+        final List<Cell> catchingCellNeighboringCells =
+                new LinkedList<>(
+                        Objects.requireNonNull(game.getBoard().getNeighboringCells(
+                                Objects.requireNonNull(cell))));
+        GameLoopProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), unitsForCapture, catchingCellNeighboringCells,
+                cell, controlledCells);
         LOGGER.info("UNITS AMOUNT: {}", unitsForCapture.size());
         final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
         LOGGER.info("CATCH CELL DECISION: {}", decision);
@@ -387,7 +394,7 @@ public class AIDecisionMaker {
      * @param game            - текущее состояние игры
      */
     private static void addCatchCellNullDecision(final List<DecisionAndWin> decisionAndWins, final Player player,
-                                                 final IGame game, int currentDepth) {
+                                                 final IGame game, final int currentDepth) {
         final IGame gameCopy = game.getCopy();
         try {
             final Player playerCopy = AIDecisionMakerUtils.getPlayerCopy(gameCopy, player.getId());
@@ -412,22 +419,20 @@ public class AIDecisionMaker {
         //final List<DecisionAndWin> decisionAndWins = new LinkedList<>();
         final List<DecisionAndWin> decisionAndWins = Collections.synchronizedList(new LinkedList<>());
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
-        LOGGER.info("Start create distribution units decisions...");
-        LOGGER.info("CONTROLLED CELLS: {}", controlledCells);
         if (controlledCells.size() == 0) {
-            LOGGER.info("NO CONTROLLED CELLS DISTRIBUTION");
             //final List<DecisionAndWin> emptyDecisionList = new LinkedList<>();
             final List<DecisionAndWin> emptyDecisionList = Collections.synchronizedList(new LinkedList<>());
             emptyDecisionList.add(new DecisionAndWin(new DistributionUnitsDecision(new HashMap<>()),
                     new WinCollector(player.getCoins())));
             return getBestDecision(emptyDecisionList).getDecision();
         }
-        final List<Unit> playerUnits = new LinkedList<>();
+        final Set<Unit> playerUnits = new HashSet<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+        LOGGER.info("UNITS FOR DISTRIBUTION: {}" , playerUnits.size());
+        LOGGER.info("CELLS FOR DISTRIBUTION: {}" , controlledCells.size());
         final List<List<Pair<Cell, Integer>>> combinations = AIDecisionMakerUtils.getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
-        LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         final int DISTRIBUTION_UNITS_THREADS_AMOUNT = combinations.size();
         final ExecutorService executorService = Executors.newFixedThreadPool(DISTRIBUTION_UNITS_THREADS_AMOUNT);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
@@ -455,7 +460,7 @@ public class AIDecisionMaker {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         LOGGER.info("Start create distribution units decisions...");
         LOGGER.info("CONTROLLED CELLS SIZE: {}", controlledCells.size());
-        final List<Unit> playerUnits = new LinkedList<>();
+        final Set<Unit> playerUnits = new HashSet<>();
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.AVAILABLE));
         playerUnits.addAll(player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
         if (controlledCells.size() == 0) {
@@ -466,6 +471,8 @@ public class AIDecisionMaker {
                     new WinCollector(player.getCoins())));
             return getBestDecision(emptyDecisionList);
         }
+        LOGGER.info("UNITS FOR DISTRIBUTION: {}" , playerUnits.size());
+        LOGGER.info("CELLS FOR DISTRIBUTION: {}" , controlledCells.size());
         final List<List<Pair<Cell, Integer>>> combinations = AIDecisionMakerUtils.getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
         LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
@@ -490,13 +497,17 @@ public class AIDecisionMaker {
                                                      final List<Unit> playerUnits, final int currentDepth) {
         final IGame gameCopy = game.getCopy();
         try {
+            final int units = combination.stream().mapToInt(Pair::getSecond).sum();
+            LOGGER.info("UNITS AMOUNT IN COMBINATION: {}", units);
+            LOGGER.info("UNITS AMOUNT IN PLAYER: {}", playerUnits.size());
+            LOGGER.info("CORRECT COMBINATION: {}", units == playerUnits.size());
             final Player playerCopy = AIDecisionMakerUtils.getPlayerCopy(gameCopy, player.getId());
             final Map<Position, List<Unit>> resolutions = new HashMap<>();
             combination
                     .forEach(cellUnitsAmountsPair
                             -> resolutions
-                            .put(gameCopy.getBoard().getPositionByCell(cellUnitsAmountsPair.getFirst()),
-                                    playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
+                                    .put(gameCopy.getBoard().getPositionByCell(cellUnitsAmountsPair.getFirst()),
+                                            playerUnits.subList(0, cellUnitsAmountsPair.getSecond())));
             final Decision decision = new DistributionUnitsDecision(resolutions);
             LOGGER.info("DISTRIBUTION UNITS DECISION: {}", decision);
             simulateDistributionUnitsDecision((DistributionUnitsDecision) decision, playerCopy, gameCopy);

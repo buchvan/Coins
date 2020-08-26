@@ -55,29 +55,25 @@ public class AIDecisionMakerUtils {
     public static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
                                                                                   final int remainingUnitsAmount) {
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
-        if (remainingUnitsAmount <= 0 || cellForDistribution.isEmpty()) {
-            return combinations;
-        }
-        for (int i = 0; i <= remainingUnitsAmount; i++) {
-            final List<Cell> cellForDistributionCopy = new LinkedList<>(cellForDistribution);
-            for (final Cell cell : cellForDistributionCopy) {
-                final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
-                currentCombination.add(new Pair<>(cell, i));
-                final List<Cell> cells = new LinkedList<>(cellForDistributionCopy);
+        
+       /* for (int i = 0; i <= remainingUnitsAmount; i++) {
+            for (final Cell cell : cellForDistribution) {
+                //final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
+                final List<Cell> cells = new LinkedList<>(cellForDistribution);
                 cells.remove(cell);
-               // cellForDistributionCopy.remove(cell);
                 final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
                         getDistributionUnitsCombination(cells, remainingUnitsAmount - i);
                 if (remainingCellCombinations.size() > 0) {
                     for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
                         if (remainingCellCombination.size() > 0) {
-                            currentCombination.addAll(remainingCellCombination);
+                            remainingCellCombination.add(new Pair<>(cell, i));
+                            combinations.add(remainingCellCombination);
+                            //currentCombination.addAll(remainingCellCombination);
                         }
                     }
                 }
-                combinations.add(currentCombination);
             }
-        }
+        }*/
         return combinations;
     }
 
@@ -94,7 +90,7 @@ public class AIDecisionMakerUtils {
                 .stream()
                 .filter(player -> player.getId() == currentPlayerId)
                 .findFirst()
-               .orElseThrow();
+                .orElseThrow();
     }
 
     public static int getPlayerIndexFromGame(final List<Player> players, final int currentPlayerId) {

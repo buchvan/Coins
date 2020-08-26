@@ -56,7 +56,7 @@ public class AIDistributionProcessor {
         final List<Map<Cell, Integer>> distributions = new LinkedList<>();
         if (!cells.isEmpty()) {
             final Cell cell = cells.get(0);
-            for (int i = n; i >= 0; i--) {
+            for (int i = n; i > 0; i--) {
                 final List<Cell> otherCells = new LinkedList<>(cells);
                 otherCells.remove(cell);
                 if (otherCells.isEmpty()) {
