@@ -204,7 +204,7 @@ public class GameAnswerProcessor {
      *
      * @param player          - игрок, проводящий завоёвывание
      * @param captureCell     - клетка, которую игрок хочет захватить
-     * @param units           - список юнитов, направленных на захват клетки
+     * @param pseudoUnits     - список юнитов, направленных на захват клетки
      * @param board           - борда
      * @param gameFeatures    - особенности игры
      * @param ownToCells      - список подконтрольных клеток для каждого игрока
@@ -215,7 +215,7 @@ public class GameAnswerProcessor {
      */
     public static void pretendToCell(final @NotNull Player player,
                                      final @NotNull Cell captureCell,
-                                     final @NotNull List<Unit> units,
+                                     final @NotNull List<Unit> pseudoUnits,
                                      final @NotNull IBoard board,
                                      final @NotNull GameFeatures gameFeatures,
                                      final @NotNull Map<Player, List<Cell>> ownToCells,
@@ -225,6 +225,8 @@ public class GameAnswerProcessor {
                                      final boolean isLoggingTurnOn) {
         final List<Cell> controlledCells = ownToCells.get(player);
         final boolean isControlled = controlledCells.contains(captureCell);
+        final List<Unit> units =
+                new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE).subList(0, pseudoUnits.size()));
         if (isControlled) {
             final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
             enterToCell(player, captureCell, ownToCells.get(player), feudalToCells.get(player),
@@ -267,7 +269,8 @@ public class GameAnswerProcessor {
                 controlledCells, playerUnitsAmount);
         LOGGER.debug("Answer is valid");
         distributionUnits(player, controlledCells, feudalCells,
-                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board, true);
+                Objects.requireNonNull(Objects.requireNonNull(distributionUnitsAnswer).getResolutions()), board,
+                true);
     }
 
 
@@ -296,7 +299,8 @@ public class GameAnswerProcessor {
             if (isLoggingTurnOn) {
                 GameLogger.printCellDefendingLog(player, units.size(), position);
             }
-            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)), units,
+            GameLoopProcessor.protectCell(player, Objects.requireNonNull(board.getCellByPosition(position)),
+                    new LinkedList<>(player.getUnitsByState(AvailabilityType.AVAILABLE).subList(0, units.size())),
                     isLoggingTurnOn);
         });
         loseCells(controlledCells, controlledCells, feudalCells);
