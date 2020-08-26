@@ -233,7 +233,7 @@ public class GameAnswerProcessor {
                     units, tiredUnitsCount, board, isLoggingTurnOn);
             if (!controlledCells.contains(captureCell)) {
                 GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells,
-                        true);
+                        isLoggingTurnOn);
             }
             return;
         }
