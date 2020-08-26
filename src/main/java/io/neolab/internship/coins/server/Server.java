@@ -496,6 +496,12 @@ public class Server implements IServer {
         for (final ServerSomething serverSomething : gameLobby.gameClients) {
             serverSomething.sendServerMessage(gameOverMessage);
         }
+        gameLobby.gameClients.forEach(client -> {
+            final Player player = client.player;
+            Objects.requireNonNull(player).getUnitStateToUnits().forEach((key, value) -> value.clear());
+            player.setCoins(0);
+            player.setRace(null);
+        });
     }
 
     /**

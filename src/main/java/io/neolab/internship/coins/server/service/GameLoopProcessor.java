@@ -172,8 +172,9 @@ public class GameLoopProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @return список уставших юнитов
      */
+    @Contract("_, _ -> new")
     public static @NotNull List<Unit> getTiredUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
-        return units.subList(0, tiredUnitsCount);
+        return new LinkedList<>(units.subList(0, tiredUnitsCount));
     }
 
     /**
@@ -183,8 +184,9 @@ public class GameLoopProcessor {
      * @param tiredUnitsCount - число уставших юнитов
      * @return список оставшихся доступных юнитов
      */
+    @Contract("_, _ -> new")
     public static @NotNull List<Unit> getRemainingAvailableUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
-        return units.subList(tiredUnitsCount, units.size());
+        return new LinkedList<>(units.subList(tiredUnitsCount, units.size()));
     }
 
     /**
