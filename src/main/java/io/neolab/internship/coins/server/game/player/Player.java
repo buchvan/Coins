@@ -53,15 +53,14 @@ public class Player implements Serializable {
         this.id = id;
         this.nickname = nickname;
         this.race = race;
-        this.unitStateToUnits = unitStateToUnits;
-//        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
-//        for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
-//            final List<Unit> units = new LinkedList<>();
-//            for (final Unit unit : entry.getValue()) {
-//                units.add(new Unit(unit));
-//            }
-//            this.unitStateToUnits.put(entry.getKey(), units);
-//        }
+        this.unitStateToUnits = new HashMap<>(AvailabilityType.values().length);
+        for (final Map.Entry<AvailabilityType, List<Unit>> entry : unitStateToUnits.entrySet()) {
+            final List<Unit> units = new LinkedList<>();
+            for (final Unit unit : entry.getValue()) {
+                units.add(new Unit(unit));
+            }
+            this.unitStateToUnits.put(entry.getKey(), units);
+        }
         this.coins = coins;
     }
 
