@@ -231,6 +231,10 @@ public class GameAnswerProcessor {
             final int tiredUnitsCount = captureCell.getType().getCatchDifficulty();
             enterToCell(player, captureCell, ownToCells.get(player), feudalToCells.get(player),
                     units, tiredUnitsCount, board, isLoggingTurnOn);
+            if (!controlledCells.contains(captureCell)) {
+                GameLoopProcessor.updateAchievableCells(player, board, achievableCells, controlledCells,
+                        true);
+            }
             return;
         }
         if (isLoggingTurnOn) {
