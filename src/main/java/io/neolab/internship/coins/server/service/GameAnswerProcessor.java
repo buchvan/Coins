@@ -241,6 +241,8 @@ public class GameAnswerProcessor {
         neighboringCells.removeIf(neighboringCell -> !controlledCells.contains(neighboringCell));
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(gameFeatures, captureCell, isLoggingTurnOn);
         final int bonusAttack = getBonusAttackToCatchCell(player, gameFeatures, captureCell, isLoggingTurnOn);
+        LOGGER.info("UNITS BEFORE CATCHING CELLS: {}", units.size());
+        LOGGER.info("UNITS NEEDED CATCHING CELLS: {}", unitsCountNeededToCatch - bonusAttack);
         catchCell(player, captureCell, neighboringCells, units.subList(0, unitsCountNeededToCatch - bonusAttack),
                 units, gameFeatures, ownToCells, feudalToCells, transitCells, isLoggingTurnOn);
         updateAchievableCellsAfterCatchCell(board, captureCell, controlledCells, achievableCells);

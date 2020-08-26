@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static io.neolab.internship.coins.ai_vika.bot.decision.AIDecisionSimulationProcessor.*;
+import static io.neolab.internship.coins.ai_vika.bot.utils.AIDecisionMakerUtils.isCatchCellPossible;
 import static io.neolab.internship.coins.utils.RandomGenerator.chooseItemFromList;
 
 /**
@@ -366,23 +367,25 @@ public class AIDecisionMaker {
                                 Objects.requireNonNull(cell))));
         GameLoopProcessor.removeNotAvailableForCaptureUnits(game.getBoard(), unitsForCapture, catchingCellNeighboringCells,
                 cell, controlledCells);
-        LOGGER.info("UNITS AMOUNT: {}", unitsForCapture.size());
-        final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
-        LOGGER.info("CATCH CELL DECISION: {}", decision);
-        LOGGER.info("AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.AVAILABLE));
-        LOGGER.info("NOT AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
-        final IGame gameCopy = game.getCopy();
-        try {
-            final Player playerCopy = AIDecisionMakerUtils.getPlayerCopy(gameCopy, player.getId());
-            LOGGER.info("AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.AVAILABLE));
-            LOGGER.info("NOT AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
-            simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
-            final WinCollector winCollector = Objects.requireNonNull(
-                    getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS, currentDepth))
-                    .getWinCollector();
-            decisionAndWins.add(new DecisionAndWin(decision, winCollector));
-        } catch (final AIBotException e) {
-            e.printStackTrace();
+        if(isCatchCellPossible(cell, unitsForCapture, game, player)) {
+            LOGGER.info("UNITS AMOUNT: {}", unitsForCapture.size());
+            final Decision decision = new CatchCellDecision(new Pair<>(position, unitsForCapture));
+            LOGGER.info("CATCH CELL DECISION: {}", decision);
+            LOGGER.info("AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.AVAILABLE));
+            LOGGER.info("NOT AVAILABLE UNITS: {}", player.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+            final IGame gameCopy = game.getCopy();
+            try {
+                final Player playerCopy = AIDecisionMakerUtils.getPlayerCopy(gameCopy, player.getId());
+                LOGGER.info("AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.AVAILABLE));
+                LOGGER.info("NOT AVAILABLE UNITS IN COPY: {}", playerCopy.getUnitsByState(AvailabilityType.NOT_AVAILABLE));
+                simulateCatchCellDecision(playerCopy, gameCopy, (CatchCellDecision) decision);
+                final WinCollector winCollector = Objects.requireNonNull(
+                        getBestDecisionByGameTree(playerCopy, gameCopy, DecisionType.DISTRIBUTION_UNITS, currentDepth))
+                        .getWinCollector();
+                decisionAndWins.add(new DecisionAndWin(decision, winCollector));
+            } catch (final AIBotException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 import static io.neolab.internship.coins.server.service.GameAnswerProcessor.*;
@@ -48,6 +49,8 @@ public class AIDecisionSimulationProcessor {
                                            @NotNull final ChangeRaceDecision decision) {
         game.getOwnToCells().get(player).clear();
         changeRace(player, decision.getDecision(), game.getRacesPool(), isLoggingTurnOn);
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), new HashSet<>(game.getPlayerToAchievableCells().get(player)),
+                game.getOwnToCells().get(player), false);
     }
 
 

@@ -55,7 +55,7 @@ public class AIDecisionMakerUtils {
     public static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
                                                                                   final int remainingUnitsAmount) {
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
-        
+       
        /* for (int i = 0; i <= remainingUnitsAmount; i++) {
             for (final Cell cell : cellForDistribution) {
                 //final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
@@ -102,4 +102,12 @@ public class AIDecisionMakerUtils {
         return players.indexOf(currentPlayer);
     }
 
+    public static boolean isCatchCellPossible(final Cell cell, final List<Unit> playerUnits, final IGame game, final Player player) {
+        if(game.getOwnToCells().get(player).contains(cell)) {
+            return playerUnits.size() >= cell.getType().getCatchDifficulty();
+        }
+        final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell, false);
+        final int bonusAttack = getBonusAttackToCatchCell(player, game.getGameFeatures(), cell, false);
+        return playerUnits.size() >= unitsCountNeededToCatch - bonusAttack;
+    }
 }

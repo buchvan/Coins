@@ -174,6 +174,9 @@ public class GameLoopProcessor {
      */
     @Contract("_, _ -> new")
     public static @NotNull List<Unit> getTiredUnits(final @NotNull List<Unit> units, final int tiredUnitsCount) {
+        //TODO: sout
+        System.out.println("UNITS WHEN GET TIRED UNITS: " + units.size());
+        System.out.println("TIRED UNITS AMOUNT WHEN GET TIRED UNITS: " + units.size());
         return new LinkedList<>(units.subList(0, tiredUnitsCount));
     }
 
