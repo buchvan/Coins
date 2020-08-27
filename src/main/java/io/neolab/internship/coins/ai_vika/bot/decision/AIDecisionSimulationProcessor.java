@@ -49,10 +49,10 @@ public class AIDecisionSimulationProcessor {
                                            @NotNull final ChangeRaceDecision decision) {
         game.getOwnToCells().get(player).clear();
         changeRace(player, decision.getDecision(), game.getRacesPool(), isLoggingTurnOn);
-        GameLoopProcessor.updateAchievableCells(player, game.getBoard(), new HashSet<>(game.getPlayerToAchievableCells().get(player)),
+        GameLoopProcessor.updateAchievableCells(player, game.getBoard(),
+                new HashSet<>(game.getPlayerToAchievableCells().get(player)),
                 game.getOwnToCells().get(player), false);
     }
-
 
     /**
      * Симулирует принятое решение о захвате для копий игровых сущностей
@@ -71,6 +71,13 @@ public class AIDecisionSimulationProcessor {
                 game.getPlayerToAchievableCells().get(player), isLoggingTurnOn);
     }
 
+    /**
+     * Симулирует принятое решение о перераспределении юнитов для копий игровых сущностей
+     *
+     * @param player   - текущий игрок
+     * @param game     - текуще состояние игры
+     * @param decision - принятое решение
+     */
     static void simulateDistributionUnitsDecision(final DistributionUnitsDecision decision, final Player player,
                                                   final IGame game) {
         distributionUnits(player, game.getOwnToCells().get(player),
@@ -90,5 +97,4 @@ public class AIDecisionSimulationProcessor {
         GameLoopProcessor.updateCoinsCount(player, game.getFeudalToCells().get(player),
                 game.getGameFeatures(), game.getBoard(), false);
     }
-
 }

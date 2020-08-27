@@ -1,6 +1,5 @@
 package io.neolab.internship.coins.ai_vika.bot.utils;
 
-import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.feature.GameFeatures;
@@ -9,8 +8,6 @@ import io.neolab.internship.coins.server.game.player.Unit;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +16,6 @@ import static io.neolab.internship.coins.server.service.GameLoopProcessor.getBon
 import static io.neolab.internship.coins.server.service.GameLoopProcessor.getUnitsCountNeededToCatchCell;
 
 public class AIDecisionMakerUtils {
-
-    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(AIDecisionMakerUtils.class);
 
     /**
      * Проверка возможности захвата клетки
@@ -55,25 +50,26 @@ public class AIDecisionMakerUtils {
     public static List<List<Pair<Cell, Integer>>> getDistributionUnitsCombination(final List<Cell> cellForDistribution,
                                                                                   final int remainingUnitsAmount) {
         final List<List<Pair<Cell, Integer>>> combinations = new LinkedList<>();
-       
-       /* for (int i = 0; i <= remainingUnitsAmount; i++) {
-            for (final Cell cell : cellForDistribution) {
-                //final List<Pair<Cell, Integer>> currentCombination = new LinkedList<>();
-                final List<Cell> cells = new LinkedList<>(cellForDistribution);
-                cells.remove(cell);
-                final List<List<Pair<Cell, Integer>>> remainingCellCombinations =
-                        getDistributionUnitsCombination(cells, remainingUnitsAmount - i);
-                if (remainingCellCombinations.size() > 0) {
-                    for (final List<Pair<Cell, Integer>> remainingCellCombination : remainingCellCombinations) {
-                        if (remainingCellCombination.size() > 0) {
-                            remainingCellCombination.add(new Pair<>(cell, i));
-                            combinations.add(remainingCellCombination);
-                            //currentCombination.addAll(remainingCellCombination);
-                        }
-                    }
+        if (!cellForDistribution.isEmpty()) {
+            final Cell cell = cellForDistribution.get(0);
+            for (int i = remainingUnitsAmount; i >= 0; i--) {
+                final List<Cell> cellForDistributionCopy = new LinkedList<>(cellForDistribution);
+                cellForDistributionCopy.remove(cell);
+                if (cellForDistributionCopy.isEmpty()) {
+                    final List<Pair<Cell, Integer>> currentDistribution = new LinkedList<>();
+                    currentDistribution.add(new Pair<>(cell, i));
+                    combinations.add(currentDistribution);
+                    i = 0;
+                    continue;
                 }
+                final List<List<Pair<Cell, Integer>>> remainingCombinations = getDistributionUnitsCombination(
+                        cellForDistributionCopy, remainingUnitsAmount - i);
+                final int unitsAmount = i;
+                remainingCombinations.forEach(remainingCombination
+                        -> remainingCombination.add(new Pair<>(cell, unitsAmount)));
+                combinations.addAll(remainingCombinations);
             }
-        }*/
+        }
         return combinations;
     }
 
@@ -83,9 +79,8 @@ public class AIDecisionMakerUtils {
      * @param game            - копия игры
      * @param currentPlayerId - id текущего игрока
      * @return - копия нужного игрока
-     * @throws AIBotException - если копия не найдена
      */
-    public static Player getPlayerCopy(@NotNull final IGame game, final int currentPlayerId) throws AIBotException {
+    public static Player getPlayerCopy(@NotNull final IGame game, final int currentPlayerId) {
         return game.getPlayers()
                 .stream()
                 .filter(player -> player.getId() == currentPlayerId)
@@ -93,6 +88,13 @@ public class AIDecisionMakerUtils {
                 .orElseThrow();
     }
 
+    /**
+     * возвращает индекс игрока из списка(порядковый номер игрока, в соответствии с которым он совершает ход)
+     *
+     * @param players         - игроки
+     * @param currentPlayerId - текущий игрок
+     * @return - индекс
+     */
     public static int getPlayerIndexFromGame(final List<Player> players, final int currentPlayerId) {
         final Player currentPlayer = players
                 .stream()
@@ -102,8 +104,18 @@ public class AIDecisionMakerUtils {
         return players.indexOf(currentPlayer);
     }
 
-    public static boolean isCatchCellPossible(final Cell cell, final List<Unit> playerUnits, final IGame game, final Player player) {
-        if(game.getOwnToCells().get(player).contains(cell)) {
+    /**
+     * Проверяет возможность захвата клетки игроком
+     *
+     * @param cell        - клетка для захвата
+     * @param playerUnits - юниты игрока
+     * @param game        - текущее состояние игры
+     * @param player      - игрок
+     * @return можно/нельзя захватить клетку
+     */
+    public static boolean isCatchCellPossible(final Cell cell, final List<Unit> playerUnits, final IGame game,
+                                              final Player player) {
+        if (game.getOwnToCells().get(player).contains(cell)) {
             return playerUnits.size() >= cell.getType().getCatchDifficulty();
         }
         final int unitsCountNeededToCatch = getUnitsCountNeededToCatchCell(game.getGameFeatures(), cell, false);

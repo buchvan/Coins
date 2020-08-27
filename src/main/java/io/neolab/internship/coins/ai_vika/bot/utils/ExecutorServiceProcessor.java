@@ -5,6 +5,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ExecutorServiceProcessor {
 
+    /**
+     * Корректно завершает работу executorService
+     * @param executorService - executor Service
+     */
     public static void completeExecutorService(final ExecutorService executorService) {
         executorService.shutdown();
         try {

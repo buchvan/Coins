@@ -138,7 +138,7 @@ public class Client implements IClient {
     /**
      * Запуск клиента
      */
-    void startClient() throws AIBotException {
+    public void startClient() throws AIBotException {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
                 socket = new Socket(this.ipAddress, this.port);
