@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.client.bot;
 
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;

@@ -650,7 +650,7 @@ public class SimulationTreeCreator {
         final List<Cell> controlledCells = game.getOwnToCells().get(player);
         final List<Map<Cell, Integer>> distributions =
                 AIDistributionProcessor.getDistributions(controlledCells,
-                        player.getUnitsByState(AvailabilityType.AVAILABLE).size());
+                        new HashSet<>(player.getUnitsByState(AvailabilityType.AVAILABLE)).size());
         final Set<Map<Cell, Integer>> actualDistributions =
                 AIDistributionProcessor
                         .distributionsNumberReduce(distributions, game.getOwnToCells().get(player).size());

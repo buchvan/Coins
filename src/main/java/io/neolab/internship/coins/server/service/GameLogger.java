@@ -232,7 +232,7 @@ public class GameLogger {
      * @param unitsCount - выбранное число юнитов
      */
     public static void printCatchCellUnitsQuantityLog(final @NotNull Player aggressor, final int unitsCount) {
-        LOGGER.debug("Player {} capture units in quantity {} ", aggressor, unitsCount);
+        LOGGER.debug("Player {} capture units in quantity {} ", aggressor.getNickname(), unitsCount);
     }
 
     /**

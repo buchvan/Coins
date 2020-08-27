@@ -1,7 +1,7 @@
 package io.neolab.internship.coins.server.service;
 
-import io.neolab.internship.coins.ai.vika.AIBot;
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.AIBot;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.exceptions.CoinsException;
@@ -17,8 +17,6 @@ import io.neolab.internship.coins.utils.LogCleaner;
 import io.neolab.internship.coins.utils.LoggerFile;
 import io.neolab.internship.coins.utils.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -58,8 +56,8 @@ public class SelfPlay {
 
     private static void AIBotAndSimpleBotToPlayers(final IGame game) {
         final List<Player> players = game.getPlayers();
-        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(0)));
-        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(1)));
+        simpleBotToPlayer.add(new Pair<>(new AIBot(), players.get(0)));
+        simpleBotToPlayer.add(new Pair<>(new SimpleBot(), players.get(1)));
     }
 
     /**

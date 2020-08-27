@@ -3,10 +3,10 @@ package io.neolab.internship.coins.client.bot;
 import io.neolab.internship.coins.server.game.IGame;
 import io.neolab.internship.coins.server.game.board.Cell;
 import io.neolab.internship.coins.server.game.board.IBoard;
+import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.game.player.Player;
 import io.neolab.internship.coins.server.game.player.Race;
 import io.neolab.internship.coins.server.game.player.Unit;
-import io.neolab.internship.coins.server.game.board.Position;
 import io.neolab.internship.coins.server.service.GameLoopProcessor;
 import io.neolab.internship.coins.utils.AvailabilityType;
 import io.neolab.internship.coins.utils.Pair;
@@ -74,47 +74,6 @@ public class SimpleBot implements IBot {
         }
         LOGGER.debug("Simple bot will not capture of cells");
         return null;
-    }
-
-    /**
-     * Найти и удалить недоступные для захвата клетки юнитов
-     *
-     * @param board                        - борда
-     * @param units                        - список юнитов
-     * @param catchingCellNeighboringCells - клетки, соседние с захватываемой клеткой
-     * @param catchingCell                 - захватываемая клетка
-     * @param controlledCells              - контролируемые игроком клетки
-     */
-    private void removeNotAvailableForCaptureUnits(final @NotNull IBoard board, final @NotNull List<Unit> units,
-                                                   final @NotNull List<Cell> catchingCellNeighboringCells,
-                                                   final @NotNull Cell catchingCell,
-                                                   final @NotNull List<Cell> controlledCells) {
-        final List<Cell> boardEdgeCells = board.getEdgeCells();
-        final Iterator<Unit> iterator = units.iterator();
-        while (iterator.hasNext()) {
-            boolean unitAvailableForCapture = false;
-            final Unit unit = iterator.next();
-            for (final Cell neighboringCell : catchingCellNeighboringCells) {
-                if (neighboringCell.getUnits().contains(unit)) {
-                    unitAvailableForCapture = true;
-                    break;
-                }
-            }
-            if (boardEdgeCells.contains(catchingCell) && !unitAvailableForCapture) {
-                unitAvailableForCapture = true;
-                for (final Cell controlledCell : controlledCells) {
-                    if (controlledCell.getUnits().contains(unit)) {
-                        if (!catchingCellNeighboringCells.contains(controlledCell)) {
-                            unitAvailableForCapture = false;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (!unitAvailableForCapture) {
-                iterator.remove();
-            }
-        }
     }
 
     @Override
