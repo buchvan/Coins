@@ -431,13 +431,9 @@ public class AIDecisionMaker {
                     new WinCollector(player.getCoins())));
             return getBestDecision(emptyDecisionList);
         }
-        LOGGER.info("UNITS FOR DISTRIBUTION: {}", playerUnits.size());
-        LOGGER.info("CELLS FOR DISTRIBUTION: {}", controlledCells.size());
         final List<List<Pair<Cell, Integer>>> combinations = AIDecisionMakerUtils.getDistributionUnitsCombination(
                 new LinkedList<>(controlledCells), playerUnits.size());
-        LOGGER.info("DISTRIBUTION UNITS COMBINATIONS: {}", combinations);
         for (final List<Pair<Cell, Integer>> combination : combinations) {
-            LOGGER.info("DISTRIBUTION UNITS COMBINATION: {}", combination);
             addDistributionUnitsDecision(combination, player, game, decisionAndWins, new LinkedList<>(playerUnits), currentDepth);
         }
         LOGGER.info("DECISION AND WINS: {}", decisionAndWins);
@@ -456,10 +452,6 @@ public class AIDecisionMaker {
                                                      final IGame game, final List<DecisionAndWin> decisionAndWins,
                                                      final List<Unit> playerUnits, final int currentDepth) {
         final IGame gameCopy = game.getCopy();
-        final int units = combination.stream().mapToInt(Pair::getSecond).sum();
-        LOGGER.info("UNITS AMOUNT IN COMBINATION: {}", units);
-        LOGGER.info("UNITS AMOUNT IN PLAYER: {}", playerUnits.size());
-        LOGGER.info("CORRECT COMBINATION: {}", units == playerUnits.size());
         final Player playerCopy = AIDecisionMakerUtils.getPlayerCopy(gameCopy, player.getId());
         final Map<Position, List<Unit>> resolutions = new HashMap<>();
         combination
