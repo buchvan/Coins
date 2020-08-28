@@ -1,8 +1,8 @@
-package io.neolab.internship.coins.client;
+package io.neolab.internship.coins.ai_vika;
 
 import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
+import io.neolab.internship.coins.client.IClient;
 import io.neolab.internship.coins.client.bot.IBot;
-import io.neolab.internship.coins.client.bot.SimpleBot;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
 import io.neolab.internship.coins.common.message.client.ClientMessageType;
 import io.neolab.internship.coins.common.message.client.answer.*;
@@ -138,7 +138,7 @@ public class Client implements IClient {
     /**
      * Запуск клиента
      */
-    void startClient() {
+    void startClient() throws AIBotException {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
                 socket = new Socket(this.ipAddress, this.port);
@@ -172,12 +172,12 @@ public class Client implements IClient {
      * Метод всего взаимодействия с сервером
      */
     @SuppressWarnings("InfiniteLoopStatement")
-    private void serverInteract() {
+    private void serverInteract() throws AIBotException {
         try {
             while (true) {
                 processMessage(Communication.deserializeServerMessage(in.readLine())); // ждем сообщения с сервера
             }
-        } catch (final CoinsException | IOException | AIBotException exception) {
+        } catch (final CoinsException | IOException exception) {
             if (!(exception instanceof CoinsException) ||
                     ((CoinsException) exception).getErrorCode() != CoinsErrorCode.CLIENT_DISCONNECTION) {
                 LOGGER.error("Error", exception);
@@ -248,15 +248,5 @@ public class Client implements IClient {
             LOGGER.info("Entered nickname: {}", nickname);
         } while (nickname.isEmpty() || nickname.equals(this.nickname));
         this.nickname = nickname;
-    }
-
-    public static void main(final String[] args) {
-        try {
-            final ClientConfigResource clientConfig = new ClientConfigResource();
-            final Client client = new Client(clientConfig.getHost(), clientConfig.getPort(), new SimpleBot());
-            client.startClient();
-        } catch (final CoinsException exception) {
-            LOGGER.error("Error!", exception);
-        }
     }
 }

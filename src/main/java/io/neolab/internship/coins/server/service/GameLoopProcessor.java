@@ -27,7 +27,7 @@ public class GameLoopProcessor {
      * Обновление данных игрока в начале раунда очередного игрового цикла игроком. К этому относится:
      * статус каждого юнита игрока - доступен,
      *
-     * @param player     - игрок, чьи данные нужно обновить
+     * @param player          - игрок, чьи данные нужно обновить
      * @param isLoggingTurnOn - включено логгирование?
      */
     public static void playerRoundBeginUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
@@ -41,7 +41,7 @@ public class GameLoopProcessor {
      * Конец раунда очередного игрового цикла игроком:
      * всех юнитов игрока сделать недоступными
      *
-     * @param player     - игрок, чьи данные нужно обновить согласно методу
+     * @param player          - игрок, чьи данные нужно обновить согласно методу
      * @param isLoggingTurnOn - включено логгирование?
      */
     public static void playerRoundEndUpdate(final @NotNull Player player, final boolean isLoggingTurnOn) {
@@ -72,7 +72,7 @@ public class GameLoopProcessor {
      * @param board           - борда
      * @param achievableCells - множество достижимых клеток
      * @param controlledCells - принадлежащие игроку клетки
-     * @param isLoggingTurnOn      - включено логгирование?
+     * @param isLoggingTurnOn - включено логгирование?
      */
     public static void updateAchievableCells(final @NotNull Player player, final @NotNull IBoard board,
                                              final @NotNull Set<Cell> achievableCells,
@@ -147,7 +147,7 @@ public class GameLoopProcessor {
      * @param units           - список юнитов, которых игрок послал в клетку
      * @param tiredUnitsCount - число уставших юнитов
      * @param board           - борда
-     * @param isLoggingTurOn      - включено логгирование?
+     * @param isLoggingTurOn  - включено логгирование?
      */
     public static void enterToCell(final @NotNull Player player, final @NotNull Cell targetCell,
                                    final @NotNull List<Cell> controlledCells, final @NotNull Set<Cell> feudalCells,
@@ -192,9 +192,9 @@ public class GameLoopProcessor {
     /**
      * Метод получения числа юнитов, необходимых для захвата клетки
      *
-     * @param gameFeatures - особенности игры
-     * @param catchingCell - захватываемая клетка
-     * @param isLoggingTurnOn   - включено логгирование?
+     * @param gameFeatures    - особенности игры
+     * @param catchingCell    - захватываемая клетка
+     * @param isLoggingTurnOn - включено логгирование?
      * @return число юнитов, необходимое для захвата клетки catchingCell
      */
     public static int getUnitsCountNeededToCatchCell(final @NotNull GameFeatures gameFeatures,
@@ -264,7 +264,7 @@ public class GameLoopProcessor {
      * @param feudalToCells    - множества клеток для каждого феодала
      * @param transitCells     - транзитные клетки игрока
      *                         (т. е. те клетки, которые принадлежат игроку, но не приносят ему монет)
-     * @param isLoggingTurOn       - включено логгирование?
+     * @param isLoggingTurOn   - включено логгирование?
      */
     public static void catchCell(final @NotNull Player player,
                                  final @NotNull Cell catchingCell,

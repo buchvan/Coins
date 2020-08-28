@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.bim;
 
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.ClientConfigResource;
 import io.neolab.internship.coins.bim.bot.SmartBot;
 import io.neolab.internship.coins.bim.bot.FunctionType;

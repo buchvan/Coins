@@ -1,4 +1,4 @@
-package io.neolab.internship.coins.bim;
+package io.neolab.internship.coins.ai_vika;
 
 import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.ClientConfigResource;
@@ -7,7 +7,6 @@ import io.neolab.internship.coins.exceptions.CoinsException;
 import org.jetbrains.annotations.NotNull;
 
 public class SimpleClient extends Client {
-
     /**
      * Для создания необходимо принять адрес и номер порта
      *

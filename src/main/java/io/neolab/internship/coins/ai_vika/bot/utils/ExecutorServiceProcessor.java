@@ -1,10 +1,14 @@
-package io.neolab.internship.coins.ai.vika.utils;
+package io.neolab.internship.coins.ai_vika.bot.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorServiceProcessor {
 
+    /**
+     * Корректно завершает работу executorService
+     * @param executorService - executor Service
+     */
     public static void completeExecutorService(final ExecutorService executorService) {
         executorService.shutdown();
         try {

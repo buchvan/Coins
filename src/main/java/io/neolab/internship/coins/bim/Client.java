@@ -1,6 +1,6 @@
 package io.neolab.internship.coins.bim;
 
-import io.neolab.internship.coins.ai.vika.exception.AIBotException;
+import io.neolab.internship.coins.ai_vika.bot.exception.AIBotException;
 import io.neolab.internship.coins.client.IClient;
 import io.neolab.internship.coins.client.bot.IBot;
 import io.neolab.internship.coins.common.message.client.ClientMessage;
@@ -138,7 +138,7 @@ public class Client implements IClient {
     /**
      * Запуск клиента
      */
-    void startClient() throws AIBotException {
+    public void startClient() throws AIBotException {
         try (final LoggerFile ignored = new LoggerFile("client")) {
             try {
                 socket = new Socket(this.ipAddress, this.port);
